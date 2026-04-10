@@ -21,5 +21,6 @@ router.post("/party-tax", auth(), controller.getPartyTaxDetails);
 router.post("/nidhi", auth(), controller.getNidhiConfig);
 router.post("/govt-tax-acc", auth(), controller.getGovtTaxAcc);
 router.post("/voucher-receipt-details", auth(), controller.getVoucherReceiptDetails);
+router.post("/SaveVoucher", auth(), controller.saveVoucher);
 
 module.exports = router;

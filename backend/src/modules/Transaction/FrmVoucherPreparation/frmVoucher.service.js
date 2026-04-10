@@ -134,6 +134,13 @@ async function getVoucherReceiptDetailsService(payload) {
   return { success: true, count: data.length, data };
 }
 
+async function saveVoucherService(payload) {
+  console.log("📥 Service: Save Voucher", payload);
+
+  return await repo.saveVoucherRepo(payload);
+}
+
+
 module.exports = {
   getPendingVouchersService,
   getDepositeDropdownService,
@@ -152,5 +159,6 @@ module.exports = {
   getPartyTaxDetailsService,
   getNidhiConfigService,
   getGovtTaxAccService,
-  getVoucherReceiptDetailsService
+  getVoucherReceiptDetailsService,
+  saveVoucherService
 };
