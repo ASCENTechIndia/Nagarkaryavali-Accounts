@@ -140,6 +140,11 @@ async function saveVoucherService(payload) {
   return await repo.saveVoucherRepo(payload);
 }
 
+async function deleteVoucherService(payload) {
+  console.log("📥 Service: Delete Voucher", payload);
+
+  return await repo.deleteVoucherRepo(payload);
+}
 
 module.exports = {
   getPendingVouchersService,
@@ -160,5 +165,6 @@ module.exports = {
   getNidhiConfigService,
   getGovtTaxAccService,
   getVoucherReceiptDetailsService,
-  saveVoucherService
+  saveVoucherService,
+  deleteVoucherService
 };

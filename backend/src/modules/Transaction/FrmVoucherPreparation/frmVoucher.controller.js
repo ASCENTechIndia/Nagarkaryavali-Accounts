@@ -141,3 +141,24 @@ exports.saveVoucher = asyncHandler(async (req, res) => {
 
   return ok(res, data, data.message);
 });
+
+exports.deleteVoucher = asyncHandler(async (req, res) => {
+  console.log("📥 Request Body:", req.body);
+
+  const { userId, refNo, orgId } = req.body;
+
+  // ✅ VALIDATION
+  if (!userId) throw new AppError("userId is required", 400);
+  if (!refNo) throw new AppError("refNo is required", 400);
+  if (!orgId) throw new AppError("orgId is required", 400);
+
+  const payload = {
+    userId,
+    refNo,
+    orgId,
+  };
+
+  const data = await service.deleteVoucherService(payload);
+
+  return ok(res, data, data.out_ErrorMsg);
+});

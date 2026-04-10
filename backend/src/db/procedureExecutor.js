@@ -74,7 +74,10 @@ async function executeProcedure({ sql, binds = {} }) {
 
     const start = Date.now();
 
-    const result = await connection.execute(sql, binds);
+    // const result = await connection.execute(sql, binds);
+    const result = await connection.execute(sql, binds, {
+      autoCommit: true
+    });
 
     const duration = Date.now() - start;
 

@@ -452,6 +452,55 @@ async function saveVoucherRepo(payload) {
   return result.outBinds;
 }
 
+async function deleteVoucherRepo(payload) {
+  console.log("📤 Repo: Delete Voucher", payload);
+
+  const sql = `
+    BEGIN
+      aoac_voucherpreparation_Delete(
+        :In_UserId,
+        :In_Refno,
+        :In_orgid,
+        :out_ReturnStr,
+        :out_ErrorCode,
+        :out_ErrorMsg
+      );
+    END;
+  `;
+
+  const binds = {
+    In_UserId: String(payload.userId),
+    In_Refno: String(payload.refNo),
+    In_orgid: String(payload.orgId),
+
+    out_ReturnStr: {
+      dir: oracledb.BIND_OUT,
+      type: oracledb.STRING,
+      maxSize: 100,
+    },
+    out_ErrorCode: {
+      dir: oracledb.BIND_OUT,
+      type: oracledb.NUMBER,
+    },
+    out_ErrorMsg: {
+      dir: oracledb.BIND_OUT,
+      type: oracledb.STRING,
+      maxSize: 1000,
+    },
+  };
+
+  const result = await executeProcedure({
+    sql,
+    binds
+    
+  });
+
+  if (!result.success) {
+    throw new Error(result.error);
+  }
+
+  return result.outBinds;
+}
 
 module.exports = {
   getPendingVouchersRepo,
@@ -472,5 +521,6 @@ module.exports = {
   getNidhiConfigRepo,
   getGovtTaxAccRepo,
   getVoucherReceiptDetailsRepo,
-  saveVoucherRepo
+  saveVoucherRepo,
+  deleteVoucherRepo
 };
