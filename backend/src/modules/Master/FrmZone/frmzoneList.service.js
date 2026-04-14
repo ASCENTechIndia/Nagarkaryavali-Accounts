@@ -24,7 +24,21 @@ async function saveZoneService(payload) {
   };
 }
 
+async function getZoneByIdService(payload) {
+  console.log("📥 Service: Fetch Zone By ID", payload);
+
+  const data = await repo.getZoneByIdRepo(payload);
+
+  return {
+    success: true,
+    count: data.length,
+    data,
+  };
+}
+
+
 module.exports = {
   getCorporationService,
   saveZoneService, 
+  getZoneByIdService
 };

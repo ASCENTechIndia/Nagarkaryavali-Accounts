@@ -57,3 +57,19 @@ exports.saveZone = asyncHandler(async (req, res) => {
 
   return ok(res, data, "Zone operation executed successfully");
 });
+
+exports.getZoneById = asyncHandler(async (req, res) => {
+  console.log("📥 Request Body:", req.body);
+
+  const { zoneId } = req.body;
+
+  if (!zoneId) {
+    throw new AppError("zoneId is required", 400);
+  }
+
+  const payload = { zoneId };
+
+  const data = await service.getZoneByIdService(payload);
+
+  return ok(res, data, "Zone fetched successfully");
+});

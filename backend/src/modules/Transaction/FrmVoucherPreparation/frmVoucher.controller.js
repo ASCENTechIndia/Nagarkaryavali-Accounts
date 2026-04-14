@@ -147,6 +147,7 @@ exports.deleteVoucher = asyncHandler(async (req, res) => {
 
   const { userId, refNo, orgId } = req.body;
 
+  // ✅ VALIDATION
   if (!userId) throw new AppError("userId is required", 400);
   if (!refNo) throw new AppError("refNo is required", 400);
   if (!orgId) throw new AppError("orgId is required", 400);

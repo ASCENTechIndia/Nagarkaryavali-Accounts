@@ -2,7 +2,6 @@ const { executeQuery } = require("../../../db/queryExecutor");
 const { executeProcedure } = require("../../../db/procedureExecutor");
 const oracledb = require("oracledb");
 
-
 /* 1 */
 async function getPendingVouchersRepo({ zoneId, ulbId }) {
   const sql = `
@@ -163,7 +162,7 @@ async function getVoucherDetailsRepo({ refno, zoneid, ulbid }) {
 
 /* 7 */
 async function getVoucherDetailLinesRepo({ refno, ulbid }) {
-   const sql = `
+  const sql = `
       SELECT 
         a.num_vchprepdet_refno,
         accdr.functioncode AS glcode,

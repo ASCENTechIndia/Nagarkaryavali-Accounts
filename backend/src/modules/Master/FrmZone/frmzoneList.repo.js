@@ -25,7 +25,6 @@ async function getCorporationRepo({ corpId }) {
   return result.rows;
 }
 
-
 async function saveZoneRepo(payload) {
   console.log("📤 Repo: Execute Zone Procedure", payload);
 
@@ -63,7 +62,32 @@ async function saveZoneRepo(payload) {
   return result.outBinds;
 }
 
+async function getZoneByIdRepo({ zoneId }) {
+  console.log("📤 Repo: Fetch Zone By ID", { zoneId });
+
+  const sql = `
+    SELECT 
+      zoneid,
+      zoneename,
+      corpid
+    FROM view_zone
+    WHERE zoneid = :zoneId
+  `;
+
+  const binds = { zoneId };
+
+  const result = await executeQuery(sql, binds);
+
+  if (!result.success) {
+    throw new Error(result.error);
+  }
+
+  return result.rows;
+}
+
+
 module.exports = {
   getCorporationRepo,
-  saveZoneRepo
+  saveZoneRepo,
+  getZoneByIdRepo
 };
