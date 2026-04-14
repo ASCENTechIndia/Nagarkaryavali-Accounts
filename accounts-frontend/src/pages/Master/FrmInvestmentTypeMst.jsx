@@ -28,6 +28,15 @@ const FrmInvestmentTypeMst = () => {
 
   const fetchInvestmentById = async (id, setValues) => {
     try {
+
+      Swal.fire({
+        title: "Loading ...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
       const res = await axios.get(
         `${BASE_URL}/api/Investment/investment/${id}`,
         {
@@ -48,6 +57,9 @@ const FrmInvestmentTypeMst = () => {
     } catch (err) {
       console.error("Autofill API Error:", err);
     }
+    finally {
+      Swal.close();
+    }
   };
 
   const handleSubmit = async (values) => {
@@ -59,6 +71,15 @@ const FrmInvestmentTypeMst = () => {
         mode: mode === 2 ? 2 : 1,
       };
 
+      Swal.fire({
+        title: "Saving...",
+        text: "Please wait",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
       const res = await axios.post(
         `${BASE_URL}/api/Investment/investmentmaster`,
         payload,
@@ -68,6 +89,8 @@ const FrmInvestmentTypeMst = () => {
           },
         }
       );
+
+      Swal.close();
 
       if (res.data?.ok) {
         Swal.fire({

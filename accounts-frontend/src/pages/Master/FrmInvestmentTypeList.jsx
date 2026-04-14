@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
+import Swal from "sweetalert2";
 import ShadCNTable from "@/components/ui/table";
 
 const FrmInvestmentTypeList = () => {
@@ -30,6 +30,15 @@ const FrmInvestmentTypeList = () => {
 
   const fetchInvestmentList = async () => {
     try {
+
+      Swal.fire({
+        title: "Loading ...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
       const res = await axios.get(
         `${BASE_URL}/api/Investment/investmentlist`,
         {
@@ -65,9 +74,12 @@ const FrmInvestmentTypeList = () => {
       }));
 
       setTableData(formatted);
+
     } catch (err) {
       console.error("Investment API Error:", err);
       setTableData([]);
+    } finally {
+      Swal.close();
     }
   };
 

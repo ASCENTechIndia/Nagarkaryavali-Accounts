@@ -22,6 +22,7 @@ import {
 
 import ShadCNTable from "@/components/ui/table";
 import { useAuth } from "@/context/AuthContext";
+import Swal from "sweetalert2";
 
 const FrmBankBranchList = () => {
   const navigate = useNavigate();
@@ -33,7 +34,6 @@ const FrmBankBranchList = () => {
   const [selectedBank, setSelectedBank] = useState("");
   const [bankList, setBankList] = useState([]);
   const [tableData, setTableData] = useState([]);
-  const [loading, setLoading] = useState(false);
 
   const headers = ["निवडा", "शाखेचं नाव", "आयएफएससी कोड", "एमआयसीआर कोड"];
 
@@ -64,7 +64,14 @@ const FrmBankBranchList = () => {
 
   const fetchBranchList = async (bankId) => {
     try {
-      setLoading(true);
+
+      Swal.fire({
+        title: "Loading ...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
 
       const res = await axios.get(
         `${BASE_URL}/api/Bankbranch/branchlist?bankId=${bankId}`,
@@ -110,7 +117,7 @@ const FrmBankBranchList = () => {
       console.error("Branch List API Error:", err);
       setTableData([]);
     } finally {
-      setLoading(false);
+      Swal.close();
     }
   };
 

@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Formik, Form } from "formik";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-
+import axios from "axios";
+import { } from "react";
+import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -28,7 +30,13 @@ const item = {
 
 const FrmPaymentList = () => {
   const [tableData, setTableData] = useState([]);
-  const navigate = useNavigate(); // 🔥 IMPORTANT
+  const [corporations, setCorporations] = useState([]);
+  const navigate = useNavigate();
+  const [zones, setZones] = useState([]);
+  const { user } = useAuth();
+
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
+  const ulbId = user?.ulbId;
 
   const headers = [
     "निवडा",
@@ -54,33 +62,100 @@ const FrmPaymentList = () => {
     दिनांक: "date",
   };
 
-  // Dummy Data
-  const mockData = {
-    1: [
-      {
-        srNo: "40328",
-        transactionDate: "25/03/2026",
-        referenceNo: "1234",
-        type: "बँक पेमेंट",
-        zone: "Ho",
-        amount: "5000",
-        user: "MMCDTU",
-        date: "25/03/2026",
-      },
-    ],
-    2: [],
-  };
-
   const initialValues = {
-    municipality: "1",
+    municipality: "",
     zone: "",
   };
 
+  const fetchCorporations = async (setFieldValue) => {
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/api/Receipt/corporation`,
+        {
+          corp_id: ulbId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        }
+      );
+
+      const corpData = res.data.data || [];
+      setCorporations(corpData);
+
+      if (corpData.length > 0) {
+        const defaultCorp = corpData[0].CORPORATIONID.toString();
+
+        setFieldValue("municipality", defaultCorp);
+        fetchZones(defaultCorp);
+      }
+    } catch (err) {
+      console.error("Corporation API Error:", err);
+    }
+  };
+
+  const fetchZones = async (corpId) => {
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/api/Receipt/zones`,
+        { corp_id: corpId },
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        }
+      );
+
+      setZones(res.data.data || []);
+    } catch (err) {
+      console.error("Zone API Error:", err);
+    }
+  };
+
+  const fetchPaymentList = async (zoneId, corpId) => {
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/api/frmPayment/payment-list`,
+        {
+          zoneId: Number(zoneId),
+          ulbId: Number(corpId),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        }
+      );
+
+      const formatted = (res.data?.data?.data || []).map((item) => ({
+        srNo: item.REFNO,
+        transactionDate: new Date(item.TRNSDATE).toLocaleDateString("en-GB"),
+        referenceNo: item.DOCNO,
+        type: item.TRNSTYPE,
+        zone: item.ZONENAME,
+        amount: item.AMOUNT,
+        user: item.USERNAME,
+        date: new Date(item.DATETIME).toLocaleDateString("en-GB"),
+      }));
+
+      setTableData(formatted);
+    } catch (err) {
+      console.error("Payment API Error:", err);
+      setTableData([]);
+    }
+  };
+
   return (
-    <Formik initialValues={initialValues} onSubmit={() => {}}>
+    <Formik initialValues={initialValues} onSubmit={() => { }}>
       {({ values, setFieldValue }) => {
 
-        // 🔥 Inject Select Button into table
+        useEffect(() => {
+          if (ulbId) {
+            fetchCorporations(setFieldValue);
+          }
+        }, []);
+
         const tableRows = tableData.map((row) => ({
           select: (
             <Button
@@ -91,8 +166,7 @@ const FrmPaymentList = () => {
                 navigate("/Transactions/FrmPayment", {
                   state: {
                     mode: "EDIT",
-                    srNo: row.srNo,
-                    referenceNo: row.referenceNo,
+                    referenceNo: row.srNo,
                   },
                 })
               }
@@ -116,21 +190,21 @@ const FrmPaymentList = () => {
               variants={container}
               initial="hidden"
               animate="show"
-              // className=" p-4 sm:p-6"
+            // className=" p-4 sm:p-6"
             >
               <Card className="shadow-sm border">
                 <CardContent className="p-4 sm:p-6 space-y-4">
-
-                  {/* Title */}
                   <motion.h2 variants={item} className="text-lg font-semibold">
                     पेमेंट यादी
                   </motion.h2>
 
                   <hr />
 
-                  {/* Add Button */}
                   <motion.div variants={item}>
-                    <Button className="bg-blue-900 text-white text-sm" path="/Transactions/FrmPayment">
+                    <Button
+                      className="bg-blue-900 text-white text-sm"
+                      onClick={() => navigate("/Transactions/FrmPayment")}
+                    >
                       नवीन जोडा
                     </Button>
                   </motion.div>
@@ -140,28 +214,34 @@ const FrmPaymentList = () => {
                     variants={item}
                     className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm"
                   >
-                    {/* Municipality */}
                     <div className="flex items-center gap-2">
                       <span className="w-32">नगरपालिका</span>
                       <span>:</span>
                       <Select
                         value={values.municipality}
-                        onValueChange={(val) =>
-                          setFieldValue("municipality", val)
-                        }
+                        onValueChange={(val) => {
+                          setFieldValue("municipality", val);
+                          fetchZones(val);
+                        }}
+                        disabled
                       >
                         <SelectTrigger className="w-full h-8">
-                          <SelectValue />
+                          <SelectValue placeholder="-- निवडा --" />
                         </SelectTrigger>
+
                         <SelectContent>
-                          <SelectItem value="1">
-                            माळगाव महानगरपालिका माळगाव
-                          </SelectItem>
+                          {corporations.map((c) => (
+                            <SelectItem
+                              key={c.CORPORATIONID}
+                              value={c.CORPORATIONID.toString()}
+                            >
+                              {c.CORPORATIONNAME}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
 
-                    {/* Zone */}
                     <div className="flex items-center gap-2">
                       <span className="w-32">झोन</span>
                       <span>:</span>
@@ -169,15 +249,22 @@ const FrmPaymentList = () => {
                         value={values.zone}
                         onValueChange={(val) => {
                           setFieldValue("zone", val);
-                          setTableData(mockData[val] || []);
+                          fetchPaymentList(val, values.municipality);
                         }}
                       >
                         <SelectTrigger className="w-full h-8">
                           <SelectValue placeholder="-- विकल्प निवडा --" />
                         </SelectTrigger>
+
                         <SelectContent>
-                          <SelectItem value="1">Ho</SelectItem>
-                          <SelectItem value="2">Zone 2</SelectItem>
+                          {zones.map((z) => (
+                            <SelectItem
+                              key={z.ZONEID}
+                              value={z.ZONEID.toString()}
+                            >
+                              {z.ZONENAME || z.ZONEENAME}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -188,14 +275,13 @@ const FrmPaymentList = () => {
                     <div className="w-full overflow-x-auto border mt-4">
                       <ShadCNTable
                         headers={headers}
-                        data={tableRows} // 🔥 IMPORTANT
+                        data={tableRows}
                         keyMapping={keyMapping}
                         pagination={false}
                       />
                     </div>
                   )}
 
-                  {/* No Data */}
                   {values.zone && tableData.length === 0 && (
                     <p className="text-center text-gray-500 mt-4">
                       डेटा उपलब्ध नाही

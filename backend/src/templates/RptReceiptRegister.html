@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Receipt Register Details</title>
+
+<style>
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+body{
+  font-family: Arial, Helvetica, sans-serif;
+  font-size:11px;
+  padding:5mm;
+}
+
+@page{
+  size:A4 portrait;
+  margin:10mm;
+}
+
+.header{
+  display:flex;
+  align-items:center;
+  border-bottom:1px solid #000;
+}
+
+.logo{ width:50px; }
+
+.main-title{
+  flex:1;
+  text-align:center;
+  font-size:18px;
+  font-weight:bold;
+}
+
+.sub-title{
+  text-align:center;
+  font-size:15px;
+  font-weight:bold;
+  margin-top:8px;
+}
+
+.sub-heading{
+  text-align:center;
+  font-size:11px;
+  margin-top:4px;
+}
+
+.main-table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:12px;
+  table-layout:fixed;
+}
+
+.main-table th, .main-table td{
+  border:1px solid #000;
+  padding:4px;
+  font-size:10px;
+}
+
+.text-left{ text-align:left; }
+.text-right{ text-align:right; }
+
+.total{
+  margin-top:8px;
+  text-align:right;
+  font-weight:bold;
+}
+
+.footer{
+  margin-top:20px;
+  font-size:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <img class="logo" src="{{logo}}" />
+  <div class="main-title">{{corporationName}}</div>
+</div>
+
+<div class="sub-title">{{subtitle}}</div>
+
+<div class="sub-heading">
+अहवालाचा कालावधी दिनांक : {{fromDate}} पासून {{toDate}} पर्यंत.
+</div>
+
+<table class="main-table">
+<thead>
+<tr>
+  <th>कोड</th>
+  <th>कोड चे नाव</th>
+  <th>रक्कम</th>
+</tr>
+</thead>
+
+<tbody>
+{{#each rows}}
+<tr>
+  <td>{{ACCNO}}</td>
+  <td class="text-left">{{ACCNAME}}</td>
+  <td class="text-right">{{AMOUNT}}</td>
+</tr>
+{{/each}}
+</tbody>
+</table>
+
+<div class="total">
+  एकूण : {{totalAmount}}
+</div>
+
+</body>
+</html>
