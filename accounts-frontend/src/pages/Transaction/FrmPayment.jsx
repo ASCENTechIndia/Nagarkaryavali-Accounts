@@ -3,7 +3,7 @@ import { Formik, Form } from "formik";
 import { motion } from "framer-motion";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
-
+import Swal from "sweetalert2";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -165,6 +165,13 @@ const FrmPayment = () => {
 
     const fetchPaymentDetails = async (setFieldValue) => {
         try {
+            Swal.fire({
+                title: "Loading ...",
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+            });
             const res = await axios.post(
                 `${BASE_URL}/api/frmPayment/payment-details`,
                 { refno: refNo },
@@ -198,6 +205,8 @@ const FrmPayment = () => {
 
         } catch (err) {
             console.error("Payment Details API Error:", err);
+        } finally{
+            Swal.close();
         }
     };
 
@@ -247,10 +256,17 @@ const FrmPayment = () => {
                 payload,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            alert(res.data?.data?.message || "Success");
+            Swal.fire({
+                text: res.data?.data?.message,
+                confirmButtonColor: "#1e3a8a",
+            });
+
         } catch (err) {
             console.error("Submit error:", err);
-            alert("Something went wrong!");
+            Swal.fire({
+                text: "Something went wrong!",
+                confirmButtonColor: "#1e3a8a",
+            });
         }
     };
 

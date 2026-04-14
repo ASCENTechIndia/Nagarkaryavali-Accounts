@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
+import Swal from "sweetalert2";
 import { DatePicker } from "@/components/ui/calendar";
 import ShadCNTable from "@/components/ui/table";
 import SearchableSelect from "@/components/SearchableSelect";
@@ -42,7 +42,7 @@ import { useLocation } from "react-router-dom";
 const FrmReceipt = () => {
   const { user } = useAuth();
   const location = useLocation();
-   const navigate = useNavigate();
+  const navigate = useNavigate();
   const refNo = location.state?.receiptNo;
   const ulbId = user?.ulbId;
 
@@ -63,7 +63,10 @@ const FrmReceipt = () => {
 
   const handleAddRow = (values, setFieldValue) => {
     if (!values.entryDeptCode || !values.entryHead || !values.entryAmount) {
-      alert("Please fill all required fields");
+      Swal.fire({
+        text: "Please fill all required fields",
+        confirmButtonColor: "#1e3a8a",
+      });
       return;
     }
 
@@ -211,7 +214,7 @@ const FrmReceipt = () => {
 
       const formatted = data.map((item) => ({
         label: item.GLSEARCHNAME,
-        value: item.GLFUNCTION.toString(), 
+        value: item.GLFUNCTION.toString(),
       }));
 
       setGlAllList(formatted);
@@ -279,6 +282,13 @@ const FrmReceipt = () => {
 
   const fetchReceiptDetails = async (refNo, setFieldValue) => {
     try {
+      Swal.fire({
+        title: "Loading ...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
       const res = await axios.post(`${BASE_URL}/api/Receipt/receiptDetails`, {
         RefNo: refNo,
       },
@@ -330,6 +340,8 @@ const FrmReceipt = () => {
 
     } catch (err) {
       console.error("Receipt Details API Error:", err);
+    } finally {
+      Swal.close();
     }
   };
 
@@ -337,42 +349,66 @@ const FrmReceipt = () => {
     try {
 
       if (!values.zoneId || values.zoneId === "0") {
-        alert("प्रभाग रिक्त असू शकत नाही");
+        Swal.fire({
+          text: "प्रभाग रिक्त असू शकत नाही",
+          confirmButtonColor: "#1e3a8a",
+        });
         return;
       }
 
       if (!values.transactionType || values.transactionType === "0") {
-        alert("व्यवहार प्रकार रिक्त असू शकत नाही");
+        Swal.fire({
+          text: "व्यवहार प्रकार रिक्त असू शकत नाही",
+          confirmButtonColor: "#1e3a8a",
+        });
         return;
       }
 
       if (!values.date) {
-        alert("तारीख रिक्त असू शकत नाही");
+        Swal.fire({
+          text: "तारीख रिक्त असू शकत नाही",
+          confirmButtonColor: "#1e3a8a",
+        });
         return;
       }
 
       if (!values.reciptNo) {
-        alert("चलन/पावती क्र रिक्त असू शकत नाही");
+        Swal.fire({
+          text: "चलन/पावती क्र रिक्त असू शकत नाही",
+          confirmButtonColor: "#1e3a8a",
+        });
         return;
       }
 
       if (!values.wardCode) {
-        alert("डेबिट GL रिक्त असू शकत नाही");
+        Swal.fire({
+          text: "डेबिट GL रिक्त असू शकत नाही",
+          confirmButtonColor: "#1e3a8a",
+        });
         return;
       }
 
       if (!values.head) {
-        alert("डेबिट खाते रिक्त असू शकत नाही");
+        Swal.fire({
+          text: "डेबिट खाते रिक्त असू शकत नाही",
+          confirmButtonColor: "#1e3a8a",
+        });
         return;
       }
 
       if (!values.totalAmount) {
-        alert("एकूण रक्कम रिक्त असू शकत नाही");
+        Swal.fire({
+          text: "एकूण रक्कम रिक्त असू शकत नाही",
+          confirmButtonColor: "#1e3a8a",
+        });
         return;
       }
 
       if (tableData.length === 0) {
-        alert("व्यवहार सूची रिक्त आहे");
+        Swal.fire({
+          text: "व्यवहार सूची रिक्त आहे",
+          confirmButtonColor: "#1e3a8a",
+        });
         return;
       }
 
@@ -395,23 +431,23 @@ const FrmReceipt = () => {
         values.reciptNo,
         values.transactionType,
         values.zoneId,
-        0, 
+        0,
         values.wardCode,
         values.head,
         InMode,
         RefNo,
-        "", 
-        "", 
-        1, 
-        1, 
+        "",
+        "",
+        1,
+        1,
       ].join("~");
 
       const paramStr2 = tableData
         .map((row) => {
           return [
-            row.deptCode,   
-            row.head,       
-            row.amount,     
+            row.deptCode,
+            row.head,
+            row.amount,
             row.remark || "",
             row.partyId || 0,
           ].join("#");
@@ -436,11 +472,17 @@ const FrmReceipt = () => {
 
       console.log("API RESPONSE:", res.data);
 
-      alert(res.data?.message || "Saved Successfully");
+      Swal.fire({
+        text: res.data?.message,
+        confirmButtonColor: "#1e3a8a",
+      });
 
     } catch (err) {
       console.error("SAVE ERROR:", err);
-      alert("Error while saving");
+      Swal.fire({
+        text: "Error while saving",
+        confirmButtonColor: "#1e3a8a",
+      });
     }
   };
 
@@ -661,7 +703,7 @@ const FrmReceipt = () => {
                     <div>
                       <Label text="लेखाशीर्ष :" />
                       <SearchableSelect
-                        key={values.head}  
+                        key={values.head}
                         options={partyList}
                         name="head"
                         value={values.head}
