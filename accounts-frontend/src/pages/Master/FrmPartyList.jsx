@@ -1,8 +1,12 @@
-import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { useAuth } from "@/context/AuthContext";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import ShadCNTable from "@/components/ui/table";
 import {
   Select,
   SelectContent,
@@ -10,58 +14,96 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-import ShadCNTable from "@/components/ui/table";
+/* ✅ Row Component */
+const Row = ({ label, children }) => (
+  <div className="grid grid-cols-[140px_300px] items-center gap-3 mb-3">
+    <label className="font-medium text-sm">{label} :</label>
+    {children}
+  </div>
+);
 
 const FrmPartyList = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const headers = [
-    "निवडा",
-    "पार्टी संकेतांक",
-    "पार्टीचे नाव",
-    "शहर",
-    "पिन कोड",
-    "मोबाइल",
-    "ईमेल",
-    "पॅनकार्ड क्र.",
-    "जीएसटी क्र.",
-  ];
+  const ulbId = user?.ulbId;
 
-  const keyMapping = {
-    निवडा: "select",
-    "पार्टी संकेतांक": "code",
-    "पार्टीचे नाव": "name",
-    शहर: "city",
-    "पिन कोड": "pincode",
-    मोबाइल: "mobile",
-    ईमेल: "email",
-    "पॅनकार्ड क्र.": "pan",
-    "जीएसटी क्र.": "gst",
+  const [corporationList, setCorporationList] = useState([]);
+  const [selectedCorp, setSelectedCorp] = useState("");
+  const [partyList, setPartyList] = useState([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const api = axios.create({ baseURL: BASE_URL });
+
+  api.interceptors.request.use((config) => {
+    const token = localStorage.getItem("token");
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+    return config;
+  });
+
+  /* 🔥 Load Corporations */
+  const loadCorporations = async () => {
+    try {
+      const res = await api.get("/api/FrmParty/corporation/list");
+      const corpList = res.data?.data?.list || [];
+
+      setCorporationList(corpList);
+
+      if (ulbId) {
+        const exists = corpList.find((c) => c.NUM_CORPORATION_ID === ulbId);
+
+        if (exists) {
+          const selected = ulbId.toString();
+          setSelectedCorp(selected);
+          loadParties(selected);
+        }
+      }
+    } catch (err) {
+      console.error("Error loading corporations", err);
+    }
   };
 
-  const rawData = [
-    {
-      id: 1,
-      code: "464",
-      name: "SUMIT BAVISKAR",
-      city: "BHIWANDI",
-      pincode: "423203",
-      mobile: "7774008818",
-      email: "sumidj22@gmail.com",
-      pan: "ELCPR1333P",
-      gst: "27ABCDE1234F1Z5",
-    },
-  ];
+  /* 🔥 Load Parties */
+  const loadParties = async (corpId) => {
+    try {
+      setLoading(true);
 
-  const tableData = rawData.map((row) => ({
+      const res = await api.get(`/api/FrmParty/party/search?corpId=${corpId}`);
+
+      if (res.data?.ok && res.data?.data?.list) {
+        setPartyList(res.data.data.list);
+      }
+    } catch (err) {
+      console.error("Error loading parties", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (ulbId) loadCorporations();
+  }, [ulbId]);
+
+  /* 🔥 Search Filter */
+  const filteredList = partyList.filter((row) => {
+    const value = search.toLowerCase();
+
+    return (
+      row.PARTYNAME?.toLowerCase().includes(value) ||
+      row.NUM_PARTYMST_MOBNO?.toString().includes(value) ||
+      row.VAR_PARTYMST_CITY?.toLowerCase().includes(value) ||
+      row.VAR_PARTYMST_PANCARD?.toLowerCase().includes(value) ||
+      row.VAR_PARTYMST_GSTNO?.toLowerCase().includes(value)
+    );
+  });
+
+  /* 🔥 Table Mapping */
+  const tableData = filteredList.map((row) => ({
     select: (
       <Button
         variant="link"
@@ -78,28 +120,26 @@ const FrmPartyList = () => {
         निवडा
       </Button>
     ),
-    code: row.code,
-    name: row.name,
-    city: row.city,
-    pincode: row.pincode,
-    mobile: row.mobile,
-    email: row.email,
-    pan: row.pan,
-    gst: row.gst,
+    name: row.PARTYNAME,
+    mobile: row.NUM_PARTYMST_MOBNO,
+    city: row.VAR_PARTYMST_CITY,
+    pan: row.VAR_PARTYMST_PANCARD,
+    gst: row.VAR_PARTYMST_GSTNO || "-",
   }));
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="max-w-7xl mx-auto mt-6"
-    >
-      <Card className="shadow-sm border rounded-lg">
+  if (loading) {
+    return (
+      <div className="flex justify-center mt-10 text-gray-600">Loading...</div>
+    );
+  }
 
-        {/* HEADER */}
-        <CardHeader className="border-b flex justify-between items-center ">
+  return (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+      <Card className="shadow-sm border rounded-lg">
+        {/* Header */}
+        <CardHeader className="border-b flex justify-between items-center">
           <CardTitle className="text-lg font-semibold">
-            पार्टी यादी
+            पार्टी मास्टर यादी
           </CardTitle>
 
           <Button
@@ -110,55 +150,69 @@ const FrmPartyList = () => {
           </Button>
         </CardHeader>
 
-        <CardContent className="p-6 space-y-6">
+        {/* Content */}
+        <CardContent className="p-2">
+          {/* Filter Box */}
+          <div className="border rounded-md p-4 ">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Corporation */}
+              <div className="grid grid-cols-[140px_1fr] items-center gap-3">
+                <label className="font-medium text-sm">नगरपालिका :</label>
 
-          {/* FILTER SECTION */}
-          <div className="border rounded-md p-4 bg-gray-50">
-
-            <div className="grid md:grid-cols-3 gap-6">
-
-              {/* Municipality */}
-              <div className="flex items-center gap-3">
-                <span className="w-40 text-right font-medium text-gray-700">
-                  नगरपालिकेचे नाव :
-                </span>
-
-                <Select>
-                  <SelectTrigger className="flex-1 h-9">
-                    <SelectValue placeholder="-- निवडा --" />
+                <Select
+                  value={selectedCorp}
+                  onValueChange={(value) => {
+                    setSelectedCorp(value);
+                    loadParties(value);
+                  }}
+                  disabled={!!ulbId}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select" />
                   </SelectTrigger>
+
                   <SelectContent>
-                    <SelectItem value="1">
-                      मालेगाव महानगरपालिका
-                    </SelectItem>
+                    {corporationList.map((c) => (
+                      <SelectItem
+                        key={c.NUM_CORPORATION_ID}
+                        value={c.NUM_CORPORATION_ID.toString()}
+                      >
+                        {c.VAR_CORPORATION_NAME}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Search */}
-              <div className="flex items-center gap-3 md:col-span-2">
-                <span className="w-40 text-right font-medium text-gray-700">
-                  शोध :
-                </span>
+              <div className="grid grid-cols-[140px_1fr] items-center gap-3">
+                <label className="font-medium text-sm">शोधा :</label>
 
                 <Input
-                  placeholder="शोध मजकूर प्रविष्ट करा"
-                  className="flex-1 h-9"
+                  placeholder="नाव / मोबाइल / शहर / PAN / GST"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
                 />
               </div>
-
             </div>
           </div>
 
-          {/* TABLE */}
-          <div className="border rounded-md overflow-hidden bg-white">
+          {/* Table */}
+          <div className="mt-4 border rounded-md overflow-hidden bg-white">
             <ShadCNTable
-              headers={headers}
+              headers={["निवडा", "नाव", "मोबाइल", "शहर", "PAN", "GST"]}
               data={tableData}
-              keyMapping={keyMapping}
+              keyMapping={{
+                निवडा: "select",
+                नाव: "name",
+                मोबाइल: "mobile",
+                शहर: "city",
+                PAN: "pan",
+                GST: "gst",
+              }}
+              pagination={true}
             />
           </div>
-
         </CardContent>
       </Card>
     </motion.div>

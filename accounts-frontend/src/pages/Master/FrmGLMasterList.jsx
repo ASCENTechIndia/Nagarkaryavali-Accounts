@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useAuth } from "@/context/AuthContext";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +12,7 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const FrmGLMasterList = () => {
   const navigate = useNavigate();
+  const {user} = useAuth();
 
   const [glList, setGlList] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -80,7 +82,7 @@ const FrmGLMasterList = () => {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-7xl mx-auto mt-6"
+      
     >
       <Card className="shadow-sm border rounded-lg">
         {/* Header */}

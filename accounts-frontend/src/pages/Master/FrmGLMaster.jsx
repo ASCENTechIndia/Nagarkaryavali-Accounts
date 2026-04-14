@@ -17,10 +17,10 @@ const FrmGLMaster = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  
+
   const mode = location.state?.mode;
   const editData = location.state?.data;
-  
+
   const [formData, setFormData] = useState({
     deptCode: "",
     deptNameMarathi: "",
@@ -63,7 +63,7 @@ const FrmGLMaster = () => {
 
   const handleSubmit = async (values, { resetForm }) => {
     try {
-      const userId = user?.userId ;
+      const userId = user?.userId;
 
       const payload = {
         glcodeid: Number(values.deptCode || 0),
@@ -134,7 +134,7 @@ const FrmGLMaster = () => {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-7xl mx-auto mt-6"
+           
           >
             <Card className="shadow-sm border rounded-lg">
               {/* Header */}
@@ -149,60 +149,68 @@ const FrmGLMaster = () => {
               {/* Content */}
               <CardContent className="p-6 space-y-6">
                 <div className="p-4">
-                  <div className="grid gap-x-16 gap-y-6">
+                  <div className="space-y-5 max-w-2xl mx-auto">
                     {/* CODE */}
-                    <div className="flex items-center gap-6">
-                      <Label className="w-52 text-right font-medium">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 items-center">
+                      <Label className="text-sm sm:text-right sm:pr-2 font-medium">
                         विभाग कोड :
                       </Label>
+
                       <Input
                         name="deptCode"
                         value={values.deptCode}
                         onChange={handleChange}
-                        className="w-72 h-9"
                         disabled={mode === 2}
+                        className="w-full h-9"
                       />
                     </div>
 
                     {/* MARATHI */}
-                    <div className="flex items-center gap-6">
-                      <Label className="w-52 text-right font-medium">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 items-center">
+                      <Label className="text-sm sm:text-right sm:pr-2 font-medium w-full">
                         विभाग नाव (मराठी) :
                       </Label>
+
                       <Input
                         name="deptNameMarathi"
                         value={values.deptNameMarathi}
                         onChange={handleChange}
-                        className="w-72 h-9"
+                        className="w-full h-9"
                       />
                     </div>
 
-                    {/* ENGLISH (FULL WIDTH) */}
-                    <div className="flex items-center gap-6 ">
-                      <Label className="w-52 text-right font-medium">
+                    {/* ENGLISH */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 items-center">
+                      <Label className="text-sm sm:text-right sm:pr-2 font-medium w-full">
                         विभाग नाव (इंग्रजी) :
                       </Label>
+
                       <Input
                         name="deptNameEnglish"
                         value={values.deptNameEnglish}
                         onChange={handleChange}
-                        className="w-72 h-9"
+                        className="w-full h-9"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Buttons */}
-                <div className="flex justify-center gap-4 pt-4 border-t">
+                <div className="flex flex-wrap justify-center gap-3 sm:gap-4 pt-4 border-t">
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="bg-blue-900 text-white px-6"
+                    className="bg-blue-900 text-white px-6 w-full sm:w-auto"
                   >
                     {isSubmitting ? "Saving..." : "साठवा"}
                   </Button>
 
-                  <Button type="button" variant="outline" onClick={resetForm}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={resetForm}
+                    className="w-full sm:w-auto"
+                  >
                     बदल करा
                   </Button>
 
@@ -210,6 +218,7 @@ const FrmGLMaster = () => {
                     type="button"
                     variant="destructive"
                     onClick={() => navigate("/Masters/FrmGLMasterList")}
+                    className="w-full sm:w-auto"
                   >
                     परत
                   </Button>

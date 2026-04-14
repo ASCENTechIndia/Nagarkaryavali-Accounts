@@ -16,12 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import ShadCNTable from "@/components/ui/table";
 
@@ -57,14 +52,11 @@ const FrmAccountList = () => {
     try {
       setCorpLoading(true);
 
-      const res = await axios.get(
-        `${BASE_URL}/api/FrmParty/corporation/list`,
-        {
-          headers: {
-            Authorization: `Bearer ${user?.token}`,
-          },
-        }
-      );
+      const res = await axios.get(`${BASE_URL}/api/FrmParty/corporation/list`, {
+        headers: {
+          Authorization: `Bearer ${user?.token}`,
+        },
+      });
 
       const list = res.data?.data?.list || [];
       setCorporationList(list);
@@ -107,7 +99,7 @@ const FrmAccountList = () => {
           headers: {
             Authorization: `Bearer ${user?.token}`,
           },
-        }
+        },
       );
 
       console.log("API Response:", res.data);
@@ -151,7 +143,7 @@ const FrmAccountList = () => {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-7xl mx-auto mt-6"
+     
     >
       <Card className="shadow-sm border rounded-lg">
         {/* HEADER */}
@@ -171,22 +163,21 @@ const FrmAccountList = () => {
         <CardContent className="p-6 space-y-6">
           {/* FILTER */}
           <div className="p-6">
-            <div className="space-y-6">
+            <div className="space-y-5 max-w-3xl mx-auto">
               {/* CORPORATION */}
-              <div className="flex items-center gap-6">
-                <span className="w-52 text-right font-medium">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 items-center">
+                <span className="text-sm sm:text-right sm:pr-2 font-medium">
                   नगरपालिका :
                 </span>
 
                 <Select
-                disabled
                   value={filters.ulbId}
                   onValueChange={(val) =>
                     setFilters({ ...filters, ulbId: val })
                   }
-                  disabled={corpLoading}
+                  disabled
                 >
-                  <SelectTrigger className="w-72 h-9">
+                  <SelectTrigger className="w-full h-9">
                     <SelectValue placeholder="-- निवडा --" />
                   </SelectTrigger>
 
@@ -204,13 +195,13 @@ const FrmAccountList = () => {
               </div>
 
               {/* FUNCTION CODE */}
-              <div className="flex items-center gap-6">
-                <span className="w-52 text-right font-medium">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 items-center">
+                <span className="text-sm sm:text-right sm:pr-2 font-medium">
                   जी.एल. नांव :
                 </span>
 
                 <Input
-                  className="w-72 h-9"
+                  className="w-full h-9"
                   value={filters.functionCode}
                   onChange={(e) =>
                     setFilters({
@@ -222,13 +213,13 @@ const FrmAccountList = () => {
               </div>
 
               {/* OBJECT CODE */}
-              <div className="flex items-center gap-6">
-                <span className="w-52 text-right font-medium">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 items-center">
+                <span className="text-sm sm:text-right sm:pr-2 font-medium">
                   खाते नांव :
                 </span>
 
                 <Input
-                  className="w-72 h-9"
+                  className="w-full h-9"
                   value={filters.objectCode}
                   onChange={(e) =>
                     setFilters({
@@ -241,9 +232,9 @@ const FrmAccountList = () => {
             </div>
 
             {/* BUTTONS */}
-            <div className="flex justify-center gap-4 mt-6 pt-6 border-t">
+            <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mt-6 pt-6 border-t">
               <Button
-                className="bg-blue-900 text-white px-6"
+                className="bg-blue-900 text-white px-6 w-full sm:w-auto"
                 onClick={handleSearch}
                 disabled={loading}
               >
@@ -256,6 +247,7 @@ const FrmAccountList = () => {
                   setShowTable(false);
                   setTableData([]);
                 }}
+                className="w-full sm:w-auto"
               >
                 परत
               </Button>
@@ -263,21 +255,23 @@ const FrmAccountList = () => {
           </div>
 
           {/* TABLE */}
-          {showTable && (
-            <div className="border rounded-md overflow-hidden bg-white">
-              {tableData.length === 0 ? (
-                <div className="p-4 text-center text-gray-500">
-                  No Data Found
-                </div>
-              ) : (
-                <ShadCNTable
-                  headers={headers}
-                  data={tableData}
-                  keyMapping={keyMapping}
-                />
-              )}
-            </div>
-          )}
+          <div className="border rounded-md overflow-x-auto bg-white">
+            {showTable && (
+              <div className="border rounded-md overflow-hidden bg-white">
+                {tableData.length === 0 ? (
+                  <div className="p-4 text-center text-gray-500">
+                    No Data Found
+                  </div>
+                ) : (
+                  <ShadCNTable
+                    headers={headers}
+                    data={tableData}
+                    keyMapping={keyMapping}
+                  />
+                )}
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
     </motion.div>

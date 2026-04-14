@@ -19,9 +19,12 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 /* 🔥 Field Layout */
 const Field = ({ label, children }) => (
-  <div className="flex items-center gap-4">
-    <span className="w-52 text-right font-medium">{label} :</span>
-    <div className="flex-1 max-w-md">{children}</div>
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-4 items-center">
+    {/* LABEL */}
+    <span className="text-sm sm:text-right sm:pr-2 font-medium">{label} :</span>
+
+    {/* FIELD */}
+    <div className="w-full">{children}</div>
   </div>
 );
 
@@ -200,7 +203,7 @@ const FrmAccountMaster = () => {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-7xl mx-auto mt-6"
+          
           >
             <Card className="shadow-sm border rounded-lg">
               <CardHeader className="border-b flex justify-between items-center">
@@ -210,7 +213,7 @@ const FrmAccountMaster = () => {
               </CardHeader>
 
               <CardContent>
-                <div className="grid grid-cols-2 gap-x-16 gap-y-5">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-5">
                   {/* ULB */}
                   <Field label="महानगरपालिकेचे नाव">
                     <Select value={values.ulbId} disabled>
@@ -397,14 +400,24 @@ const FrmAccountMaster = () => {
                 </div>
 
                 {/* BUTTONS */}
-                <div className="flex justify-center gap-4 mt-8">
-                  <Button type="submit" disabled={isSubmitting}>
+                <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mt-8">
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full sm:w-auto"
+                  >
                     {isSubmitting ? "Saving..." : "साठवा"}
                   </Button>
 
-                  <Button variant="secondary">रद्द</Button>
+                  <Button variant="secondary" className="w-full sm:w-auto">
+                    रद्द
+                  </Button>
 
-                  <Button variant="destructive" onClick={() => navigate(-1)}>
+                  <Button
+                    variant="destructive"
+                    onClick={() => navigate(-1)}
+                    className="w-full sm:w-auto"
+                  >
                     परत
                   </Button>
                 </div>

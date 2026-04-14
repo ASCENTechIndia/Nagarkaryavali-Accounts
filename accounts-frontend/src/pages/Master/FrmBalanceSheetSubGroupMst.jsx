@@ -1,31 +1,27 @@
-import { motion } from "framer-motion";
+import { Formik, Form } from "formik";
 import { useNavigate, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { useAuth } from "@/context/AuthContext";
 
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectTrigger,
-  SelectValue,
   SelectContent,
   SelectItem,
+  SelectValue,
 } from "@/components/ui/select";
 
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
+import { useAuth } from "@/context/AuthContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-const FrmAccountMaster = () => {
+const FrmBalanceSheetSubGroupMst = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -33,285 +29,247 @@ const FrmAccountMaster = () => {
   const mode = location.state?.mode || 1;
   const editData = location.state?.data;
 
+  const [groupList, setGroupList] = useState([]);
+  const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
-    ulbId: "",
-    glCode: "",
-    subTypeId: "",
-    nidhiId: "",
-    accountTypeId: "",
-
-    accNo: "",
-    accName: "",
-    accNameEng: "",
-    oldAccNo: "",
-    openingBal: "",
-    budgetAmt: "",
-    maxLimit: "",
-    revBudgetAmt: "",
+    groupId: "",
+    subGroupId: "",
+    subGroupName: "",
   });
-
-  const [corporationList, setCorporationList] = useState([]);
-  const [glList, setGlList] = useState([]);
-  const [subTypeList, setSubTypeList] = useState([]);
-  const [nidhiList, setNidhiList] = useState([]);
 
   const api = axios.create({ baseURL: BASE_URL });
 
   api.interceptors.request.use((config) => {
-    config.headers.Authorization = `Bearer ${user?.token}`;
+    const token = localStorage.getItem("token");
+    if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   });
 
-  /* 🔥 HANDLE CHANGE */
-  const handleChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  /* 🔥 FETCH DATA */
+  // ✅ Initialization with Swal Loader
   useEffect(() => {
-    const fetchData = async () => {
-      const [corp, gl, sub, nidhi] = await Promise.all([
-        api.get("/api/FrmParty/corporation/list"),
-        api.get("/api/FrmAccount/gl-master"),
-        api.get("/api/FrmAccount/account-subTypes"),
-        api.get("/api/FrmAccount/nidhi-master"),
-      ]);
+    const initializePage = async () => {
+      try {
+        setLoading(true);
 
-      setCorporationList(corp.data.data.list || []);
-      setGlList(gl.data.data.data || []);
-      setSubTypeList(sub.data.data.data || []);
-      setNidhiList(nidhi.data.data.data || []);
+        Swal.fire({
+          title: "लोड होत आहे...",
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading(),
+        });
 
-      if (user?.ulbId) {
-        handleChange("ulbId", user.ulbId.toString());
+        // Fetch Group List
+        const resList = await api.get("/api/SubGroup/balgrouplist");
+        if (resList.data?.ok && resList.data?.data?.list) {
+          setGroupList(resList.data.data.list);
+        }
+
+        // Edit Mode Autofill
+        if (mode === 2 && editData) {
+          const subId = editData.BALANCESUBGRPID;
+
+          if (subId) {
+            const resDetail = await api.get(
+              `/api/SubGroup/balsubgroup/${subId}`
+            );
+
+            if (resDetail.data?.ok && resDetail.data?.data?.data) {
+              const apiData = resDetail.data.data.data;
+
+              setFormData({
+                groupId: String(apiData.BALANCEGRPID || ""),
+                subGroupId: String(apiData.BALANCESUBGRPID || ""),
+                subGroupName: apiData.BALANCESUBGRPNAME || "",
+              });
+            } else {
+              setFormData({
+                groupId: String(editData.BALANCEGRPID || ""),
+                subGroupId: String(editData.BALANCESUBGRPID || ""),
+                subGroupName: editData.BALANCESUBGRPNAME || "",
+              });
+            }
+          }
+        }
+
+        Swal.close();
+      } catch (err) {
+        Swal.close();
+        console.error("Initialization Error:", err);
+        Swal.fire("Error", "माहिती लोड करताना त्रुटी आली", "error");
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchData();
-  }, []);
+    initializePage();
+  }, [mode, editData]);
 
-  /* 🔥 AUTO ACCOUNT NUMBER */
-  const getNextAccountNo = async (glCode, subTypeId) => {
-    const res = await api.post("/api/FrmAccount/next-accountNo", {
-      ulbId: Number(formData.ulbId),
-      glCode: Number(glCode),
-      subTypeId: Number(subTypeId),
-    });
-
-    const next = res.data?.data?.data?.NEXTACCNO || "";
-    handleChange("accNo", `${glCode}${subTypeId}${next}`);
-  };
-
-  /* 🔥 SUBTYPE CHANGE */
-  const handleSubTypeChange = (val) => {
-    const id = Number(val);
-
-    let type = "";
-    if (id >= 1000 && id < 2000) type = "1";
-    else if (id >= 2000 && id < 3000) type = "2";
-    else if (id >= 3000 && id < 4000) type = "3";
-    else if (id >= 4000) type = "4";
-
-    handleChange("subTypeId", val);
-    handleChange("accountTypeId", type);
-
-    if (formData.glCode) {
-      getNextAccountNo(formData.glCode, val);
-    }
-  };
-
-  /* 🔥 SUBMIT */
-  const handleSubmit = async () => {
+  // ✅ Submit Handler
+  const handleSubmit = async (values, { resetForm }) => {
     try {
       const payload = {
+        groupId: Number(values.groupId),
+        subGroupId: Number(values.subGroupId || 0),
+        subGroupName: values.subGroupName,
+        userId: user?.userId || 1,
         mode: mode === 2 ? 2 : 1,
-        ulbId: Number(formData.ulbId),
-        glCode: Number(formData.glCode),
-        accNo: Number(formData.accNo),
-
-        accName: formData.accName,
-        accNameEng: formData.accNameEng,
-        userId: user?.userName,
-
-        subTypeId: Number(formData.subTypeId),
-        oldAccNo: formData.oldAccNo,
-        nidhiId: Number(formData.nidhiId),
-
-        openingBal: Number(formData.openingBal || 0),
-        budgetAmt: Number(formData.budgetAmt || 0),
-        maxLimit: Number(formData.maxLimit || 0),
-        revBudgetAmt: Number(formData.revBudgetAmt || 0),
       };
 
-      Swal.fire({ title: "Saving...", didOpen: () => Swal.showLoading() });
+      Swal.fire({
+        title: "Saving...",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      });
 
-      const res = await api.post("/api/FrmAccount/save-account", payload);
+      const res = await api.post(
+        `/api/SubGroup/balsubgroupmaster`,
+        payload
+      );
 
       Swal.close();
 
-      if (res.data?.data?.success) {
-        await Swal.fire({
-          icon: "success",
-          title: res.data.data.message,
-        });
-
-        navigate("/Masters/FrmAccountList");
+      if (res.data?.ok) {
+        await Swal.fire(
+          "Success",
+          res.data.message || "साठवले यशस्वीरित्या",
+          "success"
+        );
+        resetForm();
+        navigate("/Masters/FrmBalanceSheetSubGroupList");
+      } else {
+        Swal.fire("Error", res.data?.message, "error");
       }
     } catch (err) {
       Swal.close();
-      Swal.fire({ icon: "error", title: "Error" });
+      Swal.fire(
+        "Error",
+        err.response?.data?.message || "Server error",
+        "error"
+      );
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64 text-lg font-medium">
+        कृपया थांबा, लोड होत आहे...
+      </div>
+    );
+  }
+
   return (
-    <motion.div className="max-w-6xl mx-auto mt-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>खाते मास्टर</CardTitle>
-        </CardHeader>
+    <Formik
+      enableReinitialize
+      initialValues={formData}
+      onSubmit={handleSubmit}
+    >
+      {({ values, handleChange, setFieldValue, isSubmitting }) => (
+        <Form>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Card className="shadow-sm border rounded-lg">
+              
+              {/* HEADER */}
+              <CardHeader className="border-b flex justify-between items-center">
+                <CardTitle className="text-lg font-semibold">
+                  ताळमेळ पत्रक उप गट मास्टर
+                </CardTitle>
+              </CardHeader>
 
-        <CardContent className="p-8 space-y-6">
+              <CardContent className="p-4 md:p-8 space-y-6">
+                <div className="max-w-3xl mx-auto space-y-6">
 
-          {/* GRID */}
-          <div className="grid grid-cols-2 gap-x-16 gap-y-5">
+                  {/* GROUP ID */}
+                  <div className="grid grid-cols-1 md:grid-cols-[220px_20px_1fr] gap-2 items-center">
+                    <Label className="md:text-right font-semibold w-full">
+                      शिल्लकपत्रक गट संकेतांक
+                    </Label>
+                    <span className="hidden md:block text-center font-bold">:</span>
+                    <Input
+                      name="groupId"
+                      value={values.groupId || ""}
+                      readOnly
+                      className="cursor-not-allowed"
+                    />
+                  </div>
 
-            {/* ULB */}
-            <Field label="महानगरपालिका">
-              <Select value={formData.ulbId} disabled>
-                <SelectTrigger className="w-full h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {corporationList.map((c) => (
-                    <SelectItem
-                      key={c.NUM_CORPORATION_ID}
-                      value={c.NUM_CORPORATION_ID.toString()}
+                  {/* GROUP NAME */}
+                  <div className="grid grid-cols-1 md:grid-cols-[220px_20px_1fr] gap-2 items-center">
+                    <Label className="md:text-right font-semibold w-full">
+                      शिल्लकपत्रक गटचे नाव
+                    </Label>
+                    <span className="hidden md:block text-center font-bold">:</span>
+                    <Select
+                      value={
+                        values.groupId ? String(values.groupId) : undefined
+                      }
+                      onValueChange={(val) =>
+                        setFieldValue("groupId", val)
+                      }
+                      disabled={mode === 2}
                     >
-                      {c.VAR_CORPORATION_NAME}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="-- निवडा --" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {groupList.map((grp) => (
+                          <SelectItem
+                            key={grp.VALUE}
+                            value={String(grp.VALUE)}
+                          >
+                            {grp.LABEL}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-            {/* Nidhi */}
-            <Field label="निधि">
-              <Select
-                value={formData.nidhiId}
-                onValueChange={(val) => handleChange("nidhiId", val)}
-              >
-                <SelectTrigger className="w-full h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {nidhiList.map((n) => (
-                    <SelectItem
-                      key={n.NUM_NIDHI_ID}
-                      value={n.NUM_NIDHI_ID.toString()}
-                    >
-                      {n.VAR_NIDHI_NIDHINAME}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
+                  {/* SUBGROUP NAME */}
+                  <div className="grid grid-cols-1 md:grid-cols-[220px_20px_1fr] gap-2 items-center">
+                    <Label className="md:text-right font-semibold w-full">
+                      शिल्लकपत्रक उप गटचे नाव
+                    </Label>
+                    <span className="hidden md:block text-center font-bold">:</span>
+                    <Input
+                      name="subGroupName"
+                      placeholder="उप गटाचे नाव प्रविष्ट करा"
+                      value={values.subGroupName || ""}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
 
-            {/* GL */}
-            <Field label="जी.एल.">
-              <Select
-                value={formData.glCode}
-                onValueChange={(val) => {
-                  handleChange("glCode", val);
-                  if (formData.subTypeId) {
-                    getNextAccountNo(val, formData.subTypeId);
-                  }
-                }}
-              >
-                <SelectTrigger className="w-full h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {glList.map((g) => (
-                    <SelectItem key={g.GLCODE} value={g.GLCODE}>
-                      {g.GLCODE} - {g.GLNAME}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
+                {/* BUTTONS */}
+                <div className="flex flex-col sm:flex-row justify-center gap-4 pt-8 border-t">
+                  <Button
+                    type="submit"
+                    className="bg-blue-900 hover:bg-blue-800 text-white w-full sm:w-auto"
+                    disabled={isSubmitting || loading}
+                  >
+                    {isSubmitting ? "प्रक्रिया सुरू आहे..." : "साठवा"}
+                  </Button>
 
-            {/* SubType */}
-            <Field label="ऑब्जेक्ट कोड">
-              <Select
-                value={formData.subTypeId}
-                onValueChange={handleSubTypeChange}
-              >
-                <SelectTrigger className="w-full h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {subTypeList.map((s) => (
-                    <SelectItem
-                      key={s.NUM_ACCSUBTYPEMST_ACCSUBTYPEID}
-                      value={s.NUM_ACCSUBTYPEMST_ACCSUBTYPEID.toString()}
-                    >
-                      {s.VAR_ACCSUBTYPEMST_ACCSUBTYPE}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    className="w-full sm:w-auto"
+                    onClick={() =>
+                      navigate("/Masters/FrmBalanceSheetSubGroupList")
+                    }
+                  >
+                    परत
+                  </Button>
+                </div>
 
-            {/* Account No */}
-            <Field label="खाते आयडी">
-              <Input value={formData.accNo} readOnly />
-            </Field>
-
-            {/* Old */}
-            <Field label="जुना खाते क्र.">
-              <Input
-                value={formData.oldAccNo}
-                onChange={(e) => handleChange("oldAccNo", e.target.value)}
-              />
-            </Field>
-
-            {/* Names */}
-            <Field label="खाते नाव (मराठी)">
-              <Input
-                value={formData.accName}
-                onChange={(e) => handleChange("accName", e.target.value)}
-              />
-            </Field>
-
-            <Field label="खाते नाव (English)">
-              <Input
-                value={formData.accNameEng}
-                onChange={(e) => handleChange("accNameEng", e.target.value)}
-              />
-            </Field>
-
-          </div>
-
-          {/* BUTTONS */}
-          <div className="flex justify-center gap-4 mt-8">
-            <Button onClick={handleSubmit}>साठवा</Button>
-            <Button onClick={() => navigate(-1)}>रद्द</Button>
-          </div>
-
-        </CardContent>
-      </Card>
-    </motion.div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </Form>
+      )}
+    </Formik>
   );
 };
 
-const Field = ({ label, children }) => (
-  <div className="flex items-center gap-6">
-    <span className="w-56 text-right font-medium">{label} :</span>
-    <div className="flex-1">{children}</div>
-  </div>
-);
-
-export default FrmAccountMaster;
+export default FrmBalanceSheetSubGroupMst;
