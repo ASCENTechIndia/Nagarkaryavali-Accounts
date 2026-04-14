@@ -1,0 +1,86 @@
+// src/app.js
+const express = require("express");
+const cors = require("cors");
+const helmet = require("helmet");
+const morgan = require("morgan");
+
+const { NODE_ENV } = require("./config/env");
+const errorMiddleware = require("./middlewares/error.middleware");
+const { rateLimitMiddleware } = require("./middlewares/rateLimit.middleware");
+const requestLogger = require("./middlewares/requestLogger.middleware");
+
+const authRoutes = require("./modules/auth/auth.routes");
+const tasksRoutes = require("./modules/tasks/tasks.routes");
+const adminRoutes = require("./modules/admin/admin.routes");
+const healthRoutes = require("./routes/health.routes");
+const path = require("path");
+
+const app = express();
+
+// trust proxy (important for rate-limit & IP)
+app.set("trust proxy", 1);
+
+// security & parsing
+app.use( cors({ origin: NODE_ENV === "production" ? ["https://yourdomain.com"] : "*", credentials: true,}));
+
+app.use(express.json({ limit: "1mb" }));
+app.use(requestLogger);
+
+app.use(helmet({contentSecurityPolicy: false,}));
+
+// logging
+if (NODE_ENV !== "production") {app.use(morgan("dev"));}
+
+app.use("/pdf", express.static(path.join(__dirname, "../public/pdf")));
+
+// health first (no rate limit)
+app.use("/api", healthRoutes);
+
+// global limiter
+app.use(rateLimitMiddleware());
+
+// root
+app.get("/", (req, res) => res.send("API Running ✅"));
+
+// routes
+
+app.use("/api/auth", authRoutes);
+app.use("/api/tasks", tasksRoutes);
+app.use("/api/admin", adminRoutes);
+
+app.use("/api/menu-access", require("./modules/MenuAccess/MenuAccess.routes"));
+
+//Transaction
+app.use("/api/FrmTransfer", require("./modules/Transaction/FrmTransfer/FrmTransfer.routes"))
+app.use("/api/Receipt",require("./modules/Transaction/FrmReceipt/receipt.routes"))
+app.use("/api/FrmVoucher",require("./modules/Transaction/FrmVoucherPreparation/frmVoucher.route"))
+
+
+//MASTER
+app.use("/api/BudgetHeadConfig",require("./modules/Master/FrmBudgetHeadConfig/BudgetHeadConfig.route"))
+app.use("/api/FrmAccount",require("./modules/Master/FrmAccount/frmAccount.route"))
+app.use("/api/FrmParty", require("./modules/Master/FrmParty/FrmParty.routes"));
+app.use("/api/master", require("./modules/Master/GLMaster/glmaster.route"));
+app.use("/api/FrmChequeBook", require("./modules/Master/FrmChequeBook/chequeBookMst.route"));
+app.use("/api/FrmBanList", require("./modules/Master/FrmBanList/frmBanList.route"));
+app.use("/api/frmzoneList", require("./modules/Master/FrmZone/frmzoneList.route"));
+app.use("/api/frmDepositType", require("./modules/Master/FrmDepositType/frmDepositType.route"));
+app.use("/api/SubGroup",require("./modules/Master/FrmBalanceSheetSubGroupList/BalanceSheetSubGroupList.routes"))
+app.use("/api/Investment",require("./modules/Master/FrrmInvestement/FrmInvestement.route"))
+app.use("/api/Bankbranch",require("./modules/Master/FromBankBranch/FromBankbranch.route"))
+app.use("/api/Budgetlist", require("./modules/Master/FrmBudget/FrmBudgetLIst.route"))
+app.use("/api/Balancesheet", require("./modules/Master/FrmBalanceSheetGroupList/FrmBalanceSheetGroupList.route"))
+app.use("/api/CityList",require("./modules/Master/FrmCity/FrmCityList.route"))
+app.use("/api/District", require ("./modules/Master/FrmDistrict/FrmDistrictList.route"))
+app.use("/api/Grampanchayat", require("./modules/Master/FrmGrampanchayat/FrmGrampanchayatList.route"))
+app.use("/api/FrmContract",require("./modules/Master/FrmContract/FrmContract.routes"))
+
+app.use("/api/BudgetPrepration",require("./modules/Transaction/FrmBudgetPrepration/FrmBudgetPreprationList.route"))
+app.use("/api/FrmSearchOption",require("./modules/Transaction/FrmSearchOption/FrmSearchOption.routes"))
+app.use("/api/FrmGovtTaxPayment", require("./modules/Transaction/FrmGovtTaxPayment/FrmGovtTaxPayment.routes"))
+app.use("/api/FrmTransAuthList",require("./modules/Transaction/FrmTransAuthList/FrmTransAuthList.routes"))
+app.use("/api/RptRegister",require("./modules/Reports/FrmRptReceiptRegisterDetails/RptReceiptRegisterDetails.route"))
+
+app.use(errorMiddleware);
+
+module.exports = app;
