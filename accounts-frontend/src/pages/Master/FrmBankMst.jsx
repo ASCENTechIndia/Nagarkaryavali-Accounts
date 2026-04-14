@@ -100,8 +100,6 @@ const FrmBankMst = () => {
           text: res.data?.data?.message || "Success",
           confirmButtonColor: "#1e3a8a",
         });
-
-        navigate("/Masters/FrmBanList");
       }
     } catch (err) {
       console.error("Save API Error:", err);
@@ -110,7 +108,7 @@ const FrmBankMst = () => {
         text: "Something went wrong",
         confirmButtonColor: "#1e3a8a",
       });
-    }
+    } 
   };
 
   return (
