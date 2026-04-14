@@ -82,6 +82,12 @@ app.use("/api/FrmTransAuthList",require("./modules/Transaction/FrmTransAuthList/
 app.use("/api/RptRegister",require("./modules/Reports/FrmRptReceiptRegisterDetails/RptReceiptRegisterDetails.route"))
 app.use("/api/frmPayment",require("./modules/Transaction/FrmPayment/frmPayment.route"))
 app.use("/api/RptReceiptRegister", require("./modules/Reports/RptReceiptRegister/RptReceiptRegister.routes"))
+
+
+app.use("/api/RptTransferRegister", require("./modules/Reports/RptTransferRegister/transferRegister.route"))
+app.use("/api/RptCashBankBalance", require("./modules/Reports/RptCashBankBalance/rptCashBankBalance.route"))
+
+
 app.use(errorMiddleware);
 
 module.exports = app;
