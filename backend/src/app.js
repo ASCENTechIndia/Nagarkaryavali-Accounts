@@ -80,7 +80,8 @@ app.use("/api/FrmSearchOption",require("./modules/Transaction/FrmSearchOption/Fr
 app.use("/api/FrmGovtTaxPayment", require("./modules/Transaction/FrmGovtTaxPayment/FrmGovtTaxPayment.routes"))
 app.use("/api/FrmTransAuthList",require("./modules/Transaction/FrmTransAuthList/FrmTransAuthList.routes"))
 app.use("/api/RptRegister",require("./modules/Reports/FrmRptReceiptRegisterDetails/RptReceiptRegisterDetails.route"))
-
+app.use("/api/frmPayment",require("./modules/Transaction/FrmPayment/frmPayment.route"))
+app.use("/api/RptReceiptRegister", require("./modules/Reports/RptReceiptRegister/RptReceiptRegister.routes"))
 app.use(errorMiddleware);
 
 module.exports = app;

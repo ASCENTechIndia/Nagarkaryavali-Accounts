@@ -38,6 +38,7 @@ import FrmBudgetPrepration from "./pages/Transaction/FrmBudgetPrepration";
 import FrmBudgetAccountMap from "./pages/Transaction/FrmBudgetAccountMap";
 import FrmTransAuthList from "./pages/Transaction/FrmTransAuthList";
 import FrmTransAuthMst from "./pages/Transaction/FrmTransAuthMst";
+import RptReceiptRegister from "./pages/Reports/RptReceiptRegister";
 const Home = () => <Button>Click me</Button>;
 const About = () => <h1>About Page</h1>;
 
@@ -201,6 +202,10 @@ export const router = createBrowserRouter([
         path: "/Transactions/FrmTransAuthMst", 
         element: <FrmTransAuthMst /> 
       },
+      { 
+        path: "/ReportsForm/RptReceiptRegister", 
+        element: <RptReceiptRegister /> 
+      }
     ]
   },
 
