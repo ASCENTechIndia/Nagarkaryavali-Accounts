@@ -1,0 +1,238 @@
+const { executeQuery } = require("../../../db/queryExecutor");
+
+const getTransactionList = async (params) => {
+  try {
+    let query = "";
+    let bindParams = {
+      FromDate: params.fromDate,
+      ToDate: params.toDate,
+      UlbId: params.ulbId,
+    };
+
+    // ================= RECEIPT =================
+    if (params.transType === "1") {
+      query = `
+        SELECT 
+          num_receiptmst_refno refno,
+          date_receiptmst_trnsdate trnsdate,
+          var_trnstype_trnstypemar trnstype,
+          zoneename zonename,
+          var_grampanch_marathiname grampanch,
+          SUM(num_receiptdet_amount) amount,
+          var_receiptmst_insby username,
+          date_receiptmst_insdate datetime,
+          num_receiptmst_trnstypeid trnstypeid,
+          var_partymst_partyname PartyName
+        FROM aoac_receiptmst_def
+        INNER JOIN aoac_receiptdet_def 
+          ON num_receiptdet_refno = num_receiptmst_refno
+        INNER JOIN aoac_trnstype_def 
+          ON num_trnstype_trnstypeid = num_receiptmst_trnstypeid
+        LEFT JOIN view_zone 
+          ON zoneid = num_receiptmst_zoneid
+        LEFT JOIN aoac_partymst_def 
+          ON num_partymst_partyid = num_receiptdet_partycode
+        LEFT JOIN aoac_grampanch_def 
+          ON num_grampanch_deptid = num_receiptmst_zoneid 
+          AND num_grampanch_grampanchid = num_receiptmst_grampanchid
+        WHERE 
+          date_receiptmst_trnsdate >= TO_DATE(:FromDate,'YYYY-MM-DD')
+          AND date_receiptmst_trnsdate < TO_DATE(:ToDate,'YYYY-MM-DD') + 1
+          AND var_receiptmst_authstatus IS NULL
+          AND num_receiptmst_ulbid = :UlbId
+      `;
+
+      if (params.zoneId && params.zoneId !== "-1") {
+        query += ` AND num_receiptmst_zoneid = :ZoneId`;
+        bindParams.ZoneId = params.zoneId;
+      }
+
+      if (params.budgetId && params.budgetId !== "0") {
+        query += ` AND num_receiptmst_budget_id = :BudgetId`;
+        bindParams.BudgetId = params.budgetId;
+      }
+
+      if (params.userId && params.userId !== "0") {
+        query += ` AND var_receiptmst_insby = :UserId`;
+        bindParams.UserId = params.userId;
+      }
+
+      if (params.nidhiId && params.nidhiId !== "0") {
+        query += ` AND num_receiptmst_nidhi_id = :NidhiId`;
+        bindParams.NidhiId = params.nidhiId;
+      }
+
+      query += `
+        GROUP BY 
+          num_receiptmst_refno,
+          date_receiptmst_trnsdate,
+          num_receiptmst_recno,
+          var_trnstype_trnstypemar,
+          zoneename,
+          var_grampanch_marathiname,
+          var_receiptmst_insby,
+          date_receiptmst_insdate,
+          num_receiptmst_trnstypeid,
+          var_partymst_partyname
+        ORDER BY num_receiptmst_refno
+      `;
+    }
+
+    // ================= PAYMENT =================
+    else if (params.transType === "2") {
+      query = `
+        SELECT 
+          num_payment_refno refno,
+          date_payment_trnsdate trnsdate,
+          num_payment_vchno docno,
+          var_trnstype_trnstypemar trnstype,
+          zoneename zonename,
+          var_grampanch_marathiname grampanch,
+          SUM(num_paymentdet_amount) amount,
+          var_payment_insby username,
+          date_payment_insdate datetime,
+          num_payment_trnstype trnstypeid,
+          var_partymst_partyname PartyName,
+          var_budgethead_name budgetname
+        FROM aoac_payment_def
+        LEFT JOIN aoac_budgethead_mst 
+          ON num_budget_id = num_budgethead_id
+        INNER JOIN aoac_paymentdet_def 
+          ON num_payment_refno = num_paymentdet_refno
+        INNER JOIN aoac_trnstype_def 
+          ON num_trnstype_trnstypeid = num_payment_trnstype
+        INNER JOIN view_zone 
+          ON zoneid = num_payment_zoneid
+        LEFT JOIN aoac_partymst_def 
+          ON num_partymst_partyid = num_paymentdet_partycode
+        LEFT JOIN aoac_grampanch_def 
+          ON num_grampanch_deptid = num_payment_zoneid 
+          AND num_grampanch_grampanchid = num_payment_grampanchid
+        WHERE 
+            date_payment_trnsdate >= TO_DATE(:FromDate,'YYYY-MM-DD')
+            AND date_payment_trnsdate < TO_DATE(:ToDate,'YYYY-MM-DD') + 1
+          AND var_payment_authstatus IS NULL
+          AND corpid = :UlbId
+      `;
+
+      if (params.zoneId && params.zoneId !== "-1") {
+        query += ` AND num_payment_zoneid = :ZoneId`;
+        bindParams.ZoneId = params.zoneId;
+      }
+
+      if (params.budgetId && params.budgetId !== "0") {
+        query += ` AND num_budget_id = :BudgetId`;
+        bindParams.BudgetId = params.budgetId;
+      }
+
+      if (params.userId && params.userId !== "0") {
+        query += ` AND var_payment_insby = :UserId`;
+        bindParams.UserId = params.userId;
+      }
+
+      if (params.nidhiId && params.nidhiId !== "0") {
+        query += ` AND num_payment_nidhi_id = :NidhiId`;
+        bindParams.NidhiId = params.nidhiId;
+      }
+
+      query += `
+        GROUP BY 
+          num_payment_refno,
+          date_payment_trnsdate,
+          num_payment_vchno,
+          var_trnstype_trnstypemar,
+          zoneename,
+          var_grampanch_marathiname,
+          var_payment_insby,
+          date_payment_insdate,
+          num_payment_trnstype,
+          var_budgethead_name,
+          var_partymst_partyname
+        ORDER BY num_payment_refno
+      `;
+    }
+
+    // ================= TRANSFER =================
+    else if (["5", "8", "9"].includes(params.transType)) {
+      query = `
+        SELECT 
+          num_transfermst_refno refno,
+          date_transfermst_trnsdate trnsdate,
+          num_transfermst_vchno docno,
+          var_trnstype_trnstypemar trnstype,
+          zoneename zonename,
+          var_grampanch_marathiname grampanch,
+          SUM(num_transferdet_amt) amount,
+          num_transfermst_insby username,
+          date_transfermst_insdate datetime,
+          num_trnstype_trnstypeid trnstypeid,
+          var_partymst_partyname PartyName
+        FROM aoac_transfermst_def
+        INNER JOIN aoac_transferdet_def 
+          ON num_transferdet_refno = num_transfermst_refno
+        INNER JOIN aoac_trnstype_def 
+          ON num_trnstype_trnstypeid = num_transfermst_trnstypeid
+        LEFT JOIN view_zone 
+          ON zoneid = num_transfermst_zoneid
+        LEFT JOIN aoac_partymst_def 
+          ON num_partymst_partyid = num_transferdet_partyid
+        LEFT JOIN aoac_grampanch_def 
+          ON num_grampanch_deptid = num_transfermst_zoneid 
+          AND num_grampanch_grampanchid = num_transfermst_grampanchid
+        WHERE 
+          date_transfermst_trnsdate >= TO_DATE(:FromDate,'YYYY-MM-DD')
+            AND date_transfermst_trnsdate < TO_DATE(:ToDate,'YYYY-MM-DD') + 1
+          AND num_transferdet_amt > 0
+          AND var_transfermst_authstatus IS NULL
+          AND num_transfermst_trnstypeid = :TransType
+          AND corpid = :UlbId
+      `;
+
+      bindParams.TransType = params.transType;
+
+      if (params.zoneId && params.zoneId !== "-1") {
+        query += ` AND num_transfermst_zoneid = :ZoneId`;
+        bindParams.ZoneId = params.zoneId;
+      }
+
+      if (params.budgetId && params.budgetId !== "0") {
+        query += ` AND num_transfermst_budget_id = :BudgetId`;
+        bindParams.BudgetId = params.budgetId;
+      }
+
+      if (params.userId && params.userId !== "0") {
+        query += ` AND num_transfermst_insby = :UserId`;
+        bindParams.UserId = params.userId;
+      }
+
+      if (params.nidhiId && params.nidhiId !== "0") {
+        query += ` AND num_transfermst_nidhi_id = :NidhiId`;
+        bindParams.NidhiId = params.nidhiId;
+      }
+
+      query += `
+        GROUP BY 
+          num_transfermst_refno,
+          date_transfermst_trnsdate,
+          num_transfermst_vchno,
+          var_trnstype_trnstypemar,
+          zoneename,
+          var_grampanch_marathiname,
+          num_transfermst_insby,
+          date_transfermst_insdate,
+          num_trnstype_trnstypeid,
+          var_partymst_partyname
+        ORDER BY num_transfermst_refno
+      `;
+    } else {
+      throw new Error("Invalid Transaction Type");
+    }
+console.log(query);
+console.log(bindParams);
+    return await executeQuery(query, bindParams);
+  } catch (err) {
+    throw err;
+  }
+};
+
+module.exports = { getTransactionList };

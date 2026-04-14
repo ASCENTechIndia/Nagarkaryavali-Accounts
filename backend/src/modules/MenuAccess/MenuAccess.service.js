@@ -1,0 +1,68 @@
+// const repo = require("./MenuAccess.repo");
+// const { AppError } = require("../../libs/errors");
+
+// async function getMenuAccess(UserId) {
+//   if (!UserId) {
+//     throw new AppError(" UserId is required", 400);
+//   }
+
+//   const result = await repo.getMenuAccess(UserId);
+
+//   if (!result.success) {
+//     throw new AppError(result.error || "Failed to fetch menu access", 500);
+//   }
+
+//   if (result.rows.length === 0) {
+//     throw new AppError("Menu access not found", 404);
+//   }
+
+//   return result.rows;
+// }
+
+// module.exports = {
+  
+//   getMenuAccess,
+ 
+// };
+
+
+const repo = require("./MenuAccess.repo");
+const { AppError } = require("../../libs/errors");
+
+async function getMenusService(payload) {
+  console.log("📥 Service Payload:", payload);
+
+  const { userId, ulbId, deptId } = payload;
+
+  // ✅ VALIDATION
+  if (!userId || !ulbId || !deptId) {
+    throw new AppError("userId, ulbId and deptId are required", 400);
+  }
+
+  const data = await repo.getMenusRepo(payload);
+
+  // 🔥 FILTER TITLES
+  const excludedTitles = ['मेनु मास्टर', 'वापरकर्ता प्रवेश'];
+
+  const filtered = data.filter(
+    (row) => !excludedTitles.includes(row.MENUTITLE)
+  );
+
+  // 🔥 CLEAN PAGEPATH (.aspx remove)
+  const cleaned = filtered.map((row) => ({
+    ...row,
+    PAGEPATH: row.PAGEPATH
+      ? row.PAGEPATH.replace(/\.aspx(?=$|\?)/i, "")
+      : row.PAGEPATH,
+  }));
+
+  return {
+    success: true,
+    count: cleaned.length,
+    data: cleaned,
+  };
+}
+
+module.exports = {
+  getMenusService,
+};
