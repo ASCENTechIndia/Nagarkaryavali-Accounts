@@ -60,3 +60,19 @@ exports.generateTransactionPDF = asyncHandler(async (req, res) => {
     });
   }
 });
+
+exports.getDailyTransactionReport = asyncHandler(async (req, res) => {
+  const filters = req.body;
+
+  const data = await service.getDailyTransactionReportService(filters);
+
+  return ok(res, data, "Daily transaction report fetched");
+});
+
+exports.getOpeningBalance = asyncHandler(async (req, res) => {
+  const filters = req.body;
+
+  const data = await service.getOpeningBalanceService(filters);
+
+  return ok(res, data, "Opening balance calculated");
+});

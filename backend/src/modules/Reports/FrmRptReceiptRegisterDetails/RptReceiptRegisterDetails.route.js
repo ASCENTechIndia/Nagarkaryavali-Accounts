@@ -16,4 +16,7 @@ router.post(
   controller.generateTransactionPDF
 );
 
+router.post("/dailyCashbookreport", auth(), controller.getDailyTransactionReport);
+router.post("/openingbalance", auth(), controller.getOpeningBalance);
+
 module.exports = router;

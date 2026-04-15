@@ -39,7 +39,44 @@ async function getNidhiConfigService(budgetId, ulbId) {
   };
 }
 
+async function getDailyTransactionReportService(filters) {
+  if (!filters.ulbId) {
+    throw new AppError("ULBId is required", 400);
+  }
+
+  if (!filters.trnsDate) {
+    throw new AppError("Transaction Date is required", 400);
+  }
+
+  const data = await repo.getDailyTransactionReport(filters);
+
+  return {
+    success: true,
+    count: data.length,
+    list: data,
+  };
+}
+
+async function getOpeningBalanceService(filters) {
+  if (!filters.ulbId) {
+    throw new AppError("ULBId is required", 400);
+  }
+
+  if (!filters.trnsDate) {
+    throw new AppError("Transaction Date is required", 400);
+  }
+
+  const balance = await repo.getOpeningBalance(filters);
+
+  return {
+    success: true,
+    closingBalance: balance,
+  };
+}
+
 module.exports = {
+  getDailyTransactionReportService,
+  getOpeningBalanceService,
   getTransactionReportService,
   getNidhiConfigService,
 };
