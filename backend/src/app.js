@@ -84,6 +84,7 @@ app.use("/api/frmPayment",require("./modules/Transaction/FrmPayment/frmPayment.r
 app.use("/api/RptReceiptRegister", require("./modules/Reports/RptReceiptRegister/RptReceiptRegister.routes"))
 
 
+app.use("/api/RptLedgerReport", require("./modules/Reports/RptLedgerReport/rptLedgerReport.route"))
 app.use("/api/RptTransferRegister", require("./modules/Reports/RptTransferRegister/transferRegister.route"))
 app.use("/api/RptCashBankBalance", require("./modules/Reports/RptCashBankBalance/rptCashBankBalance.route"))
 app.use("/api/Classified", require ("./modules/Reports/RptClassifiedRegister/RptClassifiedRegisterDetails.route"))
