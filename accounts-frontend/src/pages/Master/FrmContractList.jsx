@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -186,27 +186,20 @@ const FrmContractList = () => {
     //   className="p-4 sm:p-6 min-h-screen bg-gray-100"
     >
       <Card className=" shadow-sm border">
-        <CardContent className="p-4 space-y-4">
-          <motion.h2
-            variants={item}
-            className="text-lg sm:text-xl font-semibold text-gray-800"
-          >
-            कंत्राटची यादी
-          </motion.h2>
-
-          <hr />
-
-          <motion.div variants={item}>
+        <CardHeader className="border-b flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+            <CardTitle className="text-lg font-semibold">
+                कंत्राटची यादी
+            </CardTitle>
             <Button
               className="bg-blue-900 hover:bg-blue-800 text-white w-full sm:w-auto"
               onClick={() => navigate("/Transactions/FrmContractEntry", { state: { mode: 1 } })}
             >
               नविन जोडा
             </Button>
-          </motion.div>
+        </CardHeader>
 
-          <hr />
 
+        <CardContent className="p-4 space-y-4">
           <motion.div
             variants={item}
             className="grid grid-cols-1 md:grid-cols-2 gap-6"

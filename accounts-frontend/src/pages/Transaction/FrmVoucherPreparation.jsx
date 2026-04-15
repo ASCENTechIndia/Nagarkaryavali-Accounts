@@ -19,6 +19,8 @@ import apiService from "@/apiService";
 import { useAuth } from "@/context/AuthContext";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
+import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 
 const initialValues = {
   date: new Date(),
@@ -54,6 +56,7 @@ const initialValues = {
 const FrmVoucherPreparation = () => {
   const location = useLocation();
   const { mode, voucherData } = location.state || {};
+  const navigate = useNavigate();
 
   const { user } = useAuth();
   const token = user?.token;
@@ -74,6 +77,8 @@ const FrmVoucherPreparation = () => {
   const [entryGlCodes, setEntryGlCodes] = useState([]);
   const [pendingDeptCode, setPendingDeptCode] = useState(null);
   const [loadingVoucher, setLoadingVoucher] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedBankId, setSelectedBankId] = useState("");
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -603,12 +608,320 @@ const FrmVoucherPreparation = () => {
     "Select": "action",
   };
 
+  const handleSubmit = async (values, { setSubmitting, resetForm }) => {
+    if (!values.prabhag || values.prabhag === "0") {
+    Swal.fire({
+      text: 'झोन रिक्त असू शकत नाही',
+      confirmButtonColor: '#1e3a8a'
+    });
+    return;
+  }
+  if (!values.date) {
+    Swal.fire({
+      text: 'तारीख रिक्त असू शकत नाही',
+      confirmButtonColor: '#1e3a8a'
+    });
+    return;
+  }
+  if (!values.voucherNo || values.voucherNo.trim() === "") {
+    Swal.fire({
+      text: 'व्हाउचर क्रमांक रिक्त असू शकत नाही',
+      confirmButtonColor: '#1e3a8a'
+    });
+    return;
+  }
+  if (!values.deductionAmount && values.deductionAmount !== 0) {
+    Swal.fire({
+      text: 'एकूण कपात रिक्त असू शकत नाही',
+      confirmButtonColor: '#1e3a8a'
+    });
+    return;
+  }
+  if (!values.party) {
+    Swal.fire({
+      text: 'पार्टी कोड रिक्त असू शकत नाही',
+      confirmButtonColor: '#1e3a8a'
+    });
+    return;
+  }
+  if (!values.deptCode || values.deptCode.trim() === "") {
+    Swal.fire({
+      text: 'विभाग कोड. रिक्त असू शकत नाही',
+      confirmButtonColor: '#1e3a8a'
+    });
+    return;
+  }
+  if (!values.ledger) {
+    Swal.fire({
+      text: 'लेखाशिर्ष रिक्त असू शकत नाही',
+      confirmButtonColor: '#1e3a8a'
+    });
+    return;
+  }
+  const totalAmount = calculateTotal();
+  if (!totalAmount || totalAmount === 0) {
+    Swal.fire({
+      text: 'एकूण रक्कम रिक्त असू शकत नाही',
+      confirmButtonColor: '#1e3a8a'
+    });
+    return;
+  }
+  if (!values.remark || values.remark.trim() === "") {
+    Swal.fire({
+      text: 'Please enter narration.',
+      confirmButtonColor: '#1e3a8a'
+    });
+    return;
+  }
+  if (!values.bank || values.bank.trim() === "") {
+    Swal.fire({
+      text: 'कृपया पार्टी बँक निवडा',
+      confirmButtonColor: '#1e3a8a'
+    });
+    return;
+  }
+  const totalCredit = calculateTotal();
+  const totalPayable = parseFloat(values.totalPayable) || 0;
+  const totalDeduction = parseFloat(values.deductionAmount) || 0;
+
+  if (totalCredit !== 0 && totalPayable !== 0) {
+    if (totalCredit >= totalPayable) {
+      Swal.fire({
+        text: 'यादीतील एकूण रक्कम, डेबिट एकूण रक्कम पेकक्षा अधिक असावे',
+        confirmButtonColor: '#1e3a8a'
+      });
+      return;
+    }
+  }
+  if (totalDeduction !== 0) {
+    if (tableData.length === 0) {
+      Swal.fire({
+        text: 'व्यवहार ची दिटैल्स व्यवहार सूची मध्ये जोडा',
+        confirmButtonColor: '#1e3a8a'
+      });
+      return;
+    }
+
+    if (totalDeduction !== totalCredit) {
+      Swal.fire({
+        text: 'एकूण कपात जुळत नाही',
+        confirmButtonColor: '#1e3a8a'
+      });
+      return;
+    }
+  }
+  setIsSubmitting(true);
+
+  let loaderSwal;
+
+  try {
+    const formatDate = (date) => {
+      const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+      const d = new Date(date);
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = months[d.getMonth()];
+      const year = d.getFullYear();
+      return `${day}-${month}-${year}`;
+    };
+
+    const formattedDate = formatDate(values.date);
+    // const mode = (mode === 2) ? 2 : 1;
+    const refNo = (mode === 2) && voucherData?.refno ? voucherData.refno : 0;
+
+    loaderSwal = Swal.fire({
+        title: "Saving...",
+        text: "Please wait for voucher preparation",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
+        },
+    });
+    
+    const paramStr = [
+      formattedDate,                    // TransDate
+      values.voucherNo,                // VoucherNo
+      values.prabhag,                  // ZoneId
+      "0",                             // GramPanchId 
+      values.party,                    // PartyCode
+      totalAmount.toFixed(2),          // TotalAmount
+      values.deptCode,                 // DebitGL
+      values.ledger,                   // DebitAcc
+      selectedBankId || "0",           // PartyBankId
+      mode,                            // Mode
+      refNo,                           // RefNo
+      values.contract || "0",          // ContractId
+      values.contractYear || "0",      // ContractYear
+      values.remark || "",             // Narration
+      null,                              // BudgetId
+      null,                              // NidhiId
+      values.vibhag || "0",            // DeptId
+      null,                              // EFileNo
+      formattedDate                    // ApprovalDate
+    ].join('~');
+
+    let paramStr2 = "";
+    if (tableData.length > 0) {
+      const details = tableData.map(item => 
+        `${item.activityCode}#${item.ledger}#${parseFloat(item.amount).toFixed(2)}#${item.remark || ""}`
+      );
+      paramStr2 = details.join('$');
+    }
+    const paramStr3 = null;
+    const paramStr4 = null;
+    const partyBankId = "";
+    const payload = {
+      userId: user?.userId,
+      paramStr: paramStr,
+      paramStr2: paramStr2,
+      paramStr3: paramStr3,
+      paramStr4: paramStr4,
+      zoneId: parseInt(values.prabhag)
+    };
+
+    console.log("Submitting payload:", payload);
+
+    const response = await axios.post(`${BASE_URL}/api/FrmVoucher/SaveVoucher`, payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    loaderSwal.close();
+
+    if (response.data?.ok && response.data?.data?.out_ErrorCode === -100) {
+      console.log("Insert Response: ", response);
+      Swal.fire({
+        text: response.data.data.out_ErrorMsg || 'व्यवहार यशस्वीरित्या जतन झाला',
+        confirmButtonColor: '#1e3a8a'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate('/Transactions/FrmVoucherPreparationList');
+        }
+      });
+    } else {
+      Swal.fire({
+        text: response.data?.data?.out_ErrorMsg || 'कृपया नंतर प्रयत्न करा',
+        confirmButtonColor: '#1e3a8a'
+      });
+    }
+  } catch (error) {
+    console.error("Submission error:", error);
+    Swal.fire({
+      text: error.response?.data?.message || 'सर्व्हर त्रुटी. कृपया नंतर प्रयत्न करा.',
+      confirmButtonColor: '#1e3a8a'
+    });
+  } finally {
+    setIsSubmitting(false);
+    setSubmitting(false);
+  }
+  }
+
+  const handleReset = (resetForm) => {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "All entered data will be cleared!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#1e3a8a',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, reset it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setTableData([]);
+        setSelectedBankId("");
+        setContracts([]);
+        setContractYears([]);
+        setLedgerOptions([]);
+        setEntryLedgerOptions({});
+        setBankList([]);
+        
+        if (resetForm) {
+          resetForm();
+        }
+        
+        Swal.fire({
+          text: 'Form has been reset successfully!',
+          confirmButtonColor: '#1e3a8a',
+          timer: 1500
+        });
+      }
+    });
+  };
+
+  const handleDelete = async () => {
+    if (!voucherData?.refno) {
+      Swal.fire({
+        text: 'No voucher reference found to delete',
+        confirmButtonColor: '#1e3a8a'
+      });
+      return;
+    }
+
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "This voucher will be permanently deleted!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#1e3a8a',
+      confirmButtonText: 'Yes, delete it!'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          Swal.fire({
+            title: 'Deleting...',
+            text: 'Please wait',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+              Swal.showLoading();
+            }
+          });
+
+          const response = await axios.post(`${BASE_URL}/api/FrmVoucher/DeleteVoucher`, {
+            userId: user?.userId,
+            refNo: voucherData.refno,
+            orgId: Number(ulbId)
+          }, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          Swal.close();
+
+          if (response.data?.ok && response.data?.data?.out_ErrorCode === -100) {
+            Swal.fire({
+              text: response.data.data.out_ErrorMsg || 'Voucher deleted successfully!',
+              confirmButtonColor: '#1e3a8a'
+            }).then(() => {
+              navigate('/Transactions/FrmVoucherPreparationList');
+            });
+          } else {
+            Swal.fire({
+              text: response.data?.data?.out_ErrorMsg || 'Failed to delete voucher',
+              confirmButtonColor: '#1e3a8a'
+            });
+          }
+        } catch (error) {
+          console.error("Delete error:", error);
+          Swal.close();
+          Swal.fire({
+            text: error.response?.data?.message || 'Server error. Please try again later.',
+            confirmButtonColor: '#1e3a8a'
+          });
+        }
+      }
+    });
+  };
+
   return (
     <Formik
       initialValues={initialValues}
-      onSubmit={(values) => {
-        console.log("Submitted:", { ...values, entries: tableData });
-      }}
+      onSubmit={handleSubmit}
     >
       {({
         values,
@@ -616,6 +929,7 @@ const FrmVoucherPreparation = () => {
         setFieldValue,
         errors,
         touched,
+        resetForm
       }) => {
 
         const handleBankSelect = async (bankId) => {
@@ -640,6 +954,7 @@ const FrmVoucherPreparation = () => {
               setFieldValue("ifscCode", bank.VAR_PARTYBANK_IFSC);
               setFieldValue("accountNo", bank.VAR_PARTYBANK_ACCOUNTNO);
 
+              setSelectedBankId(bankId);
               setShowBankModal(false);
             }
           } catch (err) {
@@ -745,16 +1060,24 @@ const FrmVoucherPreparation = () => {
               <CardContent className="p-4 sm:p-6 space-y-6">
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="flex items-center justify-center gap-2">
-                    <Label text="दिनांक :" className='w-32' />
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    {/* <Label text="दिनांक :" className='w-36 shrink-0' /> */}
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                      <Label text="दिनांक" />
+                      <span>:</span>
+                    </div>
                     <DatePicker
                       value={values.date}
                       onChange={(d) => setFieldValue("date", d)}
-                      className='flex-1 h-9'
+                      className="w-full h-9"
                     />
                   </div>
-                  <div className="flex items-center justify-center gap-2">
-                    <Label text="पार्टी :" className='w-32'  />
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    {/* <Label text="पार्टी :" className='w-36 shrink-0'  /> */}
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                      <Label text="पार्टी" />
+                      <span>:</span>
+                    </div>
                     <SearchableSelect
                       options={partyOptions}
                       value={values.party}
@@ -778,28 +1101,36 @@ const FrmVoucherPreparation = () => {
                       placeholder="पार्टी शोधा"
                     />
                   </div>
-                  <div className="flex items-center justify-center gap-2">
-                    <Label text="पॅनकार्ड :" className='w-32' />
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    {/* <Label text="पॅनकार्ड :" className='w-36 shrink-0' /> */}
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                      <Label text="पॅनकार्ड" />
+                      <span>:</span>
+                    </div>
                     <Input
                       name="pancard"
                       value={values.pancard}
                       onChange={handleChange}
                       placeholder="पॅनकार्ड क्रमांक"
-                      className='flex-1 h-9'
+                      className="w-full h-9"
                       disabled
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="flex items-center justify-center gap-2">
-                    <Label text="जी.एस.टी नंबर :" className='w-32' />
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    {/* <Label text="जी.एस.टी नंबर :" className='w-36 shrink-0' /> */}
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                      <Label text="जी.एस.टी नंबर" />
+                      <span>:</span>
+                    </div>
                     <Input
                       name="gstNo"
                       value={values.gstNo}
                       onChange={handleChange}
                       placeholder="जी.एस.टी नंबर"
-                      className='flex-1 h-9'
+                      className="w-full h-9"
                       disabled
                     />
                   </div>
@@ -811,7 +1142,10 @@ const FrmVoucherPreparation = () => {
                     className="bg-blue-900 hover:bg-blue-800 text-white"
                     onClick={() => {
                       if (!values.party) {
-                        alert("Please select party first");
+                        Swal.fire({
+                            text: 'Please select party first',
+                            confirmButtonColor: '#1e3a8a'
+                        });
                         return;
                       }
 
@@ -830,26 +1164,42 @@ const FrmVoucherPreparation = () => {
                   className="bg-gray-50 p-4 rounded-lg border"
                 >
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="flex items-center justify-center gap-2">
-                      <Label text="बँक :" className='w-32' />
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      {/* <Label text="बँक :" className='w-36 shrink-0' /> */}
+                      <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="बँक" />
+                        <span>:</span>
+                      </div>
                       <div className='flex-1'>
                           {values.bank}
                       </div>
                       </div>
-                      <div className="flex items-center justify-center gap-2">
-                      <Label text="ब्रांच :" className='w-32' />
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      {/* <Label text="ब्रांच :" className='w-36 shrink-0' /> */}
+                      <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="ब्रांच" />
+                        <span>:</span>
+                      </div>
                       <div className='flex-1'>
                           {values.branch}
                       </div>
                       </div>
-                      <div className="flex items-center justify-center gap-2">
-                      <Label text="आयएफएससी संकेतांक :" className='w-32' />
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      {/* <Label text="आयएफएससी संकेतांक :" className='w-36 shrink-0' /> */}
+                      <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="आयएफएससी संकेतांक" />
+                        <span>:</span>
+                      </div>
                       <div className='flex-1'>
                           {values.ifscCode}
                       </div>
                       </div>
-                      <div className="flex items-center justify-center gap-2">
-                      <Label text="खाते क्र :" className='w-32' />
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      {/* <Label text="खाते क्र :" className='w-36 shrink-0' /> */}
+                      <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="खाते क्र" />
+                        <span>:</span>
+                      </div>
                       <div className='flex-1'>
                           {values.accountNo}
                       </div>
@@ -860,8 +1210,12 @@ const FrmVoucherPreparation = () => {
                 <hr />
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="flex items-center justify-center gap-2">
-                    <Label text="प्रभाग :" className='w-32' />
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    {/* <Label text="प्रभाग :" className='w-36 shrink-0' /> */}
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="प्रभाग" />
+                        <span>:</span>
+                    </div>
                     <Select
                       value={values.prabhag}
                       onValueChange={(v) => {
@@ -888,8 +1242,12 @@ const FrmVoucherPreparation = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="flex items-center justify-center gap-2">
-                    <Label text="विभाग :" className='w-32' />
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    {/* <Label text="विभाग :" className='w-36 shrink-0' /> */}
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="विभाग" />
+                        <span>:</span>
+                    </div>
                     <Select 
                       value={values.vibhag}
                       onValueChange={(v) => setFieldValue("vibhag", v)}
@@ -907,57 +1265,77 @@ const FrmVoucherPreparation = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="flex items-center justify-center gap-2">
-                    <Label text="प्रमाणक क्र. :" className='w-32' />
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    {/* <Label text="प्रमाणक क्र. :" className='w-36 shrink-0' /> */}
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="प्रमाणक क्र." />
+                        <span>:</span>
+                    </div>
                     <Input
                       name="voucherNo"
                       value={values.voucherNo}
                       onChange={handleChange}
                       placeholder="प्रमाणक क्रमांक"
-                      className='flex-1 h-9'
+                      className="w-full h-9"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="flex items-center justify-center gap-2">
-                    <Label text="एकूण देय रक्कम :" className='w-32' />
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    {/* <Label text="एकूण देय रक्कम :" className='w-36 shrink-0' /> */}
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="एकूण देय रक्कम" />
+                        <span>:</span>
+                    </div>
                     <Input
                       name="totalPayable"
                       value={values.totalPayable}
                       onChange={handleChange}
                       placeholder="एकूण देय रक्कम"
                       type="number"
-                      className='flex-1 h-9'
+                      className="w-full h-9"
                     />
                   </div>
-                  <div className="flex items-center justify-center gap-2">
-                    <Label text="कपात रक्कम :" className='w-32' />
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    {/* <Label text="कपात रक्कम :" className='w-36 shrink-0' /> */}
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="कपात रक्कम" />
+                        <span>:</span>
+                    </div>
                     <Input
                       name="deductionAmount"
                       value={values.deductionAmount}
                       onChange={handleChange}
                       placeholder="कपात रक्कम"
                       type="number"
-                      className='flex-1 h-9'
+                      className="w-full h-9"
                     />
                   </div>
-                  <div className="flex items-center justify-center gap-2">
-                    <Label text="निव्वळ देय रक्कम :" className='w-32' />
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    {/* <Label text="निव्वळ देय रक्कम :" className='w-36 shrink-0' /> */}
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="निव्वळ देय रक्कम" />
+                        <span>:</span>
+                    </div>
                     <Input
                       name="netPayable"
                       value={values.netPayable}
                       placeholder="निव्वळ देय रक्कम"
                       type="number"
-                      className='flex-1 h-9'
+                      className="w-full h-9"
                       readOnly
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="flex items-center justify-center gap-2">
-                    <Label text="विभाग संकेतांक. :" className='w-32' />
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    {/* <Label text="विभाग संकेतांक. :" className='w-36 shrink-0' /> */}
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="विभाग संकेतांक." />
+                        <span>:</span>
+                    </div>
                     <SearchableSelect
                       options={glCodes}
                       value={values.deptCode}
@@ -978,8 +1356,12 @@ const FrmVoucherPreparation = () => {
                       placeholder="विभाग संकेतांक निवडा"
                     />
                   </div>
-                  <div className="flex items-center justify-center gap-2">
-                    <Label text="लेखाशीर्ष :" className='w-32' />
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    {/* <Label text="लेखाशीर्ष :" className='w-36 shrink-0' /> */}
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="लेखाशीर्ष" />
+                        <span>:</span>
+                    </div>
                     <SearchableSelect
                       options={ledgerOptions}
                       value={values.ledger}
@@ -991,8 +1373,12 @@ const FrmVoucherPreparation = () => {
                       disabled={!values.deptCode}
                     />
                   </div>
-                  <div className="flex items-center justify-center gap-2">
-                    <Label text="कंत्राट वर्ष :" className='w-32' />
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    {/* <Label text="कंत्राट वर्ष :" className='w-36 shrink-0' /> */}
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="कंत्राट वर्ष" />
+                        <span>:</span>
+                    </div>
                     <Select 
                       value={values.contractYear}
                       onValueChange={(v) => setFieldValue("contractYear", v)}
@@ -1016,18 +1402,26 @@ const FrmVoucherPreparation = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="flex items-center justify-center gap-2">
-                    <Label text="तपशील :" className='w-32' />
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    {/* <Label text="तपशील :" className='w-36 shrink-0' /> */}
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="तपशील" />
+                        <span>:</span>
+                    </div>
                     <Input
                       name="remark"
                       value={values.remark}
                       onChange={handleChange}
                       placeholder="तपशील"
-                      className='flex-1 h-9'
+                      className="w-full h-9"
                     />
                   </div>
-                  <div className="flex items-center justify-center gap-2">
-                    <Label text="कंत्राट :" className='w-32' />
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    {/* <Label text="कंत्राट :" className='w-36 shrink-0' /> */}
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="कंत्राट" />
+                        <span>:</span>
+                    </div>
                     <Select
                       value={values.contract}
                       onValueChange={(v) => {
@@ -1066,14 +1460,18 @@ const FrmVoucherPreparation = () => {
                         {values.entries.map((entry, index) => (
                             <div key={index} className="space-y-4">
                                 <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    <div className="flex items-center justify-center gap-2">
-                                    <Label text="विभाग संकेतांक :" className='w-32' />
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                    {/* <Label text="विभाग संकेतांक :" className='w-36 shrink-0' /> */}
+                                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                                        <Label text="विभाग संकेतांक" />
+                                        <span>:</span>
+                                    </div>
                                     {/* <Input
                                         name={`entries.${index}.activityCode`}
                                         value={entry.activityCode}
                                         onChange={handleChange}
                                         placeholder="विभाग संकेतांक"
-                                        className='flex-1 h-9'
+                                        className="w-full h-9"
                                     /> */}
                                     <SearchableSelect
                                       options={entryGlCodes}
@@ -1095,14 +1493,18 @@ const FrmVoucherPreparation = () => {
                                     />
                                     </div>
 
-                                    <div className="flex items-center justify-center gap-2">
-                                    <Label text="लेखा शिर्ष :" className='w-32' />
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                    {/* <Label text="लेखा शिर्ष :" className='w-36 shrink-0' /> */}
+                                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                                        <Label text="लेखा शिर्ष" />
+                                        <span>:</span>
+                                    </div>
                                     {/* <Input
                                         name={`entries.${index}.ledger`}
                                         value={entry.ledger}
                                         onChange={handleChange}
                                         placeholder="लेखा शिर्ष"
-                                        className='flex-1 h-9'
+                                        className="w-full h-9"
                                     /> */}
                                       <SearchableSelect
                                         options={entryLedgerOptions[index] || []}
@@ -1118,28 +1520,36 @@ const FrmVoucherPreparation = () => {
                                       />
                                     </div>
 
-                                    <div className="flex items-center justify-center gap-2">
-                                    <Label text="रक्कम :" className='w-32' />
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                    {/* <Label text="रक्कम :" className='w-36 shrink-0' /> */}
+                                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                                        <Label text="रक्कम" />
+                                        <span>:</span>
+                                    </div>
                                     <Input
                                         name={`entries.${index}.amount`}
                                         value={entry.amount}
                                         onChange={handleChange}
                                         placeholder="रक्कम"
                                         type="number"
-                                        className='flex-1 h-9'
+                                        className="w-full h-9"
                                     />
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="flex items-center justify-center gap-2">
-                                        <Label text="तपशील :" className='w-32' />
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                        {/* <Label text="तपशील :" className='w-36 shrink-0' /> */}
+                                        <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                                            <Label text="तपशील" />
+                                            <span>:</span>
+                                        </div>
                                         <Input
                                             name={`entries.${index}.remark`}
                                             value={entry.remark}
                                             onChange={handleChange}
                                             placeholder="तपशील"
-                                            className='flex-1 h-9'
+                                            className="w-full h-9"
                                         />
                                     </div>
                                 </div>
@@ -1150,6 +1560,55 @@ const FrmVoucherPreparation = () => {
                                       type="button"
                                       className="bg-blue-900 hover:bg-blue-800 text-white"
                                       onClick={() => {
+
+                                        if (!values.party) {
+                                          Swal.fire({
+                                            text: 'पार्टी कोड रिक्त असू शकत नाही',
+                                            confirmButtonColor: '#1e3a8a'
+                                          });
+                                          return;
+                                        }
+                                        if (!entry.activityCode || entry.activityCode.trim() === "") {
+                                          Swal.fire({
+                                            text: 'मेजर कोड रिक्त असू शकत नाही',
+                                            confirmButtonColor: '#1e3a8a'
+                                          });
+                                          return;
+                                        }
+                                        if (!entry.ledger || entry.ledger.trim() === "") {
+                                          Swal.fire({
+                                            text: 'मायनर कोड रिक्त असू शकत नाही',
+                                            confirmButtonColor: '#1e3a8a'
+                                          });
+                                          return;
+                                        }
+                                        if (!entry.amount || entry.amount === "0") {
+                                          Swal.fire({
+                                            text: 'रक्कम रिक्त असू शकत नाही',
+                                            confirmButtonColor: '#1e3a8a'
+                                          });
+                                          return;
+                                        }
+                                        if (!entry.remark || entry.remark.trim() === "") {
+                                          Swal.fire({
+                                            text: 'तपशील रिक्त असू शकत नाही',
+                                            confirmButtonColor: '#1e3a8a'
+                                          });
+                                          return;
+                                        }
+                                        const isDuplicate = tableData.some(
+                                          item => item.activityCode === entry.activityCode && 
+                                                  item.ledger === entry.ledger
+                                        );
+
+                                        if (isDuplicate) {
+                                          Swal.fire({
+                                            text: 'विभाग कोड, लेखा शिर्ष आणि पार्टी कोड पुन्हा यादीत जाऊ शकत नाही',
+                                            confirmButtonColor: '#1e3a8a'
+                                          });
+                                          return;
+                                        }
+
                                         if (entry.activityCode && entry.ledger && entry.amount) {
                                           const activityObj = entryGlCodes.find(
                                             (g) => g.value === entry.activityCode
@@ -1201,8 +1660,12 @@ const FrmVoucherPreparation = () => {
                 />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="flex items-center justify-center gap-2">
-                    <Label text="एकूण :" className='w-32' />
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    {/* <Label text="एकूण :" className='w-36 shrink-0' /> */}
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="एकूण" />
+                        <span>:</span>
+                    </div>
                     <Input
                       className="w-50 flex-1 h-9"
                       value={calculateTotal().toFixed(2)}
@@ -1210,8 +1673,12 @@ const FrmVoucherPreparation = () => {
                       disabled
                     />
                   </div>
-                  <div className="flex items-center justify-center gap-2">
-                    <Label text="फरक :" className='w-32' />
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    {/* <Label text="फरक :" className='w-36 shrink-0' /> */}
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="फरक" />
+                        <span>:</span>
+                    </div>
                     <Input
                       className="w-50 flex-1 h-9"
                       value={calculateDifference(values).toFixed(2)}
@@ -1222,16 +1689,30 @@ const FrmVoucherPreparation = () => {
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center flex-wrap gap-3 pt-4">
-                  <Button type="submit" className="bg-blue-900 hover:bg-blue-800 text-white">
+                  <Button 
+                    type="submit" 
+                    className="bg-blue-900 hover:bg-blue-800 text-white"
+                    disabled={isSubmitting}
+                  >
                     स्वीकार
                   </Button>
                   <Button type="button" variant="outline" path="/Transactions/FrmVoucherPreparationList">
                     परत
                   </Button>
-                  <Button type="button" variant="outline" path="/Transactions/FrmVoucherPreparationList">
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    onClick={() => handleReset(resetForm)}
+                    disabled={Number(mode) === 2} 
+                  >
                     बदल
                   </Button>
-                  <Button type="button" variant="destructive" path="/Transactions/FrmVoucherPreparationList">
+                  <Button 
+                    type="button" 
+                    variant="destructive" 
+                    onClick={handleDelete}
+                    disabled={!(Number(mode) === 2)}
+                  >
                     काढून टाका
                   </Button>
                 </div>

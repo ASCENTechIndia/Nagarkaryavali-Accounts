@@ -13,12 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
+import Swal from "sweetalert2";
 import { DatePicker } from "@/components/ui/calendar";
 import ShadCNTable from "@/components/ui/table";
 import SearchableSelect from "@/components/SearchableSelect";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
 
@@ -41,6 +42,7 @@ import { useLocation } from "react-router-dom";
 const FrmReceipt = () => {
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const refNo = location.state?.receiptNo;
   const ulbId = user?.ulbId;
 
@@ -61,7 +63,10 @@ const FrmReceipt = () => {
 
   const handleAddRow = (values, setFieldValue) => {
     if (!values.entryDeptCode || !values.entryHead || !values.entryAmount) {
-      alert("Please fill all required fields");
+      Swal.fire({
+        text: "Please fill all required fields",
+        confirmButtonColor: "#1e3a8a",
+      });
       return;
     }
 
@@ -90,16 +95,13 @@ const FrmReceipt = () => {
       amount: values.entryAmount,
     };
 
-    // ✅ Append to existing data (IMPORTANT)
     setTableData((prev) => [...prev, newRow]);
 
-    // ✅ Update total amount
     const updatedTotal =
       (Number(values.totalAmount) || 0) + Number(values.entryAmount || 0);
 
     setFieldValue("totalAmount", updatedTotal);
 
-    // ✅ Clear entry fields
     setFieldValue("entryDeptCode", "");
     setFieldValue("entryHead", "");
     setFieldValue("entryAmount", "");
@@ -113,9 +115,6 @@ const FrmReceipt = () => {
     setTableData((prev) => prev.filter((_, i) => i !== index));
   };
 
-
-
-  // 🔹 Zones (Prabhag)
   const fetchZones = async () => {
     try {
       debugger;
@@ -133,7 +132,6 @@ const FrmReceipt = () => {
     }
   };
 
-  // 🔹 Transaction Type
   const fetchTransTypes = async () => {
     try {
       debugger;
@@ -149,7 +147,6 @@ const FrmReceipt = () => {
     }
   };
 
-  // 🔹 Departments
   const fetchDepartments = async () => {
     try {
       const res = await axios.post(`${BASE_URL}/api/Receipt/departments`, {
@@ -166,7 +163,6 @@ const FrmReceipt = () => {
     }
   };
 
-  // 🔹 Remarks
   const fetchRemarks = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/api/Receipt/narration`,
@@ -218,7 +214,7 @@ const FrmReceipt = () => {
 
       const formatted = data.map((item) => ({
         label: item.GLSEARCHNAME,
-        value: item.GLFUNCTION.toString(), // ✅ important (string)
+        value: item.GLFUNCTION.toString(),
       }));
 
       setGlAllList(formatted);
@@ -255,6 +251,7 @@ const FrmReceipt = () => {
 
   const fetchCreditLeasure = async (glcode, type) => {
     try {
+      debugger;
       const res = await axios.post(`${BASE_URL}/api/FrmTransfer/credit-leasure`, {
         corp_id: ulbId,
         glcode: glcode,
@@ -269,7 +266,7 @@ const FrmReceipt = () => {
 
       const formatted = data.map((item) => ({
         label: item.ACCNAME,
-        value: item.OBJECTCODE.toString(), 
+        value: item.OBJECTCODE.toString(),
       }));
 
       if (type === "party") {
@@ -285,6 +282,13 @@ const FrmReceipt = () => {
 
   const fetchReceiptDetails = async (refNo, setFieldValue) => {
     try {
+      Swal.fire({
+        title: "Loading ...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
       const res = await axios.post(`${BASE_URL}/api/Receipt/receiptDetails`, {
         RefNo: refNo,
       },
@@ -300,7 +304,6 @@ const FrmReceipt = () => {
 
       const first = data[0];
 
-      // ✅ Fill TOP fields (8 fields)
       setFieldValue("zoneId", first.ZONEID?.toString());
       setFieldValue("transactionType", first.TRNSTYPEID?.toString());
       setFieldValue("reciptNo", first.RECNO);
@@ -308,17 +311,14 @@ const FrmReceipt = () => {
       setFieldValue("department", first.ACCDEPTID?.toString());
       setFieldValue("remark", first.NARRATION);
 
-      // (optional if needed)
       setFieldValue("wardCode", first.DRGL?.toString()); // for UI
       setTempHead(first.ACCNO?.toString());
 
-      // 🔥 ADD THIS
       fetchCreditLeasure(first.GLCODE?.toString(), "party");
 
       const total = data.reduce((sum, item) => sum + Number(item.CREDIT || 0), 0);
       setFieldValue("totalAmount", total);
 
-      // ✅ Fill TABLE
       const tableFormatted = data.map((item, index) => ({
         delete: (
           <button
@@ -340,53 +340,78 @@ const FrmReceipt = () => {
 
     } catch (err) {
       console.error("Receipt Details API Error:", err);
+    } finally {
+      Swal.close();
     }
   };
 
   const handleSave = async (values) => {
     try {
-      // 🔴 VALIDATIONS (same as .NET)
+
       if (!values.zoneId || values.zoneId === "0") {
-        alert("प्रभाग रिक्त असू शकत नाही");
+        Swal.fire({
+          text: "प्रभाग रिक्त असू शकत नाही",
+          confirmButtonColor: "#1e3a8a",
+        });
         return;
       }
 
       if (!values.transactionType || values.transactionType === "0") {
-        alert("व्यवहार प्रकार रिक्त असू शकत नाही");
+        Swal.fire({
+          text: "व्यवहार प्रकार रिक्त असू शकत नाही",
+          confirmButtonColor: "#1e3a8a",
+        });
         return;
       }
 
       if (!values.date) {
-        alert("तारीख रिक्त असू शकत नाही");
+        Swal.fire({
+          text: "तारीख रिक्त असू शकत नाही",
+          confirmButtonColor: "#1e3a8a",
+        });
         return;
       }
 
       if (!values.reciptNo) {
-        alert("चलन/पावती क्र रिक्त असू शकत नाही");
+        Swal.fire({
+          text: "चलन/पावती क्र रिक्त असू शकत नाही",
+          confirmButtonColor: "#1e3a8a",
+        });
         return;
       }
 
       if (!values.wardCode) {
-        alert("डेबिट GL रिक्त असू शकत नाही");
+        Swal.fire({
+          text: "डेबिट GL रिक्त असू शकत नाही",
+          confirmButtonColor: "#1e3a8a",
+        });
         return;
       }
 
       if (!values.head) {
-        alert("डेबिट खाते रिक्त असू शकत नाही");
+        Swal.fire({
+          text: "डेबिट खाते रिक्त असू शकत नाही",
+          confirmButtonColor: "#1e3a8a",
+        });
         return;
       }
 
       if (!values.totalAmount) {
-        alert("एकूण रक्कम रिक्त असू शकत नाही");
+        Swal.fire({
+          text: "एकूण रक्कम रिक्त असू शकत नाही",
+          confirmButtonColor: "#1e3a8a",
+        });
         return;
       }
 
       if (tableData.length === 0) {
-        alert("व्यवहार सूची रिक्त आहे");
+        Swal.fire({
+          text: "व्यवहार सूची रिक्त आहे",
+          confirmButtonColor: "#1e3a8a",
+        });
         return;
       }
 
-      // 🔴 DATE FORMAT (dd-MMM-yyyy)
       const formatDate = (date) => {
         const d = new Date(date);
         return d.toLocaleDateString("en-GB", {
@@ -398,46 +423,40 @@ const FrmReceipt = () => {
 
       const TransDate = formatDate(values.date);
 
-      // 🔴 MODE
       const InMode = refNo ? 2 : 1;
       const RefNo = refNo || 0;
 
-      // 🔴 ParamStr (ReceiptMst)
       const paramStr = [
         TransDate,
         values.reciptNo,
         values.transactionType,
         values.zoneId,
-        0, // GramPanchId
-        values.wardCode, // DebitGL
-        values.head, // DebitAcc
+        0,
+        values.wardCode,
+        values.head,
         InMode,
         RefNo,
-        "", // Dept
-        "", // SubDept
-        1, // BudgetDept (static for now)
-        1, // Nidhi (static)
+        "",
+        "",
+        1,
+        1,
       ].join("~");
 
-      // 🔴 ParamStr2 (ReceiptDtl)
       const paramStr2 = tableData
         .map((row) => {
           return [
-            row.deptCode,   // GLCode
-            row.head,       // AccNo
-            row.amount,     // Credit
+            row.deptCode,
+            row.head,
+            row.amount,
             row.remark || "",
             row.partyId || 0,
           ].join("#");
         })
         .join("$");
 
-      console.log("ParamStr:", paramStr);
-      console.log("ParamStr2:", paramStr2);
 
-      // 🔴 API CALL
       const res = await axios.post(`${BASE_URL}/api/Receipt/receiptInsertUpdate`, {
-        In_UserId: user?.userId || "MMCDTU",
+        In_UserId: user?.userId,
         In_ParamStr: paramStr,
         In_ParamStr2: paramStr2,
         In_ParamStr3: "",
@@ -453,16 +472,20 @@ const FrmReceipt = () => {
 
       console.log("API RESPONSE:", res.data);
 
-      alert(res.data?.message || "Saved Successfully");
+      Swal.fire({
+        text: res.data?.message,
+        confirmButtonColor: "#1e3a8a",
+      });
 
     } catch (err) {
       console.error("SAVE ERROR:", err);
-      alert("Error while saving");
+      Swal.fire({
+        text: "Error while saving",
+        confirmButtonColor: "#1e3a8a",
+      });
     }
   };
 
-
-  /* ---------------- TABLE ---------------- */
   const headers = [
     "Delete",
     "विभाग कोड",
@@ -485,7 +508,6 @@ const FrmReceipt = () => {
 
   const dummyData = tableData;
 
-  /* ---------------- INITIAL VALUES ---------------- */
   const initialValues = {
     zoneId: "",
     transactionType: "",
@@ -496,6 +518,8 @@ const FrmReceipt = () => {
     status: "",
     date: new Date(),
   };
+
+
 
   return (
     <Formik
@@ -532,7 +556,6 @@ const FrmReceipt = () => {
           }
         }, [values.transactionType]);
 
-        // 🔹 For Party (based on wardCode)
         useEffect(() => {
           if (values.wardCode) {
             fetchCreditLeasure(values.wardCode, "party");
@@ -554,11 +577,9 @@ const FrmReceipt = () => {
           }
         }, [partyList]);
 
-        console.log("tempHead:", tempHead);
         console.log("partyList:", partyList);
 
 
-        // 🔹 For Entry Head (based on entryDeptCode)
         useEffect(() => {
           if (values.entryDeptCode) {
             fetchCreditLeasure(values.entryDeptCode, "entryHead");
@@ -566,6 +587,16 @@ const FrmReceipt = () => {
             setEntryHeadList([]);
           }
         }, [values.entryDeptCode]);
+
+        const finalTotal = tableData.reduce(
+          (sum, row) => sum + Number(row.amount || 0),
+          0
+        );
+
+        useEffect(() => {
+          setFieldValue("finalTotal", finalTotal);
+        }, [tableData]);
+
 
         return (
 
@@ -610,7 +641,6 @@ const FrmReceipt = () => {
                       )}
                     </div>
 
-                    {/* Transaction Type */}
                     <div>
                       <Label text="व्यवहार प्रकार :" />
                       <Select
@@ -634,7 +664,6 @@ const FrmReceipt = () => {
                       </Select>
                     </div>
 
-                    {/* Date */}
                     <div>
                       <Label text="दिनांक :" />
                       <DatePicker
@@ -643,7 +672,6 @@ const FrmReceipt = () => {
                       />
                     </div>
 
-                    {/* Receipt No */}
                     <div>
                       <Label text="चलन/पावती क्र :" />
                       <Input
@@ -656,42 +684,38 @@ const FrmReceipt = () => {
                       )}
                     </div>
 
-                    {/* Dept Code */}
                     <div>
                       <Label text="विभाग संकेतांक :" />
                       <SearchableSelect
                         options={glList.map((g) => ({
                           label: g.GLNAME,
-                          value: g.GLCODE,
+                          value: g.GLCODE.toString(),
                         }))}
                         name="wardCode"
                         value={values.wardCode}
-                        onChange={(val) => setFieldValue("wardCode", val)}
+                        onChange={(val) => setFieldValue("wardCode", val.value)}
                       />
                       {errors.wardCode && touched.wardCode && (
                         <p className="mt-1 text-sm text-red-500">{errors.wardCode}</p>
                       )}
                     </div>
 
-                    {/* Ledger */}
                     <div>
                       <Label text="लेखाशीर्ष :" />
                       <SearchableSelect
-                        key={values.head}   // 🔥 FORCE RE-RENDER
+                        key={values.head}
                         options={partyList}
                         name="head"
                         value={values.head}
-                        onChange={(val) => setFieldValue("head", val)}
+                        onChange={(val) => setFieldValue("head", val.value)}
                       />
                     </div>
 
-                    {/* Total Amount */}
                     <div>
                       <Label text="एकूण रक्कम :" />
                       <Input name="totalAmount" value={values.totalAmount} onChange={handleChange} />
                     </div>
 
-                    {/* Dept */}
                     <div>
                       <Label text="विभाग :" />
                       <Select
@@ -718,7 +742,6 @@ const FrmReceipt = () => {
 
                   <hr />
 
-                  {/* ---------------- ENTRY FORM ---------------- */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
                     <div>
@@ -727,7 +750,7 @@ const FrmReceipt = () => {
                         options={glAllList}
                         name="entryDeptCode"
                         value={values.entryDeptCode}
-                        onChange={(val) => setFieldValue("entryDeptCode", val)}
+                        onChange={(val) => setFieldValue("entryDeptCode", val.value)}
                       />
                     </div>
 
@@ -737,7 +760,7 @@ const FrmReceipt = () => {
                         options={entryHeadList}
                         name="entryHead"
                         value={values.entryHead}
-                        onChange={(val) => setFieldValue("entryHead", val)}
+                        onChange={(val) => setFieldValue("entryHead", val.value)}
                       />
                     </div>
 
@@ -812,7 +835,6 @@ const FrmReceipt = () => {
                     </div>
                   </div>
 
-                  {/* Add Button */}
                   <div>
                     <Button
                       type="button"
@@ -824,7 +846,6 @@ const FrmReceipt = () => {
 
                   <hr />
 
-                  {/* ---------------- TABLE ---------------- */}
                   <div className="w-full overflow-x-auto">
                     <ShadCNTable
                       headers={headers}
@@ -834,20 +855,23 @@ const FrmReceipt = () => {
                     />
                   </div>
 
-
-                  {/* ---------------- TOTAL + ACTION ---------------- */}
                   <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-4">
 
                     <div className="flex items-center gap-2">
                       <Label text="एकूण रक्कम :" />
-                      <Input className="w-50" name="finalTotal" onChange={handleChange} />
+                      <Input
+                        className="w-50"
+                        name="finalTotal"
+                        value={values.finalTotal || 0}
+                        readOnly
+                      />
                     </div>
 
                     <div className="flex gap-3">
                       <Button type="submit" className="bg-blue-900 text-white">
                         साठवा
                       </Button>
-                      <Button type="button" variant="destructive">
+                      <Button type="button" variant="destructive" onClick={() => navigate("/Transactions/FrmPaymentList")}>
                         रद्द
                       </Button>
                     </div>

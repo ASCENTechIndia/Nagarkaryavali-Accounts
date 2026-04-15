@@ -1,4 +1,6 @@
 const { executeQuery } = require("../../../db/queryExecutor");
+const oracledb = require("oracledb");
+const { executeProcedure } = require("../../../db/procedureExecutor");
 
 async function getDepositTypeRepo({ ulbId }) {
   console.log("📤 Repo: Fetch Deposit Types", { ulbId });
@@ -47,7 +49,45 @@ async function getDepositTypeByIdRepo({ depId }) {
   return result.rows;
 }
 
+async function saveDepositTypeRepo(payload) {
+  console.log("📤 Repo: Execute Deposit Procedure", payload);
+
+  const sql = `
+    BEGIN
+      aoac_deposit_ins(
+        :in_depositid,
+        :in_depositname,
+        :in_UserId,
+        :in_Mode,
+        :in_UlbID,
+        :out_ErrorCode,
+        :out_ErrorMsg
+      );
+    END;
+  `;
+
+  const binds = {
+    in_depositid: payload.depId,
+    in_depositname: payload.depName,
+    in_UserId: payload.userId,
+    in_Mode: payload.mode,
+    in_UlbID: payload.ulbId,
+
+    out_ErrorCode: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+    out_ErrorMsg: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 500 },
+  };
+
+  const result = await executeProcedure({ sql, binds });
+
+  if (!result.success) {
+    throw new Error(result.error);
+  }
+
+  return result.outBinds;
+}
+
 module.exports = {
   getDepositTypeRepo,
-  getDepositTypeByIdRepo, 
+  getDepositTypeByIdRepo,
+  saveDepositTypeRepo, 
 };

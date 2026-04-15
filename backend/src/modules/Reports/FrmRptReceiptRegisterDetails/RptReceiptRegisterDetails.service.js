@@ -39,8 +39,6 @@ async function getNidhiConfigService(budgetId, ulbId) {
   };
 }
 
-
-// Daily Transaction Report
 async function getDailyTransactionReportService(filters) {
   if (!filters.ulbId) {
     throw new AppError("ULBId is required", 400);
@@ -75,9 +73,10 @@ async function getOpeningBalanceService(filters) {
     closingBalance: balance,
   };
 }
+
 module.exports = {
+  getDailyTransactionReportService,
+  getOpeningBalanceService,
   getTransactionReportService,
   getNidhiConfigService,
-  getDailyTransactionReportService,
-getOpeningBalanceService,
 };

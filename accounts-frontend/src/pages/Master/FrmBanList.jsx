@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
+import Swal from "sweetalert2";
 import ShadCNTable from "@/components/ui/table";
 
 const FrmBankList = () => {
@@ -20,7 +20,6 @@ const FrmBankList = () => {
 
   const [tableData, setTableData] = useState([]);
 
-  // ✅ Bank List headers
   const headers = ["निवडा", "बँकेचे नाव"];
 
   const keyMapping = {
@@ -30,13 +29,24 @@ const FrmBankList = () => {
 
   const fetchBankList = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/Bank/banklist`, {
+
+      Swal.fire({
+        title: "Loading ...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      const res = await axios.get(`${BASE_URL}/api/FrmBanList/BankList`, {
         headers: {
           Authorization: `Bearer ${user?.token}`,
         },
       });
 
-      const apiData = res.data?.data?.list || [];
+      console.log("API Response:", res.data);
+
+      const apiData = res.data?.data?.data || [];
 
       const formatted = apiData.map((item) => ({
         select: (
@@ -62,9 +72,11 @@ const FrmBankList = () => {
       }));
 
       setTableData(formatted);
+      Swal.close();
     } catch (err) {
       console.error("Bank API Error:", err);
       setTableData([]);
+      Swal.close();
     }
   };
 
@@ -79,7 +91,6 @@ const FrmBankList = () => {
       className="mt-4 sm:mt-6 px-2 sm:px-4"
     >
       <Card className="shadow-sm border rounded-lg">
-        {/* HEADER */}
         <CardHeader className="border-b flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
           <CardTitle className="text-lg font-semibold">बँकेची यादी</CardTitle>
 
@@ -91,7 +102,6 @@ const FrmBankList = () => {
           </Button>
         </CardHeader>
 
-        {/* TABLE */}
         <CardContent className="p-4 sm:p-6">
           <div className="border rounded-md bg-white overflow-x-auto">
             <ShadCNTable

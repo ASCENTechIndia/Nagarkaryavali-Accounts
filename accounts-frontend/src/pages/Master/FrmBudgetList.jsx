@@ -64,6 +64,15 @@ const FrmBudgetList = () => {
 
     const fetchBudgetList = async () => {
         try {
+
+            Swal.fire({
+                title: "Loading ...",
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+            });
+
             const from = formatDate(fromDate);
             const to = formatDate(toDate);
 
@@ -123,6 +132,8 @@ const FrmBudgetList = () => {
         } catch (err) {
             console.error("Budget API Error:", err);
             setTableData([]);
+        } finally {
+            Swal.close();
         }
     };
 

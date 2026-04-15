@@ -59,7 +59,11 @@ async function getCityByIdService(cityId, districtId) {
 async function cityService(data) {
   if (!data.mode) throw new AppError("Mode required", 400);
   if (!data.userId) throw new AppError("UserId required", 400);
-  if (!data.cityName) throw new AppError("City name required", 400);
+
+  if (data.mode === 1 || data.mode === 2) {
+    if (!data.cityName) throw new AppError("City name required", 400);
+    if (!data.districtId) throw new AppError("DistrictId required", 400);
+  }
 
   if (data.mode !== 1 && !data.cityId) {
     throw new AppError("CityId required for update/delete", 400);

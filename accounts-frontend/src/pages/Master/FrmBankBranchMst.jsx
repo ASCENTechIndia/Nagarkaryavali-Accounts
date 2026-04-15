@@ -54,6 +54,15 @@ const FrmBankBranchMst = () => {
 
     const fetchBranchById = async (id, setValues) => {
         try {
+
+            Swal.fire({
+                title: "Loading ...",
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+            });
+
             const res = await axios.get(
                 `${BASE_URL}/api/Bankbranch/branch/${id}`,
                 {
@@ -71,8 +80,13 @@ const FrmBankBranchMst = () => {
                     ifsc: apiData.IFSC || "",
                 });
             }
+
         } catch (err) {
             console.error("Autofill Error:", err);
+
+        }
+        finally {
+            Swal.close();
         }
     };
 
@@ -87,6 +101,15 @@ const FrmBankBranchMst = () => {
                 mode: mode === 2 ? 2 : 1,
             };
 
+            Swal.fire({
+                title: "Saving...",
+                text: "Please wait",
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+            });
+
             const res = await axios.post(
                 `${BASE_URL}/api/Bankbranch/branchmaster`,
                 payload,
@@ -94,6 +117,8 @@ const FrmBankBranchMst = () => {
                     headers: { Authorization: `Bearer ${token}` },
                 }
             );
+
+            Swal.close();
 
             if (res.data?.ok) {
                 Swal.fire({

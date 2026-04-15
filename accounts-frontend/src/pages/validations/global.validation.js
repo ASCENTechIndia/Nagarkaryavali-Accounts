@@ -288,3 +288,18 @@ export const voucherSchema = z
   return null;
 };
 
+// ContractMst
+export const contractValidationSchema = z.object({
+  prabhag: z.string().min(1, "प्रभाग निवडा"),
+  contractor: z.string().min(1, "कॉन्ट्रॅक्टर निवडा"),
+  contractDate: z.date().refine(date => date instanceof Date && !isNaN(date), "कॉन्ट्रॅक्ट दिनांक निवडा"),
+  contractAmount: z.string()
+    .min(1, "कॉन्ट्रॅक्ट रक्कम भरा")
+    .refine(val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, "कृपया वैध रक्कम भरा"),
+  startDate: z.date().refine(date => date instanceof Date && !isNaN(date), "प्रारंभ दिनांक निवडा"),
+  endDate: z.date().refine(date => date instanceof Date && !isNaN(date), "शेवटची दिनांक निवडा"),
+  description: z.string().min(1, "तपशील भरा"),
+  administrativeApproval: z.string().optional(),
+  newspaperName: z.string().optional(),
+  tenderApproval: z.string().optional(),
+});

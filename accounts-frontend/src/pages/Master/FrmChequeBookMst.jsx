@@ -283,12 +283,16 @@ const FrmChequeBookMst = () => {
               <CardContent className="p-4 sm:p-6 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2">
-                    <Label className='w-32 font-medium text-gray-700' text="झोन :" />
+                    {/* <Label className='w-36 shrink-0' text="झोन :" /> */}
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                      <Label text="झोन" />
+                      <span>:</span>
+                    </div>
                     <Select
                       value={values.zone}
                       onValueChange={(v) => setFieldValue("zone", v)}
                     >
-                      <SelectTrigger className="flex-1 h-9">
+                      <SelectTrigger className="w-full h-9">
                         <SelectValue placeholder="-- Select Zone --" />
                       </SelectTrigger>
                       <SelectContent>
@@ -302,7 +306,11 @@ const FrmChequeBookMst = () => {
                   </div>
 
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2">
-                    <Label className='w-32 font-medium text-gray-700' text="बँक जी.एल. :" />
+                    {/* <Label className='w-36 shrink-0' text="बँक जी.एल. :" /> */}
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                      <Label text="बँक जी.एल." />
+                      <span>:</span>
+                    </div>
                     <SearchableSelect
                       options={bankGLOptions}
                       value={bankGLOptions.find(opt => opt.value === values.bankGL) || null}
@@ -314,18 +322,22 @@ const FrmChequeBookMst = () => {
                         setSelectedBankGL(value);
                       }}
                       placeholder="Select Bank GL"
-                      className="flex-1"
+                      className="w-full h-9"
                     />
                   </div>
 
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2">
-                    <Label className='w-32 font-medium text-gray-700' text="बँक खाते :" />
+                    {/* <Label className='w-36 shrink-0' text="बँक खाते :" /> */}
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                      <Label text="बँक खाते" />
+                      <span>:</span>
+                    </div>
                     {/* <SearchableSelect
                       options={bankAccountOptions}
                       value={values.bankAccount}
                       onChange={(option) => setFieldValue("bankAccount", option?.value || "")}
                       placeholder="Select Bank Account"
-                      className="flex-1"
+                      className="w-full h-9"
                       disabled={!values.bankGL}
                     /> */}
                     <SearchableSelect
@@ -341,13 +353,17 @@ const FrmChequeBookMst = () => {
                         }
                       }}
                       placeholder="Select Bank Account"
-                      className="flex-1"
+                      className="w-full h-9"
                       disabled={!values.bankGL}
                     />
                   </div>
 
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2">
-                    <Label className='w-32 font-medium text-gray-700' text="धनादेश पासून :" />
+                    {/* <Label className='w-36 shrink-0' text="धनादेश पासून :" /> */}
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                      <Label text="धनादेश पासून" />
+                      <span>:</span>
+                    </div>
                     <Input
                       name="chequeFrom"
                       value={values.chequeFrom}
@@ -358,12 +374,16 @@ const FrmChequeBookMst = () => {
                       placeholder="6 digits"
                       type="text"
                       maxLength={6}
-                      className="flex-1 h-9"
+                      className="w-full h-9"
                     />
                   </div>
 
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2">
-                    <Label className='w-32 font-medium text-gray-700' text="धनादेश पर्यंत :" />
+                    {/* <Label className='w-36 shrink-0' text="धनादेश पर्यंत :" /> */}
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                      <Label text="धनादेश पर्यंत" />
+                      <span>:</span>
+                    </div>
                     <Input
                       name="chequeTo"
                       value={values.chequeTo}
@@ -374,38 +394,50 @@ const FrmChequeBookMst = () => {
                       placeholder="6 digits"
                       type="text"
                       maxLength={6}
-                      className="flex-1 h-9"
+                      className="w-full h-9"
                     />
                   </div>
 
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2">
-                    <Label className='w-32 font-medium text-gray-700' text="चेक संख्या :" />
+                    {/* <Label className='w-36 shrink-0' text="चेक संख्या :" /> */}
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                      <Label text="चेक संख्या" />
+                      <span>:</span>
+                    </div>
                     <Input
                       name="chequeCount"
                       value={values.chequeCount}
                       onChange={handleChange}
-                      className="flex-1 h-9"
+                      className="w-full h-9"
                       disabled
                     />
                   </div>
 
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2">
-                    <Label className='w-32 font-medium text-gray-700' text="धनादेश पुस्तिका क्रमांक :" />
+                    {/* <Label className='w-36 shrink-0' text="धनादेश पुस्तिका क्रमांक :" /> */}
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                      <Label text="धनादेश पुस्तिका क्रमांक " />
+                      <span>:</span>
+                    </div>
                     <Input
                       name="chequeBookNo"
                       value={values.chequeBookNo}
-                      className="flex-1 h-9"
+                      className="w-full h-9"
                       disabled
                     />
                   </div>
 
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2">
-                    <Label className='w-32 font-medium text-gray-700' text="कर्मचारी नांव :" />
+                    {/* <Label className='w-36 shrink-0' text="कर्मचारी नांव :" /> */}
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                      <Label text="कर्मचारी नांव" />
+                      <span>:</span>
+                    </div>
                     <Select
                       value={values.employeeName}
                       onValueChange={(v) => setFieldValue("employeeName", v)}
                     >
-                      <SelectTrigger className="flex-1 h-9">
+                      <SelectTrigger className="w-full h-9">
                         <SelectValue placeholder="-- Select Employee --" />
                       </SelectTrigger>
                       <SelectContent>

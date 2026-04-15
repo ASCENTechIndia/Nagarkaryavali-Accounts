@@ -20,22 +20,7 @@ import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { z } from "zod";
-
-const contractValidationSchema = z.object({
-  prabhag: z.string().min(1, "प्रभाग निवडा"),
-  contractor: z.string().min(1, "कॉन्ट्रॅक्टर निवडा"),
-  contractDate: z.date().refine(date => date instanceof Date && !isNaN(date), "कॉन्ट्रॅक्ट दिनांक निवडा"),
-  contractAmount: z.string()
-    .min(1, "कॉन्ट्रॅक्ट रक्कम भरा")
-    .refine(val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, "कृपया वैध रक्कम भरा"),
-  startDate: z.date().refine(date => date instanceof Date && !isNaN(date), "प्रारंभ दिनांक निवडा"),
-  endDate: z.date().refine(date => date instanceof Date && !isNaN(date), "शेवटची दिनांक निवडा"),
-  description: z.string().min(1, "तपशील भरा"),
-  administrativeApproval: z.string().optional(),
-  newspaperName: z.string().optional(),
-  tenderApproval: z.string().optional(),
-});
+import { contractValidationSchema } from "../validations/global.validation";
 
 const getInitialValues = () => ({
   prabhag: "",
@@ -434,10 +419,10 @@ const FrmContractEntry = () => {
 
   if (loading && mode === 2) {
     return (
-      <div className="flex items-center justify-center h-[60vh]">
-        <div className="text-center space-y-3">
-          <div className="animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
-          <p className="text-gray-600">माहिती लोड होत आहे...</p>
+      <div className="flex justify-center items-center h-64">
+        <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900 mx-auto"></div>
+            <p className="mt-4 text-gray-600">माहिती लोड होत आहे...</p>
         </div>
       </div>
     );
@@ -468,12 +453,16 @@ const FrmContractEntry = () => {
                 <CardContent className="p-4 sm:p-6 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <Label className='w-32' text="प्रभाग :" />
+                      {/* <Label className='w-36 shrink-0' text="प्रभाग :" /> */}
+                      <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="प्रभाग" />
+                        <span>:</span>
+                      </div>
                       <Select
                         value={values.prabhag}
                         onValueChange={(v) => setFieldValue("prabhag", v)}
                       >
-                        <SelectTrigger className="w-full border rounded-md flex-1 h-9">
+                        <SelectTrigger className="w-full h-9">
                           <SelectValue placeholder="-- विकल्प निवडा --" />
                         </SelectTrigger>
                         <SelectContent>
@@ -487,29 +476,39 @@ const FrmContractEntry = () => {
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <Label className='w-32' text="कॉन्ट्रॅक्टर :" />
+                      {/* <Label className='w-36 shrink-0' text="कॉन्ट्रॅक्टर :" /> */}
+                      <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="कॉन्ट्रॅक्टर" />
+                        <span>:</span>
+                      </div>
                       <SearchableSelect
                         options={contractorOptions}
                         value={values.contractor}
                         onChange={(option) => setFieldValue("contractor", option?.value || "")}
                         placeholder="कॉन्ट्रॅक्टर शोधा"
-                        className="flex-1 h-9"
+                        className="w-full h-9"
                       />
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <Label className='w-32' text="कॉन्ट्रॅक्ट दिनांक :" />
+                      {/* <Label className='w-36 shrink-0' text="कॉन्ट्रॅक्ट दिनांक :" /> */}
+                      <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="कॉन्ट्रॅक्ट दिनांक" />
+                        <span>:</span>
+                      </div>
                       <DatePicker
                         value={values.contractDate}
                         onChange={(d) => setFieldValue("contractDate", d)}
-                        className="flex-1 h-9"
+                        className="w-full h-9"
                       />
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <Label className='w-32' text="कॉन्ट्रॅक्ट रक्कम :" />
+                      {/* <Label className='w-36 shrink-0' text="कॉन्ट्रॅक्ट रक्कम :" /> */}
+                      <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="कॉन्ट्रॅक्ट रक्कम" />
+                        <span>:</span>
+                      </div>
                       <Input
                         name="contractAmount"
                         value={values.contractAmount}
@@ -517,102 +516,132 @@ const FrmContractEntry = () => {
                         type="text"
                         inputMode="decimal"
                         placeholder="रक्कम"
-                        className="flex-1 h-9"
+                        className="w-full h-9"
                       />
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <Label className='w-32' text="प्रारंभ दिनांक :" />
+                      {/* <Label className='w-36 shrink-0' text="प्रारंभ दिनांक :" /> */}
+                      <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="प्रारंभ दिनांक" />
+                        <span>:</span>
+                      </div>
                       <DatePicker
                         value={values.startDate}
                         onChange={(d) => setFieldValue("startDate", d)}
-                        className="flex-1 h-9"
+                        className="w-full h-9"
                       />
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <Label className='w-32' text="शेवटची दिनांक :" />
+                      {/* <Label className='w-36 shrink-0' text="शेवटची दिनांक :" /> */}
+                      <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="शेवटची दिनांक" />
+                        <span>:</span>
+                      </div>
                       <DatePicker
                         value={values.endDate}
                         onChange={(d) => setFieldValue("endDate", d)}
-                        className="flex-1 h-9"
+                        className="w-full h-9"
                       />
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <Label className='w-32' text="तांत्रित मान्यता :" />
+                      {/* <Label className='w-36 shrink-0' text="तांत्रित मान्यता :" /> */}
+                      <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="तांत्रित मान्यता" />
+                        <span>:</span>
+                      </div>
                       <DatePicker
                         value={values.technicalApproval}
                         onChange={(d) => setFieldValue("technicalApproval", d)}
-                        className="flex-1 h-9"
+                        className="w-full h-9"
                       />
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <Label className='w-32' text="प्रशासकीय मान्यता :" />
+                      {/* <Label className='w-36 shrink-0' text="प्रशासकीय मान्यता :" /> */}
+                      <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="प्रशासकीय मान्यता" />
+                        <span>:</span>
+                      </div>
                       <Input
                         name="administrativeApproval"
                         value={values.administrativeApproval}
                         onChange={handleChange}
                         placeholder="प्रशासकीय मान्यता"
-                        className="flex-1 h-9"
+                        className="w-full h-9"
                       />
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <Label className='w-32' text="निविदा प्रसिध्दी वृत्तपत्राचे नाव :" />
+                      {/* <Label className='w-36 shrink-0' text="निविदा प्रसिध्दी वृत्तपत्राचे नाव :" /> */}
+                      <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="निविदा प्रसिध्दी वृत्तपत्राचे नाव" />
+                        <span>:</span>
+                      </div>
                       <Input
                         name="newspaperName"
                         value={values.newspaperName}
                         onChange={handleChange}
                         placeholder="निविदा प्रसिध्दी वृत्तपत्राचे नाव"
-                        className="flex-1 h-9"
+                        className="w-full h-9"
                       />
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <Label className='w-32' text="वृत्तपत्राचे दिनांक :" />
+                      {/* <Label className='w-36 shrink-0' text="वृत्तपत्राचे दिनांक :" /> */}
+                      <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="वृत्तपत्राचे दिनांक" />
+                        <span>:</span>
+                      </div>
                       <DatePicker
                         value={values.newspaperDate}
                         onChange={(d) => setFieldValue("newspaperDate", d)}
-                        className="flex-1 h-9"
+                        className="w-full h-9"
                       />
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <Label className='w-32' text="निविदा मंजुरी :" />
+                      {/* <Label className='w-36 shrink-0' text="निविदा मंजुरी :" /> */}
+                      <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="निविदा मंजुरी" />
+                        <span>:</span>
+                      </div>
                       <Input
                         name="tenderApproval"
                         value={values.tenderApproval}
                         onChange={handleChange}
                         placeholder="निविदा मंजुरी"
-                        className="flex-1 h-9"
+                        className="w-full h-9"
                       />
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <Label className='w-32' text="कार्यादेश दिनांक :" />
+                      {/* <Label className='w-36 shrink-0' text="कार्यादेश दिनांक :" /> */}
+                      <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="कार्यादेश दिनांक" />
+                        <span>:</span>
+                      </div>
                       <DatePicker
                         value={values.workOrderDate}
                         onChange={(d) => setFieldValue("workOrderDate", d)}
-                        className="flex-1 h-9"
+                        className="w-full h-9"
                       />
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <Label className='w-32' text="तपशील :" />
+                      {/* <Label className='w-36 shrink-0' text="तपशील :" /> */}
+                      <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="तपशील" />
+                        <span>:</span>
+                      </div>
                       <Input
                         name="description"
                         value={values.description}
                         onChange={handleChange}
                         placeholder="तपशील"
-                        className="flex-1 h-9"
+                        className="w-full h-9"
                       />
                     </div>
                   </div>
@@ -633,7 +662,7 @@ const FrmContractEntry = () => {
 
                     <div className="border rounded-lg overflow-hidden">
                       <div className="overflow-x-auto">
-                        <Table className="w-full [&_thead_tr:hover]:bg-[#083c76]">
+                        <Table className="w-full max-md:min-w-380 [&_thead_tr:hover]:bg-[#083c76]">
                           <TableHeader>
                             <TableRow className="bg-blue-900">
                               <TableHead className="text-white text-center font-semibold p-3 whitespace-nowrap">
@@ -719,9 +748,13 @@ const FrmContractEntry = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <Label className='w-32' text="एकूण :" />
+                      {/* <Label className='w-36 shrink-0' text="एकूण :" /> */}
+                      <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="एकूण" />
+                        <span>:</span>
+                      </div>
                       <Input
-                        className="h-9 flex-1 bg-gray-100"
+                        className="w-full h-9 bg-gray-100"
                         value={`${calculateTotal().toLocaleString("en-IN")}`}
                         readOnly
                         disabled

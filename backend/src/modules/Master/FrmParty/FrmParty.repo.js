@@ -4,7 +4,7 @@ const { withTx } = require("../../../db/tx");
 
 async function getCorporationList() {
   const sql = `
-    SELECT var_corporation_name, num_corporation_id
+    SELECT var_corporation_name, num_corporation_id, var_corporation_mname
     FROM admins.aoma_corporation_mas
     ORDER BY num_corporation_id
   `;

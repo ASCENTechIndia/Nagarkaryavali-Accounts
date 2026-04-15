@@ -5,5 +5,6 @@ const controller = require("./frmDepositType.controller");
 
 router.post("/deposit-types", auth(), controller.getDepositTypes);
 router.post("/DepositTypeById", auth(), controller.getDepositTypeById);
+router.post("/SaveDepositType", auth(), controller.saveDepositType);
 
 module.exports = router;

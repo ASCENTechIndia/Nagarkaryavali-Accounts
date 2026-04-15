@@ -4,13 +4,9 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ShadCNTable from "@/components/ui/table";
+import Swal from "sweetalert2";
 
 import {
   Select,
@@ -68,15 +64,25 @@ const FrmBalanceSheetSubGroupList = () => {
     try {
       setLoading(true);
 
+      Swal.fire({
+        title: "डेटा लोड होत आहे...",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      });
+
       const res = await api.get(
-        `/api/SubGroup/balsubgrouplist?groupId=${groupId}`
+        `/api/SubGroup/balsubgrouplist?groupId=${groupId}`,
       );
 
       if (res.data?.ok && res.data?.data?.list) {
         setSubGroupList(res.data.data.list);
       }
+
+      Swal.close();
     } catch (err) {
+      Swal.close();
       console.error("❌ Error fetching subgroup list:", err);
+      Swal.fire("Error", "डेटा लोड करताना त्रुटी आली", "error");
     } finally {
       setLoading(false);
     }
@@ -94,6 +100,7 @@ const FrmBalanceSheetSubGroupList = () => {
   }, []);
 
   /* 🔥 MAP TABLE */
+  /* 🔥 MAP TABLE */
   const tableData = subGroupList.map((row) => ({
     select: (
       <Button
@@ -103,7 +110,12 @@ const FrmBalanceSheetSubGroupList = () => {
           navigate("/Masters/FrmBalanceSheetSubGroupMst", {
             state: {
               mode: 2,
-              data: row,
+              data: {
+                // Extracting using the exact keys from your provided List JSON
+                BALANCESUBGRPID: row.NUM_BALSUBGRPMST_BALSUBGRPID,
+                BALANCEGRPID: row.NUM_BALGRPMST_BALGRPID,
+                BALANCESUBGRPNAME: row.VAR_BALSUBGRPMST_BALSUBGRPNAME,
+              },
             },
           })
         }
@@ -115,13 +127,8 @@ const FrmBalanceSheetSubGroupList = () => {
   }));
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="max-w-7xl mx-auto mt-6"
-    >
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
       <Card className="shadow-sm border rounded-lg">
-
         {/* HEADER */}
         <CardHeader className="border-b flex justify-between items-center">
           <CardTitle className="text-lg font-semibold">
@@ -130,20 +137,16 @@ const FrmBalanceSheetSubGroupList = () => {
 
           <Button
             className="bg-blue-900 hover:bg-blue-800 text-white"
-            onClick={() =>
-              navigate("/Masters/FrmBalanceSheetSubGroupMst")
-            }
+            onClick={() => navigate("/Masters/FrmBalanceSheetSubGroupMst")}
           >
             नवीन जोडा
           </Button>
         </CardHeader>
 
         <CardContent className="p-6 space-y-6">
-
           {/* FILTER */}
           <div className="border rounded-md p-6">
             <div className="grid md:grid-cols-2 gap-x-10 gap-y-6">
-
               <div className="flex items-center gap-4">
                 <span className="w-40 text-right font-medium text-gray-700">
                   शिल्लकपत्रक गट :
@@ -156,27 +159,23 @@ const FrmBalanceSheetSubGroupList = () => {
 
                   <SelectContent>
                     {groupList.map((grp) => (
-                      <SelectItem
-                        key={grp.VALUE}
-                        value={String(grp.VALUE)}
-                      >
+                      <SelectItem key={grp.VALUE} value={String(grp.VALUE)}>
                         {grp.LABEL}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-
             </div>
           </div>
 
           {/* TABLE */}
           {group && (
             <div className="border rounded-md overflow-hidden bg-white">
-
               {loading ? (
-                <div className="p-4 text-center text-gray-500">
-                  Loading...
+                <div className="flex flex-col items-center justify-center py-10 gap-3">
+                  <div className="w-2 h-2 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-gray-500 text-xs">डेटा लोड होत आहे...</p>
                 </div>
               ) : (
                 <ShadCNTable
@@ -186,10 +185,8 @@ const FrmBalanceSheetSubGroupList = () => {
                   pagination={true}
                 />
               )}
-
             </div>
           )}
-
         </CardContent>
       </Card>
     </motion.div>

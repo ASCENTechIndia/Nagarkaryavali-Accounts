@@ -1,5 +1,6 @@
 const { executeQuery } = require("../../../db/queryExecutor");
-
+const { executeProcedure } = require("../../../db/procedureExecutor");
+const oracledb = require("oracledb");
 
 /* 1 */
 async function getPendingVouchersRepo({ zoneId, ulbId }) {
@@ -161,7 +162,7 @@ async function getVoucherDetailsRepo({ refno, zoneid, ulbid }) {
 
 /* 7 */
 async function getVoucherDetailLinesRepo({ refno, ulbid }) {
-   const sql = `
+  const sql = `
       SELECT 
         a.num_vchprepdet_refno,
         accdr.functioncode AS glcode,
@@ -396,6 +397,111 @@ async function getVoucherReceiptDetailsRepo({ refno, ulbid }) {
   return result.rows;
 }
 
+async function saveVoucherRepo(payload) {
+  console.log("📤 Repo: Save Voucher", payload);
+
+  const sql = `
+    BEGIN
+      aoac_voucherpreparation_ins(
+        :In_UserId,
+        :In_ParamStr,
+        :In_ParamStr2,
+        :In_ParamStr3,
+        :In_ParamStr4,
+        :In_ZoneId,
+        :out_ReturnStr,
+        :out_ErrorCode,
+        :out_ErrorMsg
+      );
+    END;
+  `;
+
+  const binds = {
+    // ✅ ORDER MATTERS (match procedure exactly)
+    In_UserId: String(payload.userId),
+    In_ParamStr: String(payload.paramStr),
+
+    In_ParamStr2: payload.paramStr2 || null,
+    In_ParamStr3: payload.paramStr3 || null,
+    In_ParamStr4: payload.paramStr4 || null,
+
+    In_ZoneId: Number(payload.zoneId),
+
+    out_ReturnStr: {
+      dir: oracledb.BIND_OUT,
+      type: oracledb.STRING,
+      maxSize: 500,
+    },
+    out_ErrorCode: {
+      dir: oracledb.BIND_OUT,
+      type: oracledb.NUMBER,
+    },
+    out_ErrorMsg: {
+      dir: oracledb.BIND_OUT,
+      type: oracledb.STRING,
+      maxSize: 1000,
+    },
+  };
+
+  const result = await executeProcedure({ sql, binds });
+
+  if (!result.success) {
+    throw new Error(result.error);
+  }
+
+  return result.outBinds;
+}
+
+async function deleteVoucherRepo(payload) {
+  console.log("📤 Repo: Delete Voucher", payload);
+
+  const sql = `
+    BEGIN
+      aoac_voucherpreparation_Delete(
+        :In_UserId,
+        :In_Refno,
+        :In_orgid,
+        :out_ReturnStr,
+        :out_ErrorCode,
+        :out_ErrorMsg
+      );
+    END;
+  `;
+
+  const binds = {
+    In_UserId: String(payload.userId),
+    In_Refno: String(payload.refNo),
+    In_orgid: String(payload.orgId),
+
+    out_ReturnStr: {
+      dir: oracledb.BIND_OUT,
+      type: oracledb.STRING,
+      maxSize: 100,
+    },
+    out_ErrorCode: {
+      dir: oracledb.BIND_OUT,
+      type: oracledb.NUMBER,
+    },
+    out_ErrorMsg: {
+      dir: oracledb.BIND_OUT,
+      type: oracledb.STRING,
+      maxSize: 1000,
+    },
+  };
+
+  const result = await executeProcedure({
+    sql,
+    binds
+    
+  });
+
+  if (!result.success) {
+    throw new Error(result.error);
+  }
+
+  return result.outBinds;
+}
+
 module.exports = {
   getPendingVouchersRepo,
   getDepositeDropdownRepo,
@@ -414,5 +520,7 @@ module.exports = {
   getPartyTaxDetailsRepo,
   getNidhiConfigRepo,
   getGovtTaxAccRepo,
-  getVoucherReceiptDetailsRepo
+  getVoucherReceiptDetailsRepo,
+  saveVoucherRepo,
+  deleteVoucherRepo
 };

@@ -38,22 +38,42 @@ const FrmDepositTypeMst = () => {
 
   const fetchDepositById = async (id, setValues) => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/Deposit/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+
+      Swal.fire({
+        title: "Loading ...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
         },
       });
 
-      const apiData = res.data?.data?.data;
+      const res = await axios.post(
+        `${BASE_URL}/api/frmDepositType/DepositTypeById`,
+        {
+          depId: id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("Deposit Autofill Response:", res.data);
+
+      const apiData = res.data?.data?.data?.[0];
+
       if (apiData) {
         setValues({
-          municipality: apiData.ULBID,
-          depositCode: apiData.DEPOSITID,
-          depositName: apiData.DEPOSITNAME.trim(),
+          municipality: apiData.NUM_DEPOSITMST_ULBID?.toString() || "",
+          depositCode: apiData.DEPID || "",
+          depositName: apiData.DEPNAME?.trim() || "",
         });
       }
+      Swal.close();
     } catch (err) {
       console.error("Autofill API Error:", err);
+      Swal.close();
     }
   };
 
@@ -84,28 +104,44 @@ const FrmDepositTypeMst = () => {
   const handleSubmit = async (values) => {
     try {
       const payload = {
-        ULBID: values.municipality,
-        DepositId: values.depositCode,
-        DepositName: values.depositName,
-        userId: user?.userId,
         mode: mode === 2 ? 2 : 1,
+        depName: values.depositName,
+        userId: user?.userId,
+        ulbId: ulbId,
       };
 
-      const res = await axios.post(`${BASE_URL}/api/Deposit/depositmaster`, payload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      Swal.fire({
+        title: "Saving...",
+        text: "Please wait",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
         },
       });
 
+      const res = await axios.post(
+        `${BASE_URL}/api/frmDepositType/SaveDepositType`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      Swal.close();
+
       if (res.data?.ok) {
         Swal.fire({
-          text: res.data.message,
+          text: res.data?.data?.message,
           confirmButtonColor: "#1e3a8a",
         });
+
         navigate("/Masters/FrmDepositTypeList");
       }
     } catch (err) {
       console.error("Save API Error:", err);
+
       Swal.fire({
         text: "Something went wrong",
         confirmButtonColor: "#1e3a8a",
@@ -168,7 +204,7 @@ const FrmDepositTypeMst = () => {
                         name="depositCode"
                         value={values.depositCode}
                         onChange={handleChange}
-                        disabled={mode === 2} // disable in edit mode
+                        disabled
                         className="w-full sm:flex-1"
                       />
                     </div>

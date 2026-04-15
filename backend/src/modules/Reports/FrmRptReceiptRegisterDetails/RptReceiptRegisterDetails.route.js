@@ -8,10 +8,15 @@ const controller = require("./RptReceiptRegisterDetails.controller");
 router.post("/transaction-report", auth(), controller.getTransactionReport);
 
 // Nidhi Config
-router.get("/nidhi", auth(), controller.getNidhiConfig);
+router.get("/Vouchernidhi", auth(), controller.getNidhiConfig);   /// '/nidhi' also present in frmAccount
+
+router.post(
+  "/transaction-report-pdf",
+  auth(),
+  controller.generateTransactionPDF
+);
 
 router.post("/dailyCashbookreport", auth(), controller.getDailyTransactionReport);
-
 router.post("/openingbalance", auth(), controller.getOpeningBalance);
 
 module.exports = router;

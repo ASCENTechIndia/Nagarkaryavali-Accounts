@@ -1,6 +1,7 @@
 const asyncHandler = require("../../../libs/asyncHandler");
 const { ok } = require("../../../libs/response");
 const service = require("./frmVoucher.service");
+const { AppError } = require("../../../libs/errors");
 
 /* 1 */
 exports.getPendingVouchers = asyncHandler(async (req, res) => {
@@ -108,4 +109,56 @@ exports.getGovtTaxAcc = asyncHandler(async (req, res) => {
 exports.getVoucherReceiptDetails = asyncHandler(async (req, res) => {
   const data = await service.getVoucherReceiptDetailsService(req.body);
   return ok(res, data);
+});
+
+exports.saveVoucher = asyncHandler(async (req, res) => {
+  console.log("📥 Request Body:", req.body);
+
+  const {
+    userId,
+    paramStr,
+    paramStr2,
+    paramStr3,
+    paramStr4,
+    zoneId,
+  } = req.body;
+
+  // ✅ VALIDATION
+  if (!userId) throw new AppError("userId is required", 400);
+  if (!paramStr) throw new AppError("paramStr is required", 400);
+  if (!zoneId) throw new AppError("zoneId is required", 400);
+
+  const payload = {
+    userId,
+    paramStr,
+    paramStr2,
+    paramStr3,
+    paramStr4,
+    zoneId,
+  };
+
+  const data = await service.saveVoucherService(payload);
+
+  return ok(res, data, data.message);
+});
+
+exports.deleteVoucher = asyncHandler(async (req, res) => {
+  console.log("📥 Request Body:", req.body);
+
+  const { userId, refNo, orgId } = req.body;
+
+  // ✅ VALIDATION
+  if (!userId) throw new AppError("userId is required", 400);
+  if (!refNo) throw new AppError("refNo is required", 400);
+  if (!orgId) throw new AppError("orgId is required", 400);
+
+  const payload = {
+    userId,
+    refNo,
+    orgId,
+  };
+
+  const data = await service.deleteVoucherService(payload);
+
+  return ok(res, data, data.out_ErrorMsg);
 });

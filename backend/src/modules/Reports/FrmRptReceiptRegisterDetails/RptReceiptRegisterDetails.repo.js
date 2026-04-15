@@ -79,6 +79,7 @@ async function getNidhiConfig(budgetId, ulbId) {
   if (!result.success) throw new Error(result.error);
   return result.rows;
 }
+
 async function getDailyTransactionReport(filters) {
   let params = {
     ulbId: filters.ulbId,
@@ -264,12 +265,9 @@ async function getOpeningBalance(filters) {
   return result.rows.length > 0 ? result.rows[0].CLOSING_BALANCE : 0;
 }
 
-
 module.exports = {
-
-  getTransactionReport, 
-  getNidhiConfig,
   getDailyTransactionReport,
   getOpeningBalance,
-  
+  getTransactionReport, 
+  getNidhiConfig,
 };

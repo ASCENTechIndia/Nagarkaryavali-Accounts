@@ -79,7 +79,10 @@ async function getStateByIdService(stateId) {
 async function stateService(data) {
   if (!data.mode) throw new AppError("Mode required (1,2,3)", 400);
   if (!data.userId) throw new AppError("UserId required", 400);
-  if (!data.stateName) throw new AppError("State Name required", 400);
+
+  if (data.mode === 1 || data.mode === 2) {
+    if (!data.stateName) throw new AppError("State Name required", 400);
+  }
 
   if (data.mode !== 1 && !data.stateId) {
     throw new AppError("StateId required for update/delete", 400);

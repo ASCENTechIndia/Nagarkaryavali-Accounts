@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,22 +37,42 @@ const FrmZoneMst = () => {
 
   const fetchZoneById = async (id, setValues) => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/Zone/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+
+      Swal.fire({
+        title: "Loading ...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
         },
       });
 
-      const apiData = res.data?.data?.data;
+      const res = await axios.post(
+        `${BASE_URL}/api/frmzoneList/ZoneById`,
+        {
+          zoneId: id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("Zone Autofill Response:", res.data);
+
+      const apiData = res.data?.data?.data?.[0];
+
       if (apiData) {
         setValues({
-          municipality: apiData.ULBID,
-          zoneCode: apiData.ZONECODE,
-          zoneName: apiData.ZONENAME.trim(),
+          municipality: apiData.CORPID?.toString() || "",
+          zoneCode: apiData.ZONEID || "",
+          zoneName: apiData.ZONEENAME?.trim() || "",
         });
       }
+      Swal.close();
     } catch (err) {
       console.error("Autofill API Error:", err);
+      Swal.close();
     }
   };
 
@@ -84,28 +103,45 @@ const FrmZoneMst = () => {
   const handleSubmit = async (values) => {
     try {
       const payload = {
-        ULBID: values.municipality,
-        ZoneCode: values.zoneCode,
-        ZoneName: values.zoneName,
-        userId: user?.userId,
         mode: mode === 2 ? 2 : 1,
+        zoneName: values.zoneName,
+        userId: user?.userId,
+        ulbId: Number(values.municipality),
+        zoneId: values.zoneCode || null,
       };
 
-      const res = await axios.post(`${BASE_URL}/api/Zone/zonemaster`, payload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      Swal.fire({
+        title: "Saving...",
+        text: "Please wait",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
         },
       });
 
+      const res = await axios.post(
+        `${BASE_URL}/api/frmzoneList/save-zone`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      Swal.close();
+
       if (res.data?.ok) {
         Swal.fire({
-          text: res.data.message,
+          text: res.data?.data?.message || "Success",
           confirmButtonColor: "#1e3a8a",
         });
+
         navigate("/Masters/FrmZoneList");
       }
     } catch (err) {
       console.error("Save API Error:", err);
+
       Swal.fire({
         text: "Something went wrong",
         confirmButtonColor: "#1e3a8a",
@@ -137,7 +173,6 @@ const FrmZoneMst = () => {
 
                 <CardContent className="p-4 sm:p-6 space-y-6">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-                    {/* Municipality (auto-selected, disabled) */}
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                       <Label className="sm:w-40">नगरपालिक :</Label>
                       <Select
@@ -161,7 +196,6 @@ const FrmZoneMst = () => {
                       </Select>
                     </div>
 
-                    {/* Zone Code */}
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                       <Label className="sm:w-40">झोन संकेतांक :</Label>
                       <Input
@@ -169,10 +203,10 @@ const FrmZoneMst = () => {
                         value={values.zoneCode}
                         onChange={handleChange}
                         className="w-full sm:flex-1"
+                        disabled
                       />
                     </div>
 
-                    {/* Zone Name */}
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                       <Label className="sm:w-40">प्रभागाचे नाव :</Label>
                       <Input
@@ -184,7 +218,6 @@ const FrmZoneMst = () => {
                     </div>
                   </div>
 
-                  {/* Buttons */}
                   <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 pt-4">
                     <Button type="submit" className="bg-blue-900 text-white px-6 w-full sm:w-auto">
                       साठवा

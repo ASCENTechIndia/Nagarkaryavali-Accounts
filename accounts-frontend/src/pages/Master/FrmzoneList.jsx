@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 
 import ShadCNTable from "@/components/ui/table";
+import Swal from "sweetalert2";
 
 const FrmZoneList = () => {
     const navigate = useNavigate();
@@ -55,7 +56,6 @@ const FrmZoneList = () => {
             if (corpData.length > 0) {
                 const defaultCorp = corpData[0].CORPORATIONID.toString();
                 setSelectedCorp(defaultCorp);
-                fetchZones(defaultCorp);
             }
         } catch (err) {
             console.error("Corporation API Error:", err);
@@ -64,9 +64,18 @@ const FrmZoneList = () => {
 
     const fetchZones = async (corpId) => {
         try {
+
+            Swal.fire({
+                title: "Loading ...",
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+            });
+
             const res = await axios.post(
-                `${BASE_URL}/api/Zone/zonelist`,
-                { corp_id: corpId },
+                `${BASE_URL}/api/FrmAccount/zone-list`,
+                { corpId: Number(corpId) },
                 {
                     headers: {
                         Authorization: `Bearer ${user.token}`,
@@ -74,7 +83,7 @@ const FrmZoneList = () => {
                 }
             );
 
-            const apiData = res.data?.data?.list || [];
+            const apiData = res.data?.data?.data || [];
 
             const formatted = apiData.map((item) => ({
                 select: (
@@ -87,7 +96,7 @@ const FrmZoneList = () => {
                                     mode: 2,
                                     data: {
                                         id: item.ZONEID,
-                                        zoneName: item.ZONENAME.trim(),
+                                        zoneName: item.ZONENAME?.trim() || "",
                                     },
                                 },
                             })
@@ -96,19 +105,22 @@ const FrmZoneList = () => {
                         निवडा
                     </Button>
                 ),
-                zoneName: item.ZONENAME.trim(),
+                zoneName: item.ZONENAME?.trim() || "",
             }));
 
             setTableData(formatted);
+            Swal.close();
         } catch (err) {
             console.error("Zone API Error:", err);
             setTableData([]);
+            Swal.close();
         }
     };
 
     useEffect(() => {
         fetchCorporations();
-    }, []);
+        fetchZones(ulbId);
+    }, [ulbId]);
 
     return (
         <motion.div
@@ -117,7 +129,6 @@ const FrmZoneList = () => {
             className="mt-4 sm:mt-6 px-2 sm:px-4"
         >
             <Card className="shadow-sm border rounded-lg">
-                {/* HEADER */}
                 <CardHeader className="border-b flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                     <CardTitle className="text-lg font-semibold">प्रभाग यादी</CardTitle>
 
@@ -130,36 +141,40 @@ const FrmZoneList = () => {
                 </CardHeader>
 
                 <CardContent className="p-4 sm:p-6 space-y-6">
-                    {/* Corporation Dropdown */}
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                        <span className="sm:w-40 text-left sm:text-right font-medium text-gray-700">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4 items-center">
+
+                        <span className="text-sm sm:text-base font-medium text-gray-700 sm:text-right">
                             नगरपालिकेचे नाव :
                         </span>
-                        <Select
-                            value={selectedCorp}
-                            onValueChange={(val) => {
-                                setSelectedCorp(val);
-                                fetchDeposits(val);
-                            }}
-                            disabled
-                        >
-                            <SelectTrigger className="w-full sm:flex-1 h-9">
-                                <SelectValue placeholder="-- निवडा --" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {corporations.map((corp) => (
-                                    <SelectItem
-                                        key={corp.CORPORATIONID}
-                                        value={corp.CORPORATIONID.toString()}
-                                    >
-                                        {corp.CORPORATIONNAME}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+
+                        <div className="sm:col-span-2">
+                            <Select
+                                value={selectedCorp}
+                                onValueChange={(val) => {
+                                    setSelectedCorp(val);
+                                    fetchDeposits();
+                                }}
+                                disabled
+                            >
+                                <SelectTrigger className="w-full h-9">
+                                    <SelectValue placeholder="-- निवडा --" />
+                                </SelectTrigger>
+
+                                <SelectContent>
+                                    {corporations.map((corp) => (
+                                        <SelectItem
+                                            key={corp.CORPORATIONID}
+                                            value={corp.CORPORATIONID.toString()}
+                                        >
+                                            {corp.CORPORATIONNAME}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
                     </div>
 
-                    {/* TABLE */}
                     <div className="border rounded-md bg-white overflow-x-auto">
                         <ShadCNTable
                             headers={headers}

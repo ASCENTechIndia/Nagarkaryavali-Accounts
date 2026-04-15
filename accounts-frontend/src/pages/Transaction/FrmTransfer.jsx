@@ -1,17 +1,17 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+
 import { motion } from "framer-motion";
 import { Formik, Form } from "formik";
 import Swal from "sweetalert2";
-import { useEffect, useState } from "react";
-import apiService from "../../apiService";
-
-import { validateTransfer } from "@/validations/validations";
+import { useEffect, useState, useRef } from "react";
+import axios from "axios";
+import { useAuth } from "@/context/AuthContext";
 
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Button } from "@/Components/ui/button";
 import { Textarea } from "@/Components/ui/textarea";
-import { DatePicker } from "@/Components/ui/calendar";
+import SearchableSelect from "@/components/SearchableSelect";
 
 import {
   Select,
@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/Components/ui/select";
 
-/* ================= INITIAL VALUES ================= */
+/* ================= INITIAL ================= */
 const initialValues = {
   department: "",
   transactionType: "",
@@ -40,346 +40,527 @@ const initialValues = {
   debitAmount: "",
 };
 
-const FrmTransfer = () => {
-  const [loading] = useState(false);
-  const navigate = useNavigate();
+const Row = ({ label, children }) => (
+  <div className="grid grid-cols-[160px_1fr] items-center gap-3">
+    <Label className="text-right">{label} :</Label>
+    {children}
+  </div>
+);
 
+const FrmTransfer = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const token = user?.token;
+  const ulbId = user?.ulbId;
+  const location = useLocation();
+
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+  const [zones, setZones] = useState([]);
   const [transactionTypes, setTransactionTypes] = useState([]);
+  const [glCodes, setGlCodes] = useState([]);
+  const [creditLedgers, setCreditLedgers] = useState([]);
+  const [debitLedgers, setDebitLedgers] = useState([]);
+
   const [parties, setParties] = useState([]);
 
+  const isEditMode = Boolean(location?.state?.refNo);
+
+  const formikRef = useRef(null);
+
+  /* ================= DATE ================= */
+  const formatDate = (d) => {
+    const date = new Date(d);
+    return `${date.getDate()}-${date
+      .toLocaleString("en-US", { month: "short" })
+      .toUpperCase()}-${date.getFullYear()}`;
+  };
+
   useEffect(() => {
-    fetchTransactionTypes();
-    fetchParties();
-  }, []);
+    if (!ulbId) return;
 
-  const fetchTransactionTypes = async () => {
+    const headers = { Authorization: `Bearer ${token}` };
+
+    /* ZONES */
+    axios
+      .post(`${BASE_URL}/api/Receipt/zones`, { corp_id: ulbId }, { headers })
+      .then((res) => setZones(res.data?.data || []));
+
+    /* TRANSACTION TYPES */
+    axios
+      .get(`${BASE_URL}/api/FrmTransfer/transaction-types`, { headers })
+      .then((res) => setTransactionTypes(res.data?.data?.rows || []));
+
+    /* GL CODES */
+    axios
+      .get(`${BASE_URL}/api/FrmTransfer/gl-codes`, { headers })
+      .then((res) => setGlCodes(res.data?.data?.rows || []));
+
+    /* PARTY LIST */
+    axios
+      .post(
+        `${BASE_URL}/api/FrmTransfer/party-list`,
+        {
+          corpId: ulbId,
+        },
+        { headers },
+      )
+      .then((res) => setParties(res.data?.data?.rows || []));
+  }, [ulbId]);
+
+  const loadLedgers = async (glcode, type) => {
+    if (!glcode || !ulbId) return [];
+
     try {
-      const res = await apiService.get("transaction-types");
-      if (res?.data?.success) {
-        setTransactionTypes(res.data.data);
-      }
+      const res = await axios.post(
+        `${BASE_URL}/api/FrmTransfer/credit-leasure`,
+        {
+          corp_id: ulbId,
+          glcode,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      const rows = res.data?.data?.rows || [];
+      console.log(`Ledgers for GLCODE ${glcode} fetched:`, rows);
+
+      if (type === "credit") setCreditLedgers([...rows]);
+      else setDebitLedgers([...rows]);
+
+      return rows; // ✅ CRITICAL FIX
     } catch (err) {
-      console.error("Error fetching transaction types", err);
+      console.error(err);
+      return [];
     }
   };
 
-  const fetchParties = async () => {
-    try {
-      const res = await apiService.post("party-list", {
-        corpId: 770,
-      });
+  useEffect(() => {
+    if (!location?.state?.refNo || !token || !ulbId) return;
 
-      if (res?.data?.success) {
-        setParties(res.data.data);
+    const fetchData = async () => {
+      try {
+        const headers = { Authorization: `Bearer ${token}` };
+
+        const res = await axios.post(
+          `${BASE_URL}/api/FrmTransfer/contra-details`,
+          { tranRef: location.state.refNo },
+          { headers },
+        );
+
+        const rows = res.data?.data?.rows || [];
+        console.log("Contra details fetched:", rows);
+        if (!rows.length) return;
+
+        const first = rows[0];
+        const credit = rows.find((r) => Number(r.CREDIT) > 0);
+        const debit = rows.find((r) => Number(r.DEBIT) > 0);
+
+        const form = formikRef.current;
+        if (!form) return;
+
+        // 🔹 BASIC FIELDS
+        form.setFieldValue("department", String(first.ZONEID || ""));
+        form.setFieldValue("transactionType", String(first.TRNSTYPEID || ""));
+        form.setFieldValue("date", new Date(first.TRNSDATE));
+        form.setFieldValue("voucherNo", first.VCHNO || "");
+        form.setFieldValue("details", first.NARRATION || "");
+
+        const partyId =
+          first.PARTYID ||
+          first.NUM_PARTYID ||
+          first.NUM_PARTYMST_PARTYID ||
+          first.PARTYMST_PARTYID ||
+          "";
+
+        setTimeout(() => {
+          form.setFieldValue("party", String(partyId || ""));
+        }, 100);
+
+        // 🔥 CREDIT LEDGER (NEW API FIX)
+        if (credit?.GLCODE) {
+          await loadLedgers(String(credit.GLCODE), "credit");
+
+          form.setFieldValue("creditDept", String(credit.GLCODE));
+
+          setTimeout(() => {
+            form.setFieldValue("creditLedger", String(credit.OBJECTCODE));
+          }, 150);
+
+          form.setFieldValue("creditAmount", Math.abs(credit.CREDIT || 0));
+        }
+
+        // 🔥 DEBIT LEDGER (NEW API FIX)
+        if (debit?.GLCODE) {
+          await loadLedgers(String(debit.GLCODE), "debit");
+
+          form.setFieldValue("debitDept", String(debit.GLCODE));
+
+          setTimeout(() => {
+            form.setFieldValue("debitLedger", String(debit.OBJECTCODE));
+          }, 150);
+
+          form.setFieldValue("debitAmount", Math.abs(debit.DEBIT || 0));
+        }
+      } catch (err) {
+        console.error("contra-details error:", err);
       }
-    } catch (err) {
-      console.error("Error fetching parties", err);
-    }
-  };
+    };
 
-  const handleSubmit = (values) => {
-    const errors = validateTransfer(values);
+    fetchData();
+  }, [location?.state?.refNo, token, ulbId]);
 
-    if (errors?.length > 0) {
+  /* ================= SUBMIT ================= */
+  const handleSubmit = async (values) => {
+    try {
+      if (!values.department) return Swal.fire("प्रभाग निवडा");
+      if (!values.transactionType) return Swal.fire("व्यवहार प्रकार निवडा");
+
+      if (!values.creditDept || !values.creditLedger)
+        return Swal.fire("Credit खाते निवडा");
+
+      if (!values.debitDept || !values.debitLedger)
+        return Swal.fire("Debit खाते निवडा");
+
+      if (Number(values.debitAmount) > Number(values.creditAmount))
+        return Swal.fire("Debit > Credit नाही");
+
+      /* PARAM STR */
+      const paramStr = [
+        formatDate(values.date),
+        values.voucherNo || "1",
+        values.department,
+        "0",
+        values.transactionType,
+        "1",
+        "0",
+        "",
+        "",
+        "",
+        "",
+        values.chequeNo || "0",
+        formatDate(values.chequeDate),
+        values.chequeRef || "0",
+      ].join("~");
+
+      const credit = [
+        values.creditDept,
+        values.creditLedger,
+        values.creditAmount,
+        values.details,
+        values.party || " ",
+      ].join("#");
+
+      const debit = [
+        values.debitDept,
+        values.debitLedger,
+        -Math.abs(values.debitAmount),
+        values.details,
+        values.party || " ",
+      ].join("#");
+
+      const paramStr2 = `${credit}$${debit}`;
+
       Swal.fire({
-        icon: "warning",
-        title: errors[0].message,
-        confirmButtonColor: "#083c76",
+        title: "Saving...",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
       });
-      return;
+
+      const res = await axios.post(
+        `${BASE_URL}/api/FrmTransfer/transfer-save`,
+        {
+          userId: user?.userId,
+          paramStr,
+          paramStr2,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      Swal.close();
+
+      if (res.data?.errorCode === -100) {
+        Swal.fire("Success", res.data.message, "success");
+        navigate("/Transactions/FrmTransferList");
+      } else {
+        Swal.fire(res.data?.message || "Error");
+      }
+    } catch (err) {
+      Swal.close();
+      Swal.fire("Server Error");
     }
-
-    console.log(values);
-
-    Swal.fire({
-      icon: "success",
-      title: "डेटा यशस्वीरित्या सेव झाला",
-      confirmButtonColor: "#083c76",
-    });
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center mt-10 text-gray-600">
-        Loading...
-      </div>
-    );
-  }
-
-
-
+  
+  /* ================= UI ================= */
   return (
-    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-      {({ values, handleChange, setFieldValue, resetForm }) => (
+    <Formik
+  initialValues={initialValues}
+  onSubmit={handleSubmit}
+  innerRef={formikRef}
+>
+  {({ values, setFieldValue }) => {
+    const showChequeFields = values.transactionType === "5";
 
+    // ✅ HANDLE RESET WITHOUT useEffect
+    const handleTransactionChange = (v) => {
+      setFieldValue("transactionType", v);
+
+      if (v !== "3") {
+        setFieldValue("chequeNo", "");
+        setFieldValue("chequeDate", new Date());
+      }
+    };
+
+    return (
         <Form>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          // className="min-h-screen bg-gray-50 p-4 sm:p-6"
-          >
-            <div className=" bg-white border rounded-lg shadow-sm">
-              {/* HEADER */}
-              <div className="border-b px-4 sm:px-6 py-4 text-lg font-semibold">
-                Transfer Details
-              </div>
+          <div className=" rounded-md p-4">
+            <h2 className="text-lg font-semibold mb-3">
+              Transfer/Contra Entry
+            </h2>
 
-              <div className="p-4 sm:p-6 space-y-6">
-                {/* TOP SECTION */}
-                <section className="border rounded-lg p-4 sm:p-5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-4">
-                    {/* प्रभाग */}
-                    <div className="flex flex-col sm:grid sm:grid-cols-[90px_10px_1fr] gap-2 items-start sm:items-center">
-                      <Label className="sm:text-right whitespace-nowrap">
-                        प्रभाग
-                      </Label>
-                      <span className="hidden sm:flex justify-center">:</span>
-                      <Select
-                        value={values.department}
-                        onValueChange={(v) => setFieldValue("department", v)}
-                      >
-                        <SelectTrigger className="h-9 w-full">
-                          <SelectValue placeholder="निवडा" />
-                        </SelectTrigger>
-                      </Select>
-                    </div>
+            <div className="bg-white border p-4">
+              {/* 🔷 TOP ROW */}
+              <div className="grid grid-cols-4 gap-6 mb-4">
+                <div className="flex items-center gap-2">
+                  <Label className="w-24 text-right">प्रभाग :</Label>
+                  <Select
+                    value={values.department}
+                    onValueChange={(v) => setFieldValue("department", v)}
+                    disabled={isEditMode}
+                  >
+                    <SelectTrigger className="w-full h-8">
+                      <SelectValue placeholder="-- निवडा --" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {zones.map((z) => (
+                        <SelectItem key={z.ZONEID} value={String(z.ZONEID)}>
+                          {z.ZONEENAME}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                    {/* व्यवहार प्रकार */}
-                    <div className="flex flex-col sm:grid sm:grid-cols-[90px_10px_1fr] gap-2 items-start sm:items-center">
-                      <Label className="sm:text-right whitespace-nowrap">
-                        व्यवहार प्रकार
-                      </Label>
-                      <span className="hidden sm:flex justify-center">:</span>
-                      <Select
-                        value={values.transactionType}
-                        onValueChange={(v) =>
-                          setFieldValue("transactionType", v)
-                        }
-                      >
-                        <SelectTrigger className="h-9 w-full">
-                          <SelectValue placeholder="निवडा" />
-                        </SelectTrigger>
+                <div className="flex items-center gap-2">
+                  <Label className="w-28 text-right">व्यवहार प्रकार :</Label>
+                  <Select
+                    value={values.transactionType}
+                    onValueChange={handleTransactionChange}
+                    disabled={isEditMode}
+                  >
+                    <SelectTrigger className="w-full h-8">
+                      <SelectValue placeholder="-- निवडा --" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {transactionTypes.map((t) => (
+                        <SelectItem
+                          key={t.NUM_TRNSTYPE_TRNSTYPEID}
+                          value={String(t.NUM_TRNSTYPE_TRNSTYPEID)}
+                        >
+                          {t.VAR_TRNSTYPE_TRNSTYPE}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                        <SelectContent>
-                          {transactionTypes.map((item) => (
-                            <SelectItem
-                              key={item.NUM_TRNSTYPE_TRNSTYPEID}
-                              value={item.NUM_TRNSTYPE_TRNSTYPEID.toString()}
-                            >
-                              {item.VAR_TRNSTYPE_TRNSTYPE}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                <div className="flex items-center gap-2">
+                  <Label className="w-20 text-right">दिनांक :</Label>
+                  <Input
+                    className="w-[150px] h-8"
+                    value={formatDate(values.date)}
+                    readOnly
+                  />
+                </div>
 
-                    {/* दिनांक */}
-                    <div className="flex flex-col sm:grid sm:grid-cols-[90px_10px_1fr] gap-2 items-start sm:items-center">
-                      <Label className="sm:text-right whitespace-nowrap">
-                        दिनांक
-                      </Label>
-                      <span className="hidden sm:flex justify-center">:</span>
-                      <DatePicker
-                        value={values.date}
-                        onChange={(d) => setFieldValue("date", d)}
-                        className="h-9 w-full"
-                      />
-                    </div>
-
-                    {/* वाउचर */}
-                    <div className="flex flex-col sm:grid sm:grid-cols-[90px_10px_1fr] gap-2 items-start sm:items-center">
-                      <Label className="sm:text-right whitespace-nowrap">
-                        व्हाउचर क्रमांक
-                      </Label>
-                      <span className="hidden sm:flex justify-center">:</span>
-                      <Input
-                        name="voucherNo"
-                        value={values.voucherNo}
-                        onChange={handleChange}
-                        className="h-9 w-full"
-                      />
-                    </div>
-                  </div>
-                </section>
-
-                {/* CREDIT + DEBIT */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* CREDIT */}
-                  <section className="border rounded-lg p-4 sm:p-5 space-y-4">
-                    <h3 className="font-semibold text-gray-700">जमा</h3>
-
-                    {/* विभाग कोड */}
-                    <div className="flex flex-col sm:grid sm:grid-cols-[140px_10px_1fr] gap-2 items-start sm:items-center">
-                      <Label className="sm:text-right">विभाग कोड</Label>
-                      <span className="hidden sm:flex justify-center">:</span>
-                      <Input
-                        name="creditDept"
-                        value={values.creditDept}
-                        onChange={handleChange}
-                      />
-                    </div>
-
-                    {/* लेखाशिर्ष */}
-                    <div className="flex flex-col sm:grid sm:grid-cols-[140px_10px_1fr] gap-2 items-start sm:items-center">
-                      <Label className="sm:text-right">लेखाशिर्ष</Label>
-                      <span className="hidden sm:flex justify-center">:</span>
-                      <Input
-                        name="creditLedger"
-                        value={values.creditLedger}
-                        onChange={handleChange}
-                      />
-                    </div>
-
-                    {/* रक्कम */}
-                    <div className="flex flex-col sm:grid sm:grid-cols-[140px_10px_1fr] gap-2 items-start sm:items-center">
-                      <Label className="sm:text-right">रक्कम</Label>
-                      <span className="hidden sm:flex justify-center">:</span>
-                      <Input
-                        name="creditAmount"
-                        value={values.creditAmount}
-                        onChange={handleChange}
-                      />
-                    </div>
-
-                    {/* ✅ Conditional Cheque Fields */}
-                    {!hideChequeFields && (
-                      <>
-                        {/* धनादेश क्रमांक */}
-                        <div className="flex flex-col sm:grid sm:grid-cols-[140px_10px_1fr] gap-2 items-start sm:items-center">
-                          <Label className="sm:text-right">धनादेश क्रमांक</Label>
-                          <span className="hidden sm:flex justify-center">:</span>
-                          <Input
-                            name="chequeNo"
-                            value={values.chequeNo}
-                            onChange={handleChange}
-                          />
-                        </div>
-
-                        {/* धनादेश तारीख */}
-                        <div className="flex flex-col sm:grid sm:grid-cols-[140px_10px_1fr] gap-2 items-start sm:items-center">
-                          <Label className="sm:text-right">धनादेश तारीख</Label>
-                          <span className="hidden sm:flex justify-center">:</span>
-                          <DatePicker
-                            value={values.chequeDate}
-                            onChange={(d) => setFieldValue("chequeDate", d)}
-                          />
-                        </div>
-
-                        {/* धनादेश पुष्टी */}
-                        <div className="flex flex-col sm:grid sm:grid-cols-[140px_10px_1fr] gap-2 items-start sm:items-center">
-                          <Label className="sm:text-right">धनादेश पुष्टी</Label>
-                          <span className="hidden sm:flex justify-center">:</span>
-                          <Select
-                            value={values.chequeRef}
-                            onValueChange={(v) => setFieldValue("chequeRef", v)}
-                          >
-                            <SelectTrigger className="h-9 w-full">
-                              <SelectValue placeholder="Select" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="1">Ref 1</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </>
-                    )}
-
-                    {/* पार्टी */}
-                    <div className="flex flex-col sm:grid sm:grid-cols-[140px_10px_1fr] gap-2 items-start sm:items-center">
-                      <Label className="sm:text-right">पार्टी</Label>
-                      <span className="hidden sm:flex justify-center">:</span>
-                      <Select
-                        value={values.party}
-                        onValueChange={(v) => setFieldValue("party", v)}
-                      >
-                        <SelectTrigger className="h-9 w-full">
-                          <SelectValue placeholder="निवडा" />
-                        </SelectTrigger>
-
-                        <SelectContent>
-                          {parties.map((item) => (
-                            <SelectItem
-                              key={item.NUM_PARTYMST_PARTYID}
-                              value={item.NUM_PARTYMST_PARTYID.toString()}
-                            >
-                              {item.VAR_PARTYMST_PARTYNAME}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* तपशील */}
-                    <div className="flex flex-col sm:grid sm:grid-cols-[140px_10px_1fr] gap-2">
-                      <Label className="sm:text-right">तपशील</Label>
-                      <span className="hidden sm:flex justify-center mt-2">:</span>
-                      <Textarea
-                        name="details"
-                        value={values.details}
-                        onChange={handleChange}
-                        className="min-h-20 w-full"
-                      />
-                    </div>
-                  </section>
-
-                  {/* DEBIT */}
-                  <section className="border rounded-lg p-4 sm:p-5 space-y-4">
-                    <h3 className="font-semibold text-gray-700">खर्च</h3>
-
-                    {["debitDept", "debitLedger", "debitAmount"].map(
-                      (field, i) => {
-                        const labels = ["विभाग कोड", "लेखाशिर्ष", "रक्कम"];
-                        return (
-                          <div
-                            key={field}
-                            className="flex flex-col sm:grid sm:grid-cols-[140px_10px_1fr] gap-2 items-start sm:items-center"
-                          >
-                            <Label className="sm:text-right">{labels[i]}</Label>
-                            <span className="hidden sm:flex justify-center">
-                              :
-                            </span>
-                            <Input
-                              name={field}
-                              value={values[field]}
-                              onChange={handleChange}
-                            />
-                          </div>
-                        );
-                      },
-                    )}
-                  </section>
+                <div className="flex items-center gap-2">
+                  <Label className="w-32 text-right">व्हाउचर क्रमांक :</Label>
+                  <Input
+                    className="w-[150px] h-8"
+                    value={values.voucherNo}
+                    onChange={(e) => setFieldValue("voucherNo", e.target.value)}
+                    disabled={isEditMode}
+                  />
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 border-t p-4">
-                <Button
-                  type="submit"
-                  className="bg-blue-900 text-white px-6 w-full sm:w-auto"
-                >
-                  स्वीकार
-                </Button>
+              <hr className="my-4" />
 
-                <Button
-                  variant="outline"
-                  onClick={resetForm}
-                  className="w-full sm:w-auto"
-                >
+              {/* 🔷 MAIN */}
+              <div className="grid grid-cols-2 gap-16">
+                {/* LEFT */}
+                <div>
+                  <h3 className="mb-2 font-semibold">जमा</h3>
+
+                  <div className="space-y-3">
+                    <Row label="विभाग कोड">
+                      <SearchableSelect
+                        options={glCodes.map((g) => ({
+                          label: g.GLNAME || "",
+                          value: String(g.GLCODE || ""),
+                        }))}
+                        value={values.creditDept}
+                        onChange={async (v) => {
+                          setFieldValue("creditDept", v);
+                          setFieldValue("creditLedger", "");
+                          await loadLedgers(v, "credit");
+                        }}
+                      />
+                    </Row>
+
+                    <Row label="लेखाशिर्ष">
+                      <SearchableSelect
+                        options={creditLedgers.map((l) => ({
+                          label: l.ACCNAME || "",
+                          value: String(l.OBJECTCODE || ""),
+                        }))}
+                        value={values.creditLedger}
+                        onChange={(v) => setFieldValue("creditLedger", v)}
+                      />
+                    </Row>
+
+                    <Row label="रक्कम">
+                      <Input
+                        className="w-full h-8"
+                        value={values.creditAmount}
+                        onChange={(e) =>
+                          setFieldValue("creditAmount", e.target.value)
+                        }
+                      />
+                    </Row>
+    {showChequeFields && (
+                <>
+                  <Row label="धनादेश क्रमांक">
+                    <Input
+                      className="w-full h-8"
+                      value={values.chequeNo}
+                      onChange={(e) =>
+                        setFieldValue("chequeNo", e.target.value)
+                      }
+                    />
+                  </Row>
+
+                  <Row label="धनादेश तारीख">
+                    <Input
+                      className="w-full h-8"
+                      value={formatDate(values.chequeDate)}
+                      readOnly
+                    />
+                  </Row>
+
+                  <Row label="धनादेश पुष्टिका क्रमांक">
+                    <Select>
+                      <SelectTrigger className="w-full h-8">
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        <SelectItem value="1">1</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Row>
+                </>
+              )}
+
+                    <Row label="तपशील">
+                      <Textarea
+                        className="w-full"
+                        value={values.details}
+                        onChange={(e) =>
+                          setFieldValue("details", e.target.value)
+                        }
+                      />
+                    </Row>
+
+                    {/* ✅ FIXED PARTY */}
+                    <Row label="पार्टी संकेतांक">
+                      <Select
+                        value={values.party ? String(values.party) : ""}
+                        onValueChange={(v) => setFieldValue("party", v)}
+                      >
+                        <SelectTrigger className="w-full h-8">
+                          <SelectValue placeholder="-- निवडा --" />
+                        </SelectTrigger>
+
+                        <SelectContent>
+                          {parties.map((p) => (
+                            <SelectItem
+                              key={p.NUM_PARTYMST_PARTYID}
+                              value={String(p.NUM_PARTYMST_PARTYID)} // ✅ correct field
+                            >
+                              {p.VAR_PARTYMST_PARTYNAME || "--"}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </Row>
+                  </div>
+                </div>
+
+                {/* RIGHT */}
+                <div>
+                  <h3 className="mb-2 font-semibold">खर्च</h3>
+
+                  <div className="space-y-3">
+                    <Row label="विभाग कोड">
+                      <SearchableSelect
+                        options={glCodes.map((g) => ({
+                          label: g.GLNAME || "",
+                          value: String(g.GLCODE || ""),
+                        }))}
+                        value={values.debitDept}
+                        onChange={async (v) => {
+                          setFieldValue("debitDept", v);
+                          setFieldValue("debitLedger", "");
+                          await loadLedgers(v, "debit");
+                        }}
+                      />
+                    </Row>
+
+                    <Row label="लेखाशिर्ष">
+                      <SearchableSelect
+                        options={debitLedgers.map((l) => ({
+                          label: l.ACCNAME || "",
+                          value: String(l.OBJECTCODE || ""),
+                        }))}
+                        value={values.debitLedger}
+                        onChange={(v) => setFieldValue("debitLedger", v)}
+                      />
+                    </Row>
+
+                    <Row label="रक्कम">
+                      <Input
+                        className="w-full h-8"
+                        value={values.debitAmount}
+                        onChange={(e) =>
+                          setFieldValue("debitAmount", e.target.value)
+                        }
+                      />
+                    </Row>
+                  </div>
+                </div>
+              </div>
+
+              {/* BUTTONS */}
+              <div className="flex justify-center gap-3 mt-6">
+                <Button className="bg-blue-900 text-white px-6">स्वीकार</Button>
+                <Button variant="destructive" className="px-6">
+                  रद्द
+                </Button>
+                <Button variant="secondary" className="px-6">
                   बदल
-                </Button>
-
-                <Button
-                  variant="destructive"
-                  onClick={() => navigate("/Transactions/FrmTransferList")}
-                  className="w-full sm:w-auto"
-                >
-                  परत
                 </Button>
               </div>
             </div>
-          </motion.div>
+          </div>
         </Form>
-      )}
-    </Formik>
+      );
+  }}
+</Formik>
   );
 };
 

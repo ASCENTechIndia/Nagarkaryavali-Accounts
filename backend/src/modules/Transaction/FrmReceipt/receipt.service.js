@@ -140,6 +140,16 @@ async function receiptInsertUpdate(data) {
 }
 
 
+async function getBudgetHeads() {
+  const result = await repo.getBudgetHeadsRepo();
+
+  if (!result) {
+    throw new AppError("Failed to fetch budget heads", 500);
+  }
+
+  return result.rows;
+}
+
 // ================= EXPORT =================
 module.exports = {
   getReceiptList,
@@ -152,5 +162,6 @@ module.exports = {
   getParty,
   searchGL,
   receiptInsertUpdate,
-  searchGLALL
+  searchGLALL,
+  getBudgetHeads
 };

@@ -86,10 +86,7 @@ const FrmBalanceSheetGroupMst = () => {
         didOpen: () => Swal.showLoading(),
       });
 
-      const res = await api.post(
-        `/api/Balancesheet/balgroupmaster`,
-        payload
-      );
+      const res = await api.post(`/api/Balancesheet/balgroupmaster`, payload);
 
       Swal.close();
 
@@ -128,10 +125,9 @@ const FrmBalanceSheetGroupMst = () => {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-7xl mx-auto mt-6"
+            
           >
             <Card className="shadow-sm border rounded-lg">
-
               {/* HEADER */}
               <CardHeader className="border-b">
                 <CardTitle className="text-lg font-semibold">
@@ -140,11 +136,10 @@ const FrmBalanceSheetGroupMst = () => {
               </CardHeader>
 
               <CardContent className="p-6">
-                <div className="p-8 space-y-6">
-
+                <div className="space-y-5 max-w-2xl mx-auto">
                   {/* ID */}
-                  <div className="flex items-center gap-6">
-                    <Label className="w-60 text-right font-medium">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 items-center">
+                    <Label className="text-sm sm:text-right sm:pr-2 font-medium">
                       शिल्लकपत्रक गट संकेतांक :
                     </Label>
 
@@ -152,14 +147,14 @@ const FrmBalanceSheetGroupMst = () => {
                       name="balGrpId"
                       value={values.balGrpId}
                       onChange={handleChange}
-                      className="w-80 h-9"
-                      disabled={mode === 2} // 🔥 disable in edit
+                      disabled={mode === 2}
+                      className="w-full h-9"
                     />
                   </div>
 
                   {/* NAME */}
-                  <div className="flex items-center gap-6">
-                    <Label className="w-60 text-right font-medium">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 items-center">
+                    <Label className="text-sm sm:text-right sm:pr-2 font-medium">
                       शिल्लकपत्रक गट नांव :
                     </Label>
 
@@ -167,15 +162,18 @@ const FrmBalanceSheetGroupMst = () => {
                       name="balGrpName"
                       value={values.balGrpName}
                       onChange={handleChange}
-                      className="w-80 h-9"
+                      className="w-full h-9"
                     />
                   </div>
-
                 </div>
 
                 {/* BUTTONS */}
-                <div className="flex justify-center gap-4 mt-10 border-t pt-6">
-                  <Button type="submit" disabled={isSubmitting}>
+                <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mt-10 border-t pt-6">
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full sm:w-auto"
+                  >
                     {isSubmitting ? "Saving..." : "साठवा"}
                   </Button>
 
@@ -185,11 +183,11 @@ const FrmBalanceSheetGroupMst = () => {
                     onClick={() =>
                       navigate("/Masters/FrmBalanceSheetGroupList")
                     }
+                    className="w-full sm:w-auto"
                   >
                     परत
                   </Button>
                 </div>
-
               </CardContent>
             </Card>
           </motion.div>

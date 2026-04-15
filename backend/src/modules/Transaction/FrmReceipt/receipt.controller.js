@@ -76,3 +76,8 @@ exports.receiptInsertUpdate = asyncHandler(async (req, res) => {
   const data = await service.receiptInsertUpdate(req.body);
   return ok(res, data);
 });
+
+exports.getBudgetHeads = asyncHandler(async (req, res) => {
+  const data = await service.getBudgetHeads();
+  return ok(res, data);
+});

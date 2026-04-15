@@ -15,7 +15,7 @@ function Label({ text, required = false, className, children, ...props }) {
   return (
     <LabelPrimitive.Root
       className={cn(
-        "flex items-center w-28 text-sm font-medium text-gray-800 gap-1",
+        "flex items-center sm:w-28 text-sm font-medium text-gray-800 gap-1",
         className
       )}
       {...props}

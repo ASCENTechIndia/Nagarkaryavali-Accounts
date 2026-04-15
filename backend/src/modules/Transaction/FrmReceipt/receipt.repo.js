@@ -218,6 +218,12 @@ const receiptInsertUpdateRepo = (data) =>
   });
 
 
+const getBudgetHeadsRepo = () =>
+  executeQuery(`select var_budgetconfig_budgetname,
+                        num_budgetconfig_headid
+                from aoac_budgetconfig_det
+                where num_budgetconfig_level=1`);
+
 module.exports = {
   getReceiptListRepo,
   getZonesRepo,
@@ -229,5 +235,6 @@ module.exports = {
   getPartyRepo,
   searchGLRepo,
   receiptInsertUpdateRepo,
-  searchGLALLRepo
+  searchGLALLRepo,
+  getBudgetHeadsRepo
 };

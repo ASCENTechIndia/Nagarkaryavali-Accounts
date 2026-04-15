@@ -279,26 +279,25 @@ const FrmBudgetHeadConfigList = () => {
   return (
     <motion.div variants={container} initial="hidden" animate="show">
       <Card className="shadow-sm border">
-        <CardHeader className="border-b">
+        <CardHeader className="border-b flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
           <CardTitle className="text-lg font-semibold">
             Budget Head Master List
           </CardTitle>
+          <Button
+            className="bg-blue-900 hover:bg-blue-800 text-white w-full sm:w-auto"
+            onClick={handleAddNew}
+          >
+            Add New
+          </Button>
         </CardHeader>
         <CardContent className="p-4 sm:p-6 space-y-6">
-          <div>
-            <Button
-              className="bg-blue-900 hover:bg-blue-800 text-white w-full sm:w-auto"
-              onClick={handleAddNew}
-            >
-              Add New
-            </Button>
-          </div>
-
-          <hr />
-
           <div className="flex flex-wrap items-center gap-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2">
-              <Label className='w-32' text="Select :" />
+              {/* <Label className='w-36 shrink-0' text="Select :" /> */}
+              <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                <Label text="Select " />
+                <span>:</span>
+              </div>
               <div className="flex items-center gap-2">
                 <Input
                   type="radio"
@@ -355,13 +354,17 @@ const FrmBudgetHeadConfigList = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <Label className="w-32 font-medium text-gray-700">Head :</Label>
+              {/* <Label className='w-36 shrink-0' text="Head: " /> */}
+              <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                <Label text="Head " />
+                <span>:</span>
+              </div>
               <Select
                 value={selectedHead}
                 onValueChange={setSelectedHead}
                 disabled={selectedOption === "Head"}
               >
-                <SelectTrigger className="flex-1 h-9">
+                <SelectTrigger className="w-full h-9">
                   <SelectValue placeholder="-- Select Head --" />
                 </SelectTrigger>
                 <SelectContent>
@@ -375,13 +378,17 @@ const FrmBudgetHeadConfigList = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <Label className="w-32 font-medium text-gray-700">SubHead :</Label>
+              {/* <Label className='w-36 shrink-0' text="SubHead: " /> */}
+              <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                <Label text="SubHead " />
+                <span>:</span>
+              </div>
               <Select
                 value={selectedSubHead}
                 onValueChange={setSelectedSubHead}
                 disabled={selectedOption === "Head" || selectedOption === "SubHead"}
               >
-                <SelectTrigger className="flex-1 h-9">
+                <SelectTrigger className="w-full h-9">
                   <SelectValue placeholder="-- Select SubHead --" />
                 </SelectTrigger>
                 <SelectContent>
@@ -395,13 +402,17 @@ const FrmBudgetHeadConfigList = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <Label className="w-32 font-medium text-gray-700">Group :</Label>
+              {/* <Label className='w-36 shrink-0' text="Group : " /> */}
+              <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                <Label text="Group " />
+                <span>:</span>
+              </div>
               <Select
                 value={selectedGroup}
                 onValueChange={setSelectedGroup}
                 disabled={selectedOption === "Head" || selectedOption === "SubHead" || selectedOption === "Group"}
               >
-                <SelectTrigger className="flex-1 h-9">
+                <SelectTrigger className="w-full h-9">
                   <SelectValue placeholder="-- Select Group --" />
                 </SelectTrigger>
                 <SelectContent>

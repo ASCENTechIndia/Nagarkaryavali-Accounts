@@ -24,7 +24,21 @@ async function getDepositTypeByIdService(payload) {
   };
 }
 
+async function saveDepositTypeService(payload) {
+  console.log("📥 Service: Save Deposit Type", payload);
+
+  const result = await repo.saveDepositTypeRepo(payload);
+
+  return {
+    success: result.out_ErrorCode === -100,
+    errorCode: result.out_ErrorCode,
+    message: result.out_ErrorMsg,
+  };
+}
+
+
 module.exports = {
   getDepositTypeService,
   getDepositTypeByIdService,
+  saveDepositTypeService, 
 };
