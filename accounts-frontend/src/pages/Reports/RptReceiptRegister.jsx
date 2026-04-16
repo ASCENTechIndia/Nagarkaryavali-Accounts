@@ -3,10 +3,8 @@ import { Formik, Form } from "formik";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
     Select,
     SelectTrigger,
@@ -19,15 +17,13 @@ import { useAuth } from "@/context/AuthContext";
 import config from "@/utils/config.jsx"
 import Swal from "sweetalert2";
 import * as XLSX from "xlsx";
-import { saveAs } from "file-saver";
-
 import { DatePicker } from "@/components/ui/calendar";
 import SearchableSelect from "@/components/SearchableSelect";
 
 const initialValues = {
     zoneId: "",
-    fromDate: null,
-    toDate: null,
+    fromDate: new Date(),
+    toDate: new Date(),
     wardCode: "",
     head: "",
     userId: "",
@@ -157,7 +153,6 @@ const RptReceiptRegister = () => {
                 minorCode: values.head || null,
             };
 
-            // ================== ✅ PDF ==================
             if (values.exportType === "pdf") {
                 const res = await axios.post(
                     `${BASE_URL}/api/RptReceiptRegister/receipt-register-report-pdf`,
@@ -226,20 +221,29 @@ const RptReceiptRegister = () => {
             }));
 
             const worksheet = XLSX.utils.json_to_sheet(formattedData);
+
+            const wscols = [
+                { wch: 15 }, // TRNSDATE
+                { wch: 10 }, // GLCODE
+                { wch: 30 }, // GLNAME
+                { wch: 15 }, // ACCNO
+                { wch: 30 }, // ACCNAME
+                { wch: 15 }, // ZONEENAME
+                { wch: 15 }, // FUNCTIONCODE
+                { wch: 20 }, // OBJECTCODE
+                { wch: 12 }, // AMOUNT
+                { wch: 15 }, // BUDGETCODE
+            ];
+            worksheet["!cols"] = wscols;
+
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Receipt Register");
 
-            const excelBuffer = XLSX.write(workbook, {
-                bookType: "xlsx",
-                type: "array",
-            });
+            const date = new Date();
+            const timestamp = date.toISOString().split("T")[0].replace(/-/g, "");
+            const filename = `Receipt_Register_${timestamp}.xlsx`;
 
-
-            const blob = new Blob([excelBuffer], {
-                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            });
-
-            saveAs(blob, "Receipt_Register.xlsx");
+            XLSX.writeFile(workbook, filename);
 
         } catch (err) {
             console.error("Error:", err);
