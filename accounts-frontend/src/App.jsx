@@ -53,7 +53,9 @@ import FrmBalanceSheetSubGroupMst from "./pages/Master/FrmBalanceSheetSubGroupMs
 import FrmBankReconciliation from "./pages/Transaction/FrmBankReconciliation";
 import FrmTransferList from "./pages/Transaction/FrmTransferList";
 import FrmTransfer from "./pages/Transaction/FrmTransfer";
-
+import RptClassifiedRegisterDetails from "./pages/Reports/RptClassifiedRegisterDetails";
+import FrmSearchOption from "./pages/Transaction/FrmSearchOption";
+import RptClassifiedAbstractSummary from "./pages/Reports/RptClassifiedAbstractSummary";
 import FrmGovtTaxPayment from "./pages/Transaction/FrmGovtTaxPayment";
 import RptReceiptRegisterDetails from "./pages/ReportsForm/RptReceiptRegisterDetails";
 import RptLedgerReport from "./pages/Reports/RptLedgerReport";
@@ -193,7 +195,7 @@ export const router = createBrowserRouter([
       {
         path: "/Masters/FrmPartyMaster",
         element: <FrmPartyMaster />
-      },     
+      },
       {
         path: "/Masters/FrmInvestmentTypeList",
         element: <FrmInvestmentTypeList />
@@ -242,7 +244,7 @@ export const router = createBrowserRouter([
         path: "/Masters/FrmDepositTypeMst",
         element: <FrmDepositTypeMst />
       },
-      
+
       {
         path: "/Masters/FrmBudgetHeadConfigList",
         element: <FrmBudgetHeadConfigList />
@@ -277,8 +279,19 @@ export const router = createBrowserRouter([
         path: "/Masters/FrmBudgetPrepration",
         element: <FrmBudgetPrepration />
       },
+      {
+        path: "/ReportsForm/RptClassifiedRegisterDetails",
+        element: <RptClassifiedRegisterDetails />
+      },
+      {
+        path: "/ReportsForm/RptClassifiedAbstractSummary",
+        element: <RptClassifiedAbstractSummary />
+      },
+      {
+        path: "/Transactions/FrmSearchOption",
+        element: <FrmSearchOption />
+      },
 
-      
       {
         path: "/ReportsForm/RptReceiptRegister",
         element: <RptReceiptRegister />
