@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+body { font-family: Arial; font-size: 10px; }
+
+.header { text-align:center; font-size:16px; font-weight:bold; }
+
+.sub { text-align:center; margin:4px; }
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+
+th, td {
+  border:1px solid black;
+  padding:4px;
+  text-align:right;
+}
+
+td.name {
+  text-align:left;
+}
+
+th {
+  background:#eee;
+}
+
+.total {
+  font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">{{corporationName}}</div>
+
+<div class="sub">
+For the Period {{fromDate}} to {{toDate}}
+</div>
+
+<div class="sub">
+Classified Abstract of Receipts
+</div>
+
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">Account Code</th>
+  <th style="text-align:left">Account Name</th>
+  <th>Actual Receipts</th>
+  <th>Income To Date</th>
+  <th>Budget Provision</th>
+  <th>Balance</th>
+</tr>
+</thead>
+
+<tbody>
+
+{{#each rows}}
+<tr>
+  <td style="text-align:left">{{ACCOUNTCODE}}</td>
+  <td class="name">{{ACCNAME}}</td>
+  <td>{{ACTUAL}}</td>
+  <td>{{EXPENDITURE}}</td>
+  <td>{{BUDGET}}</td>
+  <td>{{BALANCE}}</td>
+</tr>
+{{/each}}
+
+<tr class="total">
+  <td colspan="2">Total</td>
+  <td>{{totalActual}}</td>
+  <td>{{totalExpenditure}}</td>
+  <td>{{totalBudget}}</td>
+  <td>{{totalBalance}}</td>
+</tr>
+
+</tbody>
+</table>
+
+</body>
+</html>
