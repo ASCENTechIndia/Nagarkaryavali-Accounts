@@ -10,8 +10,10 @@ export default function SearchableSelect({
   const [query, setQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const wrapperRef = useRef(null);
+  const prevValueRef = useRef(value);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -29,11 +31,25 @@ export default function SearchableSelect({
   }, [showDropdown]);
 
   useEffect(() => {
-    if (value && options.length > 0) {
-      const selected = options.find((opt) => opt.value === value);
+    if (!value || value === "") {
+      setQuery("");
+      prevValueRef.current = "";
+      setIsInitialized(false);
+      return;
+    }
 
-      if (selected) {
-        setQuery(selected.label);
+    if (value && typeof value === 'string' && options.length > 0) {
+      // Only update if value has changed
+      if (value !== prevValueRef.current) {
+        const selected = options.find((opt) => opt.value === value);
+        if (selected) {
+          setQuery(selected.label);
+          prevValueRef.current = value;
+          setIsInitialized(true);
+        } else {
+          setQuery("");
+          prevValueRef.current = "";
+        }
       }
     }
   }, [value, options]);
@@ -42,22 +58,34 @@ export default function SearchableSelect({
     opt.label.toLowerCase().includes(query.toLowerCase())
   );
 
+  const handleInputChange = (e) => {
+    const val = e.target.value;
+    setQuery(val);
+    setActiveIndex(-1);
+
+    if (val.trim().length > 0) {
+      setShowDropdown(true);
+    } else {
+      setShowDropdown(false);
+      if (value) {
+        onChange({ value: "", label: "" });
+      }
+    }
+  };
+
+  const handleSelectOption = (option) => {
+    setQuery(option.label);
+    onChange(option);
+    setShowDropdown(false);
+    setIsInitialized(true);
+  };
+
   return (
     <div ref={wrapperRef} className="relative w-full">
       <Input
         value={query}
         placeholder={placeholder}
-        onChange={(e) => {
-          const val = e.target.value;
-          setQuery(val);
-          setActiveIndex(-1);
-
-          if (val.trim().length > 0) {
-            setShowDropdown(true);
-          } else {
-            setShowDropdown(false);
-          }
-        }}
+        onChange={handleInputChange}
         onKeyDown={(e) => {
           if (!showDropdown) return;
 
@@ -79,10 +107,7 @@ export default function SearchableSelect({
             e.preventDefault();
             if (activeIndex >= 0) {
               const selected = filteredOptions[activeIndex];
-              setQuery(selected.label);
-              // onChange(selected.value);
-              onChange(selected);
-              setShowDropdown(false);
+              handleSelectOption(selected);
             }
           }
 
@@ -102,12 +127,7 @@ export default function SearchableSelect({
                   ? "bg-accent text-black"
                   : "hover:bg-blue-100"
               }`}
-              onClick={() => {
-                setQuery(opt.label);
-                // onChange(opt.value);
-                onChange(opt);
-                setShowDropdown(false);
-              }}
+              onClick={() => handleSelectOption(opt)}
             >
               {opt.label}
             </div>
