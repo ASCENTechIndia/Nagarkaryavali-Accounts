@@ -1,0 +1,116 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>Monthly Summary</title>
+
+<style>
+body{
+  font-family: Arial;
+  font-size:8px;
+}
+
+.header{
+  text-align:center;
+  font-weight:bold;
+  font-size:16px;
+}
+
+.sub{
+  text-align:center;
+  margin:4px;
+  font-size:11px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+}
+
+th, td{
+  border:1px solid #000;
+  padding:3px;
+  text-align:center;
+  word-wrap:break-word;
+}
+
+th{
+  background:#f2f2f2;
+  font-weight:bold;
+}
+
+.text-left{
+  text-align:left;
+}
+
+.small{
+  font-size:7px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">{{corporationName}}</div>
+<div class="sub">{{subtitle}}</div>
+<div class="sub">
+अहवालाचा कालावधी : {{fromDate}} ते {{toDate}}
+</div>
+
+<table>
+<thead>
+
+<tr>
+  <th rowspan="2">Sr.No</th>
+  <th rowspan="2">Budget Head</th>
+  <th rowspan="2">Original Budget</th>
+  <th rowspan="2">Revised Budget</th>
+
+  <th colspan="31">Day Wise Amount</th>
+
+  <th rowspan="2">Total For Month</th>
+  <th rowspan="2">Total End of Month</th>
+  <th rowspan="2">Progressive Total</th>
+  <th rowspan="2">Available Budget Balance</th>
+</tr>
+
+<tr>
+  {{#each (range 1 31)}}
+    <th class="small">D{{this}}</th>
+  {{/each}}
+</tr>
+
+</thead>
+
+<tbody>
+
+{{#each rows}}
+<tr>
+  <td>{{SRNO}}</td>
+
+  <td class="text-left">
+    {{OBJECTCODE}} <br/>
+    {{ACCNAME}}
+  </td>
+
+  <td>{{BUDGAMOUT}}</td>
+  <td>{{BUDGPROV}}</td>
+
+  {{#each DAYS}}
+    <td>{{this}}</td>
+  {{/each}}
+
+  <td>{{TOTAL}}</td>
+  <td>{{TOTAL}}</td>
+  <td>{{TOTAL}}</td>
+  <td>{{TOTAL}}</td>
+</tr>
+{{/each}}
+
+</tbody>
+</table>
+
+</body>
+</html>
