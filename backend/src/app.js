@@ -87,7 +87,9 @@ app.use("/api/RptReceiptRegister", require("./modules/Reports/RptReceiptRegister
 app.use("/api/RptLedgerReport", require("./modules/Reports/RptLedgerReport/rptLedgerReport.route"))
 app.use("/api/RptTransferRegister", require("./modules/Reports/RptTransferRegister/transferRegister.route"))
 app.use("/api/RptCashBankBalance", require("./modules/Reports/RptCashBankBalance/rptCashBankBalance.route"))
-app.use("/api/Classified", require ("./modules/Reports/RptClassifiedRegister/RptClassifiedRegisterDetails.route"))
+app.use("/api/Classified", require("./modules/Reports/RptClassifiedRegister/RptClassifiedRegisterDetails.route"))
+
+app.use("/api/BudgetAccMap",require("./modules/Transaction/FrmBudgetAccountMap/FrmBudgetAccountMap.routes"))
 
 
 app.use(errorMiddleware);
