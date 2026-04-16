@@ -1,4 +1,7 @@
 const { executeQuery } = require("../../../db/queryExecutor");
+const oracledb = require("oracledb");
+const { withTx } = require("../../../db/tx");
+
 
 const getTransactionTypes = async () => {
   const query = `
@@ -108,15 +111,14 @@ const getTransferList = async (zoneId, ulbId) => {
   return executeQuery(query, { zoneId, ulbId });
 };
 
-const transferInsertUpdate = async (userId, paramStr, paramStr2) => {
-  let connection;
 
-  try {
-    connection = await getConnection();
+const transferInsertUpdate = (userId, paramStr, paramStr2) =>
+  withTx(async (connection) => {
+    console.log("Repo received data:", { userId, paramStr, paramStr2 });
 
     const result = await connection.execute(
       `BEGIN
-         aoac_transfer_ins(
+         aoac_transfer_ins( 
             :in_userid,
             :in_paramstr,
             :in_paramstr2,
@@ -126,26 +128,35 @@ const transferInsertUpdate = async (userId, paramStr, paramStr2) => {
          );
        END;`,
       {
-        in_userid: userId,
-        in_paramstr: paramStr,
-        in_paramstr2: paramStr2,
+        in_userid: userId || null,
+        in_paramstr: paramStr || null,
+        in_paramstr2: paramStr2 || null,
 
-        out_returnstr: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 1000 },
-        out_errorcode: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
-        out_errormsg: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 1000 },
+        out_returnstr: {
+          dir: oracledb.BIND_OUT,
+          type: oracledb.STRING,
+          maxSize: 1000,
+        },
+        out_errorcode: {
+          dir: oracledb.BIND_OUT,
+          type: oracledb.NUMBER,
+        },
+        out_errormsg: {
+          dir: oracledb.BIND_OUT,
+          type: oracledb.STRING,
+          maxSize: 1000,
+        },
       }
     );
+
+    console.log("Repo Result:", result);
 
     return {
       errorCode: result.outBinds.out_errorcode,
       message: result.outBinds.out_errormsg,
       refNo: result.outBinds.out_returnstr,
     };
-
-  } finally {
-    if (connection) await connection.close();
-  }
-};
+  });
 
 
 const creditLeasure = async (corp_id, glcode) => {
