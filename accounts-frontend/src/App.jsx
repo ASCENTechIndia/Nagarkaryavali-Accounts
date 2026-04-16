@@ -56,6 +56,9 @@ import FrmTransfer from "./pages/Transaction/FrmTransfer";
 
 import FrmGovtTaxPayment from "./pages/Transaction/FrmGovtTaxPayment";
 import RptReceiptRegisterDetails from "./pages/ReportsForm/RptReceiptRegisterDetails";
+import RptClassifiedRegisterDetails from "./pages/Reports/RptClassifiedRegisterDetails";
+import FrmSearchOption from "./pages/Transaction/FrmSearchOption";
+import RptClassifiedAbstractSummary from "./pages/Reports/RptClassifiedAbstractSummary";
 
 const Home = () => <Button>Click me</Button>;
 const About = () => <h1>About Page</h1>;
@@ -129,6 +132,10 @@ export const router = createBrowserRouter([
       {
         path: "/Transactions/FrmTransAuthMst",
         element: <FrmTransAuthMst />
+      },
+      {
+        path: "/Transactions/FrmSearchOption",
+        element: <FrmSearchOption />
       },
 
 
@@ -284,6 +291,14 @@ export const router = createBrowserRouter([
       {
         path: "/ReportsForm/RptReceiptRegisterDetails",
         element: <RptReceiptRegisterDetails />
+      },
+      {
+        path: "/ReportsForm/RptClassifiedRegisterDetails",
+        element: <RptClassifiedRegisterDetails />
+      },
+      {
+        path: "/ReportsForm/RptClassifiedAbstractSummary",
+        element: <RptClassifiedAbstractSummary />
       },
        {
         path: "/about",

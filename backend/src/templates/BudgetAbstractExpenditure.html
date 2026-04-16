@@ -1,4 +1,4 @@
-<!doctype html>
+<!-- <!doctype html>
 <html>
 <head>
 <meta charset="UTF-8">
@@ -84,4 +84,196 @@ Classified Abstract of Receipts
 </table>
 
 </body>
+</html> -->
+
+
+
+
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: Arial;
+      font-size: 10px;
+      margin: 20px;
+    }
+
+    .outer-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 8px;
+    }
+
+    .outer-table td {
+      border: 1px solid black;
+      padding: 6px 10px;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .right {
+      text-align: right;
+    }
+
+    .left {
+      text-align: left;
+    }
+
+    .bold {
+      font-weight: bold;
+    }
+
+    .corp-name {
+      text-align: center;
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    .form-no {
+      text-align: center;
+      font-size: 11px;
+    }
+
+    .report-title {
+      text-align: center;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0;
+    }
+
+    .data-table th,
+    .data-table td {
+      border: 1px solid black;
+      padding: 5px 8px;
+    }
+
+    .data-table th {
+      background: #fff;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .data-table td {
+      text-align: right;
+    }
+
+    .data-table td.left {
+      text-align: left;
+    }
+
+    .total-row td {
+      font-weight: bold;
+      text-align: right;
+      border: 1px solid black;
+      padding: 5px 8px;
+    }
+
+    .total-row td.label {
+      text-align: right;
+      font-weight: bold;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th,
+    td {
+      border: 1px solid black;
+      padding: 4px;
+      text-align: right;
+    }
+
+    td.name {
+      text-align: left;
+    }
+
+    th {
+      background: #eee;
+    }
+
+    .total {
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Header Info Table -->
+  <table class="outer-table">
+    <tr>
+      <td colspan="2" class="corp-name">{{corporationName}}</td>
+    </tr>
+    <tr>
+      <td colspan="2" class="form-no">(फॉर्म क्र. ५३ एस ( ९ बी))</td>
+    </tr>
+    <tr>
+      <td colspan="2" class="report-title">Classified Abstract of Receipts / पावात्यांचा वर्गीकृतसारंश</td>
+    </tr>
+    <tr>
+      <td class="left" style="width:50%;">(नियम पहा क्र. १९१)</td>
+      <td class="right">Date & Time: &nbsp;&nbsp; {{currentDate}}</td>
+    </tr>
+    <tr>
+      <td class="left"><strong>For the Period / कालावधीसाठी</strong> {{fromDate}} to / ते {{toDate}}</td>
+      <td class="right"></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td class="right">Page: &nbsp;&nbsp; Page 1 of 1</td>
+    </tr>
+  </table>
+
+  <!-- Data Table -->
+  <table>
+    <thead>
+      <tr>
+        <th style="text-align:left">Account Code</th>
+        <th style="text-align:left">Account Name</th>
+        <th>Actual Receipts</th>
+        <th>Income To Date</th>
+        <th>Budget Provision</th>
+        <th>Balance</th>
+      </tr>
+    </thead>
+
+    <tbody>
+
+      {{#each rows}}
+      <tr>
+        <td style="text-align:left">{{ACCOUNTCODE}}</td>
+        <td class="name">{{ACCNAME}}</td>
+        <td>{{ACTUAL}}</td>
+        <td>{{EXPENDITURE}}</td>
+        <td>{{BUDGET}}</td>
+        <td>{{BALANCE}}</td>
+      </tr>
+      {{/each}}
+
+      <tr class="total">
+        <td colspan="2">Total</td>
+        <td>{{totalActual}}</td>
+        <td>{{totalExpenditure}}</td>
+        <td>{{totalBudget}}</td>
+        <td>{{totalBalance}}</td>
+      </tr>
+
+    </tbody>
+  </table>
+
+</body>
+
 </html>

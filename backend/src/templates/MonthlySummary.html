@@ -1,4 +1,4 @@
-<!doctype html>
+<!-- <!doctype html>
 <html>
 <head>
 <meta charset="UTF-8" />
@@ -113,4 +113,184 @@ th{
 </table>
 
 </body>
+</html> -->
+
+
+
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Monthly Summary</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      font-size: 8px;
+    }
+
+    .header {
+      text-align: center;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .sub {
+      text-align: center;
+      margin: 4px;
+      font-size: 11px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    th,
+    td {
+      border: 1px solid #000;
+      padding: 3px;
+      text-align: center;
+      word-wrap: break-word;
+    }
+
+    th {
+      background: #f2f2f2;
+      font-weight: bold;
+    }
+
+    .text-left {
+      text-align: left;
+    }
+
+    .small {
+      font-size: 7px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">{{corporationName}}</div>
+  <div class="sub">{{subtitle}}</div>
+  <div class="sub">
+    अहवालाचा कालावधी : {{fromDate}} ते {{toDate}}
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th rowspan="3">Sr.No</th>
+        <th rowspan="3">Budget Head</th>
+        <th rowspan="3">Original<br />Budget<br />Provision</th>
+        <th rowspan="3">Revised<br />Budget<br />Provision</th>
+
+        <th>Day 1</th>
+        <th>Day 2</th>
+        <th>Day 3</th>
+        <th>Day 4</th>
+        <th>Day 5</th>
+        <th>Day 6</th>
+        <th>Day 7</th>
+        <th>Day 8</th>
+        <th>Day 9</th>
+        <th>Day 10</th>
+        <th>Day 11</th>
+
+        <th rowspan="3">Total<br />For<br />Month</th>
+        <th rowspan="3">Total<br />End of<br />Month</th>
+        <th rowspan="3">Progressive<br />Total</th>
+        <th rowspan="3">Available<br />Budget<br />Balance</th>
+      </tr>
+      <tr>
+        <th>Day 12</th>
+        <th>Day 13</th>
+        <th>Day 14</th>
+        <th>Day 15</th>
+        <th>Day 16</th>
+        <th>Day 17</th>
+        <th>Day 18</th>
+        <th>Day 19</th>
+        <th>Day 20</th>
+        <th>Day 21</th>
+        <th>Day 22</th>
+      </tr>
+      <tr>
+        <th>Day 23</th>
+        <th>Day 24</th>
+        <th>Day 25</th>
+        <th>Day 26</th>
+        <th>Day 27</th>
+        <th>Day 28</th>
+        <th>Day 29</th>
+        <th>Day 30</th>
+        <th>Day 31</th>
+        <th></th>
+        <th></th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {{#each rows}}
+      <tr>
+        <td rowspan="3">{{SRNO}}</td>
+        <td rowspan="3" class="text-left">{{OBJECTCODE}}<br />{{ACCNAME}}</td>
+        <td rowspan="3">{{BUDGAMOUT}}</td>
+        <td rowspan="3">{{BUDGPROV}}</td>
+
+        <!-- Row 1: Day 1–11 -->
+        <td>{{lookup DAYS 0}}</td>
+        <td>{{lookup DAYS 1}}</td>
+        <td>{{lookup DAYS 2}}</td>
+        <td>{{lookup DAYS 3}}</td>
+        <td>{{lookup DAYS 4}}</td>
+        <td>{{lookup DAYS 5}}</td>
+        <td>{{lookup DAYS 6}}</td>
+        <td>{{lookup DAYS 7}}</td>
+        <td>{{lookup DAYS 8}}</td>
+        <td>{{lookup DAYS 9}}</td>
+        <td>{{lookup DAYS 10}}</td>
+
+        <td rowspan="3">{{TOTAL}}</td>
+        <td rowspan="3">{{TOTAL}}</td>
+        <td rowspan="3">{{TOTAL}}</td>
+        <td rowspan="3">{{TOTAL}}</td>
+      </tr>
+      <tr>
+        <!-- Row 2: Day 12–22 -->
+        <td>{{lookup DAYS 11}}</td>
+        <td>{{lookup DAYS 12}}</td>
+        <td>{{lookup DAYS 13}}</td>
+        <td>{{lookup DAYS 14}}</td>
+        <td>{{lookup DAYS 15}}</td>
+        <td>{{lookup DAYS 16}}</td>
+        <td>{{lookup DAYS 17}}</td>
+        <td>{{lookup DAYS 18}}</td>
+        <td>{{lookup DAYS 19}}</td>
+        <td>{{lookup DAYS 20}}</td>
+        <td>{{lookup DAYS 21}}</td>
+      </tr>
+      <tr>
+        <!-- Row 3: Day 23–31 + 2 empty to fill 11 cols -->
+        <td>{{lookup DAYS 22}}</td>
+        <td>{{lookup DAYS 23}}</td>
+        <td>{{lookup DAYS 24}}</td>
+        <td>{{lookup DAYS 25}}</td>
+        <td>{{lookup DAYS 26}}</td>
+        <td>{{lookup DAYS 27}}</td>
+        <td>{{lookup DAYS 28}}</td>
+        <td>{{lookup DAYS 29}}</td>
+        <td>{{lookup DAYS 30}}</td>
+        <td></td>
+        <td></td>
+      </tr>
+      {{/each}}
+    </tbody>
+
+  </table>
+
+</body>
+
 </html>
