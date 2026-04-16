@@ -83,6 +83,7 @@ app.use("/api/FrmTransAuthList",require("./modules/Transaction/FrmTransAuthList/
 app.use("/api/RptRegister",require("./modules/Reports/FrmRptReceiptRegisterDetails/RptReceiptRegisterDetails.route"))
 app.use("/api/frmPayment",require("./modules/Transaction/FrmPayment/frmPayment.route"))
 app.use("/api/RptReceiptRegister", require("./modules/Reports/RptReceiptRegister/RptReceiptRegister.routes"))
+app.use("/api/BudgetAccMap",require("./modules/Transaction/FrmBudgetAccountMap/FrmBudgetAccountMap.routes"))
 
 //Reports
 app.use("/api/RptTransferRegister", require("./modules/Reports/RptTransferRegister/transferRegister.route"))
