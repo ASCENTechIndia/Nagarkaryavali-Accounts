@@ -239,7 +239,7 @@ const FrmContractList = () => {
                 <Button
                   variant="link"
                   className="mt-2 text-blue-700"
-                  onClick={() => navigate("/Transactions/FrmVoucherPreparation", { state: { mode: 1 } })}
+                  onClick={() => navigate("/Transactions/FrmContractEntry", { state: { mode: 1 } })}
                 >
                   नवीन कंत्राट जोडा
                 </Button>

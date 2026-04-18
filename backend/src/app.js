@@ -70,6 +70,8 @@ app.use("/api/CityList",require("./modules/Master/FrmCity/FrmCityList.route"))
 app.use("/api/District", require ("./modules/Master/FrmDistrict/FrmDistrictList.route"))
 app.use("/api/Grampanchayat", require("./modules/Master/FrmGrampanchayat/FrmGrampanchayatList.route"))
 app.use("/api/FrmContract",require("./modules/Master/FrmContract/FrmContract.routes"))
+app.use("/api/NidhiList",require("./modules/Master/FrmNidhiList/FrmNidhiList.routes"))
+
 
 
 //Transaction
