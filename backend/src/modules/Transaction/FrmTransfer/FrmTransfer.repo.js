@@ -2,7 +2,6 @@ const { executeQuery } = require("../../../db/queryExecutor");
 const oracledb = require("oracledb");
 const { withTx } = require("../../../db/tx");
 
-
 const getTransactionTypes = async () => {
   const query = `
     SELECT 

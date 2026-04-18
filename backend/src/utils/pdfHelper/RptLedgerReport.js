@@ -1,0 +1,158 @@
+const fs = require("fs");
+const path = require("path");
+const puppeteer = require("puppeteer");
+const Handlebars = require("handlebars");
+
+const imageToBase64 = (imgPath) => {
+  try {
+    const file = fs.readFileSync(imgPath);
+    const ext = path.extname(imgPath).replace(".", "");
+    return `data:image/${ext};base64,${file.toString("base64")}`;
+  } catch {
+    return "";
+  }
+};
+
+const formatDate = (date) => {
+  if (!date) return "";
+  return new Date(date).toLocaleDateString("en-GB");
+};
+
+const formatNumber = (num) => {
+  return Number(num || 0).toLocaleString("en-IN");
+};
+
+const RptLedgerReportPDFHelper = async ({
+  transactions,
+  openingBalance,
+  filters,
+}) => {
+  try {
+    const templatePath = path.resolve(
+      __dirname,
+      "../../templates/RptLedgerReport.html"
+    );
+
+    const templateHtml = fs.readFileSync(templatePath, "utf8");
+    const template = Handlebars.compile(templateHtml);
+
+    const logoPath = path.resolve(__dirname, "../../assets/logo.png");
+    const logo = imageToBase64(logoPath);
+
+    let totalDr = 0;
+    let totalCr = 0;
+    let drCount = 0;
+    let crCount = 0;
+
+    const rows = transactions.map((t) => {
+      const amount = Number(t.AMOUNT || 0);
+
+      let row = {
+        DR_TRANS_NO: "",
+        DR_VOU_NO: "",
+        DR_DATE: "",
+        DR_PARTICULARS: "",
+        DR_CHEQUE: "",
+        DR_AMOUNT: "",
+
+        CR_TRANS_NO: "",
+        CR_VOU_NO: "",
+        CR_DATE: "",
+        CR_PAN: "",
+        CR_PARTICULARS: "",
+        CR_CHEQUE: "",
+        CR_AMOUNT: "",
+      };
+
+      if (amount >= 0) {
+        // CREDIT
+        row.CR_TRANS_NO = t.TRANSNO;
+        row.CR_VOU_NO = t.DOCNO;
+        row.CR_DATE = formatDate(t.TRNSDATE);
+        row.CR_PAN = t.PANCARD || "";
+        row.CR_PARTICULARS = t.NARRATION;
+        row.CR_CHEQUE = t.CHQNO;
+        row.CR_AMOUNT = formatNumber(amount);
+
+        totalCr += amount;
+        crCount++;
+      } else {
+        const abs = Math.abs(amount);
+
+        row.DR_TRANS_NO = t.TRANSNO;
+        row.DR_VOU_NO = t.DOCNO;
+        row.DR_DATE = formatDate(t.TRNSDATE);
+        row.DR_PARTICULARS = t.NARRATION;
+        row.DR_CHEQUE = t.CHQNO;
+        row.DR_AMOUNT = formatNumber(abs);
+
+        totalDr += abs;
+        drCount++;
+      }
+
+      return row;
+    });
+
+    const closingBalance = openingBalance + totalDr - totalCr;
+
+    const html = template({
+      logo,
+      corporationName: "मालेगाव महानगरपालिका मालेगाव",
+      accountHead: filters.accountHead || "",
+      accountCode: filters.accountCode || "",
+
+      fromDate: formatDate(filters.fromDate),
+      toDate: formatDate(filters.toDate),
+
+      openingDr: formatNumber(openingBalance),
+      openingCr: "0",
+
+      rows,
+
+      totalDr: formatNumber(totalDr),
+      totalCr: formatNumber(totalCr),
+
+      drCount,
+      crCount,
+
+      closingDr: "0",
+      closingCr: formatNumber(closingBalance),
+
+      printDate: new Date().toLocaleString("en-IN"),
+    });
+
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
+
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: "domcontentloaded" });
+
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      printBackground: true,
+    });
+
+    await browser.close();
+
+    const outputDir = path.resolve(__dirname, "../../../public/pdf");
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
+
+    const fileName = `Ledger_GEN3_${Date.now()}.pdf`;
+    const filePath = path.join(outputDir, fileName);
+
+    fs.writeFileSync(filePath, pdfBuffer);
+
+    return { fileName, filePath };
+  } catch (error) {
+    console.error("Ledger PDF Error:", error);
+    throw error;
+  }
+};
+
+module.exports = {
+  RptLedgerReportPDFHelper,
+};

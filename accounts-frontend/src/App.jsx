@@ -49,20 +49,24 @@ import FrmBalanceSheetGroupMst from "./pages/Master/FrmBalanceSheetGroupMst";
 import FrmBalanceSheetGroupList from "./pages/Master/FrmBalanceSheetGroupList";
 import FrmBalanceSheetSubGroupList from "./pages/Master/FrmBalanceSheetSubGroupList";
 import FrmBalanceSheetSubGroupMst from "./pages/Master/FrmBalanceSheetSubGroupMst";
+import FrmNidhiConfig from "./pages/Master/FrmNidhiConfig";
 
 import FrmBankReconciliation from "./pages/Transaction/FrmBankReconciliation";
 import FrmTransferList from "./pages/Transaction/FrmTransferList";
 import FrmTransfer from "./pages/Transaction/FrmTransfer";
-
+import RptClassifiedRegisterDetails from "./pages/Reports/RptClassifiedRegisterDetails";
+import FrmSearchOption from "./pages/Transaction/FrmSearchOption";
+import RptClassifiedAbstractSummary from "./pages/Reports/RptClassifiedAbstractSummary";
 import FrmGovtTaxPayment from "./pages/Transaction/FrmGovtTaxPayment";
 import RptReceiptRegisterDetails from "./pages/ReportsForm/RptReceiptRegisterDetails";
 import RptTransferRegister from "./pages/ReportsForm/RptTransferRegister";
 import RptCashBook from "./pages/ReportsForm/RptCashBook";
 import RptCashBankBalance from "./pages/ReportsForm/RptCashBankBalance";
-import RptClassifiedRegisterDetails from "./pages/ReportsForm/RptClassifiedRegisterDetails";
+// import RptClassifiedRegisterDetails from "./pages/ReportsForm/RptClassifiedRegisterDetails";
 import RptLedgerReport from "./pages/ReportsForm/RptLedgerReport";
 
 import FrmVoucherGeneration from "./pages/Transaction/FrmVoucherGeneration";
+import Frmconsolidatedreceipt from "./pages/Reports/Frmconsolidatedreceipt";
 
 const Home = () => <Button>Click me</Button>;
 const About = () => <h1>About Page</h1>;
@@ -198,7 +202,7 @@ export const router = createBrowserRouter([
       {
         path: "/Masters/FrmPartyMaster",
         element: <FrmPartyMaster />
-      },     
+      },
       {
         path: "/Masters/FrmInvestmentTypeList",
         element: <FrmInvestmentTypeList />
@@ -247,7 +251,7 @@ export const router = createBrowserRouter([
         path: "/Masters/FrmDepositTypeMst",
         element: <FrmDepositTypeMst />
       },
-      
+
       {
         path: "/Masters/FrmBudgetHeadConfigList",
         element: <FrmBudgetHeadConfigList />
@@ -282,8 +286,19 @@ export const router = createBrowserRouter([
         path: "/Masters/FrmBudgetPrepration",
         element: <FrmBudgetPrepration />
       },
+      {
+        path: "/ReportsForm/RptClassifiedRegisterDetails",
+        element: <RptClassifiedRegisterDetails />
+      },
+      {
+        path: "/ReportsForm/RptClassifiedAbstractSummary",
+        element: <RptClassifiedAbstractSummary />
+      },
+      {
+        path: "/Transactions/FrmSearchOption",
+        element: <FrmSearchOption />
+      },
 
-      
       {
         path: "/ReportsForm/RptReceiptRegister",
         element: <RptReceiptRegister />
@@ -292,7 +307,16 @@ export const router = createBrowserRouter([
         path: "/ReportsForm/RptReceiptRegisterDetails",
         element: <RptReceiptRegisterDetails />
       },
-       {
+
+      {
+        path: "/ReportsForm/RptLedgerReport",
+        element: <RptLedgerReport />
+      },
+      {
+        path: "/Reportsform/Frmconsolidatedreceipt",
+        element: <Frmconsolidatedreceipt />
+      },
+      {
         path: "/about",
         element: <About />,
       },
@@ -321,6 +345,11 @@ export const router = createBrowserRouter([
       {
         path:"Transactions/FrmVoucherGeneration",
         element:<FrmVoucherGeneration />
+      },
+
+      {
+        path:"Masters/FrmNidhiConfig",
+        element: <FrmNidhiConfig/>
       }
     ]
   },
