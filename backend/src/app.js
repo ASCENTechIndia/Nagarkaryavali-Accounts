@@ -71,6 +71,7 @@ app.use("/api/District", require("./modules/Master/FrmDistrict/FrmDistrictList.r
 app.use("/api/Grampanchayat", require("./modules/Master/FrmGrampanchayat/FrmGrampanchayatList.route"));
 app.use("/api/FrmContract", require("./modules/Master/FrmContract/FrmContract.routes"));
 app.use("/api/Frmauthorizationconfig", require("./modules/Master/Frmauthorizationconfig/Frmauthorizationconfig.routes"));
+app.use("/api/FrmNidhiConfig", require("./modules/Master/FrmNidhiConfig/FrmNidhiConfig.routes"));
 
 //Transaction
 app.use("/api/FrmTransfer", require("./modules/Transaction/FrmTransfer/FrmTransfer.routes"));
