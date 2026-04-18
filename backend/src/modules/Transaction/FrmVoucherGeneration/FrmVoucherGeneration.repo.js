@@ -1,4 +1,8 @@
 const { executeQuery } = require("../../../db/queryExecutor");
+const { withTx } = require("../../../db/tx");
+const oracledb = require("oracledb");
+
+
 
 // ✅ 1. GL List
 const getGLList = async () => {
@@ -324,6 +328,55 @@ const getVoucherTaxDetails = async ({ voucher_no, corp_id }) => {
   });
 };
 
+// ✅ Voucher Generation (Procedure)
+const voucherGeneration = (data) =>
+  withTx(async (connection) => {
+    console.log("Repo received:", data);
+
+    const result = await connection.execute(
+      `BEGIN
+          aoac_vchgeneration_ins(
+            :In_RefNo,
+            :In_TrnsSourceId,
+            :In_TrnsStatus,
+            :In_Str1,
+            :In_Str2,
+            :In_Str3,
+            :In_Str4,
+            :In_UserId,
+            :out_ErrorCode,
+            :out_ErrorMsg
+          );
+       END;`,
+      {
+        In_RefNo: data.refNo,
+        In_TrnsSourceId: data.txnSourceId,
+        In_TrnsStatus: data.txnStatus,
+        In_Str1: data.str1 || null,
+        In_Str2: data.str2 || null,
+        In_Str3: data.str3 || null,
+        In_Str4: data.str4 || null,
+        In_UserId: data.userId || null,
+
+        out_ErrorCode: {
+          dir: oracledb.BIND_OUT,
+          type: oracledb.NUMBER,
+        },
+        out_ErrorMsg: {
+          dir: oracledb.BIND_OUT,
+          type: oracledb.STRING,
+          maxSize: 1000,
+        },
+      }
+    );
+
+        console.log("Repo Result:", result.outBinds);
+
+    return {
+      errorCode: result.outBinds.out_ErrorCode,
+      message: result.outBinds.out_ErrorMsg,
+    };
+  });
 
 module.exports = {
   getGLList,
@@ -334,4 +387,5 @@ module.exports = {
   getVoucherDetails,
   getVoucherTableDetails,
   getVoucherTaxDetails,
+  voucherGeneration
 };
