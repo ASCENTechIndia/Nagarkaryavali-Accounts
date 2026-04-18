@@ -135,9 +135,9 @@ const FrmZoneMst = () => {
         Swal.fire({
           text: res.data?.data?.message || "Success",
           confirmButtonColor: "#1e3a8a",
+        }).then(() => {
+          navigate("/Masters/FrmZoneList");
         });
-
-        navigate("/Masters/FrmZoneList");
       }
     } catch (err) {
       console.error("Save API Error:", err);
@@ -145,6 +145,8 @@ const FrmZoneMst = () => {
       Swal.fire({
         text: "Something went wrong",
         confirmButtonColor: "#1e3a8a",
+      }).then(() => {
+        navigate("/Masters/FrmZoneList");
       });
     }
   };

@@ -135,9 +135,9 @@ const FrmDepositTypeMst = () => {
         Swal.fire({
           text: res.data?.data?.message,
           confirmButtonColor: "#1e3a8a",
+        }).then(() => {
+          navigate("/Masters/FrmDepositTypeList");
         });
-
-        navigate("/Masters/FrmDepositTypeList");
       }
     } catch (err) {
       console.error("Save API Error:", err);

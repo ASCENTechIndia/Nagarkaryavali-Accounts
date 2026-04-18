@@ -94,11 +94,12 @@ const FrmBankMst = () => {
 
       Swal.close();
 
-
       if (res.data?.ok) {
         Swal.fire({
           text: res.data?.data?.message || "Success",
           confirmButtonColor: "#1e3a8a",
+        }).then(() => {
+          navigate("/Masters/FrmBanList");
         });
       }
     } catch (err) {
@@ -108,7 +109,7 @@ const FrmBankMst = () => {
         text: "Something went wrong",
         confirmButtonColor: "#1e3a8a",
       });
-    } 
+    }
   };
 
   return (
