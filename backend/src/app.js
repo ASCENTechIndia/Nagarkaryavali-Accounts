@@ -86,6 +86,7 @@ app.use("/api/frmPayment", require("./modules/Transaction/FrmPayment/frmPayment.
 app.use("/api/RptReceiptRegister", require("./modules/Reports/RptReceiptRegister/RptReceiptRegister.routes"));
 app.use("/api/BudgetAccMap", require("./modules/Transaction/FrmBudgetAccountMap/FrmBudgetAccountMap.routes"));
 app.use("/api/FrmVoucherGeneration", require("./modules/Transaction/FrmVoucherGeneration/FrmVoucherGeneration.routes"));
+app.use("/api/NidhiList",require("./modules/Master/FrmNidhiList/FrmNidhiList.routes"))
 
 //Reports
 app.use("/api/RptTransferRegister", require("./modules/Reports/RptTransferRegister/transferRegister.route"));

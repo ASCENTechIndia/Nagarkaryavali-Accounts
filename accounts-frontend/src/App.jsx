@@ -49,7 +49,8 @@ import FrmBalanceSheetGroupMst from "./pages/Master/FrmBalanceSheetGroupMst";
 import FrmBalanceSheetGroupList from "./pages/Master/FrmBalanceSheetGroupList";
 import FrmBalanceSheetSubGroupList from "./pages/Master/FrmBalanceSheetSubGroupList";
 import FrmBalanceSheetSubGroupMst from "./pages/Master/FrmBalanceSheetSubGroupMst";
-
+import Frmauthorizationconfig from "./pages/Master/Frmauthorizationconfig";
+import FrmauthorizationconfigList from "./pages/Master/FrmauthorizationconfigList";
 import FrmBankReconciliation from "./pages/Transaction/FrmBankReconciliation";
 import FrmTransferList from "./pages/Transaction/FrmTransferList";
 import FrmTransfer from "./pages/Transaction/FrmTransfer";
@@ -277,6 +278,15 @@ export const router = createBrowserRouter([
         path: "/Masters/FrmCityMst",
         element: <FrmCityMst />
       },
+      {
+         path: "/Masters/FrmauthorizationconfigList",
+        element: <FrmauthorizationconfigList />
+      },
+      {
+        path: "/Masters/Frmauthorizationconfig",
+        element: <Frmauthorizationconfig />
+      },
+
       {
         path: "/Masters/FrmBudgetPrepration",
         element: <FrmBudgetPrepration />
