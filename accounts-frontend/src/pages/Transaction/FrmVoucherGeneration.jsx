@@ -46,7 +46,7 @@ const initialValues = {
 /* ================= REUSABLE FIELD ================= */
 const FormField = ({ label, children }) => (
   <div className="flex flex-col sm:grid sm:grid-cols-[140px_10px_1fr] items-start sm:items-center gap-2">
-    <Label className="sm:text-right">{label}</Label>
+    <Label className="sm:text-right w-full">{label}</Label>
     <span className="hidden sm:block">:</span>
     <div className="w-full">{children}</div>
   </div>
@@ -186,6 +186,13 @@ const FrmVoucherGeneration = () => {
 
   const fetchChequeBook = async (values) => {
     try {
+      // ✅ match .NET validation (6 digit cheque)
+      if (!/^\d{6}$/.test(values.chequeNo)) {
+        return;
+      }
+
+      if (!values.deptCode || !values.ledger) return;
+
       const res = await axios.post(
         `${BASE_URL}/api/FrmVoucherGeneration/cheque-book`,
         {
@@ -202,6 +209,7 @@ const FrmVoucherGeneration = () => {
 
       setChequeBooks(res.data?.rows || []);
     } catch (err) {
+      console.error(err);
       Swal.fire("Cheque book fetch failed");
     }
   };
@@ -249,26 +257,159 @@ const FrmVoucherGeneration = () => {
     }
   };
 
-  const handleSubmit = (values) => {
-    const errors = validateVoucher(values);
+const handleSubmit = async (values, formikHelpers) => {
+  formikHelpers.setSubmitting(true);
 
-    if (errors?.length > 0) {
-      Swal.fire({
-        icon: "warning",
-        title: errors[0].message,
-        confirmButtonColor: "#083c76",
-      });
+  const status = "A";
+
+  try {
+    const selectedRows = voucherList.filter((v) => v.selected);
+
+    if (!selectedRows.length) {
+      Swal.fire("किमान एक व्यवहार निवडा");
       return;
     }
 
-    console.log("Form Values:", values);
+  
+    if (values.paymentType === "2" || values.paymentType === "3") {
+      if (!values.chequeNo) {
+        Swal.fire("Cheque number required");
+        return;
+      }
+
+      if (!values.chequeBookNo) {
+        Swal.fire("Cheque book required");
+        return;
+      }
+    }
 
     Swal.fire({
-      icon: "success",
-      title: "डेटा यशस्वीरित्या सेव झाला",
-      confirmButtonColor: "#083c76",
+      title: "Saving...",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
     });
-  };
+
+   
+    const fullData = await fetchVoucherFullData(selectedRows[0].VCHNO);
+
+    if (!fullData) {
+      Swal.close();
+      Swal.fire("Error", "Voucher data load failed", "error");
+      return;
+    }
+
+    const firstTax = fullData.tax?.[0];
+
+    const deptCode = firstTax?.GLCODE || values.deptCode;
+    const ledger = firstTax?.ACCNO || values.ledger;
+    const narration = fullData.table?.[0]?.DRACCNO || values.details || "-";
+
+    const formatDate = (date) =>
+      new Date(date)
+        .toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })
+        .replace(/ /g, "-");
+
+    const str2 = selectedRows.map((v) => v.REFNO).join(",");
+
+    const str3 = selectedRows
+      .map((v) => {
+        const nivalDey = (v.TOTALAMT || 0) - (v.AMT || 0);
+        const dey = v.deyRakkam ?? nivalDey;
+        const shillak = nivalDey - dey;
+
+        return [
+          v.REFNO,
+          nivalDey,
+          dey,
+          shillak,
+          v.TOTALAMT || 0,
+          v.AMT || 0,
+          v.VCHNO,
+          v.DEPTID || 0,
+        ].join("#");
+      })
+      .join("$");
+
+    const str4 = selectedRows
+      .map((v) => {
+        const nivalDey = (v.TOTALAMT || 0) - (v.AMT || 0);
+        const dey = v.deyRakkam ?? nivalDey;
+        const shillak = nivalDey - dey;
+
+        return [
+          v.REFNO,
+          new Date(v.TRNSDATE).toLocaleDateString("en-GB"),
+          v.VCHNO,
+          deptCode,
+          ledger,
+          narration,
+          nivalDey,
+          dey,
+          shillak,
+          values.partyCode || 0,
+          v.DEPTID || 0,
+        ].join("#");
+      })
+      .join("$");
+
+    
+    const str1 = [
+      status,
+      4, 
+      narration,
+      deptCode,
+      ledger,
+      totalSelectedAmount,
+      values.chequeNo || "", 
+      formatDate(values.chequeDate),
+      values.department || 0,
+      0,
+      formatDate(values.transactionDate),
+      values.budgetId || "",
+      values.chequeBookNo || "", 
+      values.paymentType || 2,
+      values.nidhi_id || "",
+    ].join("~");
+
+    const payload = {
+      refNo: selectedRows[0].REFNO,
+      userId: user?.userId,
+      txnSourceId: 6,
+      txnStatus: status,
+      str1,
+      str2,
+      str3,
+      str4,
+    };
+
+    console.log("FINAL PAYLOAD:", payload);
+
+    const res = await axios.post(
+      `${BASE_URL}/api/FrmVoucherGeneration/voucher-generation`,
+      payload,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    Swal.close();
+
+    if (res.data?.success) {
+      Swal.fire("Success", res.data.errorMsg, "success");
+    } else {
+      Swal.fire("Error", res.data.errorMsg, "error");
+    }
+  
+  } catch (err) {
+    Swal.close();
+    console.error(err);
+    Swal.fire("Error", "Voucher generation failed", "error");
+  }
+};
+
+
 
   if (loading) {
     return (
@@ -602,47 +743,73 @@ const FrmVoucherGeneration = () => {
                       </Select>
                     </FormField>
 
-                    <FormField label="धनादेश पुस्तिका क्रमांक">
-                      <Select
-                        value={values.chequeBookNo}
-                        onValueChange={(v) => setFieldValue("chequeBookNo", v)}
-                        disabled={values.paymentType === "Cash"}
-                      >
-                        <SelectTrigger className="h-9 w-full">
-                          <SelectValue placeholder="निवडा" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">Book 1</SelectItem>
-                          <SelectItem value="2">Book 2</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormField>
+                    {(values.paymentType === "2" ||
+                      values.paymentType === "3") && (
+                      <FormField label="धनादेश पुस्तिका क्रमांक">
+                        <Select
+                          value={values.chequeBookNo}
+                          onValueChange={(v) =>
+                            setFieldValue("chequeBookNo", v)
+                          }
+                        >
+                          <SelectTrigger className="h-9 w-full">
+                            <SelectValue placeholder="निवडा" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {chequeBooks.length > 0 ? (
+                              chequeBooks.map((b) => (
+                                <SelectItem
+                                  key={b.NUM_CHEQUEBOOK_BOOKNO}
+                                  value={String(b.NUM_CHEQUEBOOK_BOOKNO)}
+                                >
+                                  {b.BOOKNO}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem  value="0">
+                                No cheque book found
+                              </SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </FormField>
+                    )}
 
-                    <FormField label="धनादेश क्रमांक">
-                      <Input
-                        name="chequeNo"
-                        value={values.chequeNo}
-                        onChange={(e) => {
-                          handleChange(e);
-                          const updatedValues = {
-                            ...values,
-                            chequeNo: e.target.value,
-                          };
+                    {(values.paymentType === "2" ||
+                      values.paymentType === "3") && (
+                      <FormField label="धनादेश क्रमांक">
+                        <Input
+                          name="chequeNo"
+                          value={values.chequeNo}
+                          onChange={(e) => {
+                            handleChange(e);
 
-                          fetchChequeBook(updatedValues);
-                        }}
-                        className="h-9 w-full"
-                      />
-                    </FormField>
+                            // 🔥 clear old data
+                            setChequeBooks([]);
+                            setFieldValue("chequeBookNo", "");
 
-                    <FormField label="धनादेश दिनांक">
-                      <DatePicker
-                        value={values.chequeDate}
-                        onChange={(d) => setFieldValue("chequeDate", d)}
-                        className="h-9 w-full"
-                        disabled={values.paymentType === "Cash"}
-                      />
-                    </FormField>
+                            const updatedValues = {
+                              ...values,
+                              chequeNo: e.target.value,
+                            };
+
+                            fetchChequeBook(updatedValues);
+                          }}
+                          className="h-9 w-full"
+                        />
+                      </FormField>
+                    )}
+
+                    {(values.paymentType === "2" ||
+                      values.paymentType === "3") && (
+                      <FormField label="धनादेश दिनांक">
+                        <DatePicker
+                          value={values.chequeDate}
+                          onChange={(d) => setFieldValue("chequeDate", d)}
+                          className="h-9 w-full"
+                        />
+                      </FormField>
+                    )}
 
                     <div className="flex flex-col sm:grid sm:grid-cols-[140px_10px_1fr] gap-2 col-span-full">
                       <Label className="sm:text-right">तपशील</Label>

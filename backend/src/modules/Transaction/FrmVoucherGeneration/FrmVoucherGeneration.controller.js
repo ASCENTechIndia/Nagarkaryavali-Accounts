@@ -38,3 +38,8 @@ exports.getVoucherTableDetails = asyncHandler(async (req, res) => {
 exports.getVoucherTax = asyncHandler(async (req, res) => {
   res.json(await service.getVoucherTaxService(req.body));
 });
+
+exports.voucherGeneration = asyncHandler(async (req, res) => {
+  const data = await service.voucherGenerationService(req.body);
+  return res.json(data);
+});
