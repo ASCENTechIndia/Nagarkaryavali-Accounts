@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { Formik, Form } from "formik";
 import { motion } from "framer-motion";
 
-import { validateVoucher } from "@/validations/validations";
+import axios from "axios";
+import { useAuth } from "@/context/AuthContext";
+import SearchableSelect from "@/components/SearchableSelect";
 
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
@@ -54,6 +56,67 @@ const FrmVoucherGeneration = () => {
   const navigate = useNavigate();
   const [loading] = useState(false);
 
+  const { user } = useAuth();
+  const token = user?.token;
+  const ulbId = user?.ulbId;
+
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+  const [zones, setZones] = useState([]);
+  const [glCodes, setGlCodes] = useState([]);
+  const [ledgers, setLedgers] = useState([]);
+  const [parties, setParties] = useState([]);
+
+  
+
+  useEffect(() => {
+    if (!ulbId) return;
+
+    const headers = { Authorization: `Bearer ${token}` };
+
+    // 🔷 PRABHAG
+    axios
+      .post(`${BASE_URL}/api/Receipt/zones`, { corp_id: ulbId }, { headers })
+      .then((res) => setZones(res.data?.data || []));
+
+    // 🔷 GL CODES
+    axios
+      .get(`${BASE_URL}/api/FrmTransfer/gl-codes`, { headers })
+      .then((res) => setGlCodes(res.data?.data?.rows || []));
+
+    // 🔷 PARTY LIST ✅ NEW
+    axios
+      .post(
+        `${BASE_URL}/api/FrmTransfer/party-list`,
+        { corpId: ulbId },
+        { headers },
+      )
+      .then((res) => setParties(res.data?.data?.rows || []))
+      .catch(() => Swal.fire("Party list load failed"));
+  }, [ulbId]);
+
+  const loadLedgers = async (glcode) => {
+    if (!glcode || !ulbId) return;
+
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/api/FrmTransfer/credit-leasure`,
+        {
+          corp_id: Number(ulbId),
+          glcode: Number(glcode),
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      setLedgers(res.data?.data?.rows || []);
+    } catch (err) {
+      console.error(err);
+      Swal.fire("Ledger load failed");
+    }
+  };
+
   const handleSubmit = (values) => {
     const errors = validateVoucher(values);
 
@@ -102,19 +165,21 @@ const FrmVoucherGeneration = () => {
                 {/* FILTER SECTION */}
                 <section className="border rounded-lg p-4 sm:p-5 space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                    
                     <FormField label="प्रभाग">
                       <Select
                         value={values.department}
-                        onValueChange={(v) =>
-                          setFieldValue("department", v)
-                        }
+                        onValueChange={(v) => setFieldValue("department", v)}
                       >
                         <SelectTrigger className="h-9 w-full">
                           <SelectValue placeholder="निवडा" />
                         </SelectTrigger>
+
                         <SelectContent>
-                          <SelectItem value="1">प्रभाग 1</SelectItem>
+                          {zones.map((z) => (
+                            <SelectItem key={z.ZONEID} value={String(z.ZONEID)}>
+                              {z.ZONEENAME}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </FormField>
@@ -129,9 +194,7 @@ const FrmVoucherGeneration = () => {
                         />
                         <DatePicker
                           value={values.fromDate}
-                          onChange={(d) =>
-                            setFieldValue("fromDate", d)
-                          }
+                          onChange={(d) => setFieldValue("fromDate", d)}
                           className="h-9 w-full"
                         />
                       </div>
@@ -140,19 +203,21 @@ const FrmVoucherGeneration = () => {
                     <FormField label="दिनांक पर्यंत">
                       <DatePicker
                         value={values.toDate}
-                        onChange={(d) =>
-                          setFieldValue("toDate", d)
-                        }
+                        onChange={(d) => setFieldValue("toDate", d)}
                         className="h-9 w-full"
                       />
                     </FormField>
 
                     <FormField label="पार्टी संकेतांक">
-                      <Input
-                        name="partyCode"
+                      <SearchableSelect
+                        options={parties.map((p) => ({
+                          label: p.VAR_PARTYMST_PARTYNAME || "",
+                          value: String(p.NUM_PARTYMST_PARTYID),
+                        }))}
                         value={values.partyCode}
-                        onChange={handleChange}
-                        className="h-9 w-full"
+                        onChange={(v) => {
+                          setFieldValue("partyCode", v?.value);
+                        }}
                       />
                     </FormField>
 
@@ -167,39 +232,50 @@ const FrmVoucherGeneration = () => {
                 {/* MAIN FORM */}
                 <section className="border rounded-lg p-4 sm:p-5 space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-
                     <FormField label="विभाग कोड">
-                      <Input
-                        name="deptCode"
+                      <SearchableSelect
+                        options={glCodes.map((g) => ({
+                          label: g.GLNAME || "",
+                          value: String(g.GLCODE || ""),
+                        }))}
                         value={values.deptCode}
-                        onChange={handleChange}
-                        className="h-9 w-full"
+                        onChange={async (v) => {
+                          const glcode = v?.value || v;
+
+                          setFieldValue("deptCode", glcode);
+                          setFieldValue("ledger", "");
+
+                          await loadLedgers(glcode);
+                        }}
                       />
                     </FormField>
 
                     <FormField label="लेखाशीर्ष">
-                      <Input
-                        name="ledger"
+                      <SearchableSelect
+                        options={ledgers.map((l) => ({
+                          label: l.ACCNAME || "",
+                          value: String(l.OBJECTCODE || ""),
+                        }))}
                         value={values.ledger}
-                        onChange={handleChange}
-                        className="h-9 w-full"
+                        onChange={(v) => {
+                          setFieldValue("ledger", v?.value);
+                        }}
                       />
                     </FormField>
 
                     <FormField label="बँकेची शिल्लक">
                       <Input
-                        value="0.00"
-                        readOnly
-                        className="h-9 bg-gray-100"
+                        value={values.bankBalance}
+                        name="bankBalance"
+                        onChange={handleChange}
+                        className="h-9 w-full"
                       />
                     </FormField>
 
                     <FormField label="व्यवहार दिनांक">
                       <DatePicker
                         value={values.transactionDate}
-                        onChange={(d) =>
-                          setFieldValue("transactionDate", d)
-                        }
+                        onChange={(d) => setFieldValue("transactionDate", d)}
                         className="h-9 w-full"
                       />
                     </FormField>
@@ -216,17 +292,13 @@ const FrmVoucherGeneration = () => {
                     <FormField label="देयक प्रकार">
                       <Select
                         value={values.paymentType}
-                        onValueChange={(v) =>
-                          setFieldValue("paymentType", v)
-                        }
+                        onValueChange={(v) => setFieldValue("paymentType", v)}
                       >
                         <SelectTrigger className="h-9 w-full">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Cheque">
-                            Cheque
-                          </SelectItem>
+                          <SelectItem value="Cheque">Cheque</SelectItem>
                           <SelectItem value="Cash">Cash</SelectItem>
                         </SelectContent>
                       </Select>
@@ -235,9 +307,7 @@ const FrmVoucherGeneration = () => {
                     <FormField label="धनादेश पुस्तिका क्रमांक">
                       <Select
                         value={values.chequeBookNo}
-                        onValueChange={(v) =>
-                          setFieldValue("chequeBookNo", v)
-                        }
+                        onValueChange={(v) => setFieldValue("chequeBookNo", v)}
                         disabled={values.paymentType === "Cash"}
                       >
                         <SelectTrigger className="h-9 w-full">
@@ -262,9 +332,7 @@ const FrmVoucherGeneration = () => {
                     <FormField label="धनादेश दिनांक">
                       <DatePicker
                         value={values.chequeDate}
-                        onChange={(d) =>
-                          setFieldValue("chequeDate", d)
-                        }
+                        onChange={(d) => setFieldValue("chequeDate", d)}
                         className="h-9 w-full"
                         disabled={values.paymentType === "Cash"}
                       />
@@ -286,11 +354,18 @@ const FrmVoucherGeneration = () => {
 
               {/* FOOTER */}
               <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 border-t p-4">
-                <Button type="submit" className="bg-blue-900 text-white px-6 w-full sm:w-auto">
+                <Button
+                  type="submit"
+                  className="bg-blue-900 text-white px-6 w-full sm:w-auto"
+                >
                   स्वीकार
                 </Button>
 
-                <Button variant="outline" onClick={resetForm} className="w-full sm:w-auto">
+                <Button
+                  variant="outline"
+                  onClick={resetForm}
+                  className="w-full sm:w-auto"
+                >
                   रद्द
                 </Button>
 

@@ -62,6 +62,8 @@ import RptCashBankBalance from "./pages/ReportsForm/RptCashBankBalance";
 import RptClassifiedRegisterDetails from "./pages/ReportsForm/RptClassifiedRegisterDetails";
 import RptLedgerReport from "./pages/ReportsForm/RptLedgerReport";
 
+import FrmVoucherGeneration from "./pages/Transaction/FrmVoucherGeneration";
+
 const Home = () => <Button>Click me</Button>;
 const About = () => <h1>About Page</h1>;
 
@@ -315,6 +317,10 @@ export const router = createBrowserRouter([
       {
         path:"ReportsForm/RptLedgerReport",
         element:<RptLedgerReport />
+      },
+      {
+        path:"Transactions/FrmVoucherGeneration",
+        element:<FrmVoucherGeneration />
       }
     ]
   },
