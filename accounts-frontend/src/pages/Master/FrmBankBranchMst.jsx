@@ -124,14 +124,17 @@ const FrmBankBranchMst = () => {
                 Swal.fire({
                     text: res.data.message,
                     confirmButtonColor: "#1e3a8a",
+                }).then(() => {
+                    navigate("/Masters/FrmBankBranchList");
                 });
-                navigate("/Masters/FrmBankBranchList");
             }
         } catch (err) {
             console.error("Save Error:", err);
             Swal.fire({
                 text: "Something went wrong",
                 confirmButtonColor: "#1e3a8a",
+            }).then(() => {
+                navigate("/Masters/FrmBankBranchList");
             });
         }
     };

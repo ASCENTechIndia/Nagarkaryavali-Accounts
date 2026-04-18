@@ -60,6 +60,8 @@ import FrmGovtTaxPayment from "./pages/Transaction/FrmGovtTaxPayment";
 import RptReceiptRegisterDetails from "./pages/ReportsForm/RptReceiptRegisterDetails";
 import RptLedgerReport from "./pages/Reports/RptLedgerReport";
 import Frmconsolidatedreceipt from "./pages/Reports/Frmconsolidatedreceipt";
+import Frmauthorizationconfig from "./pages/Master/Frmauthorizationconfig";
+import FrmauthorizationconfigList from "./pages/Master/FrmauthorizationconfigList";
 
 const Home = () => <Button>Click me</Button>;
 const About = () => <h1>About Page</h1>;
@@ -278,6 +280,14 @@ export const router = createBrowserRouter([
       {
         path: "/Masters/FrmBudgetPrepration",
         element: <FrmBudgetPrepration />
+      },
+      {
+        path: "/Masters/FrmauthorizationconfigList",
+        element: <FrmauthorizationconfigList />
+      },
+      {
+        path: "/Masters/Frmauthorizationconfig",
+        element: <Frmauthorizationconfig />
       },
       {
         path: "/ReportsForm/RptClassifiedRegisterDetails",
