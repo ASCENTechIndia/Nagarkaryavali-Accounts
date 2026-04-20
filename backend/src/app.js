@@ -72,6 +72,7 @@ app.use("/api/Grampanchayat", require("./modules/Master/FrmGrampanchayat/FrmGram
 app.use("/api/FrmContract", require("./modules/Master/FrmContract/FrmContract.routes"));
 app.use("/api/Frmauthorizationconfig", require("./modules/Master/Frmauthorizationconfig/Frmauthorizationconfig.routes"));
 app.use("/api/FrmNidhiConfig", require("./modules/Master/FrmNidhiConfig/FrmNidhiConfig.routes"));
+app.use("/api/NidhiList",require("./modules/Master/FrmNidhiList/FrmNidhiList.routes"))
 
 //Transaction
 app.use("/api/FrmTransfer", require("./modules/Transaction/FrmTransfer/FrmTransfer.routes"));
@@ -81,12 +82,10 @@ app.use("/api/BudgetPrepration", require("./modules/Transaction/FrmBudgetPreprat
 app.use("/api/FrmSearchOption", require("./modules/Transaction/FrmSearchOption/FrmSearchOption.routes"));
 app.use("/api/FrmGovtTaxPayment", require("./modules/Transaction/FrmGovtTaxPayment/FrmGovtTaxPayment.routes"));
 app.use("/api/FrmTransAuthList", require("./modules/Transaction/FrmTransAuthList/FrmTransAuthList.routes"));
-app.use("/api/RptRegister", require("./modules/Reports/FrmRptReceiptRegisterDetails/RptReceiptRegisterDetails.route"));
 app.use("/api/frmPayment", require("./modules/Transaction/FrmPayment/frmPayment.route"));
-app.use("/api/RptReceiptRegister", require("./modules/Reports/RptReceiptRegister/RptReceiptRegister.routes"));
 app.use("/api/BudgetAccMap", require("./modules/Transaction/FrmBudgetAccountMap/FrmBudgetAccountMap.routes"));
 app.use("/api/FrmVoucherGeneration", require("./modules/Transaction/FrmVoucherGeneration/FrmVoucherGeneration.routes"));
-app.use("/api/NidhiList",require("./modules/Master/FrmNidhiList/FrmNidhiList.routes"))
+
 
 //Reports
 app.use("/api/RptTransferRegister", require("./modules/Reports/RptTransferRegister/transferRegister.route"));
@@ -94,6 +93,8 @@ app.use("/api/RptCashBankBalance", require("./modules/Reports/RptCashBankBalance
 app.use("/api/Classified", require("./modules/Reports/RptClassifiedRegister/RptClassifiedRegisterDetails.route"));
 app.use("/api/Abstract", require("./modules/Reports/RptClassifiedAbstractSummary/RptClassifiedAbstract.route"));
 app.use("/api/RptLedgerReport", require("./modules/Reports/RptLedgerReport/rptLedgerReport.route"));
+app.use("/api/RptRegister", require("./modules/Reports/FrmRptReceiptRegisterDetails/RptReceiptRegisterDetails.route"));
+app.use("/api/RptReceiptRegister", require("./modules/Reports/RptReceiptRegister/RptReceiptRegister.routes"));
 
 app.use(errorMiddleware);
 
