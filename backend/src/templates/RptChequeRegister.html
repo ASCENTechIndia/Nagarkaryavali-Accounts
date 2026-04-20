@@ -1,0 +1,204 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8" />
+
+<style>
+body { font-family: Arial; font-size: 10px; }
+
+.header-box {
+  border: 2px solid black;
+  padding: 10px;
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  width: 80px;
+}
+
+.title {
+  flex: 1;
+  text-align: center;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.sub-title {
+  text-align: center;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 11px;
+}
+
+.meta-right {
+  text-align: right;
+}
+
+.filter-row {
+  margin-top: 10px;
+  font-size: 11px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  table-layout: fixed;
+}
+
+th, td {
+  border: 1px solid black;
+  padding: 4px;
+  vertical-align: top;
+  font-size: 9px;
+}
+
+th {
+  text-align: left;
+  background: #f2f2f2;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-left {
+  text-align: left;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header-box">
+
+  <div class="header-top">
+    <img src="{{logo}}" class="logo"/>
+    <div class="title">
+    logo,
+     "मालेगाव महानगरपालिका मालेगाव",
+      <div class="sub-title">Cheque Register / धनादेश रजिस्टर</div>
+    </div>
+  </div>
+
+  <div class="meta">
+    <div>
+      <b>From/पासून :</b> {{fromDate}}  
+      &nbsp;&nbsp;&nbsp;
+      <b>TO/पर्यंत :</b> {{toDate}}
+    </div>
+
+    <div class="meta-right">
+      <div><b>Date :</b> {{currentDate}}</div>
+      <div><b>Time :</b> {{currentTime}}</div>
+      <div><b>Page :</b> {{pageInfo}}</div>
+    </div>
+  </div>
+
+  <div class="filter-row">
+    <b>Bank Name :</b> ALL  
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <b>A/c No :</b> ALL
+  </div>
+
+</div>
+
+<table>
+
+<thead>
+<tr>
+  <th>Cheque Date /<br>धनादेश दिनांक<br>Cheque No</th>
+
+  <th>Voucher No /<br>Voucher Date</th>
+
+  <th>Payee Name /<br>Particulars</th>
+
+  <th>System Bill No /<br>Bill Date</th>
+
+  <th>Gross AMT<br>Deduction<br>Net Amount</th>
+
+  <th>Cheque Amount</th>
+
+  <th>Recipient Sign</th>
+
+  <th>Cheque Realisation Date</th>
+</tr>
+</thead>
+
+<tbody>
+
+{{#each rows}}
+<tr>
+
+  <!-- Cheque Date + No -->
+  <td>
+    {{CHEQDATE}} <br>
+    {{CHEQNO}}
+  </td>
+
+  <!-- Voucher -->
+  <td>
+    {{VCHNO}} <br>
+    {{VCHODATE}}
+  </td>
+
+  <!-- Payee + Particular -->
+  <td class="text-left">
+    {{PAYEENAME}} <br>
+    {{REMARK}}
+  </td>
+
+  <!-- Bill -->
+  <td>
+    {{SYSTEMBILLNO}} <br>
+    {{SYSTEMBILLDATE}}
+  </td>
+
+  <!-- Amount block -->
+  <td class="text-right">
+    {{GROSSAMT}} <br>
+    {{TDS}} <br>
+    {{NETAMOUNT}}
+  </td>
+
+  <!-- Cheque Amt -->
+  <td class="text-right">
+    {{CHEQAMT}}
+  </td>
+
+  <!-- Sign -->
+  <td></td>
+
+  <!-- Realisation -->
+  <td>{{CHEQRELIDATE}}</td>
+
+</tr>
+{{/each}}
+
+<tr>
+  <td colspan="4"><b>Total</b></td>
+  <td class="text-right">
+    {{totalGross}} <br>
+    {{totalDeduction}} <br>
+    {{totalNet}}
+  </td>
+  <td class="text-right">{{totalCheque}}</td>
+  <td colspan="2"></td>
+</tr>
+
+</tbody>
+</table>
+
+</body>
+</html>
