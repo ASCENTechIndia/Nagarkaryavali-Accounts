@@ -20,9 +20,9 @@
 // }
 
 // module.exports = {
-  
+
 //   getMenuAccess,
- 
+
 // };
 
 
@@ -63,6 +63,25 @@ async function getMenusService(payload) {
   };
 }
 
+async function getCorporationInfoService(payload) {
+  console.log("📥 Corporation Service Payload:", payload);
+
+  const { ulbId } = payload;
+
+  if (!ulbId) {
+    throw new AppError("ulbId is required", 400);
+  }
+
+  const data = await repo.getCorporationInfoRepo(payload);
+
+  return {
+    success: true,
+    corporationName: data.corporationName,
+    corporationLogo: data.corporationLogo,
+  };
+}
+
 module.exports = {
   getMenusService,
+  getCorporationInfoService
 };

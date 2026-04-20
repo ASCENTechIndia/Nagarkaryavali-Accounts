@@ -52,7 +52,7 @@
 // module.exports = {
 
 //   getMenuAccess,
-  
+
 // };
 
 const { executeQuery } = require("../../db/queryExecutor");
@@ -102,6 +102,34 @@ async function getMenusRepo({ userId, ulbId, deptId }) {
   return result.rows;
 }
 
+async function getCorporationInfoRepo({ ulbId }) {
+  const sql = `
+    SELECT var_corporation_name AS corporationName,
+           blob_corporation_img AS corporationLogo
+    FROM admins.aoma_corporation_mas
+    WHERE num_corporation_id = :ulbId
+  `;
+
+  const result = await executeQuery(sql, { ulbId });
+
+  if (!result.success) throw new Error(result.error);
+
+  const row = result.rows[0];
+  if (!row) return null;
+
+  let logoBase64 = null;
+
+  if (row.CORPORATIONLOGO) {
+    logoBase64 = `data:image/png;base64,${buffer.toString("base64")}`;
+  }
+
+  return {
+    corporationName: row.CORPORATIONNAME,
+    corporationLogo: logoBase64,
+  };
+}
+
 module.exports = {
   getMenusRepo,
+  getCorporationInfoRepo
 };

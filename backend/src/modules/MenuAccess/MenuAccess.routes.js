@@ -20,4 +20,6 @@ const controller = require("./MenuAccess.controller");
 
 router.post("/AccountMenus", auth(), controller.getMenus);
 
+router.post("/CorporationInfo", auth(), controller.getCorporationInfo);
+
 module.exports = router;

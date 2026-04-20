@@ -3,13 +3,11 @@ const path = require("path");
 const puppeteer = require("puppeteer");
 const Handlebars = require("handlebars");
 
-// ---------- Helpers ----------
 const formatDate = (date) => {
   if (!date) return "";
 
   let d;
 
-  // 🔥 Handle DD-MM-YYYY manually
   if (typeof date === "string" && date.includes("-")) {
     const [day, month, year] = date.split("-");
     d = new Date(`${year}-${month}-${day}`);
@@ -40,12 +38,10 @@ const imageToBase64 = (imgPath) => {
   }
 };
 
-// ---------- MAIN HELPER ----------
 const BillRegisterPDFHelper = async ({ reportData, filters }) => {
   try {
     let { fromDate, toDate } = filters || {};
 
-    // ✅ format safely
     fromDate = formatDate(fromDate);
     toDate = formatDate(toDate);
 
@@ -53,19 +49,14 @@ const BillRegisterPDFHelper = async ({ reportData, filters }) => {
       throw new Error("No data found for PDF");
     }
 
-    // 📄 Template
     const templatePath = path.resolve(__dirname, "../../templates/BillRegister.html");
 
     const templateHtml = fs.readFileSync(templatePath, "utf8");
     const template = Handlebars.compile(templateHtml);
 
-    // 🖼 Logo (optional)
     const logoPath = path.resolve(__dirname, "../../assets/logo.png");
     const logo = imageToBase64(logoPath);
 
-    // =====================================================
-    // 🔥 GROUPING LOGIC (VERY IMPORTANT)
-    // =====================================================
     const groupedMap = new Map();
 
     reportData.forEach((row) => {
@@ -83,7 +74,6 @@ const BillRegisterPDFHelper = async ({ reportData, filters }) => {
 
       const group = groupedMap.get(key);
 
-      // 🔥 SAFE PAYMENT PARSE (VERY IMPORTANT)
       let payment = 0;
 
       if (row.PAYMENTAMOUNT !== null && row.PAYMENTAMOUNT !== undefined) {
@@ -98,7 +88,7 @@ const BillRegisterPDFHelper = async ({ reportData, filters }) => {
         vendorName: row.VENDORNAME,
         remarks: row.REMARKS,
         billAmount: formatNumber(row.BILLAMOUNT),
-        billAmountRaw: Number(row.BILLAMOUNT || 0), // ✅ ADD THIS
+        billAmountRaw: Number(row.BILLAMOUNT || 0), 
         voucherNo: row.VOUCHERNO,
         voucherDate: formatDate(row.VOUCHERDATE),
         payment: formatNumber(payment),
@@ -107,35 +97,26 @@ const BillRegisterPDFHelper = async ({ reportData, filters }) => {
 
       group.subTotalRaw += payment;
     });
-    // ✅ FINAL FORMAT
     const groupedData = Array.from(groupedMap.values()).map((g) => ({
       ...g,
       subTotal: formatNumber(g.subTotalRaw),
     }));
-    // =====================================================
-    // 🔥 GRAND TOTAL
-    // =====================================================
+
     let grandBillAmount = 0;
     let grandPayment = 0;
 
     groupedData.forEach((group) => {
-      // 🔥 Sum ALL bill amounts (not just first row)
       group.entries.forEach((entry) => {
         const billAmt = Number(String(entry.billAmountRaw || 0).replace(/,/g, ""));
 
         grandBillAmount += isNaN(billAmt) ? 0 : billAmt;
       });
 
-      // ✅ Payment already correct
       grandPayment += group.subTotalRaw || 0;
     });
 
-    // ✅ FINAL BALANCE (IMPORTANT)
     let grandBalance = grandBillAmount - grandPayment;
 
-    // =====================================================
-    // 🧾 TEMPLATE DATA
-    // =====================================================
     const html = template({
       corporationName: "अहिल्यानगर महानगरपालिका, अहिल्यानगर",
       fromDate,
@@ -146,9 +127,6 @@ const BillRegisterPDFHelper = async ({ reportData, filters }) => {
       grandBalance: formatNumber(grandBalance),
     });
 
-    // =====================================================
-    // 🚀 GENERATE PDF
-    // =====================================================
     const browser = await puppeteer.launch({
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -161,32 +139,35 @@ const BillRegisterPDFHelper = async ({ reportData, filters }) => {
       timeout: 0,
     });
 
-    const pdfBuffer = await page.pdf({
-      format: "A4",
-      landscape: false,
-      printBackground: true,
-
-      displayHeaderFooter: true,
-
-      headerTemplate: `
-    <div style="font-size:10px; width:100%; padding:0 20px;">
-      <div style="float:right;">
-        Page <span class="pageNumber"></span> of <span class="totalPages"></span>
+  const pdfBuffer = await page.pdf({
+  format: "A4",
+  landscape: false, // Optional: Usually better for many-column registers
+  printBackground: true,
+  displayHeaderFooter: true,
+  headerTemplate: `
+    <div style="font-family: Arial, sans-serif; font-size: 9px; width: 100%; margin: 0 20px; padding-bottom: 5px; border-bottom: 0.5px solid #ccc; display: flex; flex-direction: column;">
+      <div style="display: flex; justify-content: space-between; width: 100%;">
+        <div style="width: 35%; font-size: 12px">अहिल्यानगर महानगरपालिका, अहिल्यानगर</div>
+        <div style="width: 30%; text-align: center; font-weight: bold; font-size: 14px">
+          Bill Register <br/> बिल रजिस्टर
+        </div>
+        <div style="width: 35%; text-align: right; font-size: 10px">
+          Page <span class="pageNumber"></span> of <span class="totalPages"></span>
+        </div>
+      </div>
+      <div style="text-align: right; width: 100%; margin-top: 5px; font-size: 10px">
+        ${fromDate} To ${toDate}
       </div>
     </div>
   `,
-
-      footerTemplate: `
-    <div></div>
-  `,
-
-      margin: {
-        top: "70px",
-        bottom: "40px",
-        left: "20px",
-        right: "20px",
-      },
-    });
+  footerTemplate: `<div></div>`, // Empty footer
+  margin: {
+    top: "100px", // Give enough room for the custom header
+    bottom: "40px",
+    left: "20px",
+    right: "20px",
+  },
+});
 
     await browser.close();
 
