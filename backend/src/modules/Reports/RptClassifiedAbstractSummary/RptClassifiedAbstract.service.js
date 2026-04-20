@@ -23,7 +23,24 @@ async function getBudgetExpenditureReportService(filters) {
     list: data,
   };
 }
+async function getTransactionLedgerReportService(filters) {
+  if (!filters.ulbId) {
+    throw new AppError("ULBId is required", 400);
+  }
 
+  if (!filters.fromDate || !filters.toDate) {
+    throw new AppError("FromDate and ToDate are required", 400);
+  }
+
+  const data = await repo.getTransactionLedgerReport(filters);
+
+  return {
+    success: true,
+    count: data.length,
+    list: data,
+  };
+}
 module.exports = {
   getBudgetExpenditureReportService,
+  getTransactionLedgerReportService,
 };
