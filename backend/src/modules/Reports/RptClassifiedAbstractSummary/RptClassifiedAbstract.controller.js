@@ -31,3 +31,23 @@ exports.getBudgetExpenditurePDF = asyncHandler(async (req, res) => {
       pdfUrl
     });
 });
+
+exports.getTransactionLedgerReport = asyncHandler(async (req, res) => {
+  const filters = req.body;
+
+  const result = await service.getTransactionLedgerReportService(filters);
+
+  if (!result.list || result.list.length === 0) {
+    return res.json({
+      success: false,
+      message: "No records found",
+      data: result
+    });
+  }
+
+  return res.json({
+    success: true,
+    message: "Transaction ledger fetched successfully",
+    data: result
+  });
+});
