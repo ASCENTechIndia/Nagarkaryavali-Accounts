@@ -63,6 +63,7 @@ import RptLedgerReport from "./pages/Reports/RptLedgerReport";
 import Frmconsolidatedreceipt from "./pages/Reports/Frmconsolidatedreceipt";
 import FrmNidhiList from "./pages/Master/FrmNidhiList";
 import FrmNidhiMaster from "./pages/Master/FrmNidhiMaster";
+import FrmNidhiConfig from "./pages/Master/FrmNidhiConfig";
 
 const Home = () => <Button>Click me</Button>;
 const About = () => <h1>About Page</h1>;
@@ -146,6 +147,10 @@ export const router = createBrowserRouter([
       {
         path: "/Masters/FrmAccountMst",
         element: <FrmAccountMaster />,
+      },
+      {
+        path:"Masters/FrmNidhiConfig",
+        element: <FrmNidhiConfig/>
       },
 
 
