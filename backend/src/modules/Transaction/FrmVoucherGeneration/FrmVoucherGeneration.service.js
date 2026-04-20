@@ -21,6 +21,26 @@ const getVoucherTableDetailsService = async (data) => {
 
   return result;
 };
+
+
+async function voucherGenerationService(data) {
+  if (!data.userId) {
+    throw new AppError("UserId is required", 400);
+  }
+
+  const result = await repo.voucherGeneration(data);
+
+  if (result.errorCode < 0 && result.errorCode !== -100) {
+    throw new AppError(result.message, 400);
+  }
+
+  return {
+    success: true,
+    errorCode: result.errorCode,
+    errorMsg: result.message,
+  };
+}
+
 const getVoucherTaxService = (body) => repo.getVoucherTaxDetails(body);
 
 // ✅ Voucher Generation Service

@@ -178,7 +178,7 @@ const FrmTransferList = () => {
                 <Select
                   value={selectedCorp}
                   onValueChange={setSelectedCorp}
-                  desabled
+                  disabled={!!user?.ulbId} // disable if user has ulbId (auto-selected)
                 >
                   <SelectTrigger className="h-8 text-sm w-full">
                     <SelectValue placeholder="Select" />
