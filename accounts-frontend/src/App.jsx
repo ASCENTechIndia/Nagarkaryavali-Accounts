@@ -64,6 +64,7 @@ import Frmconsolidatedreceipt from "./pages/Reports/Frmconsolidatedreceipt";
 import FrmNidhiList from "./pages/Master/FrmNidhiList";
 import FrmNidhiMaster from "./pages/Master/FrmNidhiMaster";
 import FrmNidhiConfig from "./pages/Master/FrmNidhiConfig";
+import FrmChecRegisterRpt from "./pages/Reports/FrmChecRegisterRpt";
 
 const Home = () => <Button>Click me</Button>;
 const About = () => <h1>About Page</h1>;
@@ -333,6 +334,10 @@ export const router = createBrowserRouter([
       {
         path: "/Reportsform/Frmconsolidatedreceipt",
         element: <Frmconsolidatedreceipt />
+      },
+      {
+        path: "/ReportsForm/FrmChecRegisterRpt",
+        element: <FrmChecRegisterRpt />
       },
       {
         path: "/about",
