@@ -20,9 +20,9 @@
 // }
 
 // module.exports = {
-  
+
 //   getMenuAccess,
- 
+
 // };
 
 
@@ -63,6 +63,38 @@ async function getMenusService(payload) {
   };
 }
 
+async function getCorporationService(payload) {
+  console.log("📥 Service Payload:", payload);
+
+  const { ulbId } = payload;
+
+  if (!ulbId) {
+    throw new AppError("ulbId is required", 400);
+  }
+
+  const data = await repo.getCorporationRepo(payload);
+
+  if (!data || data.length === 0) {
+    throw new AppError("Corporation data not found", 404);
+  }
+
+  const row = data[0];
+
+  let logoBase64 = null;
+
+  if (row.CORPORATIONLOGO) {
+    logoBase64 = `data:image/png;base64,${row.CORPORATIONLOGO.toString(
+      "base64"
+    )}`;
+  }
+
+  return {
+    ULBLOGO: logoBase64,
+    ABC_MUNICIPAL_TEXT: row.CORPORATIONNAME,
+  };
+}
+
 module.exports = {
   getMenusService,
+  getCorporationService
 };
