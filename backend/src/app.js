@@ -96,6 +96,7 @@ app.use("/api/RptLedgerReport", require("./modules/Reports/RptLedgerReport/rptLe
 app.use("/api/RptRegister", require("./modules/Reports/FrmRptReceiptRegisterDetails/RptReceiptRegisterDetails.route"));
 app.use("/api/RptReceiptRegister", require("./modules/Reports/RptReceiptRegister/RptReceiptRegister.routes"));
 app.use("/api/ChecRegister",require("./modules/Reports/FrmChecRegisterRpt/FrmChecRegister.route"))
+app.use("/api/FrmBillRegisterRpt", require("./modules/Reports/FrmBillRegisterRpt/FrmBillRegisterRpt.routes"));
 
 app.use(errorMiddleware);
 

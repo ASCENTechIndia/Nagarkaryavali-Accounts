@@ -65,6 +65,7 @@ import FrmNidhiList from "./pages/Master/FrmNidhiList";
 import FrmNidhiMaster from "./pages/Master/FrmNidhiMaster";
 import FrmNidhiConfig from "./pages/Master/FrmNidhiConfig";
 import FrmChecRegisterRpt from "./pages/Reports/FrmChecRegisterRpt";
+import FrmBillRegisterRpt from "./pages/Reports/FrmBillRegisterRpt";
 
 const Home = () => <Button>Click me</Button>;
 const About = () => <h1>About Page</h1>;
@@ -150,9 +151,10 @@ export const router = createBrowserRouter([
         element: <FrmAccountMaster />,
       },
       {
-        path:"Masters/FrmNidhiConfig",
-        element: <FrmNidhiConfig/>
+        path: "Masters/FrmNidhiConfig",
+        element: <FrmNidhiConfig />
       },
+      
 
 
       {
@@ -285,7 +287,7 @@ export const router = createBrowserRouter([
         element: <FrmCityMst />
       },
       {
-         path: "/Masters/FrmauthorizationconfigList",
+        path: "/Masters/FrmauthorizationconfigList",
         element: <FrmauthorizationconfigList />
       },
       {
@@ -338,6 +340,10 @@ export const router = createBrowserRouter([
       {
         path: "/ReportsForm/FrmChecRegisterRpt",
         element: <FrmChecRegisterRpt />
+      },
+      {
+        path: "/ReportsForm/FrmBillRegisterRpt",
+        element: <FrmBillRegisterRpt />
       },
       {
         path: "/about",
