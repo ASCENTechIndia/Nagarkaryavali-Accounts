@@ -86,7 +86,7 @@ app.use("/api/frmPayment", require("./modules/Transaction/FrmPayment/frmPayment.
 app.use("/api/RptReceiptRegister", require("./modules/Reports/RptReceiptRegister/RptReceiptRegister.routes"));
 app.use("/api/BudgetAccMap", require("./modules/Transaction/FrmBudgetAccountMap/FrmBudgetAccountMap.routes"));
 app.use("/api/FrmVoucherGeneration", require("./modules/Transaction/FrmVoucherGeneration/FrmVoucherGeneration.routes"));
-app.use("/api/NidhiList",require("./modules/Master/FrmNidhiList/FrmNidhiList.routes"))
+app.use("/api/NidhiList", require("./modules/Master/FrmNidhiList/FrmNidhiList.routes"));
 
 //Reports
 app.use("/api/RptTransferRegister", require("./modules/Reports/RptTransferRegister/transferRegister.route"));
@@ -94,6 +94,7 @@ app.use("/api/RptCashBankBalance", require("./modules/Reports/RptCashBankBalance
 app.use("/api/Classified", require("./modules/Reports/RptClassifiedRegister/RptClassifiedRegisterDetails.route"));
 app.use("/api/Abstract", require("./modules/Reports/RptClassifiedAbstractSummary/RptClassifiedAbstract.route"));
 app.use("/api/RptLedgerReport", require("./modules/Reports/RptLedgerReport/rptLedgerReport.route"));
+app.use("/api/FrmBillRegisterRpt", require("./modules/Reports/FrmBillRegisterRpt/FrmBillRegisterRpt.routes"));
 
 app.use(errorMiddleware);
 

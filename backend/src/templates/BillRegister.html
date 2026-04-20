@@ -1,0 +1,240 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Bill Register</title>
+
+    <style>
+      /* ================= PAGE ================= */
+      @page {
+        size: A4;
+        margin: 100px 20px 40px 20px; /* 🔥 IMPORTANT */
+      }
+
+      body {
+        font-family: "Noto Sans Devanagari", Arial, sans-serif;
+        font-size: 10px;
+        margin: 0;
+        padding-top: 70px;
+      }
+
+      /* ================= HEADER ================= */
+      .page-header {
+        position: fixed;
+        top: 0; 
+        left: 0;
+        right: 0;
+
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        font-size: 12px;
+        font-weight: bold;
+      }
+
+      /* ================= TABLE ================= */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+
+      thead {
+        display: table-header-group;
+      }
+
+      tfoot {
+        display: table-footer-group;
+      }
+
+      tr {
+        page-break-inside: avoid;
+      }
+
+      th,
+      td {
+        border: 1px solid #000;
+        padding: 5px;
+        text-align: center;
+        vertical-align: top;
+
+        word-break: break-word;
+        white-space: normal;
+      }
+
+      th {
+        font-weight: bold;
+      }
+
+      .text-left {
+        text-align: left;
+      }
+
+      .bold {
+        font-weight: bold;
+      }
+
+      .subtotal {
+        font-weight: bold;
+        text-align: right;
+      }
+
+      /* ================= COLUMN WIDTH ================= */
+      th:nth-child(1),
+      td:nth-child(1) {
+        width: 40px;
+      }
+      th:nth-child(2),
+      td:nth-child(2) {
+        width: 90px;
+      }
+      th:nth-child(3),
+      td:nth-child(3) {
+        width: 90px;
+      }
+      th:nth-child(4),
+      td:nth-child(4) {
+        width: 130px;
+      }
+      th:nth-child(5),
+      td:nth-child(5) {
+        width: 220px;
+      }
+      th:nth-child(6),
+      td:nth-child(6) {
+        width: 90px;
+      }
+      th:nth-child(7),
+      td:nth-child(7) {
+        width: 100px;
+      }
+      th:nth-child(8),
+      td:nth-child(8) {
+        width: 100px;
+      }
+      th:nth-child(9),
+      td:nth-child(9) {
+        width: 100px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ================= HEADER ================= -->
+    <div class="page-header">
+      <div style="width: 33%; text-align: left">अहिल्यानगर महानगरपालिका, अहिल्यानगर</div>
+
+      <div style="width: 33%; text-align: center">
+        <b>Bill Register</b><br />
+        बिल रजिस्टर
+      </div>
+
+      <div style="width: 33%; text-align: right">{{fromDate}} To {{toDate}}</div>
+    </div>
+
+    <!-- ================= TABLE ================= -->
+    <table>
+      <thead>
+        <tr>
+          <th>Sr.No<br />अ.क्र.</th>
+
+          <th>
+            Bill No./बिल क्र.<br />
+            Bill Date<br />/बिल दिनांक
+          </th>
+
+          <th>
+            System Bill no<br />/सिस्टम बिल क्र.<br />
+            System Date<br />/सिस्टम दिनांक
+          </th>
+
+          <th>Vendor Name<br />/विक्रेत्याचे नाव</th>
+
+          <th>Particulars /तपशील</th>
+
+          <th>Bill Amount /<br />बिल रक्कम</th>
+
+          <th>
+            Voucher no<br />/प्रमाणक क्र.<br />
+            Voucher Date<br />/प्रमाणक दिनांक
+          </th>
+
+          <th>Payments Done/<br />अदा केलेली रक्कम</th>
+
+          <th>Balance Amount<br />/शिल्लक रक्कम</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {{#each groupedData}}
+
+        <!-- 🔷 BILL HEADER ROW -->
+        <tr class="bold">
+          <td>{{srNo}}</td>
+
+          <td>
+            {{billNo}} <br />
+            {{billDate}}
+          </td>
+
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+
+        <!-- 🔷 DETAILS -->
+        {{#each entries}}
+        <tr>
+          <td></td>
+          <td></td>
+
+          <td>
+            {{systemBillNo}} <br />
+            {{systemDate}}
+          </td>
+
+          <td class="text-left">{{vendorName}}</td>
+
+          <td class="text-left">{{remarks}}</td>
+
+          <td>{{billAmount}}</td>
+
+          <td>
+            {{voucherNo}} <br />
+            {{voucherDate}}
+          </td>
+
+          <td>{{payment}}</td>
+
+          <td>{{balance}}</td>
+        </tr>
+        {{/each}}
+
+        <!-- 🔷 SUB TOTAL -->
+        <tr>
+          <td colspan="7" class="subtotal">Sub Total</td>
+          <td class="bold">{{subTotal}}</td>
+          <td></td>
+        </tr>
+
+        {{/each}}
+
+        <!-- 🔷 GRAND TOTAL -->
+        <tr>
+          <td colspan="5" class="subtotal">Grand Total</td>
+
+          <td class="bold">{{grandBillAmount}}</td>
+          <td></td>
+
+          <td class="bold">{{grandPayment}}</td>
+          <td class="bold">{{grandBalance}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>
