@@ -5,5 +5,8 @@ const controller = require("./rptCashBankBalance.controller");
 
 router.post("/grampanchayat-list", auth(), controller.getGrampanchayatList);
 router.post("/cash-bank-balance", auth(), controller.getCashBankBalanceReport);
+router.post("/detailcashbook", auth(),controller.getDailyTransactionDetailedReport);
+router.post("/detailcashbookpdf",auth(),controller.generateCashbookPDF);
+
 
 module.exports = router;
