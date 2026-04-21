@@ -23,10 +23,28 @@ async function getCashBankBalanceReportService(payload) {
     data,
   };
 }
+async function getDailyTransactionDetailedReportService(filters) {
+  if (!filters.ulbId) {
+    throw new AppError("ULBId is required", 400);
+  }
+
+  if (!filters.date) {
+    throw new AppError("Date is required", 400);
+  }
+
+  const data = await repo.getDailyTransactionDetailedReport(filters);
+
+  return {
+    success: true,
+    count: data.length,
+    list: data,
+  };
+}
 
 
 
 module.exports = {
   getGrampanchayatListService,
-  getCashBankBalanceReportService
+  getCashBankBalanceReportService,
+  getDailyTransactionDetailedReportService
 };

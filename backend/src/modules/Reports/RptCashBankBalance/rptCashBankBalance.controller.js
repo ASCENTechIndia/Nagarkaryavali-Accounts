@@ -2,6 +2,8 @@ const { AppError } = require("../../../libs/errors");
 const asyncHandler = require("../../../libs/asyncHandler");
 const { ok } = require("../../../libs/response");
 const service = require("./rptCashBankBalance.service");
+const path = require("path");
+const { CashbookPDFHelper } = require("../../../utils/pdfHelper/CashbookPDFHelper");
 
 exports.getGrampanchayatList = asyncHandler(async (req, res) => {
   const { deptId } = req.body;
@@ -29,4 +31,40 @@ exports.getCashBankBalanceReport = asyncHandler(async (req, res) => {
   const data = await service.getCashBankBalanceReportService(payload);
 
   return ok(res, data, "Cash Bank Balance Report fetched successfully");
+});
+
+exports.getDailyTransactionDetailedReport = asyncHandler(async (req, res) => {
+  const filters = req.body;
+
+  const data = await service.getDailyTransactionDetailedReportService(filters);
+
+  return ok(res, data, "Daily transaction detailed report fetched");
+});
+
+exports.generateCashbookPDF = asyncHandler(async (req, res) => {
+  const filters = req.body;
+
+  const result = await service.getDailyTransactionDetailedReportService(filters);
+
+  if (!result.list.length) {
+    return res.status(404).json({
+      success: false,
+      message: "No records found"
+    });
+  }
+
+  const pdf = await CashbookPDFHelper({
+    reportData: result.list,
+    filters
+  });
+
+  const baseUrl = `${req.protocol}://${req.get("host")}`;
+  const pdfUrl = `${baseUrl}/pdf/${path.basename(pdf.filePath)}`;
+
+  return res.json({
+    success: true,
+    message: "PDF Generated Successfully",
+    fileName: pdf.fileName,
+    pdfUrl
+  });
 });

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10px;
+}
+@page {
+  size: A4 landscape;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid #000;
+  padding: 4px;
+  text-align: center;
+}
+
+.header {
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.sub {
+  text-align: center;
+  margin: 5px;
+  font-size: 12px;
+}
+
+.text-left {
+  text-align: left;
+}
+
+/* Main combined table */
+.main-table th, .main-table td {
+  font-size: 9px;
+}
+
+/* Summary */
+.summary {
+  width: 300px;
+  float: right;
+  margin-top: 10px;
+}
+
+.summary td {
+  border: 1px solid black;
+  padding: 5px;
+  text-align: right;
+}
+
+.summary td:first-child {
+  text-align: left;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">{{corporationName}}</div>
+<div class="sub">Receipt Payment</div>
+<div class="sub">दिनांक: {{fromDate}}</div>
+
+<table class="main-table">
+<thead>
+
+<tr>
+  <th colspan="10">Receipt</th>
+  <th colspan="9">Payment</th>
+</tr>
+
+<tr>
+  <!-- RECEIPT -->
+  <th>Sr</th>
+  <th>Zone</th>
+  <th>Dept</th>
+  <th>Receipt No</th>
+  <th>Code</th>
+  <th>Name</th>
+  <th>Narration</th>
+  <th>Cash</th>
+  <th>Cheque</th>
+  <th>Total</th>
+
+  <!-- PAYMENT -->
+  <th>Sr</th>
+  <th>Vch No</th>
+  <th>Code</th>
+  <th>Party Name</th>
+  <th>Narration</th>
+  <th>Chq No</th>
+  <th>Amount</th>
+  <th>Transfer</th>
+  <th>Total</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+{{#each rows}}
+<tr>
+
+<!-- RECEIPT -->
+<td>{{SR}}</td>
+<td>{{R_ZONE}}</td>
+<td></td>
+<td>{{R_DOCNO}}</td>
+<td>{{R_CODE}}</td>
+<td class="text-left">{{R_NAME}}</td>
+<td class="text-left">{{R_NARRATION}}</td>
+<td>{{R_CASH}}</td>
+<td>{{R_BANK}}</td>
+<td>{{R_TOTAL}}</td>
+
+<!-- PAYMENT -->
+<td>{{SR}}</td>
+<td>{{P_DOCNO}}</td>
+<td>{{P_CODE}}</td>
+<td class="text-left">{{P_PARTY}}</td>
+<td class="text-left">{{P_NARRATION}}</td>
+<td>{{P_CHQNO}}</td>
+<td>{{P_AMOUNT}}</td>
+<td>{{P_TRANSFER}}</td>
+<td>{{P_TOTAL}}</td>
+
+</tr>
+{{/each}}
+
+<!-- TOTAL ROW -->
+<tr>
+  <td colspan="7"><b>एकूण</b></td>
+  <td><b>{{totalReceipt}}</b></td>
+  <td><b>0.00</b></td>
+  <td><b>{{totalReceipt}}</b></td>
+
+  <td colspan="6"><b>एकूण</b></td>
+  <td><b>{{totalPayment}}</b></td>
+  <td><b>{{totalPayment}}</b></td>
+</tr>
+
+</tbody>
+</table>
+
+<!-- SUMMARY -->
+<table class="summary">
+<tr>
+  <td>Opening Balance</td>
+  <td>{{opening}}</td>
+</tr>
+<tr>
+  <td>Total Receipt</td>
+  <td>{{totalReceipt}}</td>
+</tr>
+<tr>
+  <td>Total Expenses</td>
+  <td>{{totalPayment}}</td>
+</tr>
+<tr>
+  <td>Closing Balance</td>
+  <td>{{closing}}</td>
+</tr>
+</table>
+
+</body>
+</html>
