@@ -21,27 +21,27 @@ const formatNumber = (num) => {
   return Number(num || 0).toLocaleString("en-IN");
 };
 
-const RptReceiptRegisterPDFHelper = async ({ reportData, filters }) => {
+const RptReceiptRegisterPDFHelper = async ({ reportData, filters, corporationName, corporationLogo }) => {
   try {
     if (!reportData.length) throw new Error("No data");
 
     const templatePath = path.resolve(
       __dirname,
-      "../../templates/RptReceiptRegister.html"
+      "../../templates/RptReceiptRegister.html" 
     );
 
     const templateHtml = fs.readFileSync(templatePath, "utf8");
     const template = Handlebars.compile(templateHtml);
 
-    const logoPath = path.resolve(__dirname, "../../assets/logo.png");
-    const logo = imageToBase64(logoPath);
+    // 🔥 Use logo from DB if provided, else fallback to local asset
+    let logo = corporationLogo;
+      // ? `data:image/png;base64,${corporationLogo}`
+      // : imageToBase64(path.resolve(__dirname, "../../assets/logo.png"));
 
     let total = 0;
-
     const rows = reportData.map((row) => {
       const amt = Number(row.AMOUNT || 0);
       total += amt;
-
       return {
         TRNSDATE: formatDate(row.TRNSDATE),
         TRANSNO: row.TRANSNO,
@@ -59,10 +59,9 @@ const RptReceiptRegisterPDFHelper = async ({ reportData, filters }) => {
         ? "पावती रजिस्टर तपशिल"
         : "पावती रजिस्टर सारांश";
 
-
     const html = template({
       logo,
-      corporationName: "मालेगाव महानगरपालिका मालेगाव",
+      corporationName, 
       fromDate: formatDate(filters.fromDate),
       toDate: formatDate(filters.toDate),
       zoneName: filters.zoneName || "All",
@@ -71,6 +70,9 @@ const RptReceiptRegisterPDFHelper = async ({ reportData, filters }) => {
       currentDate: new Date().toLocaleString("en-IN"),
       subtitle
     });
+
+    // ... puppeteer PDF generation unchanged ...
+
 
     const browser = await puppeteer.launch({
       headless: true,

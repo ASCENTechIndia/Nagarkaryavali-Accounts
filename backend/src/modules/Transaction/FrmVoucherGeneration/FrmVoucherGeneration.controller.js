@@ -1,5 +1,7 @@
 const service = require("./FrmVoucherGeneration.service");
 const asyncHandler = require("../../../libs/asyncHandler");
+const { ok } = require("../../../libs/response");
+
 
 exports.getGLList = asyncHandler(async (req, res) => {
   res.json(await service.getGLListService());
@@ -33,6 +35,12 @@ exports.getVoucherTableDetails = asyncHandler(async (req, res) => {
     message: "Voucher table details fetched successfully",
     data: result,
   });
+});
+
+// ✅ Voucher Generation Controller
+exports.voucherGeneration = asyncHandler(async (req, res) => {
+  const data = await service.voucherGenerationService(req.body);
+  return ok(res, data, data.errorMsg);
 });
 
 exports.getVoucherTax = asyncHandler(async (req, res) => {

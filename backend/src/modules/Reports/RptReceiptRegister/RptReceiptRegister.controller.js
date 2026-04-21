@@ -4,6 +4,7 @@ const { ok } = require("../../../libs/response");
 const path = require("path");
 
 const { RptReceiptRegisterPDFHelper } = require("../../../utils/pdfHelper/RptReceiptRegister");
+const { getCorporationService } = require("../../MenuAccess/MenuAccess.service");;
 
 const getReceiptRegister = asyncHandler(async (req, res) => {
   const result = await service.getReceiptRegisterService(req.body);
@@ -28,7 +29,6 @@ const generateReceiptRegPDF = asyncHandler(async (req, res) => {
     const filters = req.body;
 
     const result = await service.getReceiptRegisterService(filters);
-
     if (!result.rows.length) {
       return res.status(404).json({
         success: false,
@@ -36,9 +36,17 @@ const generateReceiptRegPDF = asyncHandler(async (req, res) => {
       });
     }
 
+    // ✅ NEW SERVICE CALL
+    const corpInfo = await getCorporationService({ ulbId: filters.ulbId });
+
+    const corporationName = corpInfo.ABC_MUNICIPAL_TEXT || "";
+    const corporationLogo = corpInfo.ULBLOGO || "";
+
     const pdf = await RptReceiptRegisterPDFHelper({
       reportData: result.rows,
-      filters
+      filters,
+      corporationName,
+      corporationLogo
     });
 
     const baseUrl = `${req.protocol}://${req.get("host")}`;
@@ -60,5 +68,6 @@ const generateReceiptRegPDF = asyncHandler(async (req, res) => {
     });
   }
 });
+
 
 module.exports = { getReceiptRegister, generateReceiptRegPDF };

@@ -3,6 +3,7 @@ const { ok } = require("../../../libs/response");
 const service = require("./RptClassifiedRegisterDetails.service");
 const { MonthlySummaryPDFHelper } = require("../../../utils/pdfHelper/MonthlySummaryPDFHelper");
 const path = require("path");
+const { getCorporationService } = require("../../MenuAccess/MenuAccess.service");
 
 
 // Nidhi Config
@@ -43,6 +44,8 @@ exports.getMonthlySummaryPDF = asyncHandler(async (req, res) => {
 
   const result = await service.getMonthlySummaryReportService(filters);
 
+  const ulbInfo = await getCorporationService(filters);
+
   if (!result.list.length) {
     return res.status(404).json({
       success: false,
@@ -52,7 +55,8 @@ exports.getMonthlySummaryPDF = asyncHandler(async (req, res) => {
 
   const pdf = await MonthlySummaryPDFHelper({
     reportData: result.list,
-    filters
+    filters,
+    ulbInfo
   });
 
   const baseUrl = `${req.protocol}://${req.get("host")}`;

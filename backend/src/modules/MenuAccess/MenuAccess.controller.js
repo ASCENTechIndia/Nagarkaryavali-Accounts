@@ -29,3 +29,15 @@ exports.getMenus = asyncHandler(async (req, res) => {
 
   return ok(res, data, "Menus fetched successfully");
 });
+
+exports.getCorporation = asyncHandler(async (req, res) => {
+  console.log("📥 Request Body:", req.body);
+
+  const payload = {
+    ulbId: req.body.ulbId,
+  };
+
+  const data = await service.getCorporationService(payload);
+
+  return ok(res, data, "Corporation fetched successfully");
+});

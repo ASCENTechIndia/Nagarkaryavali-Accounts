@@ -96,14 +96,17 @@ const FrmInvestmentTypeMst = () => {
         Swal.fire({
           text: res.data.message,
           confirmButtonColor: "#1e3a8a",
+        }).then(() => {
+          navigate("/Masters/FrmInvestmentTypeList");
         });
-        navigate("/Masters/FrmInvestmentTypeList");
       }
     } catch (err) {
       console.error("Save API Error:", err);
       Swal.fire({
         text: "Something went wrong",
         confirmButtonColor: "#1e3a8a",
+      }).then(() => {
+        navigate("/Masters/FrmInvestmentTypeList");
       });
     }
   };

@@ -1,0 +1,240 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8" />
+
+<style>
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+body{
+  font-family: Arial, Helvetica, sans-serif;
+  font-size:10px;
+  padding:8px;
+}
+
+@page{
+  size:A4 portrait;
+  margin:8mm;
+}
+
+.header-for-repeat {
+  border:2px solid #000;
+  padding:8px;
+  margin-bottom:8px;
+  background: white;
+}
+
+.header-top{
+  display:flex;
+  align-items:center;
+}
+
+.logo{
+  width:70px;
+}
+
+.title-block{
+  flex:1;
+  text-align:center;
+}
+
+.main-title{
+  font-size:16px;
+  font-weight:bold;
+}
+
+.sub-title{
+  font-size:13px;
+  font-weight:bold;
+  margin-top:4px;
+}
+
+.meta{
+  display:flex;
+  justify-content:space-between;
+  margin-top:8px;
+  font-size:10px;
+}
+
+.meta-left{
+  width:60%;
+}
+
+.meta-right{
+  width:40%;
+  text-align:right;
+}
+
+.filter-row{
+  margin-top:6px;
+  font-size:10px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+}
+
+th, td{
+  border:1px solid #000;
+  padding:4px;
+  vertical-align:top;
+  font-size:9px;
+}
+
+th{
+  text-align:left;
+  font-weight:bold;
+}
+
+thead {
+  display: table-header-group;
+}
+
+tfoot {
+  display: table-footer-group;
+}
+
+.text-right{ text-align:right; }
+.text-center{ text-align:center; }
+.text-left{ text-align:left; }
+
+.col-1{ width:10%; }
+.col-2{ width:10%; }
+.col-3{ width:24%; }
+.col-4{ width:10%; }
+.col-5{ width:16%; }
+.col-6{ width:10%; }
+.col-7{ width:8%; }
+.col-8{ width:12%; }
+
+.wrap{
+  word-break:break-word;
+}
+
+.data-row td{
+  height:40px;
+}
+
+.total-row{
+  font-weight:bold;
+}
+
+.table-page-break {
+  page-break-before: always;
+}
+</style>
+</head>
+
+<body>
+
+{{#each pages}}
+<table {{#unless @first}}class="table-page-break"{{/unless}}>
+  <thead>
+    <tr>
+      <td colspan="8" style="border: none; padding: 0; background: white;">
+        <div class="header-for-repeat">
+          <div class="header-top">
+            <img src="{{../logo}}" class="logo"/>
+            <div class="title-block">
+              <div class="main-title">{{../corporationName}}</div>
+              <div class="sub-title">Cheque Register / धनादेश रजिस्टर</div>
+            </div>
+          </div>
+
+          <div class="meta">
+            <div class="meta-left">
+              <b>From/पासून :</b> {{../fromDate}}
+              &nbsp;&nbsp;&nbsp;
+              <b>TO/पर्यंत :</b> {{../toDate}}
+            </div>
+            <div class="meta-right">
+              <div><b>Date / दिनांक :</b> {{../currentDate}}</div>
+              <div><b>Time / वेळ :</b> {{../currentTime}}</div>
+              <div><b>Page / पान :</b> {{pageNumber}} / {{totalPages}}</div>
+            </div>
+          </div>
+
+          <div class="filter-row">
+            <b>Bank Name / बँके नाव :</b> ALL
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <b>A/c No / खाते क्र. :</b> ALL
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <th class="col-1">
+        Cheque Date /<br>
+        धनादेश दिनांक<br>
+        Cheque No
+      </th>
+      <th class="col-2">
+        Voucher No/<br>
+        प्रमाण क्र.<br>
+        Voucher Date
+      </th>
+      <th class="col-3">
+        Payee Name /<br>
+        स्वीकृतदाराचे नाव :<br><br>
+        Particulars /<br>
+        विवरण :
+      </th>
+      <th class="col-4">
+        System Bill No/<br>
+        सिस्टीम बिल क्र.<br>
+        Bill Date/<br>
+        बिल दिनांक /<br>
+        Manual Bill
+      </th>
+      <th class="col-5">
+        Gross AMT/एकूण रक्कम<br>
+        Deduction/कपात<br>
+        Net Amount/एकूण रक्कम
+      </th>
+      <th class="col-6">
+        Cheque Amount /<br>
+        धनादेश रक्कम
+      </th>
+      <th class="col-7">
+        Recipient Sign/<br>
+        स्वीकृतदाराची सही
+      </th>
+      <th class="col-8">
+        Cheque Realisation Date/<br>
+        धनादेश वटवण्याचा दिनांक
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {{#each rows}}
+    <tr class="data-row">
+      <td>{{CHEQDATE}}<br>{{CHEQNO}}</td>
+      <td>{{VCHNO}}<br>{{VCHODATE}}</td>
+      <td class="wrap">{{PAYEENAME}}<br><br>{{REMARK}}</td>
+      <td>{{SYSTEMBILLNO}}<br>{{SYSTEMBILLDATE}}</td>
+      <td class="text-right">{{GROSSAMT}}<br>{{DEDUCTION}}<br>{{NETAMOUNT}}</td>
+      <td class="text-right">{{CHEQAMT}}</td>
+      <td>\n\n\n\n</td>
+      <td>{{CHEQRELIDATE}}</td>
+    </tr>
+    {{/each}}
+  </tbody>
+
+  {{#if isLastPage}}
+  <tfoot>
+    <tr class="total-row">
+      <td colspan="4" class="text-left">Total</td>
+      <td class="text-right">{{totalGross}}<br>{{totalDeduction}}<br>{{totalNet}}</td>
+      <td class="text-right">{{totalCheque}}</td>
+      <td colspan="2"></td>
+    </tr>
+  </tfoot>
+  {{/if}}
+</table>
+{{/each}}
+
+</body>
+</html>

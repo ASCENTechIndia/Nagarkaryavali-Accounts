@@ -3,7 +3,7 @@ const path = require("path");
 const puppeteer = require("puppeteer");
 const Handlebars = require("handlebars");
 
-/* ✅ REUSE IMAGE FUNCTION */
+/* ✅ Convert local image to base64 */
 const imageToBase64 = (imgPath) => {
   const file = fs.readFileSync(imgPath);
   const ext = path.extname(imgPath).replace(".", "");
@@ -14,13 +14,15 @@ const generatePaymentRegisterPDF = async ({
   rows = [],
   fromDate,
   toDate,
-  corporationName = "अहिल्यानगर महानगरपालिका, अहिल्यानगर",
+  corporationName = "",
   majorCode = "",
-  zone = ""
+  zone = "",
+  logo = "" // ✅ dynamic logo
 }) => {
   let browser;
 
   try {
+    /* ================= TEMPLATE ================= */
     const templatePath = path.resolve(
       __dirname,
       "../../templates/payment-register.html"
@@ -29,45 +31,58 @@ const generatePaymentRegisterPDF = async ({
     const templateHtml = fs.readFileSync(templatePath, "utf8");
     const template = Handlebars.compile(templateHtml);
 
-    /* ✅ LOGO */
-    const logoPath = path.resolve(__dirname, "../../assets/NMC_Logo.jpeg");
-    const logo = fs.existsSync(logoPath) ? imageToBase64(logoPath) : "";
+    /* ================= LOGO HANDLING ================= */
+    let finalLogo = logo;
 
-    /* ✅ CHROME */
+    // If API didn't send logo → fallback to local file
+    if (!finalLogo) {
+      const logoPath = path.resolve(
+        __dirname,
+        "../../assets/NMC_Logo.jpeg"
+      );
+
+      finalLogo = fs.existsSync(logoPath)
+        ? imageToBase64(logoPath)
+        : "";
+    }
+
+    /* ================= CHROME ================= */
     const chromePath = path.resolve(
       __dirname,
       "../../../node_modules/puppeteer/.cache/puppeteer/chrome/win64-135.0.7049.84/chrome-win64/chrome.exe"
     );
 
-    const launchOptions = {
+    const browserOptions = {
       headless: true,
-      executablePath: fs.existsSync(chromePath)
-        ? chromePath
-        : undefined,
-      args: ["--no-sandbox"],
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
     };
 
-    browser = await puppeteer.launch(launchOptions);
+    if (fs.existsSync(chromePath)) {
+      browserOptions.executablePath = chromePath;
+    }
 
-    /* ✅ FORMAT DATA */
+    browser = await puppeteer.launch(browserOptions);
+
+    /* ================= FORMAT DATA ================= */
     let total = 0;
 
     const formattedRows = rows.map((r) => {
-      const amt = Math.abs(Number(r.AMOUNT || 0));
-      total += amt;
+      const amount = Math.abs(Number(r.AMOUNT || 0));
+      total += amount;
 
       return {
         glcode: r.GLCODE,
         accname: r.ACCNAME,
-        amountFormatted: amt.toLocaleString("en-IN", {
+        amountFormatted: amount.toLocaleString("en-IN", {
           minimumFractionDigits: 2,
         }),
       };
     });
 
+    /* ================= HTML ================= */
     const html = template({
       corporationName,
-      logo,
+      logo: finalLogo,
       fromDate,
       toDate,
       majorCode,
@@ -79,18 +94,26 @@ const generatePaymentRegisterPDF = async ({
       currentDate: new Date().toLocaleDateString("en-GB"),
     });
 
+    /* ================= GENERATE PDF ================= */
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "domcontentloaded" });
 
     const pdfBuffer = await page.pdf({
       format: "A4",
       printBackground: true,
-      margin: { top: "10mm", bottom: "10mm", left: "10mm", right: "10mm" },
+      margin: {
+        top: "10mm",
+        bottom: "10mm",
+        left: "10mm",
+        right: "10mm",
+      },
     });
 
     await browser.close();
 
+    /* ================= SAVE FILE ================= */
     const outputDir = path.resolve(__dirname, "../../../public/pdf");
+
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
@@ -102,9 +125,10 @@ const generatePaymentRegisterPDF = async ({
 
     return { fileName, filePath };
 
-  } catch (err) {
+  } catch (error) {
     if (browser) await browser.close();
-    throw err;
+    console.error("PDF Generation Error:", error);
+    throw error;
   }
 };
 

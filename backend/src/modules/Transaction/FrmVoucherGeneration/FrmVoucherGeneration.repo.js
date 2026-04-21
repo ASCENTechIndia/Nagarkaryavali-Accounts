@@ -328,6 +328,7 @@ const getVoucherTaxDetails = async ({ voucher_no, corp_id }) => {
   });
 };
 
+// ✅ Voucher Generation (Procedure)
 const voucherGeneration = (data) =>
   withTx(async (connection) => {
     console.log("Repo received:", data);

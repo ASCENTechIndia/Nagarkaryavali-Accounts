@@ -1,0 +1,109 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    body {
+      font-family: "Noto Sans Devanagari", Arial, sans-serif;
+      font-size: 10px;
+      margin: 0;
+      padding: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    thead {
+      display: table-header-group; 
+    }
+
+    th, td {
+      border: 0.5px solid #000;
+      padding: 4px 2px;
+      text-align: center;
+      vertical-align: top;
+      word-wrap: break-word;
+    }
+
+    th {
+      background-color: #f9f9f9;
+      font-weight: bold;
+      font-size: 9px;
+    }
+
+    .text-left { text-align: left; padding-left: 4px; }
+    .text-right { text-align: right; padding-right: 4px; }
+    .bold { font-weight: bold; }
+
+    .col-sr { width: 30px; }
+    .col-bill { width: 70px; }
+    .col-sys { width: 80px; }
+    .col-vendor { width: 120px; }
+    .col-part { width: 140px; }
+    .col-amt { width: 90px; }
+    .col-voucher { width: 90px; }
+    .col-pay { width: 90px; }
+    .col-bal { width: 80px; }
+
+    .grand-total-row {
+      page-break-inside: avoid;
+      background-color: #eeeeee;
+    }
+  </style>
+</head>
+<body>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-sr">Sr.No<br>अ.क्र.</th>
+        <th class="col-bill">Bill No./बिल क्र.<br>Bill Date/बिल दिनांक</th>
+        <th class="col-sys">System Bill no<br>सिस्टम बिल क्र.<br>System Date</th>
+        <th class="col-vendor">Vendor Name<br>विक्रेत्याचे नाव</th>
+        <th class="col-part">Particulars /तपशील</th>
+        <th class="col-amt">Bill Amount /<br>बिल रक्कम</th>
+        <th class="col-voucher">Voucher no<br>प्रमाणक क्र.<br>Voucher Date</th>
+        <th class="col-pay">Payments Done/<br>अदा केलेली रक्कम</th>
+        <th class="col-bal">Balance Amount<br>शिल्लक रक्कम</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each groupedData}}
+        {{#each entries}}
+        <tr>
+          <td>{{#if @first}}{{../srNo}}{{/if}}</td>
+          <td>
+            {{#if @first}}
+              {{../billNo}}<br>{{../billDate}}
+            {{/if}}
+          </td>
+          <td>{{systemBillNo}}<br>{{systemDate}}</td>
+          <td class="text-left">{{vendorName}}</td>
+          <td class="text-left">{{remarks}}</td>
+          <td class="text-right">{{billAmount}}</td>
+          <td>{{voucherNo}}<br>{{voucherDate}}</td>
+          <td class="text-right">{{payment}}</td>
+          <td class="text-right">{{balance}}</td>
+        </tr>
+        {{/each}}
+        
+        <tr class="bold">
+          <td colspan="7" class="text-right">Sub Total / उप एकूण</td>
+          <td class="text-right">{{subTotal}}</td>
+          <td></td>
+        </tr>
+      {{/each}}
+
+      <tr class="bold grand-total-row">
+        <td colspan="5" class="text-right" style="font-size: 11px;">Grand Total / एकूण रक्कम:</td>
+        <td class="text-right">{{grandBillAmount}}</td>
+        <td></td>
+        <td class="text-right">{{grandPayment}}</td>
+        <td class="text-right">{{grandBalance}}</td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>

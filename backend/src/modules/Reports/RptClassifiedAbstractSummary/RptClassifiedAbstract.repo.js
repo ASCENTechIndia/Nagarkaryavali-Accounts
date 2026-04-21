@@ -98,8 +98,74 @@ async function getBudgetExpenditureReport(filters) {
   return result.rows;
 }
 
+async function getTransactionLedgerReport(filters) {
+  let params = {
+    ulbId: filters.ulbId,
+    fromDate: filters.fromDate, // Format: 'DD-MON-YYYY'
+    toDate: filters.toDate
+  };
+
+  let sql = `
+    SELECT 
+      a.trnsdate, 
+      a.transno, 
+      a.docno, 
+      a.glcode, 
+      acc.glname, 
+      a.accno, 
+      acc.accname, 
+      vz.zoneename AS deptname, 
+      agd.var_grampanch_grampanch AS grampanch,
+      CASE WHEN a.amount > 0 THEN a.amount ELSE 0 END AS credit, 
+      CASE WHEN a.amount < 0 THEN a.amount * -1 ELSE 0 END AS debit,
+      0 AS BudgetCode,
+      acc.functioncode,
+      acc.objectcode
+    FROM transview a
+    INNER JOIN accountview_web acc ON a.glcode = acc.glcode AND a.accno = acc.accno AND acc.ulbid = a.ulbid
+    INNER JOIN view_zone vz ON vz.zoneid = a.zoneid
+    LEFT OUTER JOIN aoac_grampanch_def agd ON agd.num_grampanch_grampanchid = a.grampanchid
+    LEFT OUTER JOIN aoac_partymst_def apd ON apd.num_partymst_partyid = a.partycode
+    WHERE a.trnsdate >= TO_DATE(:fromDate, 'DD-MON-YYYY') 
+      AND a.trnsdate <= TO_DATE(:toDate, 'DD-MON-YYYY')
+      AND a.ulbid = :ulbId
+  `;
+
+  // Dynamic Transaction Type Filter
+  if (filters.trnsType && filters.trnsType !== "0") {
+    // Note: If trnsType is a comma-separated string, use caution with binding.
+    // For a single ID, this works perfectly:
+    sql += " AND a.trnstypeid = :trnsType ";
+    params.trnsType = filters.trnsType;
+  }
+
+  // Dynamic Zone Filter
+  if (filters.zoneId && filters.zoneId !== "-1") {
+    sql += " AND a.zoneid = :zoneId ";
+    params.zoneId = filters.zoneId;
+  }
+
+  // MBMC Specific Nidhi/Budget Filters
+  if (filters.corpCode === "MBMC") {
+    if (filters.budgetId && filters.budgetId !== "-1") {
+      sql += " AND a.budgetid = :budgetId ";
+      params.budgetId = filters.budgetId;
+    }
+    if (filters.nidhiId && filters.nidhiId !== "-1") {
+      sql += " AND a.nidhi_id = :nidhiId ";
+      params.nidhiId = filters.nidhiId;
+    }
+  }
+
+  sql += " ORDER BY a.trnsdate, a.transno, a.amount DESC ";
+
+  const result = await executeQuery(sql, params);
+  if (!result.success) throw new Error(result.error);
+  return result.rows;
+}
 
 module.exports = {
-    getBudgetExpenditureReport
+    getBudgetExpenditureReport,
+    getTransactionLedgerReport,
 
 };

@@ -6,6 +6,7 @@ export default function SearchableSelect({
   value,
   onChange,
   placeholder = "Search...",
+  disabled = false,
 }) {
   const [query, setQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
@@ -59,6 +60,8 @@ export default function SearchableSelect({
   );
 
   const handleInputChange = (e) => {
+    if (disabled) return;
+
     const val = e.target.value;
     setQuery(val);
     setActiveIndex(-1);
@@ -74,6 +77,7 @@ export default function SearchableSelect({
   };
 
   const handleSelectOption = (option) => {
+    if (disabled) return;
     setQuery(option.label);
     onChange(option);
     setShowDropdown(false);
@@ -81,11 +85,14 @@ export default function SearchableSelect({
   };
 
   return (
-    <div ref={wrapperRef} className="relative w-full">
+    <div ref={wrapperRef} className={`relative w-full ${
+      disabled ? "opacity-50 pointer-events-none cursor-not-allowed" : ""
+    }`}>
       <Input
         value={query}
         placeholder={placeholder}
         onChange={handleInputChange}
+        disabled={disabled}
         onKeyDown={(e) => {
           if (!showDropdown) return;
 

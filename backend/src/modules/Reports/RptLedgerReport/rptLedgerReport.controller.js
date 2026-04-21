@@ -1,6 +1,7 @@
 const asyncHandler = require("../../../libs/asyncHandler");
 const { ok } = require("../../../libs/response");
 const { RptLedgerReportPDFHelper } = require("../../../utils/pdfHelper/RptLedgerReport");
+const { getCorporationService } = require("../../MenuAccess/MenuAccess.service");
 const service = require("./rptLedgerReport.service");
 const path = require("path");
 
@@ -47,11 +48,15 @@ exports.generateLedgerPDF = asyncHandler(async (req, res) => {
   try {
     const filters = req.body;
 
+    const { ulbid } = filters;
+
     const transactionsResult =
       await service.getLedgerTransactionsService(filters);
 
     const balanceResult =
       await service.getAccountBalanceService(filters);
+
+    const ulbInfo = await getCorporationService({ulbId: ulbid});
 
     const transactions = transactionsResult.list || [];
     const openingBalance = balanceResult.balance || 0;
@@ -67,6 +72,7 @@ exports.generateLedgerPDF = asyncHandler(async (req, res) => {
       transactions,
       openingBalance,
       filters,
+      ulbInfo
     });
 
     const baseUrl = `${req.protocol}://${req.get("host")}`;

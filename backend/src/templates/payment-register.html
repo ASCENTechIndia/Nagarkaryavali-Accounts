@@ -1,139 +1,93 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8" />
-  <style>
-    body {
-      font-family: "Noto Sans Devanagari", Arial, sans-serif;
-      font-size: 12px;
-      color: #000;
-      margin: 0;
-      padding: 0;
-    }
+<meta charset="UTF-8" />
+<style>
+  body {
+    font-family: "Noto Sans Devanagari", Arial;
+    font-size: 12px;
+    margin: 0;
+  }
 
-    .container {
-      width: 100%;
-      padding: 10px 20px;
-    }
+  .container {
+    padding: 15px 25px;
+  }
 
-    /* ===== HEADER ===== */
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-bottom: 1px solid #000;
-      padding-bottom: 8px;
-      margin-bottom: 10px;
-      position: relative;
-    }
+  /* ===== HEADER ===== */
+  .header {
+    text-align: center;
+    position: relative;
+    border-bottom: 1px solid #000;
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+  }
 
-    .logo {
-      position: absolute;
-      left: 0;
-    }
+  .logo {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
 
-    .logo img {
-      height: 60px;
-    }
+  .logo img {
+    height: 55px;
+  }
 
-    .title {
-      text-align: center;
-    }
+  .title h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: bold;
+  }
 
-    .title h2 {
-      margin: 0;
-      font-size: 16px;
-      font-weight: bold;
-    }
+  .title h3 {
+    margin: 4px 0;
+    font-size: 14px;
+  }
 
-    .title h3 {
-      margin: 2px 0;
-      font-size: 14px;
-      font-weight: bold;
-    }
+  .info {
+    text-align: center;
+    font-size: 12px;
+    margin-top: 5px;
+  }
 
-    /* ===== INFO ===== */
-    .info {
-      margin: 6px 0;
-      text-align: center;
-      font-size: 12px;
-    }
+  /* ===== TABLE ===== */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
 
-    /* ===== TABLE ===== */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 12px;
-      font-size: 12px;
-      table-layout: fixed; /* 🔥 IMPORTANT */
-    }
+  th, td {
+    border: 1px solid #000;
+    padding: 6px;
+  }
 
-    thead tr {
-      border-top: 1.5px solid #000;
-      border-bottom: 1.5px solid #000;
-    }
+  th {
+    background: #eee;
+    font-weight: bold;
+  }
 
-    th {
-      padding: 6px;
-      font-weight: bold;
-      text-align: left;
-    }
+  td {
+    word-break: break-word;
+  }
 
-    tbody tr {
-      border-bottom: 1px solid #ccc;
-    }
+  .right {
+    text-align: right;
+  }
 
-    td {
-      padding: 6px;
-      vertical-align: middle;
-      word-wrap: break-word;
-    }
+  .center {
+    text-align: center;
+  }
 
-    /* ===== COLUMN WIDTHS ===== */
-    .col-major {
-      width: 20%;
-      white-space: nowrap;
-    }
+  .total-row td {
+    font-weight: bold;
+  }
 
-    .col-name {
-      width: 60%;
-    }
-
-    .col-amount {
-      width: 20%;
-      text-align: right;
-      padding-right: 10px;
-      white-space: nowrap;
-      font-variant-numeric: tabular-nums;
-    }
-
-    th.col-amount {
-      text-align: right;
-    }
-
-    /* ===== TOTAL ROW ===== */
-    .total-row {
-      border-top: 1.5px solid #000;
-      font-weight: bold;
-    }
-
-    .total-row td {
-      padding-top: 8px;
-      padding-bottom: 8px;
-    }
-
-    /* Optional zebra (remove if strict govt style needed) */
-    tbody tr:nth-child(even) {
-      background-color: #f9f9f9;
-    }
-
-    /* ===== FOOTER ===== */
-    .footer {
-      margin-top: 20px;
-      text-align: right;
-      font-size: 11px;
-    }
-  </style>
+  .footer {
+    margin-top: 15px;
+    text-align: right;
+    font-size: 11px;
+  }
+</style>
 </head>
 
 <body>
@@ -148,7 +102,7 @@
 
     <div class="title">
       <h2>{{corporationName}}</h2>
-      <h3>पेमेंट रजिस्टर सारांश</h3>
+      <h3>पावती रजिस्टर सारांश</h3>
     </div>
   </div>
 
@@ -158,31 +112,31 @@
   </div>
 
   <div class="info">
-    मेजर कोड : {{majorCode}} &nbsp;&nbsp;&nbsp;&nbsp; झोन : {{zone}}
+    झोन : {{zone}}
   </div>
 
   <!-- TABLE -->
   <table>
     <thead>
       <tr>
-        <th class="col-major">मेजर</th>
-        <th class="col-name">मेजर नाव</th>
-        <th class="col-amount">रक्कम</th>
+        <th>मेजर</th>
+        <th>मेजर नाव</th>
+        <th class="right">रक्कम</th>
       </tr>
     </thead>
 
     <tbody>
       {{#each rows}}
       <tr>
-        <td class="col-major">{{glcode}}</td>
-        <td class="col-name">{{accname}}</td>
-        <td class="col-amount">{{amountFormatted}}</td>
+        <td>{{glcode}}</td>
+        <td>{{accname}}</td>
+        <td class="right">{{amountFormatted}}</td>
       </tr>
       {{/each}}
 
       <tr class="total-row">
-        <td colspan="2" style="text-align:right;">एकूण :</td>
-        <td class="col-amount">{{total}}</td>
+        <td colspan="2" class="right">एकूण :</td>
+        <td class="right">{{total}}</td>
       </tr>
     </tbody>
   </table>

@@ -52,10 +52,12 @@
 // module.exports = {
 
 //   getMenuAccess,
-  
+
 // };
 
 const { executeQuery } = require("../../db/queryExecutor");
+const getConnection = require("../../config/db");
+const oracledb = require("oracledb");
 
 async function getMenusRepo({ userId, ulbId, deptId }) {
   console.log("📤 Repo: Fetch Menus", { userId, ulbId, deptId });
@@ -102,6 +104,76 @@ async function getMenusRepo({ userId, ulbId, deptId }) {
   return result.rows;
 }
 
+async function lobToBuffer(lob) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+
+    lob.on("data", (chunk) => chunks.push(chunk));
+    lob.on("end", () => resolve(Buffer.concat(chunks)));
+    lob.on("error", reject);
+  });
+}
+
+async function getCorporationRepo({ ulbId }) {
+  console.log("📤 Repo: Fetch Corporation", { ulbId });
+
+  let connection;
+
+  try {
+    connection = await getConnection();
+
+    const sql = `
+      SELECT 
+        var_corporation_name AS corporationName,
+        blob_corporation_img AS corporationLogo
+      FROM admins.aoma_corporation_mas
+      WHERE num_corporation_id = :ulbId
+    `;
+
+    const result = await connection.execute(
+      sql,
+      { ulbId },
+      { outFormat: oracledb.OUT_FORMAT_OBJECT }
+    );
+
+    if (!result.rows || result.rows.length === 0) {
+      return [];
+    }
+
+    const row = result.rows[0];
+
+    let logoBuffer = null;
+
+    if (row.CORPORATIONLOGO) {
+      if (Buffer.isBuffer(row.CORPORATIONLOGO)) {
+        logoBuffer = row.CORPORATIONLOGO;
+      } 
+      else {
+        logoBuffer = await lobToBuffer(row.CORPORATIONLOGO);
+      }
+    }
+
+    return [
+      {
+        CORPORATIONNAME: row.CORPORATIONNAME,
+        CORPORATIONLOGO: logoBuffer,
+      },
+    ];
+  } catch (err) {
+    console.error("❌ Repo Error:", err);
+    throw err;
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (e) {
+        console.error("Error closing connection:", e);
+      }
+    }
+  }
+}
+
 module.exports = {
   getMenusRepo,
+  getCorporationRepo
 };
