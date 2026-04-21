@@ -5,6 +5,7 @@ const service = require("./FrmBillRegisterRpt.service");
 
 const { BillRegisterPDFHelper } = require("../../../utils/pdfHelper/BillRegisterPDFHelper");
 const path = require("path");
+const { getCorporationService } = require("../../MenuAccess/MenuAccess.service");
 
 
 exports.getBillRegisterReport = asyncHandler(async (req, res) => {
@@ -16,6 +17,11 @@ exports.getBillRegisterReport = asyncHandler(async (req, res) => {
 exports.getBillRegisterPDF = asyncHandler(async (req, res) => {
   const filters = req.body;
 
+  console.log("filters", filters);
+
+  const {ulbId} = filters;
+
+
   const result = await service.getBillRegisterReportService(filters);
 
   if (!result.rows.length) {
@@ -25,9 +31,16 @@ exports.getBillRegisterPDF = asyncHandler(async (req, res) => {
     });
   }
 
+  const corpInfo = await getCorporationService({ ulbId: ulbId });
+
+  const corporationName = corpInfo.ABC_MUNICIPAL_TEXT || "";
+  const corporationLogo = corpInfo.ULBLOGO || "";
+
   const pdf = await BillRegisterPDFHelper({
     reportData: result.rows,
-    filters
+    filters,
+    corporationName,
+    corporationLogo
   });
 
   const baseUrl = `${req.protocol}://${req.get("host")}`;
