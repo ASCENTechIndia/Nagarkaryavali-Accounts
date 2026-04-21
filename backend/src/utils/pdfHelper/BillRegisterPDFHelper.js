@@ -145,7 +145,7 @@ const BillRegisterPDFHelper = async ({ reportData, filters, corporationName, cor
       headerTemplate: `
     <div style="font-family: Arial, sans-serif; font-size: 9px; width: 100%; margin: 0 20px; padding-bottom: 5px; border-bottom: 0.5px solid #ccc; display: flex; flex-direction: column;">
       <div style="display: flex; justify-content: space-between; width: 100%;">
-        <div style="width: 35%; font-size: 12px">अहिल्यानगर महानगरपालिका, अहिल्यानगर</div>
+        <div style="width: 35%; font-size: 12px">${corporationName}</div>
         <div style="width: 30%; text-align: center; font-weight: bold; font-size: 14px">
           Bill Register <br/> बिल रजिस्टर
         </div>
