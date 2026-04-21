@@ -39,6 +39,7 @@ const RptPaymentRegisterDetails = () => {
   const navigate = useNavigate();
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
+  console.log("Base URL:", BASE_URL);
 
   const [zoneList, setZoneList] = useState([]);
   const [userList, setUserList] = useState([]);
@@ -129,99 +130,106 @@ const RptPaymentRegisterDetails = () => {
   }, [ulbId]);
 
 const handleSubmit = async (values) => {
-  try {
+  if (!values.fromDate || !values.toDate) {
     Swal.fire({
-      title: "Processing...",
-      allowOutsideClick: false,
-      didOpen: () => Swal.showLoading(),
+      text: "Please select date",
+      icon: "warning",
+      confirmButtonColor: "#1e3a8a",
     });
+    return;
+  }
 
-    const formatDate = (date) => {
-      if (!date) return null;
-      return new Date(date).toISOString().split("T")[0];
-    };
+  const loading = Swal.fire({
+    title: "Generating Report...",
+    text: "Please wait",
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading(),
+  });
 
-    // ✅ CORRECT PAYLOAD
-    const payload = {
-      fromDate: formatDate(values.fromDate),
-      toDate: formatDate(values.toDate),
-      ulbId: ulbId?.toString(),
-      rptType: values.reportType, 
-      chkGramPanchayat: false,
+  const formatDate = (date) => {
+    if (!date) return null;
+    const d = new Date(date);
+    return `${String(d.getDate()).padStart(2, "0")}-${String(
+      d.getMonth() + 1
+    ).padStart(2, "0")}-${d.getFullYear()}`;
+  };
 
-      majorCode: values.wardCode || null,   
-      minorCode: values.head || null,       
-      zoneId: values.zoneId || null,
-      userId: values.userId || null,
+  const payload = {
+    fromDate: formatDate(values.fromDate),
+    toDate: formatDate(values.toDate),
 
-      budgetId: "",
-      nidhiId: "",
-    };
+    ulbid: Number(ulbId),
+    zoneid: Number(values.zoneId) || "" ,
+    glcode: Number(values.wardCode) || "",
+    functioncode: Number(values.wardCode) || "", 
+    objectcode: Number(values.head) || "",
 
-    // ================= PDF =================
-    if (values.exportType === "pdf") {
-      const res = await axios.post(
-        `${BASE_URL}/api/RptPaymentRegister/payment-register`,
-        payload,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+    budgetid: null,
+    nidhi_id: null,
+  };
 
-      Swal.close();
+  try {
+    const url =
+      values.exportType === "pdf"
+        ? "/api/RptPaymentRegister/paymentRegisterReportPdf"
+        : "/api/RptPaymentRegister/payment-register-report";
 
-      if (res.data?.success && res.data?.pdfUrl) {
-        window.open(res.data.pdfUrl, "_blank");
-      } else {
-        Swal.fire({
-          text: "Failed to generate PDF",
-          confirmButtonColor: "#1e3a8a",
-        });
-      }
-
-      return;
-    }
-
-    // ================= EXCEL =================
-    const res = await axios.post(
-      `${BASE_URL}/api/RptPaymentRegister/payment-register`,
-      payload,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
+    const res = await axios.post(`${BASE_URL}${url}`, payload, {
+      headers: { Authorization: `Bearer ${token}` },
+      timeout: 120000, // ✅ prevent infinite waiting
+    });
 
     Swal.close();
 
+    /* ================= PDF ================= */
+    if (values.exportType === "pdf") {
+      if (res.data?.pdfUrl) {
+        window.open(res.data.pdfUrl, "_blank");
+      } else {
+        Swal.fire({
+          text: "PDF generation failed",
+          icon: "error",
+        });
+      }
+      return;
+    }
+
+    /* ================= EXCEL ================= */
     const rows = res.data?.data?.rows || [];
 
     if (!rows.length) {
       Swal.fire({
         text: "No data found",
-        confirmButtonColor: "#1e3a8a",
+        icon: "info",
       });
       return;
     }
 
-    // ✅ FORMAT FOR EXCEL
     const formattedData = rows.map((item) => ({
       DATE: item.TRNSDATE
         ? new Date(item.TRNSDATE).toLocaleDateString("en-GB")
         : "",
-      GLCODE: item.GLCODE,
-      GLNAME: item.GLNAME,
-      ACCNO: item.ACCNO,
-      ACCNAME: item.ACCNAME,
-      ZONE: item.DEPTNAME,
-      FUNCTIONCODE: item.FUNCTIONCODE,
-      OBJECTCODE: item.OBJECTCODE,
-      AMOUNT: item.AMOUNT,
+      VOUCHER_NO: item.VCHREFNO || "",
+      TRANS_NO: item.TRANSNO || "",
+      DOC_NO: item.DOCNO || "",
+      GLCODE: item.GLCODE || "",
+      GLNAME: item.GLNAME || "",
+      ACCNO: item.ACCNO || "",
+      ACCNAME: item.ACCNAME || "",
+      ZONE: item.DEPTNAME || "",
+      FUNCTIONCODE: item.FUNCTIONCODE || "",
+      OBJECTCODE: item.OBJECTCODE || "",
+      AMOUNT: item.AMOUNT || 0,
+      NARRATION: item.NARRATION || "",
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(formattedData);
 
     worksheet["!cols"] = [
       { wch: 12 },
+      { wch: 12 },
+      { wch: 12 },
+      { wch: 10 },
       { wch: 10 },
       { wch: 25 },
       { wch: 15 },
@@ -229,24 +237,27 @@ const handleSubmit = async (values) => {
       { wch: 15 },
       { wch: 15 },
       { wch: 15 },
-      { wch: 12 },
+      { wch: 15 },
+      { wch: 40 },
     ];
 
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Payment Register");
 
     XLSX.writeFile(workbook, `Payment_Register_${Date.now()}.xlsx`);
-
   } catch (err) {
-    console.error("Error:", err);
+    console.error(err);
+
+    Swal.close();
 
     Swal.fire({
-      text: "Something went wrong",
-      confirmButtonColor: "#1e3a8a",
+      text:
+        err?.response?.data?.message ||
+        "Server is taking too long. Try again.",
+      icon: "error",
     });
   }
 };
-
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
       {({ values, setFieldValue }) => {
@@ -271,7 +282,7 @@ const handleSubmit = async (values) => {
               <Card className="border shadow-sm">
                 <CardHeader className="border-b">
                   <CardTitle className="text-lg font-semibold">
-                  पेमेंट रजिस्टर तपशील
+                    पेमेंट रजिस्टर तपशील
                   </CardTitle>
                 </CardHeader>
 
@@ -340,31 +351,30 @@ const handleSubmit = async (values) => {
                       />
                     </div>
                     <div>
-                      
-                    <div className="flex gap-4">
-                    <Label className="text-sm">Export To :</Label>
-                      <Label className="flex items-center gap-2 text-sm">
-                        <input
-                          type="radio"
-                          checked={values.exportType === "pdf"}
-                          onChange={() => setFieldValue("exportType", "pdf")}
-                        />
-                        PDF
-                      </Label>
+                      <div className="flex gap-4">
+                        <Label className="text-sm">Export To :</Label>
+                        <Label className="flex items-center gap-2 text-sm">
+                          <input
+                            type="radio"
+                            checked={values.exportType === "pdf"}
+                            onChange={() => setFieldValue("exportType", "pdf")}
+                          />
+                          PDF
+                        </Label>
 
-                      <Label className="flex items-center gap-2 text-sm">
-                        <input
-                          type="radio"
-                          checked={values.exportType === "excel"}
-                          onChange={() => setFieldValue("exportType", "excel")}
-                        />
-                        Excel
-                      </Label>
-                    </div>
+                        <Label className="flex items-center gap-2 text-sm">
+                          <input
+                            type="radio"
+                            checked={values.exportType === "excel"}
+                            onChange={() =>
+                              setFieldValue("exportType", "excel")
+                            }
+                          />
+                          Excel
+                        </Label>
+                      </div>
                     </div>
                   </div>
-
-              
 
                   <div className="flex flex-wrap justify-center gap-3 pt-4">
                     <Button
