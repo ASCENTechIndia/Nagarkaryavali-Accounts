@@ -4,8 +4,10 @@ const controller = require("./RptPaymentRegister.controller");
 
 router.post("/payment-register", controller.getPaymentRegister);
 
-module.exports = router;
+router.post("/payment-register-report", controller.getPaymentRegisterReport);
+router.post("/payment-register-report-pdf", controller.getPaymentRegisterPDF);
 
+module.exports = router;
 
 // {
 //   "fromDate": "2021-04-01",

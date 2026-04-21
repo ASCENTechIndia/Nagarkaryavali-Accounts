@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .title {
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .sub-title {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      border: 1px solid #000;
+      padding: 4px;
+      text-align: left;
+      word-wrap: break-word;
+    }
+
+    th {
+      background-color: #f0f0f0;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .right {
+      text-align: right;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .total-row {
+      font-weight: bold;
+      background-color: #eaeaea;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="title">
+    {{corporationName}}
+  </div>
+
+  <div class="sub-title">
+    Payment Register / पेमेंट रजिस्टर <br />
+    {{fromDate}} To {{toDate}}
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Sr No</th>
+        <th>Date</th>
+        <th>Trans No</th>
+        <th>Doc No</th>
+        <th>GL Name</th>
+        <th>Account Name</th>
+        <th>Department</th>
+        <th>Grampanchayat</th>
+        <th>Party Name</th>
+        <th>Amount</th>
+        <th>Narration</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {{#each data}}
+      <tr>
+        <td class="center">{{srNo}}</td>
+        <td>{{date}}</td>
+        <td>{{transNo}}</td>
+        <td>{{docNo}}</td>
+        <td>{{glName}}</td>
+        <td>{{accName}}</td>
+        <td>{{dept}}</td>
+        <td>{{grampanch}}</td>
+        <td>{{party}}</td>
+        <td class="right">{{amount}}</td>
+        <td>{{narration}}</td>
+      </tr>
+      {{/each}}
+
+      <tr class="total-row">
+        <td colspan="9" class="right">Total</td>
+        <td class="right">{{totalAmount}}</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+</body>
+</html>
