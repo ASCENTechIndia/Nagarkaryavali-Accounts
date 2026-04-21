@@ -17,6 +17,7 @@ const FrmBillRegisterRpt = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const token = user?.token;
+    const ulbId = user?.ulbId;
 
     const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -34,6 +35,7 @@ const FrmBillRegisterRpt = () => {
         if (values.fromDate && values.toDate) {
             try {
                 const payload = {
+                    ulbId: ulbId,
                     fromDate: formatDate(values.fromDate),
                     toDate: formatDate(values.toDate),
                 };

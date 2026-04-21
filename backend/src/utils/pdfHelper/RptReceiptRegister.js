@@ -27,7 +27,7 @@ const RptReceiptRegisterPDFHelper = async ({ reportData, filters, corporationNam
 
     const templatePath = path.resolve(
       __dirname,
-      "../../templates/RptReceiptRegister.html"
+      "../../templates/RptReceiptRegister.html" 
     );
 
     const templateHtml = fs.readFileSync(templatePath, "utf8");

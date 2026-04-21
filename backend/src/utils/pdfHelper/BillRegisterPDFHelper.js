@@ -38,7 +38,7 @@ const imageToBase64 = (imgPath) => {
   }
 };
 
-const BillRegisterPDFHelper = async ({ reportData, filters }) => {
+const BillRegisterPDFHelper = async ({ reportData, filters, corporationName, corporationLogo }) => {
   try {
     let { fromDate, toDate } = filters || {};
 
@@ -53,9 +53,6 @@ const BillRegisterPDFHelper = async ({ reportData, filters }) => {
 
     const templateHtml = fs.readFileSync(templatePath, "utf8");
     const template = Handlebars.compile(templateHtml);
-
-    const logoPath = path.resolve(__dirname, "../../assets/logo.png");
-    const logo = imageToBase64(logoPath);
 
     const groupedMap = new Map();
 
@@ -88,7 +85,7 @@ const BillRegisterPDFHelper = async ({ reportData, filters }) => {
         vendorName: row.VENDORNAME,
         remarks: row.REMARKS,
         billAmount: formatNumber(row.BILLAMOUNT),
-        billAmountRaw: Number(row.BILLAMOUNT || 0), 
+        billAmountRaw: Number(row.BILLAMOUNT || 0),
         voucherNo: row.VOUCHERNO,
         voucherDate: formatDate(row.VOUCHERDATE),
         payment: formatNumber(payment),
@@ -118,7 +115,8 @@ const BillRegisterPDFHelper = async ({ reportData, filters }) => {
     let grandBalance = grandBillAmount - grandPayment;
 
     const html = template({
-      corporationName: "अहिल्यानगर महानगरपालिका, अहिल्यानगर",
+      corporationName,
+      corporationLogo,
       fromDate,
       toDate,
       groupedData,
@@ -139,12 +137,12 @@ const BillRegisterPDFHelper = async ({ reportData, filters }) => {
       timeout: 0,
     });
 
-  const pdfBuffer = await page.pdf({
-  format: "A4",
-  landscape: false, // Optional: Usually better for many-column registers
-  printBackground: true,
-  displayHeaderFooter: true,
-  headerTemplate: `
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      landscape: false, // Optional: Usually better for many-column registers
+      printBackground: true,
+      displayHeaderFooter: true,
+      headerTemplate: `
     <div style="font-family: Arial, sans-serif; font-size: 9px; width: 100%; margin: 0 20px; padding-bottom: 5px; border-bottom: 0.5px solid #ccc; display: flex; flex-direction: column;">
       <div style="display: flex; justify-content: space-between; width: 100%;">
         <div style="width: 35%; font-size: 12px">अहिल्यानगर महानगरपालिका, अहिल्यानगर</div>
@@ -160,14 +158,14 @@ const BillRegisterPDFHelper = async ({ reportData, filters }) => {
       </div>
     </div>
   `,
-  footerTemplate: `<div></div>`, // Empty footer
-  margin: {
-    top: "100px", // Give enough room for the custom header
-    bottom: "40px",
-    left: "20px",
-    right: "20px",
-  },
-});
+      footerTemplate: `<div></div>`, // Empty footer
+      margin: {
+        top: "100px", // Give enough room for the custom header
+        bottom: "40px",
+        left: "20px",
+        right: "20px",
+      },
+    });
 
     await browser.close();
 
