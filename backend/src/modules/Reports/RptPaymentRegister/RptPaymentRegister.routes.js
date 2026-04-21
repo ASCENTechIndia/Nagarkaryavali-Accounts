@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
+const auth = require("../../../middlewares/auth.middleware");
 const controller = require("./RptPaymentRegister.controller");
 
-router.post("/payment-register", controller.getPaymentRegister);
+router.post("/payment-register", auth(), controller.getPaymentRegister);
 
 router.post("/payment-register-report", controller.getPaymentRegisterReport);
 router.post("/payment-register-report-pdf", controller.getPaymentRegisterPDF);

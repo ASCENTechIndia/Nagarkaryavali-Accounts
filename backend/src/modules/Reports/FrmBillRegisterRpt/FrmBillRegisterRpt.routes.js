@@ -4,7 +4,7 @@ const auth = require("../../../middlewares/auth.middleware");
 
 const controller = require("./FrmBillRegisterRpt.controller");
 
-router.post("/bill-register-report", controller.getBillRegisterReport);
-router.post("/bill-register-report-pdf", controller.getBillRegisterPDF);
+router.post("/bill-register-report", auth(), controller.getBillRegisterReport);
+router.post("/bill-register-report-pdf", auth(), controller.getBillRegisterPDF);
 
 module.exports = router;

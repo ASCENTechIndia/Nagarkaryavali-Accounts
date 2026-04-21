@@ -1,11 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const controller = require("./RptPartyBillPayment.controller");
+const auth = require("../../../middlewares/auth.middleware");
 
-router.post("/party-bill-payment", controller.getPartyBillPayment);
+router.post("/party-bill-payment", auth(), controller.getPartyBillPayment);
 
-router.post("/form64", controller.getForm64Report);
-router.post("/form63", controller.getForm63Report);
+router.post("/form64", auth(), controller.getForm64Report);
+router.post("/form63", auth(), controller.getForm63Report);
 
 module.exports = router;
 // {

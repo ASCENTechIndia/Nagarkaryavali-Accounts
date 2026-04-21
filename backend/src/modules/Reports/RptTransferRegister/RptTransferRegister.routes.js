@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const controller = require("./RptTransferRegister.controller");
+const auth = require("../../../middlewares/auth.middleware");
 
-router.post("/transfer-register", controller.getTransferRegister);
+router.post("/transfer-register", auth(), controller.getTransferRegister);
 
 module.exports = router;
 

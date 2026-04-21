@@ -6,7 +6,7 @@ const controller = require("./FrmParty.controller");
 
 router.get("/corporation/list", auth(), controller.getCorporationList);
 
-router.get("/party/search", controller.searchParty);
+router.get("/party/search", auth(), controller.searchParty);
 router.get("/party/:id", auth(), controller.getPartyById);
 
 router.get("/bank/:id", auth(), controller.getPartyBankDetails);
@@ -22,6 +22,6 @@ router.get("/bank", auth(), controller.getBankList);
 router.get("/branch/:bankId", auth(), controller.getBranchByBank);
 router.get("/ifsc/:branchId", auth(), controller.getIFSCByBranch);
 
-router.post("/party-master", controller.partyMaster);
+router.post("/party-master", auth(), controller.partyMaster);
 
 module.exports = router;

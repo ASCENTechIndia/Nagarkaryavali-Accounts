@@ -12,6 +12,6 @@ router.post("/districtmaster",auth(), controller.districtMaster);
 
 router.get("/state/:id", auth(), controller.getStateById);
 
-router.post("/statemaster", controller.stateMaster);
+router.post("/statemaster", auth(), controller.stateMaster);
 
 module.exports = router;

@@ -10,6 +10,6 @@ router.get("/monthlysummarynidhi", auth(), controller.getNidhiConfig);
 // Monthly Summary Report
 router.post("/monthlysummaryreport", auth(), controller.getMonthlySummaryReport);
 
-router.post("/monthlysummaryreportpdf", controller.getMonthlySummaryPDF);
+router.post("/monthlysummaryreportpdf", auth(), controller.getMonthlySummaryPDF);
 
 module.exports = router;

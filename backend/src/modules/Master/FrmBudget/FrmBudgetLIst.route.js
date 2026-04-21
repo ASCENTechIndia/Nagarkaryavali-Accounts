@@ -14,6 +14,6 @@ router.get("/budget/:id", auth(), controller.getBudgetById);
 
 router.get("/budgetsearchgl", auth(), controller.searchGL);
 
-router.post("/budget-master", controller.budgetMaster);
+router.post("/budget-master", auth(), controller.budgetMaster);
 
 module.exports = router;

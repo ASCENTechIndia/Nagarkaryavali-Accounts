@@ -11,7 +11,7 @@ router.post("/cheque-book", auth(), controller.getChequeBook);
 router.post("/voucher-details", auth(), controller.getVoucherDetails);
 router.post("/voucher-table", auth(), controller.getVoucherTableDetails);
 router.post("/voucher-tax", auth(), controller.getVoucherTax);
-router.post("/voucher-generation", controller.voucherGeneration);
+router.post("/voucher-generation",  auth(), controller.voucherGeneration);
 
 
 module.exports = router;
