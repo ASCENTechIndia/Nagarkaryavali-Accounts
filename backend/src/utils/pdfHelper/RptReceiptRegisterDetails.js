@@ -21,7 +21,7 @@ const formatNumber = (num) => {
   return Number(num || 0).toLocaleString("en-IN");
 };
 
-const RptReceiptRegisterDetailsPDFHelper = async ({ reportData, filters }) => {
+const RptReceiptRegisterDetailsPDFHelper = async ({ reportData, filters, ulbInfo }) => {
   try {
     if (!reportData.length) throw new Error("No data");
 
@@ -55,8 +55,8 @@ const RptReceiptRegisterDetailsPDFHelper = async ({ reportData, filters }) => {
     });
 
     const html = template({
-      logo,
-      corporationName: "मालेगाव महानगरपालिका मालेगाव",
+      logo: ulbInfo.ULBLOGO,
+      corporationName: ulbInfo.ABC_MUNICIPAL_TEXT,
       fromDate: formatDate(filters.fromDate),
       toDate: formatDate(filters.toDate),
       zoneName: filters.zoneName || "All",
