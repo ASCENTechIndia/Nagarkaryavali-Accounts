@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    body {
+      font-family: "Noto Sans Devanagari", Arial, sans-serif;
+      font-size: 12px;
+      color: #000;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      width: 100%;
+      padding: 10px 20px;
+    }
+
+    /* ===== HEADER ===== */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid #000;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+      position: relative;
+    }
+
+    .logo {
+      position: absolute;
+      left: 0;
+    }
+
+    .logo img {
+      height: 60px;
+    }
+
+    .title {
+      text-align: center;
+    }
+
+    .title h2 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .title h3 {
+      margin: 2px 0;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    /* ===== INFO ===== */
+    .info {
+      margin: 6px 0;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    /* ===== TABLE ===== */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 12px;
+      table-layout: fixed; /* 🔥 IMPORTANT */
+    }
+
+    thead tr {
+      border-top: 1.5px solid #000;
+      border-bottom: 1.5px solid #000;
+    }
+
+    th {
+      padding: 6px;
+      font-weight: bold;
+      text-align: left;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #ccc;
+    }
+
+    td {
+      padding: 6px;
+      vertical-align: middle;
+      word-wrap: break-word;
+    }
+
+    /* ===== COLUMN WIDTHS ===== */
+    .col-major {
+      width: 20%;
+      white-space: nowrap;
+    }
+
+    .col-name {
+      width: 60%;
+    }
+
+    .col-amount {
+      width: 20%;
+      text-align: right;
+      padding-right: 10px;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    th.col-amount {
+      text-align: right;
+    }
+
+    /* ===== TOTAL ROW ===== */
+    .total-row {
+      border-top: 1.5px solid #000;
+      font-weight: bold;
+    }
+
+    .total-row td {
+      padding-top: 8px;
+      padding-bottom: 8px;
+    }
+
+    /* Optional zebra (remove if strict govt style needed) */
+    tbody tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    /* ===== FOOTER ===== */
+    .footer {
+      margin-top: 20px;
+      text-align: right;
+      font-size: 11px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">
+      <img src="{{logo}}" />
+    </div>
+
+    <div class="title">
+      <h2>{{corporationName}}</h2>
+      <h3>पेमेंट रजिस्टर सारांश</h3>
+    </div>
+  </div>
+
+  <!-- INFO -->
+  <div class="info">
+    अहवालाचा कालावधी दिनांक : {{fromDate}} पासून {{toDate}} पर्यंत
+  </div>
+
+  <div class="info">
+    मेजर कोड : {{majorCode}} &nbsp;&nbsp;&nbsp;&nbsp; झोन : {{zone}}
+  </div>
+
+  <!-- TABLE -->
+  <table>
+    <thead>
+      <tr>
+        <th class="col-major">मेजर</th>
+        <th class="col-name">मेजर नाव</th>
+        <th class="col-amount">रक्कम</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {{#each rows}}
+      <tr>
+        <td class="col-major">{{glcode}}</td>
+        <td class="col-name">{{accname}}</td>
+        <td class="col-amount">{{amountFormatted}}</td>
+      </tr>
+      {{/each}}
+
+      <tr class="total-row">
+        <td colspan="2" style="text-align:right;">एकूण :</td>
+        <td class="col-amount">{{total}}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    छापण्याची तारीख : {{currentDate}}
+  </div>
+
+</div>
+
+</body>
+</html>
