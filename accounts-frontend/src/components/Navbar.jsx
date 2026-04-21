@@ -21,7 +21,11 @@ const Navbar = () => {
   const token = localStorage.getItem("token");
   const [menus, setMenus] = useState([]);
   const [mobileOpen, setMobileOpen] = useState(false);
-
+  const [corpInfo, setCorpInfo] = useState({
+    name: "",
+    logo: ""
+  });
+  const ulbId = user?.ulbId;
   const navigate = useNavigate();
 
   const MENU_KEY = `ACCOUNTS_MENU_${user?.userId}`;
@@ -119,10 +123,38 @@ const Navbar = () => {
     }
   };
 
+  const fetchCorporationInfo = async () => {
+  try {
+    const res = await axios.post(
+      `${BASE_URL}/api/menu-access/CorporationInfo`,
+      {
+        ulbId: ulbId,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (res.data.ok) {
+      const data = res.data.data;
+
+      setCorpInfo({
+        name: data.ABC_MUNICIPAL_TEXT,
+        logo: data.ULBLOGO,
+      });
+    }
+  } catch (err) {
+    console.error("❌ Corporation fetch error:", err);
+  }
+};
+
   useEffect(() => {
     console.log("USER:", user);
     if (user && user.userId && user.ulbId) {
       fetchMenus();
+      fetchCorporationInfo();
     }
   }, [user]);
 
@@ -153,26 +185,26 @@ const Navbar = () => {
     "व्यवहार शोधा": "/assessment.png",
   };
 
-const normalize = (str = "") =>
-  str.toLowerCase().replace(/\s+/g, " ").trim();
+  const normalize = (str = "") =>
+    str.toLowerCase().replace(/\s+/g, " ").trim();
 
-const getMenuIcon = (title = "") => {
-  const key = normalize(title);
-  const src = MENU_ICONS[key];
+  const getMenuIcon = (title = "") => {
+    const key = normalize(title);
+    const src = MENU_ICONS[key];
 
-  if (!src) {
-    console.log("❌ No icon for:", title); // debug
-    return null;
-  }
+    if (!src) {
+      console.log("❌ No icon for:", title); // debug
+      return null;
+    }
 
-  return (
-    <img
-      src={src}
-      alt=""
-      className="w-4 h-4 object-contain"
-    />
-  );
-};
+    return (
+      <img
+        src={src}
+        alt=""
+        className="w-4 h-4 object-contain"
+      />
+    );
+  };
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 shadow w-full">
 
@@ -181,9 +213,9 @@ const getMenuIcon = (title = "") => {
 
         {/* LOGO + TITLE */}
         <div className="flex items-center gap-4">
-          <img src="/logo.png" className="sm:h-14 sm:w-14 h-10 w-10 rounded" />
+          <img src={corpInfo.logo} className="sm:h-14 sm:w-14 h-10 w-10 rounded" />
           <h1 className="text-white font-bold text-lg sm:text-2xl">
-            मालेगाव महानगरपालिका
+            {corpInfo.name}
           </h1>
         </div>
 
