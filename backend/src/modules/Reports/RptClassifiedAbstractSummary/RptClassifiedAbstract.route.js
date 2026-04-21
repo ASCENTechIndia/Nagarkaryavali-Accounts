@@ -6,7 +6,7 @@ const controller = require("./RptClassifiedAbstract.controller");
 
 // Budget Expenditure Report
 router.post("/budgetexpenditurereport", auth(), controller.getBudgetExpenditureReport);
-router.post("/budgetreportpdf", controller.getBudgetExpenditurePDF);
+router.post("/budgetreportpdf", auth(), controller.getBudgetExpenditurePDF);
 router.post("/transactionledgerreport", auth(), controller.getTransactionLedgerReport);
 
 module.exports = router;

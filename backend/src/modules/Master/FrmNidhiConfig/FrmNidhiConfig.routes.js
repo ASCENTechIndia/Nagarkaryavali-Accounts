@@ -5,10 +5,10 @@ const auth = require("../../../middlewares/auth.middleware");
 const controller = require("./FrmNidhiConfig.controller");
 
 // ✅ Routes
-router.post("/nidhi-config-list", controller.getNidhiListConfig);
+router.post("/nidhi-config-list", auth(), controller.getNidhiListConfig);
 
-router.post("/nidhi-master-config",  controller.getNidhiMstConfig);
+router.post("/nidhi-master-config", auth(),  controller.getNidhiMstConfig);
 
-router.post("/nidhi-config-insert",  controller.insertNidhiConfig);
+router.post("/nidhi-config-insert", auth(),  controller.insertNidhiConfig);
 
 module.exports = router;
