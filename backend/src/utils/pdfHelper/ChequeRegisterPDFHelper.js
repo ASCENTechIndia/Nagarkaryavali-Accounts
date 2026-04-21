@@ -157,7 +157,7 @@ async function getBrowser() {
   return browserInitPromise;
 }
 
-const ChequeRegisterPDFHelper = async ({ reportData, filters }) => {
+const ChequeRegisterPDFHelper = async ({ reportData, ulbInfo, filters }) => {
   let page = null;
   
   try {
@@ -232,8 +232,8 @@ const ChequeRegisterPDFHelper = async ({ reportData, filters }) => {
     }
     
     const html = template({
-      logo,
-      corporationName: "मालेगाव महानगरपालिका मालेगाव",
+      logo: ulbInfo.ULBLOGO,
+      corporationName: ulbInfo.ABC_MUNICIPAL_TEXT,
       fromDate: formatDate(filters.fromDate),
       toDate: formatDate(filters.toDate),
       currentDate: formatDate(now),

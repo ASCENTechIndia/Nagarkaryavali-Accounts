@@ -26,6 +26,7 @@ const RptLedgerReportPDFHelper = async ({
   transactions,
   openingBalance,
   filters,
+  ulbInfo
 }) => {
   try {
     const templatePath = path.resolve(
@@ -96,8 +97,8 @@ const RptLedgerReportPDFHelper = async ({
     const closingBalance = openingBalance + totalDr - totalCr;
 
     const html = template({
-      logo,
-      corporationName: "मालेगाव महानगरपालिका मालेगाव",
+      logo: ulbInfo.ULBLOGO,
+      corporationName: ulbInfo.ABC_MUNICIPAL_TEXT,
       accountHead: filters.accountHead || "",
       accountCode: filters.accountCode || "",
 

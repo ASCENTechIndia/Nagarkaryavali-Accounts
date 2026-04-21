@@ -3,6 +3,7 @@ const { ok } = require("../../../libs/response");
 const service = require("./RptClassifiedAbstract.service");
 const { BudgetExpenditurePDFHelper } = require("../../../utils/pdfHelper/BudgetAbstractExpenditurePDFHelper");
 const path = require("path");
+const { getCorporationService } = require("../../MenuAccess/MenuAccess.service");
 
 // Budget Expenditure Report
 exports.getBudgetExpenditureReport = asyncHandler(async (req, res) => {
@@ -18,9 +19,12 @@ exports.getBudgetExpenditurePDF = asyncHandler(async (req, res) => {
 
   const result = await service.getBudgetExpenditureReportService(filters);
 
+  const ulbInfo = await getCorporationService(filters);
+
   const pdf = await BudgetExpenditurePDFHelper({
     reportData: result.list,
-    filters
+    filters,
+    ulbInfo
   });
     const baseUrl = `${req.protocol}://${req.get("host")}`;
     const pdfUrl = `${baseUrl}/pdf/${path.basename(pdf.filePath)}`;

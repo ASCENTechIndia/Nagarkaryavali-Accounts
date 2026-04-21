@@ -27,7 +27,7 @@ const formatNumber = (num) => {
   return Number(num || 0).toLocaleString("en-IN");
 };
 
-const MonthlySummaryPDFHelper = async ({ reportData, filters }) => {
+const MonthlySummaryPDFHelper = async ({ reportData, filters, ulbInfo }) => {
   try {
     if (!reportData.length) throw new Error("No data");
 
@@ -65,8 +65,8 @@ const MonthlySummaryPDFHelper = async ({ reportData, filters }) => {
 });
 
     const html = template({
-      logo,
-      corporationName: "मालेगाव महानगरपालिका मालेगाव",
+      logo: ulbInfo.ULBLOGO,
+      corporationName: ulbInfo.ABC_MUNICIPAL_TEXT,
       subtitle: "क्लासिफाईड रजिस्टर डिटेल्स",
       fromDate: formatDate(filters.fromDate),
       toDate: formatDate(filters.toDate),

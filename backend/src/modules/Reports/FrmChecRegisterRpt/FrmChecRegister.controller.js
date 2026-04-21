@@ -3,6 +3,7 @@ const { ok } = require("../../../libs/response");
 const service = require("./FrmChecRegister.service");
 const { ChequeRegisterPDFHelper } = require("../../../utils/pdfHelper/ChequeRegisterPDFHelper");
 const path = require("path");
+const { getCorporationService } = require("../../MenuAccess/MenuAccess.service");
 
 // 1. Cheque Register Report
 exports.getChequeRegisterReport = asyncHandler(async (req, res) => {
@@ -36,6 +37,8 @@ exports.generateChequeRegisterPDF = asyncHandler(async (req, res) => {
 
   const result = await service.getChequeRegisterReportService(filters);
 
+  const ulbInfo = await getCorporationService(filters);
+
   if (!result.list.length) {
     return res.status(404).json({
       success: false,
@@ -45,6 +48,7 @@ exports.generateChequeRegisterPDF = asyncHandler(async (req, res) => {
 
   const pdf = await ChequeRegisterPDFHelper({
     reportData: result.list,
+    ulbInfo: ulbInfo,
     filters
   });
 

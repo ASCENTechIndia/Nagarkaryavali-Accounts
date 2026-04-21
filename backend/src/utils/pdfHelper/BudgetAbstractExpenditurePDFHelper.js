@@ -9,7 +9,7 @@ const formatDate = (date) =>
 const formatNumber = (num) =>
   Number(num || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 });
 
-const BudgetExpenditurePDFHelper = async ({ reportData, filters }) => {
+const BudgetExpenditurePDFHelper = async ({ reportData, filters, ulbInfo }) => {
   try {
     if (!reportData.length) throw new Error("No data");
 
@@ -47,7 +47,7 @@ const BudgetExpenditurePDFHelper = async ({ reportData, filters }) => {
     });
 
     const html = template({
-      corporationName: "मालेगाव महानगरपालिका मालेगाव",
+      corporationName: ulbInfo.ABC_MUNICIPAL_TEXT,
       fromDate: formatDate(filters.fromDate),
       toDate: formatDate(filters.toDate),
       rows,
