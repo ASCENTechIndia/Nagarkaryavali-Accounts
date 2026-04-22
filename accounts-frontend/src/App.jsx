@@ -66,6 +66,7 @@ import FrmNidhiMaster from "./pages/Master/FrmNidhiMaster";
 import FrmNidhiConfig from "./pages/Master/FrmNidhiConfig";
 import FrmChecRegisterRpt from "./pages/Reports/FrmChecRegisterRpt";
 import FrmBillRegisterRpt from "./pages/Reports/FrmBillRegisterRpt";
+import RptCashBook from "./pages/ReportsForm/RptCashBook";
 
 const Home = () => <Button>Click me</Button>;
 const About = () => <h1>About Page</h1>;
@@ -344,6 +345,10 @@ export const router = createBrowserRouter([
       {
         path: "/ReportsForm/FrmBillRegisterRpt",
         element: <FrmBillRegisterRpt />
+      },
+      {
+        path: "/ReportsForm/RptCashBook",
+        element: <RptCashBook />
       },
       {
         path: "/about",

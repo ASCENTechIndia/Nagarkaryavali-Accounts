@@ -21,16 +21,34 @@ th, td {
   text-align: center;
 }
 
-.header {
-  text-align: center;
-  font-size: 16px;
-  font-weight: bold;
+/* HEADER (UNCHANGED) */
+.header{
+  display:flex;
+  align-items:center;
+  border-bottom:1px solid #000;
 }
 
-.sub {
-  text-align: center;
-  margin: 5px;
-  font-size: 12px;
+.logo{ width:50px; }
+
+.main-title{
+  flex:1;
+  text-align:center;
+  font-size:18px;
+  font-weight:bold;
+}
+
+/* SUB TITLES */
+.sub-title{
+  text-align:center;
+  font-size:14px;
+  font-weight:bold;
+  margin-top:6px;
+}
+
+.sub-heading{
+  text-align:center;
+  font-size:11px;
+  margin-top:4px;
 }
 
 .text-left {
@@ -64,9 +82,20 @@ th, td {
 
 <body>
 
-<div class="header">{{corporationName}}</div>
-<div class="sub">Receipt Payment</div>
-<div class="sub">दिनांक: {{fromDate}}</div>
+<div class="header">
+  <img class="logo" src="{{logo}}" />
+  <div class="main-title">{{corporationName}}</div>
+</div>
+
+<!-- SUB HEADINGS -->
+<div class="sub-title">
+नमुना क्र. ११ (FORM NO. 11) / नियम ३२ (१) पहा [See Rule 32(1)]
+</div>
+
+<div class="sub-heading">
+अहवालाचा कालावधी दिनांक : {{fromDate}}.
+</div>
+
 
 <table class="main-table">
 <thead>
@@ -82,17 +111,17 @@ th, td {
   <th>Zone</th>
   <th>Dept</th>
   <th>Receipt No</th>
-  <th>Code</th>
-  <th>Name</th>
+  <th>Code of account & Head</th>
   <th>Narration</th>
   <th>Cash</th>
   <th>Cheque</th>
+  <th>Transfer</th>
   <th>Total</th>
 
   <!-- PAYMENT -->
   <th>Sr</th>
   <th>Vch No</th>
-  <th>Code</th>
+  <th>Code of account & Head</th>
   <th>Party Name</th>
   <th>Narration</th>
   <th>Chq No</th>
@@ -111,19 +140,19 @@ th, td {
 <!-- RECEIPT -->
 <td>{{SR}}</td>
 <td>{{R_ZONE}}</td>
-<td></td>
+<td>{{R_DEPT}}</td>
 <td>{{R_DOCNO}}</td>
-<td>{{R_CODE}}</td>
-<td class="text-left">{{R_NAME}}</td>
+<td>{{R_CODE}} {{R_ACCNAME}}</td>
 <td class="text-left">{{R_NARRATION}}</td>
 <td>{{R_CASH}}</td>
-<td>{{R_BANK}}</td>
+<td>{{R_CHEQUE_NO}}</td>
+<td>{{R_TRANSFER}}</td>
 <td>{{R_TOTAL}}</td>
 
 <!-- PAYMENT -->
 <td>{{SR}}</td>
 <td>{{P_DOCNO}}</td>
-<td>{{P_CODE}}</td>
+<td>{{P_CODE}} {{P_ACCNAME}}</td>
 <td class="text-left">{{P_PARTY}}</td>
 <td class="text-left">{{P_NARRATION}}</td>
 <td>{{P_CHQNO}}</td>
@@ -134,15 +163,18 @@ th, td {
 </tr>
 {{/each}}
 
-<!-- TOTAL ROW -->
+<!-- TOTAL ROW FOR RECEIPT -->
 <tr>
-  <td colspan="7"><b>एकूण</b></td>
-  <td><b>{{totalReceipt}}</b></td>
-  <td><b>0.00</b></td>
-  <td><b>{{totalReceipt}}</b></td>
-
   <td colspan="6"><b>एकूण</b></td>
-  <td><b>{{totalPayment}}</b></td>
+  <td><b>{{totalReceiptCash}}</b></td>
+  <td><b>{{totalReceiptCheque}}</b></td>
+  <td><b>{{totalReceiptTransfer}}</b></td>
+  <td><b>{{totalReceipt}}</b></td>
+  
+  <!-- TOTAL ROW FOR PAYMENT -->
+  <td colspan="6"><b>एकूण</b></td>
+  <td><b>{{totalPaymentAmount}}</b></td>
+  <td><b>{{totalPaymentTransfer}}</b></td>
   <td><b>{{totalPayment}}</b></td>
 </tr>
 

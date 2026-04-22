@@ -1,106 +1,205 @@
+// pdfHelper/CashbookPDFHelper.js
 const fs = require("fs");
 const path = require("path");
 const puppeteer = require("puppeteer");
 const Handlebars = require("handlebars");
 
-const formatDate = (d) =>
-  new Date(d).toLocaleDateString("en-GB");
+const formatNumber = (n) => {
+  const num = Number(n || 0);
+  return num.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
 
-const formatNumber = (n) =>
-  Number(n || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 });
-
-const CashbookPDFHelper = async ({ reportData, filters }) => {
+const CashbookPDFHelper = async ({ reportData, openingBalanceData, filters, ulbInfo }) => {
   try {
-    const templatePath = path.resolve(
-      __dirname,
-      "../../templates/Cashbook.html"
-    );
-
+    const templatePath = path.resolve(__dirname, "../../templates/Cashbook.html");
     const htmlFile = fs.readFileSync(templatePath, "utf8");
     const template = Handlebars.compile(htmlFile);
 
-
-   
-    const receiptList = reportData.filter(r => r.TRANSTYPE === "R");
-const paymentList = reportData.filter(r => r.TRANSTYPE === "P");
-
-const maxLength = Math.max(receiptList.length, paymentList.length);
-
-const rows = [];
-let totalReceipt = receiptList.reduce((sum, r) =>
-  sum + (r.CASHAMOUNT || 0) + (r.BANKAMOUNT || 0), 0);
-
-let totalPayment = paymentList.reduce((sum, p) =>
-  sum + (p.BANKAMOUNT || 0) + (p.TRANSAMOUNT || 0), 0);
-for (let i = 0; i < maxLength; i++) {
-  const r = receiptList[i] || {};
-  const p = paymentList[i] || {};
-
-  rows.push({
-    SR: i + 1,
-
-    // RECEIPT SIDE
-    R_ZONE: r.ZONEENAME || "",
-    R_DOCNO: r.DOCNO || "",
-    R_CODE: r.OBJECTCODE || "",
-    R_NAME: r.ACCNAME || "",
-    R_NARRATION: r.NARRATION || "",
-    R_CASH: r.CASHAMOUNT || 0,
-    R_BANK: r.BANKAMOUNT || 0,
-    R_TOTAL: (r.CASHAMOUNT || 0) + (r.BANKAMOUNT || 0),
-
-    // PAYMENT SIDE
-    P_DOCNO: p.DOCNO || "",
-    P_CODE: p.OBJECTCODE || "",
-    P_PARTY: p.PARTYNAME || "",
-    P_NARRATION: p.NARRATION || "",
-    P_CHQNO: p.CHQNO || "",
-    P_AMOUNT: p.BANKAMOUNT || 0,
-    P_TRANSFER: p.TRANSAMOUNT || 0,
-    P_TOTAL: (p.BANKAMOUNT || 0) + (p.TRANSAMOUNT || 0)
-  });
-}
-
-    const html = template({
-      corporationName: "अहमदनगर महानगरपालिका, अहमदनगर",
-      fromDate: filters.date,
-      rows,
-      totalReceipt: formatNumber(totalReceipt),
-      totalPayment: formatNumber(totalPayment),
-      closing: formatNumber(totalReceipt - totalPayment)
+    // Separate receipt and payment rows for proper display
+    const receiptRows = [];
+    const paymentRows = [];
+    
+    // Track column-wise totals
+    let totalReceiptCash = 0;
+    let totalReceiptCheque = 0;
+    let totalReceiptTransfer = 0;
+    let totalReceiptOverall = 0;
+    
+    let totalPaymentAmount = 0;
+    let totalPaymentTransfer = 0;
+    let totalPaymentOverall = 0;
+    
+    // Counter for sequential numbering
+    let receiptSrNo = 1;
+    let paymentSrNo = 1;
+    
+    // Process each row from API response
+    reportData.forEach((row) => {
+      // Check if this row has receipt data
+      const hasReceipt = row.RTransNo !== null && row.RTransNo !== undefined && row.RTransNo !== "";
+      
+      if (hasReceipt) {
+        const receiptCash = row.RCashAmount || 0;
+        const receiptCheque = row.RBankAmount || 0;  // Cheque amount
+        const receiptTransfer = row.RTransferAmount || 0;
+        const receiptTotal = receiptCash + receiptCheque + receiptTransfer;
+        
+        totalReceiptCash += receiptCash;
+        totalReceiptCheque += receiptCheque;
+        totalReceiptTransfer += receiptTransfer;
+        totalReceiptOverall += receiptTotal;
+        
+        receiptRows.push({
+          SR: receiptSrNo++,
+          R_ZONE: row.RZone || "",
+          R_DEPT: row.RDepartment || "",
+          R_DOCNO: row.RDocNo || "",
+          R_CODE: row.RAccNoWith0 || "",
+          R_ACCNAME: row.RAccname || "",
+          R_NARRATION: row.RNarration || "",
+          R_CASH: formatNumber(receiptCash),
+          R_CHEQUE_NO: row.RBankAmount,  
+          R_CHEQUE_AMOUNT: formatNumber(receiptCheque),
+          R_TRANSFER: formatNumber(receiptTransfer),
+          R_TOTAL: formatNumber(receiptTotal),
+        });
+      }
+      
+      // Check if this row has payment data
+      const hasPayment = row.PTransNo !== null && row.PTransNo !== undefined && row.PTransNo !== "";
+      
+      if (hasPayment) {
+        const paymentAmount = row.PBankAmount || 0;
+        const paymentTransfer = row.PTransferAmount || 0;
+        const paymentTotal = paymentAmount + paymentTransfer;
+        
+        totalPaymentAmount += paymentAmount;
+        totalPaymentTransfer += paymentTransfer;
+        totalPaymentOverall += paymentTotal;
+        
+        paymentRows.push({
+          SR: paymentSrNo++,
+          P_DOCNO: row.PDocNo || "",
+          P_CODE: row.PAccNowith0 || "",
+          P_ACCNAME: row.PAccname || "",
+          P_PARTY: row.PartyName || "",
+          P_NARRATION: row.PNarration || "",
+          P_CHQNO: row.PChqNo || "",
+          P_AMOUNT: formatNumber(paymentAmount),
+          P_TRANSFER: formatNumber(paymentTransfer),
+          P_TOTAL: formatNumber(paymentTotal),
+        });
+      }
     });
-
+    
+    // Get opening balance from API response
+    const openingBalance = openingBalanceData?.balance || 0;
+    const openingDrCr = openingBalanceData?.drCr || "Cr.";
+    
+    // Calculate closing balance
+    let closingBalance;
+    if (openingDrCr === "Dr.") {
+      // If opening is debit, treat as negative
+      closingBalance = -openingBalance + totalReceiptOverall - totalPaymentOverall;
+    } else {
+      closingBalance = openingBalance + totalReceiptOverall - totalPaymentOverall;
+    }
+    
+    const absClosingBalance = Math.abs(closingBalance);
+    const closingDrCr = closingBalance >= 0 ? "Cr." : "Dr.";
+    
+    // Combine rows for template (template expects combined rows)
+    const maxRows = Math.max(receiptRows.length, paymentRows.length);
+    const combinedRows = [];
+    
+    for (let i = 0; i < maxRows; i++) {
+      const receiptRow = receiptRows[i] || {
+        SR: "",
+        R_ZONE: "",
+        R_DEPT: "",
+        R_DOCNO: "",
+        R_CODE: "",
+        R_ACCNAME: "",
+        R_NARRATION: "",
+        R_CASH: "",
+        R_CHEQUE_NO: "",
+        R_CHEQUE_AMOUNT: "",
+        R_TRANSFER: "",
+        R_TOTAL: ""
+      };
+      
+      const paymentRow = paymentRows[i] || {
+        SR: "",
+        P_DOCNO: "",
+        P_CODE: "",
+        P_ACCNAME: "",
+        P_PARTY: "",
+        P_NARRATION: "",
+        P_CHQNO: "",
+        P_AMOUNT: "",
+        P_TRANSFER: "",
+        P_TOTAL: ""
+      };
+      
+      combinedRows.push({
+        ...receiptRow,
+        ...paymentRow
+      });
+    }
+    
+    // Format date for display
+    const formattedDate = filters.date;
+    
+    const html = template({
+      logo: ulbInfo.ULBLOGO,
+      corporationName: ulbInfo.ABC_MUNICIPAL_TEXT,
+      fromDate: formattedDate,
+      rows: combinedRows,
+      opening: formatNumber(openingBalance),
+      // Receipt totals - column wise
+      totalReceiptCash: formatNumber(totalReceiptCash),
+      totalReceiptCheque: formatNumber(totalReceiptCheque),
+      totalReceiptTransfer: formatNumber(totalReceiptTransfer),
+      totalReceipt: formatNumber(totalReceiptOverall),
+      // Payment totals - column wise
+      totalPaymentAmount: formatNumber(totalPaymentAmount),
+      totalPaymentTransfer: formatNumber(totalPaymentTransfer),
+      totalPayment: formatNumber(totalPaymentOverall),
+      closing: formatNumber(absClosingBalance),
+      closingDrCr: closingDrCr
+    });
+    
     const browser = await puppeteer.launch({
       headless: true,
-      args: ["--no-sandbox"]
+      args: ["--no-sandbox", "--disable-setuid-sandbox"]
     });
-
+    
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "domcontentloaded" });
-
-   const pdfBuffer = await page.pdf({
-  format: "A4",
-  landscape: true,
-  printBackground: true,
-  margin: {
-    top: "10mm",
-    bottom: "10mm",
-    left: "5mm",
-    right: "5mm"
-  }
-});
+    
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      landscape: true,
+      printBackground: true,
+      margin: {
+        top: "10mm",
+        bottom: "10mm",
+        left: "5mm",
+        right: "5mm",
+      },
+    });
+    
     await browser.close();
-
+    
     const dir = path.resolve(__dirname, "../../../public/pdf");
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-
+    
     const fileName = `Cashbook_${Date.now()}.pdf`;
     const filePath = path.join(dir, fileName);
-
+    
     fs.writeFileSync(filePath, pdfBuffer);
-
+    
     return { fileName, filePath };
-
   } catch (err) {
     console.error("PDF Error:", err);
     throw err;
