@@ -25,7 +25,7 @@ import {
 
 /* ================= INITIAL VALUES ================= */
 const initialValues = {
-  department: "-1",
+  department: "",
   fromDate: new Date(),
   toDate: new Date(),
   fromDateEnabled: false,
@@ -70,6 +70,7 @@ const FrmVoucherGeneration = () => {
   const [voucherList, setVoucherList] = useState([]);
   const [voucherDetails, setVoucherDetails] = useState([]);
   const [chequeBooks, setChequeBooks] = useState([]);
+  const [searchDone, setSearchDone] = useState(false);
 
   const totalSelectedAmount = voucherList
     .filter((v) => v.selected)
@@ -124,32 +125,28 @@ const FrmVoucherGeneration = () => {
   };
 
   const fetchVouchers = async (values) => {
-    debugger;
     try {
-      // ✅ SHOW LOADER
       Swal.fire({
         title: "लोड होत आहे...",
         text: "कृपया थांबा",
         allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
+        didOpen: () => Swal.showLoading(),
       });
 
       const payload = {
         zone_id: Number(values.department),
-        from_date: values.fromDate.toLocaleDateString("en-GB"),
-        to_date: values.toDate.toLocaleDateString("en-GB"),
+        from_date: values.fromDateEnabled
+          ? values.fromDate.toLocaleDateString("en-GB")
+          : "",
+        to_date: values.fromDateEnabled
+          ? values.toDate.toLocaleDateString("en-GB")
+          : "",
         party_id: Number(values.partyCode),
-        budget_id: "",
-        nidhi_id: "",
         corp_id: ulbId,
       };
-      console.log("zone id ", values.department);
 
       const headers = { Authorization: `Bearer ${token}` };
 
-      // 🔹 1. TRY balance voucher
       let res = await axios.post(
         `${BASE_URL}/api/FrmVoucherGeneration/balance-voucher`,
         payload,
@@ -158,7 +155,6 @@ const FrmVoucherGeneration = () => {
 
       let data = res.data?.rows || [];
 
-      // 🔹 2. IF EMPTY → call voucher-prep
       if (!data.length) {
         const prepRes = await axios.post(
           `${BASE_URL}/api/FrmVoucherGeneration/voucher-prep`,
@@ -170,17 +166,17 @@ const FrmVoucherGeneration = () => {
 
       setVoucherList(data);
 
-      // ✅ CLOSE LOADER
       Swal.close();
-    } catch (err) {
-      Swal.close(); // always close loader
 
-      console.error(err);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Voucher fetch failed",
-      });
+      // ✅ ONLY disable when data exists
+      if (data.length > 0) {
+        setSearchDone(true);
+      } else {
+        Swal.fire("No data found");
+      }
+    } catch (err) {
+      Swal.close();
+      Swal.fire("Error", "Voucher fetch failed", "error");
     }
   };
 
@@ -257,159 +253,153 @@ const FrmVoucherGeneration = () => {
     }
   };
 
-const handleSubmit = async (values, formikHelpers) => {
-  formikHelpers.setSubmitting(true);
+  const handleSubmit = async (values, formikHelpers) => {
+    formikHelpers.setSubmitting(true);
 
-  const status = "A";
+    const status = "A";
 
-  try {
-    const selectedRows = voucherList.filter((v) => v.selected);
+    try {
+      const selectedRows = voucherList.filter((v) => v.selected);
 
-    if (!selectedRows.length) {
-      Swal.fire("किमान एक व्यवहार निवडा");
-      return;
-    }
-
-  
-    if (values.paymentType === "2" || values.paymentType === "3") {
-      if (!values.chequeNo) {
-        Swal.fire("Cheque number required");
+      if (!selectedRows.length) {
+        Swal.fire("किमान एक व्यवहार निवडा");
         return;
       }
 
-      if (!values.chequeBookNo) {
-        Swal.fire("Cheque book required");
+      if (values.paymentType === "2" || values.paymentType === "3") {
+        if (!values.chequeNo) {
+          Swal.fire("Cheque number required");
+          return;
+        }
+
+        if (!values.chequeBookNo) {
+          Swal.fire("Cheque book required");
+          return;
+        }
+      }
+
+      Swal.fire({
+        title: "Saving...",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      });
+
+      const fullData = await fetchVoucherFullData(selectedRows[0].VCHNO);
+
+      if (!fullData) {
+        Swal.close();
+        Swal.fire("Error", "Voucher data load failed", "error");
         return;
       }
-    }
 
-    Swal.fire({
-      title: "Saving...",
-      allowOutsideClick: false,
-      didOpen: () => Swal.showLoading(),
-    });
+      const firstTax = fullData.tax?.[0];
 
-   
-    const fullData = await fetchVoucherFullData(selectedRows[0].VCHNO);
+      const deptCode = firstTax?.GLCODE || values.deptCode;
+      const ledger = firstTax?.ACCNO || values.ledger;
+      const narration = fullData.table?.[0]?.DRACCNO || values.details || "-";
 
-    if (!fullData) {
-      Swal.close();
-      Swal.fire("Error", "Voucher data load failed", "error");
-      return;
-    }
+      const formatDate = (date) =>
+        new Date(date)
+          .toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })
+          .replace(/ /g, "-");
 
-    const firstTax = fullData.tax?.[0];
+      const str2 = selectedRows.map((v) => v.REFNO).join(",");
 
-    const deptCode = firstTax?.GLCODE || values.deptCode;
-    const ledger = firstTax?.ACCNO || values.ledger;
-    const narration = fullData.table?.[0]?.DRACCNO || values.details || "-";
+      const str3 = selectedRows
+        .map((v) => {
+          const nivalDey = (v.TOTALAMT || 0) - (v.AMT || 0);
+          const dey = v.deyRakkam ?? nivalDey;
+          const shillak = nivalDey - dey;
 
-    const formatDate = (date) =>
-      new Date(date)
-        .toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
+          return [
+            v.REFNO,
+            nivalDey,
+            dey,
+            shillak,
+            v.TOTALAMT || 0,
+            v.AMT || 0,
+            v.VCHNO,
+            v.DEPTID || 0,
+          ].join("#");
         })
-        .replace(/ /g, "-");
+        .join("$");
 
-    const str2 = selectedRows.map((v) => v.REFNO).join(",");
+      const str4 = selectedRows
+        .map((v) => {
+          const nivalDey = (v.TOTALAMT || 0) - (v.AMT || 0);
+          const dey = v.deyRakkam ?? nivalDey;
+          const shillak = nivalDey - dey;
 
-    const str3 = selectedRows
-      .map((v) => {
-        const nivalDey = (v.TOTALAMT || 0) - (v.AMT || 0);
-        const dey = v.deyRakkam ?? nivalDey;
-        const shillak = nivalDey - dey;
+          return [
+            v.REFNO,
+            new Date(v.TRNSDATE).toLocaleDateString("en-GB"),
+            v.VCHNO,
+            deptCode,
+            ledger,
+            narration,
+            nivalDey,
+            dey,
+            shillak,
+            values.partyCode || 0,
+            v.DEPTID || 0,
+          ].join("#");
+        })
+        .join("$");
 
-        return [
-          v.REFNO,
-          nivalDey,
-          dey,
-          shillak,
-          v.TOTALAMT || 0,
-          v.AMT || 0,
-          v.VCHNO,
-          v.DEPTID || 0,
-        ].join("#");
-      })
-      .join("$");
+      const str1 = [
+        status,
+        4,
+        narration,
+        deptCode,
+        ledger,
+        totalSelectedAmount,
+        values.chequeNo || "",
+        formatDate(values.chequeDate),
+        values.department || 0,
+        0,
+        formatDate(values.transactionDate),
+        values.budgetId || "",
+        values.chequeBookNo || "",
+        values.paymentType || 2,
+        values.nidhi_id || "",
+      ].join("~");
 
-    const str4 = selectedRows
-      .map((v) => {
-        const nivalDey = (v.TOTALAMT || 0) - (v.AMT || 0);
-        const dey = v.deyRakkam ?? nivalDey;
-        const shillak = nivalDey - dey;
+      const payload = {
+        refNo: selectedRows[0].REFNO,
+        userId: user?.userId,
+        txnSourceId: 6,
+        txnStatus: status,
+        str1,
+        str2,
+        str3,
+        str4,
+      };
 
-        return [
-          v.REFNO,
-          new Date(v.TRNSDATE).toLocaleDateString("en-GB"),
-          v.VCHNO,
-          deptCode,
-          ledger,
-          narration,
-          nivalDey,
-          dey,
-          shillak,
-          values.partyCode || 0,
-          v.DEPTID || 0,
-        ].join("#");
-      })
-      .join("$");
+      console.log("FINAL PAYLOAD:", payload);
 
-    
-    const str1 = [
-      status,
-      4, 
-      narration,
-      deptCode,
-      ledger,
-      totalSelectedAmount,
-      values.chequeNo || "", 
-      formatDate(values.chequeDate),
-      values.department || 0,
-      0,
-      formatDate(values.transactionDate),
-      values.budgetId || "",
-      values.chequeBookNo || "", 
-      values.paymentType || 2,
-      values.nidhi_id || "",
-    ].join("~");
+      const res = await axios.post(
+        `${BASE_URL}/api/FrmVoucherGeneration/voucher-generation`,
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
 
-    const payload = {
-      refNo: selectedRows[0].REFNO,
-      userId: user?.userId,
-      txnSourceId: 6,
-      txnStatus: status,
-      str1,
-      str2,
-      str3,
-      str4,
-    };
+      Swal.close();
 
-    console.log("FINAL PAYLOAD:", payload);
-
-    const res = await axios.post(
-      `${BASE_URL}/api/FrmVoucherGeneration/voucher-generation`,
-      payload,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    Swal.close();
-
-    if (res.data?.success) {
-      Swal.fire("Success", res.data.errorMsg, "success");
-    } else {
-      Swal.fire("Error", res.data.errorMsg, "error");
+      if (res.data?.success) {
+        Swal.fire("Success", res.data.errorMsg, "success");
+      } else {
+        Swal.fire("Error", res.data.errorMsg, "error");
+      }
+    } catch (err) {
+      Swal.close();
+      console.error(err);
+      Swal.fire("Error", "Voucher generation failed", "error");
     }
-  
-  } catch (err) {
-    Swal.close();
-    console.error(err);
-    Swal.fire("Error", "Voucher generation failed", "error");
-  }
-};
-
-
+  };
 
   if (loading) {
     return (
@@ -442,14 +432,15 @@ const handleSubmit = async (values, formikHelpers) => {
                       <Select
                         value={values.department}
                         onValueChange={(v) => setFieldValue("department", v)}
+                        disabled={searchDone} // ✅ ADD THIS
                       >
                         <SelectTrigger className="h-9 w-full">
-                          <SelectValue placeholder="निवडा" />
+                          <SelectValue placeholder="-- विकल्प निवडा --" />
                         </SelectTrigger>
 
                         <SelectContent>
                           {/* ✅ ALL OPTION */}
-                          <SelectItem value="-1">All</SelectItem>
+                          <SelectItem >-- विकल्प निवडा --</SelectItem>
 
                           {/* EXISTING OPTIONS */}
                           {zones.map((z) => (
@@ -468,11 +459,12 @@ const handleSubmit = async (values, formikHelpers) => {
                           onCheckedChange={(v) =>
                             setFieldValue("fromDateEnabled", v)
                           }
+                          disabled={searchDone} // ✅ ADD THIS
                         />
                         <DatePicker
                           value={values.fromDate}
                           onChange={(d) => setFieldValue("fromDate", d)}
-                          className="h-9 w-full"
+                          disabled={!values.fromDateEnabled} // ✅ ADD
                         />
                       </div>
                     </FormField>
@@ -482,6 +474,7 @@ const handleSubmit = async (values, formikHelpers) => {
                         value={values.toDate}
                         onChange={(d) => setFieldValue("toDate", d)}
                         className="h-9 w-full"
+                        disabled={searchDone}
                       />
                     </FormField>
 
@@ -501,30 +494,44 @@ const handleSubmit = async (values, formikHelpers) => {
                     <div className="flex items-end col-span-full sm:col-span-1 gap-2">
                       <Button
                         type="button"
-                        onClick={() => fetchVouchers(values)}
-                        className="bg-blue-900 text-white w-full sm:w-auto "
+                        disabled={searchDone} // ✅ ADD THIS
+                        onClick={() => {
+                          // ✅ ONLY Prabhag required
+                          if (
+                            !values.department ||
+                            values.department === "-1"
+                          ) {
+                            Swal.fire("Please select Prabhag");
+                            return;
+                          }
+
+                          fetchVouchers(values);
+                        }}
+                        className="bg-blue-900 text-white w-full sm:w-auto"
                       >
                         व्हाउचर शोध
                       </Button>
 
-                      <Button
-                        type="button"
-                        className="bg-blue-900 text-white w-full sm:w-auto "
-                        onClick={() => {
-                          const selectedRefs = voucherList
-                            .filter((v) => v.selected)
-                            .map((v) => v.REFNO);
+                      {searchDone && (
+                        <Button
+                          type="button"
+                          className="bg-blue-900 text-white w-full sm:w-auto "
+                          onClick={() => {
+                            const selectedRefs = voucherList
+                              .filter((v) => v.selected)
+                              .map((v) => v.REFNO);
 
-                          if (!selectedRefs.length) {
-                            Swal.fire("किमान एक व्यवहार निवडा");
-                            return;
-                          }
+                            if (!selectedRefs.length) {
+                              Swal.fire("किमान एक व्यवहार निवडा");
+                              return;
+                            }
 
-                          fetchVoucherDetails(selectedRefs);
-                        }}
-                      >
-                        व्यवहार तपशील
-                      </Button>
+                            fetchVoucherDetails(selectedRefs);
+                          }}
+                        >
+                          व्यवहार तपशील
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </section>
@@ -766,7 +773,7 @@ const handleSubmit = async (values, formikHelpers) => {
                                 </SelectItem>
                               ))
                             ) : (
-                              <SelectItem  value="0">
+                              <SelectItem value="0">
                                 No cheque book found
                               </SelectItem>
                             )}

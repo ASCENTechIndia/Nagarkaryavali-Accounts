@@ -25,29 +25,35 @@ const FrmGLMasterList = () => {
   };
 
   /* 🔥 FETCH API (like Transfer page pattern) */
-  const fetchGLList = async () => {
-    try {
-      setLoading(true);
+const fetchGLList = async () => {
+  try {
+    setLoading(true);
 
-      const res = await axios.get(
-        `${BASE_URL}/api/master/glmaster/list`
-      );
+    const headersConfig = {
+      Authorization: `Bearer ${user?.token}`,
+    };
 
-      console.log("GL LIST API:", res.data);
+    const res = await axios.get(
+      `${BASE_URL}/api/master/glmaster/list`,
+      { headers: headersConfig }
+    );
 
-      if (res.data?.ok && res.data?.data?.list) {
-        setGlList(res.data.data.list);
-      }
-    } catch (err) {
-      console.error("Error fetching GL list:", err);
-    } finally {
-      setLoading(false);
+    console.log("GL LIST API:", res.data);
+
+    if (res.data?.ok && res.data?.data?.list) {
+      setGlList(res.data.data.list);
     }
-  };
+  } catch (err) {
+    console.error("Error fetching GL list:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
-  useEffect(() => {
-    fetchGLList();
-  }, []);
+useEffect(() => {
+  if (!user?.token) return;   // ✅ wait for token
+  fetchGLList();
+}, [user?.token]);
 
   /* 🔥 MAP DATA TO TABLE */
   const tableData = glList.map((row) => ({

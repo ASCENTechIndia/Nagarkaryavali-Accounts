@@ -129,7 +129,7 @@ const RptPaymentRegister = () => {
   }, [ulbId]);
 
 const handleSubmit = async (values) => {
-  debugger;
+  
   try {
     Swal.fire({
       title: "Processing...",
@@ -137,11 +137,17 @@ const handleSubmit = async (values) => {
       didOpen: () => Swal.showLoading(),
     });
 
-    const formatDate = (date) => {
-      if (!date) return null;
-      return new Date(date).toISOString().split("T")[0];
-    };
+   const formatDate = (date) => {
+  if (!date) return null;
 
+  const d = new Date(date);
+
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+
+  return `${year}-${month}-${day}`;
+};
     // ✅ CORRECT PAYLOAD
     const payload = {
       fromDate: formatDate(values.fromDate),
@@ -149,7 +155,6 @@ const handleSubmit = async (values) => {
       ulbId: ulbId?.toString(),
       rptType: values.reportType, 
       chkGramPanchayat: false,
-
       majorCode: values.wardCode || null,   
       minorCode: values.head || null,       
       zoneId: values.zoneId || null,
@@ -159,16 +164,17 @@ const handleSubmit = async (values) => {
       nidhiId: "",
     };
 
-    // ================= PDF =================
+  
     if (values.exportType === "pdf") {
       const res = await axios.post(
-        `${BASE_URL}/api/RptPaymentRegister/payment-register`,
+        `${BASE_URL}/api/RptPaymentRegister/payment-register-pdf`,
         payload,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
 
+      console.log("PDF API Response:", res.data);
       Swal.close();
 
       if (res.data?.success && res.data?.pdfUrl) {
