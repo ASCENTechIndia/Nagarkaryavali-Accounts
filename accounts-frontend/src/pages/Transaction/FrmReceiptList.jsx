@@ -33,6 +33,7 @@ const FrmReceiptList = () => {
   const [corporations, setCorporations] = useState([]);
   const [zones, setZones] = useState([]);
   const { user } = useAuth();
+  const [defaultMunicipality, setDefaultMunicipality] = useState("");
   const navigate = useNavigate();
 
   const ulbId = user?.ulbId;
@@ -42,30 +43,28 @@ const FrmReceiptList = () => {
   console.log("BASE_URL:", BASE_URL);
 
 
-  const fetchCorporations = async (setFieldValue) => {
+  const fetchCorporations = async () => {
     try {
-      debugger;
-      const res = await axios.post(`${BASE_URL}/api/Receipt/corporation`, {
-        corp_id: ulbId,
-      },
+      const res = await axios.post(
+        `${BASE_URL}/api/Receipt/corporation`,
+        {
+          corp_id: ulbId,
+        },
         {
           headers: {
             Authorization: `Bearer ${user.token}`,
           },
         }
       );
-      console.log("res :", res)
+
       const corpData = res.data.data || [];
       setCorporations(corpData);
 
       if (corpData.length > 0) {
         const defaultCorp = corpData[0].CORPORATIONID.toString();
-
-        setFieldValue("municipality", defaultCorp);
-
+        setDefaultMunicipality(defaultCorp);
         fetchZones(defaultCorp);
       }
-
     } catch (err) {
       console.error("Corporation API Error:", err);
     }
@@ -145,17 +144,19 @@ const FrmReceiptList = () => {
   };
 
   const initialValues = {
-    municipality: "",
+    municipality: defaultMunicipality,
     prabhag: "",
   };
 
-  return (
-    <Formik initialValues={initialValues} onSubmit={() => { }}>
-      {({ values, setFieldValue }) => {
+  useEffect(() => {
+    if (ulbId) {
+      fetchCorporations();
+    }
+  }, [ulbId]);
 
-        useEffect(() => {
-          fetchCorporations(setFieldValue);
-        }, []);
+  return (
+    <Formik enableReinitialize initialValues={initialValues} onSubmit={() => { }}>
+      {({ values, setFieldValue }) => {
 
         const tableRows = tableData.map((row) => ({
           select: (
