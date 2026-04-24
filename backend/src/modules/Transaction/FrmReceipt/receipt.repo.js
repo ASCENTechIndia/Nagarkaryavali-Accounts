@@ -210,6 +210,8 @@ const receiptInsertUpdateRepo = (data) =>
       }
     );
 
+    console.log("Result: ", result);
+
     return {
       refNo: result.outBinds.out_ReturnStr,
       errorCode: result.outBinds.out_ErrorCode,

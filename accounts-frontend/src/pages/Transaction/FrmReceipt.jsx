@@ -100,7 +100,7 @@ const FrmReceipt = () => {
     const updatedTotal =
       (Number(values.totalAmount) || 0) + Number(values.entryAmount || 0);
 
-    setFieldValue("totalAmount", updatedTotal);
+    // setFieldValue("totalAmount", updatedTotal);
 
     setFieldValue("entryDeptCode", "");
     setFieldValue("entryHead", "");
@@ -473,7 +473,7 @@ const FrmReceipt = () => {
       console.log("API RESPONSE:", res.data);
 
       Swal.fire({
-        text: res.data?.message,
+        text: res.data?.data?.message,
         confirmButtonColor: "#1e3a8a",
       });
 

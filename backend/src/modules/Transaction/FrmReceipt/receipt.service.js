@@ -127,14 +127,16 @@ async function searchGLALL() {
 async function receiptInsertUpdate(data) {
   const result = await repo.receiptInsertUpdateRepo(data);
 
+  console.log("Service Result: ", result);
+
   if (!result) {
     throw new AppError("Failed to insert/update receipt", 500);
   }
 
   // Optional: handle DB error codes
-  if (result.errorCode && result.errorCode !== 0) {
-    throw new AppError(result.message || "Database error", 400);
-  }
+  // if (result.errorCode && result.errorCode !== 0) {
+  //   throw new AppError(result.message || "Database error", 400);
+  // }
 
   return result;
 }
