@@ -40,10 +40,10 @@ const Login = () => {
 
       {/* HEADER */}
       <header className="bg-[#184aa6] px-6 py-3 shadow-sm flex items-center">
-  <img src="/logo.png" className="h-14 w-14 rounded" />
+  {/* <img src="/logo.png" className="h-14 w-14 rounded" /> */}
 
   <h1 className="flex-1 text-center text-white text-xl sm:text-3xl font-bold">
-    मालेगाव महानगरपालिका
+    Accounts Department
   </h1>
 </header>
 
