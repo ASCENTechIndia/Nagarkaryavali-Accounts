@@ -4,9 +4,10 @@ const auth = require("../../../middlewares/auth.middleware");
 const controller = require("./RptPaymentRegister.controller");
 
 router.post("/payment-register", auth(), controller.getPaymentRegister);
+router.post("/payment-register-pdf", auth(), controller.getPaymentRegisterPDF);
 
 router.post("/payment-register-report", controller.getPaymentRegisterReport);
-router.post("/paymentRegisterReportPdf", controller.getPaymentRegisterPDF);
+router.post("/paymentRegisterReportPdf", controller.getPaymentRegisterDetailPDF);
 
 module.exports = router;
 
