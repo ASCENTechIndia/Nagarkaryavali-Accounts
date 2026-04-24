@@ -49,7 +49,8 @@ import FrmBalanceSheetGroupMst from "./pages/Master/FrmBalanceSheetGroupMst";
 import FrmBalanceSheetGroupList from "./pages/Master/FrmBalanceSheetGroupList";
 import FrmBalanceSheetSubGroupList from "./pages/Master/FrmBalanceSheetSubGroupList";
 import FrmBalanceSheetSubGroupMst from "./pages/Master/FrmBalanceSheetSubGroupMst";
-
+import Frmauthorizationconfig from "./pages/Master/Frmauthorizationconfig";
+import FrmauthorizationconfigList from "./pages/Master/FrmauthorizationconfigList";
 import FrmBankReconciliation from "./pages/Transaction/FrmBankReconciliation";
 import FrmTransferList from "./pages/Transaction/FrmTransferList";
 import FrmTransfer from "./pages/Transaction/FrmTransfer";
@@ -69,8 +70,8 @@ import Frmconsolidatedreceipt from "./pages/Reports/Frmconsolidatedreceipt";
 import FrmNidhiList from "./pages/Master/FrmNidhiList";
 import FrmNidhiMaster from "./pages/Master/FrmNidhiMaster";
 import FrmNidhiConfig from "./pages/Master/FrmNidhiConfig";
-// import RptGovtTaxRegisters from "./pages/ReportsForm/RptGovtTaxRegisters";
-
+import FrmChecRegisterRpt from "./pages/Reports/FrmChecRegisterRpt";
+import FrmBillRegisterRpt from "./pages/Reports/FrmBillRegisterRpt";
 
 
 const Home = () => <Button>Click me</Button>;
@@ -378,11 +379,6 @@ export const router = createBrowserRouter([
         path: "ReportsForm/FrmChecRegisterRpt",
         element: <FrmChecRegisterRpt />,
       },
-
-      // {
-      //   path: "ReportsForm/RptGovtTaxRegisters",
-      //   element: <RptGovtTaxRegisters />,
-      // }
     ],
   },
 ]);
