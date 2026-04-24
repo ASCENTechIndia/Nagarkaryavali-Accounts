@@ -94,7 +94,7 @@ app.use("/api/Classified", require ("./modules/Reports/RptClassifiedRegister/Rpt
 app.use("/api/Abstract", require("./modules/Reports/RptClassifiedAbstractSummary/RptClassifiedAbstract.route"))
 app.use("/api/RptLedgerReport", require("./modules/Reports/RptLedgerReport/rptLedgerReport.route"))
 app.use("/api/RptPaymentRegister", require("./modules/Reports/RptPaymentRegister/RptPaymentRegister.routes"));
-app.use("/api/RptTransferRegister", require("./modules/Reports/RptTransferRegister/transferRegister.route"))
+// app.use("/api/RptTransferRegister", require("./modules/Reports/RptTransferRegister/transferRegister.route"))
 app.use("/api/RptCashBankBalance", require("./modules/Reports/RptCashBankBalance/rptCashBankBalance.route"))
 app.use("/api/Classified", require ("./modules/Reports/RptClassifiedRegister/RptClassifiedRegisterDetails.route"))
 app.use("/api/Abstract", require("./modules/Reports/RptClassifiedAbstractSummary/RptClassifiedAbstract.route"))
