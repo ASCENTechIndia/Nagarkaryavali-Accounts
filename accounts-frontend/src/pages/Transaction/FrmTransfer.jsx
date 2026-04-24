@@ -143,75 +143,87 @@ const FrmTransfer = () => {
     if (!location?.state?.refNo || !token || !ulbId) return;
 
     const fetchData = async () => {
-      try {
-        const headers = { Authorization: `Bearer ${token}` };
+  try {
+    // ✅ SHOW LOADER
+    Swal.fire({
+      title: "डेटा लोड होत आहे...",
+      text: "कृपया थांबा",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
 
-        const res = await axios.post(
-          `${BASE_URL}/api/FrmTransfer/contra-details`,
-          { tranRef: location.state.refNo },
-          { headers },
-        );
+    const headers = { Authorization: `Bearer ${token}` };
 
-        const rows = res.data?.data?.rows || [];
-        console.log("Contra details fetched:", rows);
-        if (!rows.length) return;
+    const res = await axios.post(
+      `${BASE_URL}/api/FrmTransfer/contra-details`,
+      { tranRef: location.state.refNo },
+      { headers }
+    );
 
-        const first = rows[0];
-        const credit = rows.find((r) => Number(r.CREDIT) > 0);
-        const debit = rows.find((r) => Number(r.DEBIT) > 0);
+    const rows = res.data?.data?.rows || [];
+    if (!rows.length) {
+      Swal.close();
+      return;
+    }
 
-        const form = formikRef.current;
-        if (!form) return;
+    const first = rows[0];
+    const credit = rows.find((r) => Number(r.CREDIT) > 0);
+    const debit = rows.find((r) => Number(r.DEBIT) > 0);
 
-        // 🔹 BASIC FIELDS
+    const form = formikRef.current;
+    if (!form) {
+      Swal.close();
+      return;
+    }
 
-        form.setFieldValue("date", new Date(first.TRNSDATE));
-        form.setFieldValue("voucherNo", first.VCHNO || "");
-        form.setFieldValue("details", first.NARRATION || "");
+    // 🔹 BASIC
+    form.setFieldValue("date", new Date(first.TRNSDATE));
+    form.setFieldValue("voucherNo", first.VCHNO || "");
+    form.setFieldValue("details", first.NARRATION || "");
 
-        const partyId =
-          first.PARTYID ||
-          first.NUM_PARTYID ||
-          first.NUM_PARTYMST_PARTYID ||
-          first.PARTYMST_PARTYID ||
-          "";
+    const partyId =
+      first.PARTYID ||
+      first.NUM_PARTYID ||
+      first.NUM_PARTYMST_PARTYID ||
+      first.PARTYMST_PARTYID ||
+      "";
 
-        setTimeout(() => {
-          form.setFieldValue("party", String(partyId || ""));
-          form.setFieldValue("department", String(first.ZONEID || ""));
-          form.setFieldValue("transactionType", String(first.TRNSTYPEID || ""));
-        }, 100);
+    form.setFieldValue("party", String(partyId || ""));
+    form.setFieldValue("department", String(first.ZONEID || ""));
+    form.setFieldValue("transactionType", String(first.TRNSTYPEID || ""));
 
-        // 🔥 CREDIT LEDGER (NEW API FIX)
-        if (credit?.GLCODE) {
-          await loadLedgers(String(credit.GLCODE), "credit");
+    // 🔥 CREDIT
+    if (credit?.GLCODE) {
+      await loadLedgers(String(credit.GLCODE), "credit");
 
-          form.setFieldValue("creditDept", String(credit.GLCODE));
+      form.setFieldValue("creditDept", String(credit.GLCODE));
+      form.setFieldValue("creditLedger", String(credit.OBJECTCODE));
+      form.setFieldValue("creditAmount", Math.abs(credit.CREDIT || 0));
+    }
 
-          setTimeout(() => {
-            form.setFieldValue("creditLedger", String(credit.OBJECTCODE));
-          }, 150);
+    // 🔥 DEBIT
+    if (debit?.GLCODE) {
+      await loadLedgers(String(debit.GLCODE), "debit");
 
-          form.setFieldValue("creditAmount", Math.abs(credit.CREDIT || 0));
-        }
+      form.setFieldValue("debitDept", String(debit.GLCODE));
+      form.setFieldValue("debitLedger", String(debit.OBJECTCODE));
+      form.setFieldValue("debitAmount", Math.abs(debit.DEBIT || 0));
+    }
 
-        // 🔥 DEBIT LEDGER (NEW API FIX)
-        if (debit?.GLCODE) {
-          await loadLedgers(String(debit.GLCODE), "debit");
+    // ✅ CLOSE LOADER AFTER EVERYTHING DONE
+    Swal.close();
 
-          form.setFieldValue("debitDept", String(debit.GLCODE));
+  } catch (err) {
+    console.error("contra-details error:", err);
 
-          setTimeout(() => {
-            form.setFieldValue("debitLedger", String(debit.OBJECTCODE));
-          }, 150);
+    Swal.close();
 
-          form.setFieldValue("debitAmount", Math.abs(debit.DEBIT || 0));
-        }
-      } catch (err) {
-        console.error("contra-details error:", err);
-      }
-    };
-
+    Swal.fire({
+      icon: "error",
+      text: "डेटा लोड करण्यात अडचण आली",
+    });
+  }
+};
     fetchData();
   }, [location?.state?.refNo, token, ulbId]);
 

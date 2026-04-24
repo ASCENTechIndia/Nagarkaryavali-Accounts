@@ -29,12 +29,16 @@ const FrmGLMaster = () => {
 
   const [loading, setLoading] = useState(false);
 
-  /* 🔥 FETCH SINGLE RECORD */
+  /* 🔥 FETCH DATA */
   const fetchGLDetails = async (id) => {
     try {
       setLoading(true);
 
-      const res = await axios.get(`${BASE_URL}/api/master/glmaster/${id}`);
+      const res = await axios.get(`${BASE_URL}/api/master/glmaster/${id}`, {
+        headers: {
+          Authorization: `Bearer ${user?.token}`,
+        },
+      });
 
       if (res.data?.ok && res.data?.data?.data) {
         const data = res.data.data.data;
@@ -46,76 +50,60 @@ const FrmGLMaster = () => {
         });
       }
     } catch (err) {
-      console.error("Error fetching GL details:", err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  /* 🔥 LOAD DATA IN EDIT MODE */
-  useEffect(() => {
-    if (mode === 2 && editData?.GLCODE) {
-      fetchGLDetails(editData.GLCODE);
-    }
-  }, [mode, editData]);
+useEffect(() => {
+  if (!user?.token) return;
 
-  /* 🔥 SUBMIT HANDLER */
-
+  if (mode === 2 && editData?.GLCODE) {
+    fetchGLDetails(editData.GLCODE);
+  }
+}, [mode, editData, user?.token]);
+  /* 🔥 SUBMIT */
   const handleSubmit = async (values, { resetForm }) => {
+    
     try {
-      const userId = user?.userId;
-
       const payload = {
         glcodeid: Number(values.deptCode || 0),
         glname: values.deptNameMarathi,
         glnameeng: values.deptNameEnglish,
         glsubtype: 1,
-        userId: userId,
+        userId: user?.userId,
         mode: mode === 2 ? 2 : 1,
       };
 
-      console.log("📤 SUBMIT PAYLOAD:", payload);
-
-      // 🔄 Show loading
       Swal.fire({
         title: "Saving...",
-        text: "Please wait",
         allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
+        didOpen: () => Swal.showLoading(),
+      });
+
+      const res = await axios.post(`${BASE_URL}/api/master/glmaster`, payload, {
+        headers: {
+          Authorization: `Bearer ${user?.token}`,
         },
       });
 
-      const res = await axios.post(`${BASE_URL}/api/master/glmaster`, payload);
-
-      console.log("📥 RESPONSE:", res.data);
-
-      Swal.close(); // close loader
+      Swal.close();
 
       if (res.data?.ok) {
         await Swal.fire({
           icon: "success",
           title: res.data.message,
-          confirmButtonColor: "#1e3a8a",
         });
 
         navigate("/Masters/FrmGLMasterList");
         resetForm();
       } else {
-        Swal.fire({
-          icon: "error",
-          title: res.data?.message || "Something went wrong",
-        });
+        Swal.fire("Error", res.data?.message, "error");
       }
     } catch (err) {
-      console.error("❌ Save error:", err);
-
       Swal.close();
-
-      Swal.fire({
-        icon: "error",
-        title: err.response?.data?.message || "Server error",
-      });
+      Swal.fire("Error", "Server error", "error");
     }
   };
 
@@ -124,20 +112,12 @@ const FrmGLMaster = () => {
   }
 
   return (
-    <Formik
-      enableReinitialize
-      initialValues={formData}
-      onSubmit={handleSubmit} // ✅ FIXED
-    >
+    <Formik enableReinitialize initialValues={formData} onSubmit={handleSubmit}>
       {({ values, handleChange, resetForm, isSubmitting }) => (
         <Form>
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-           
-          >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <Card className="shadow-sm border rounded-lg">
-              {/* Header */}
+              {/* HEADER */}
               <CardHeader className="border-b">
                 <CardTitle className="text-lg font-semibold">
                   {mode === 2
@@ -146,71 +126,60 @@ const FrmGLMaster = () => {
                 </CardTitle>
               </CardHeader>
 
-              {/* Content */}
-              <CardContent className="p-6 space-y-6">
-                <div className="p-4">
-                  <div className="space-y-5 max-w-2xl mx-auto">
-                    {/* CODE */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 items-center">
-                      <Label className="text-sm sm:text-right sm:pr-2 font-medium">
-                        विभाग कोड :
-                      </Label>
-
-                      <Input
-                        name="deptCode"
-                        value={values.deptCode}
-                        onChange={handleChange}
-                        disabled={mode === 2}
-                        className="w-full h-9"
-                      />
-                    </div>
-
-                    {/* MARATHI */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 items-center">
-                      <Label className="text-sm sm:text-right sm:pr-2 font-medium w-full">
-                        विभाग नाव (मराठी) :
-                      </Label>
-
-                      <Input
-                        name="deptNameMarathi"
-                        value={values.deptNameMarathi}
-                        onChange={handleChange}
-                        className="w-full h-9"
-                      />
-                    </div>
-
-                    {/* ENGLISH */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 items-center">
-                      <Label className="text-sm sm:text-right sm:pr-2 font-medium w-full">
-                        विभाग नाव (इंग्रजी) :
-                      </Label>
-
-                      <Input
-                        name="deptNameEnglish"
-                        value={values.deptNameEnglish}
-                        onChange={handleChange}
-                        className="w-full h-9"
-                      />
-                    </div>
-                  </div>
+              {/* BODY */}
+              <CardContent className="p-6 space-y-4">
+                {/* FIELD 1 */}
+                <div className="grid grid-cols-[180px_10px_1fr] items-center gap-2">
+                  <Label className="text-sm font-medium">विभाग कोड</Label>
+                  <span>:</span>
+                  <Input
+                    name="deptCode"
+                    value={values.deptCode}
+                    onChange={handleChange}
+                    disabled={mode === 2}
+                    className="max-w-xs"
+                  />
                 </div>
 
-                {/* Buttons */}
-                <div className="flex flex-wrap justify-center gap-3 sm:gap-4 pt-4 border-t">
+                {/* FIELD 2 */}
+                <div className="grid grid-cols-[180px_10px_1fr] items-center gap-2">
+                  <Label className="text-sm font-medium">
+                    विभाग नाव (मराठी)
+                  </Label>
+                  <span>:</span>
+                  <Input
+                    name="deptNameMarathi"
+                    value={values.deptNameMarathi}
+                    onChange={handleChange}
+                    className="max-w-xs"
+                  />
+                </div>
+
+                {/* FIELD 3 */}
+                <div className="grid grid-cols-[180px_10px_1fr] items-center gap-2">
+                  <Label className="text-sm font-medium">
+                    विभाग नाव (इंग्रजी)
+                  </Label>
+                  <span>:</span>
+                  <Input
+                    name="deptNameEnglish"
+                    value={values.deptNameEnglish}
+                    onChange={handleChange}
+                    className="max-w-xs"
+                  />
+                </div>
+
+                {/* BUTTONS */}
+                <div className="flex flex-wrap justify-center gap-3 pt-4 border-t">
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="bg-blue-900 text-white px-6 w-full sm:w-auto"
+                    className="bg-blue-900 text-white"
                   >
                     {isSubmitting ? "Saving..." : "साठवा"}
                   </Button>
 
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={resetForm}
-                    className="w-full sm:w-auto"
-                  >
+                  <Button type="button" variant="outline" onClick={resetForm}>
                     बदल करा
                   </Button>
 
@@ -218,7 +187,6 @@ const FrmGLMaster = () => {
                     type="button"
                     variant="destructive"
                     onClick={() => navigate("/Masters/FrmGLMasterList")}
-                    className="w-full sm:w-auto"
                   >
                     परत
                   </Button>
