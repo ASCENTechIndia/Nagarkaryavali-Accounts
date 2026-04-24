@@ -800,7 +800,7 @@ const RptCashBook = () => {
                     headers={headers}
                     data={tableRows}
                     keyMapping={keyMapping}
-                    className="min-w-[1400px]"
+                    className="min-w-350"
                     pagination
                     rowsPerPage={10}
                   />

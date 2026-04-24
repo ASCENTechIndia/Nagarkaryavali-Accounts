@@ -39,12 +39,13 @@ const Login = () => {
     <div className="min-h-screen bg-white">
 
       {/* HEADER */}
-      <header className="bg-[#184aa6] px-6 py-3 shadow-sm flex items-center gap-4">
-        <img src="/logo.png" className="h-14 w-14 rounded" />
-        <h1 className="text-white text-xl sm:text-3xl font-bold">
-           मालेगाव महानगरपालिका
-        </h1>
-      </header>
+      <header className="bg-[#184aa6] px-6 py-3 shadow-sm flex items-center">
+  <img src="/logo.png" className="h-14 w-14 rounded" />
+
+  <h1 className="flex-1 text-center text-white text-xl sm:text-3xl font-bold">
+    मालेगाव महानगरपालिका
+  </h1>
+</header>
 
       {/* MAIN */}
       <div className="flex items-center justify-center min-h-[calc(100vh-80px)] px-4">

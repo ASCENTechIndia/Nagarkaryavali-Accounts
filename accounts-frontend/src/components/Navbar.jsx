@@ -209,10 +209,10 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 shadow w-full">
 
       {/* 🔷 TOP BAR */}
-      <div className="flex items-center justify-between h-18 px-5 bg-[#2f6fb2]">
+      <div className="flex items-center justify-between w-full h-18 px-5 bg-[#2f6fb2]">
 
         {/* LOGO + TITLE */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between w-[60%] gap-4">
           <img src={corpInfo.logo} className="sm:h-14 sm:w-14 h-10 w-10 rounded" />
           <h1 className="text-white font-bold text-lg sm:text-2xl">
             {corpInfo.name}
