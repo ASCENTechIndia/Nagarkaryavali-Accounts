@@ -105,6 +105,7 @@ app.use("/api/RptReceiptRegister", require("./modules/Reports/RptReceiptRegister
 app.use("/api/ChecRegister",require("./modules/Reports/FrmChecRegisterRpt/FrmChecRegister.route"))
 app.use("/api/FrmBillRegisterRpt", require("./modules/Reports/FrmBillRegisterRpt/FrmBillRegisterRpt.routes"));
 app.use("/api/RptPaymentRegister", require("./modules/Reports/RptPaymentRegister/RptPaymentRegister.routes"));
+app.use("/api/RptTrialBalance", require("./modules/Reports/RptTrialBalance/RptTrialBalance.routes"))
 
 
 app.use(errorMiddleware);
