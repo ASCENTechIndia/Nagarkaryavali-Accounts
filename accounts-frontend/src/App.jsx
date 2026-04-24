@@ -367,6 +367,14 @@ export const router = createBrowserRouter([
         element: <RptPaymentRegisterDetails />,
       },
       {
+        path: "ReportsForm/FrmBillRegisterRpt",
+        element: <FrmBillRegisterRpt />,
+      },
+      {
+        path: "ReportsForm/FrmChecRegisterRpt",
+        element: <FrmChecRegisterRpt />,
+      },
+      {
         path: "Transactions/FrmVoucherGeneration",
         element: <FrmVoucherGeneration />,
       },
