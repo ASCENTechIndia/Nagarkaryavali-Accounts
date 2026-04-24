@@ -1059,7 +1059,7 @@ const RptLedgerReport = () => {
                           headers={headers}
                           data={tableRows}
                           keyMapping={keyMapping}
-                          className="max-sm:min-w-[380px]"
+                          className="max-sm:min-w-95"
                         />
 
                         <div className="flex justify-center items-center gap-4 p-4 border-t bg-gray-50">
