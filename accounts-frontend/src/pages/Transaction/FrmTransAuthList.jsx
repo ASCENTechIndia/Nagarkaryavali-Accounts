@@ -43,7 +43,7 @@ const FrmTransAuthList = () => {
   
   const [selectedPrabhag, setSelectedPrabhag] = useState("-1");
   const [selectedTransType, setSelectedTransType] = useState("1");
-  const [selectedUser, setSelectedUser] = useState("");
+  const [selectedUser, setSelectedUser] = useState("-1");
   const [fromDate, setFromDate] = useState(new Date());
   const [toDate, setToDate] = useState(new Date());
   
@@ -124,8 +124,10 @@ const FrmTransAuthList = () => {
         }
       );
 
+      console.log("Response User: ", response);
+
       if (response?.data?.success) {
-        setUsers(response.data.data || []);
+        setUsers(response.data.rows || []);
       }
     } catch (err) {
       console.error("Error fetching users:", err);
@@ -144,12 +146,12 @@ const FrmTransAuthList = () => {
       setLoading(true);
 
       const requestBody = {
-        fromDate: fromDate ? formatDate(fromDate) : "2021-04-01",
-        toDate: toDate ? formatDate(toDate) : "2026-04-15",
+        fromDate: formatDate(fromDate),
+        toDate: formatDate(toDate),
         zoneId: selectedPrabhag || "-1",
         ulbId: Number(ulbId),
         budgetId: null,
-        userId: selectedUser || null,
+        userId: selectedUser === "-1" ? null : selectedUser,
         nidhiId: null,
         transType: selectedTransType,
       };
@@ -273,10 +275,13 @@ const FrmTransAuthList = () => {
     })) || []),
   ];
 
-  const userOptions = users?.map((u) => ({
-    value: u.USERNAME || u.userId?.toString(),
-    label: u.USERNAME || u.userName || u.name || "वापरकर्ता",
-  })) || [];
+  const userOptions = [
+    { value: "-1", label: "-- सर्व वापरकर्ता --" },
+    ...(users?.map((u) => ({
+      value: u.USERID?.toString(),
+      label: u.USERNAME,
+    })) || []),
+  ];
 
   const totalAmount = filteredData.reduce(
     (sum, row) => sum + (Number(row.AMOUNT) || 0),
@@ -346,14 +351,14 @@ const FrmTransAuthList = () => {
               </div>
               <Select
                 value={selectedUser}
-                onValueChange={(v) => setSelectedUser(v)}
+                onValueChange={setSelectedUser}
               >
                 <SelectTrigger className="w-full h-9">
                   <SelectValue placeholder="-- विकल्प निवडा --" />
                 </SelectTrigger>
                 <SelectContent>
                   {userOptions.map((option) => (
-                    <SelectItem key={option.value || "all"} value={option.value}>
+                    <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
                   ))}
