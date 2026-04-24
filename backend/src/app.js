@@ -88,17 +88,25 @@ app.use("/api/FrmVoucherGeneration", require("./modules/Transaction/FrmVoucherGe
 
 
 //Reports
-app.use("/api/RptTransferRegister", require("./modules/Reports/RptTransferRegister/transferRegister.route"));
-app.use("/api/RptCashBankBalance", require("./modules/Reports/RptCashBankBalance/rptCashBankBalance.route"));
-app.use("/api/Classified", require("./modules/Reports/RptClassifiedRegister/RptClassifiedRegisterDetails.route"));
-app.use("/api/Abstract", require("./modules/Reports/RptClassifiedAbstractSummary/RptClassifiedAbstract.route"));
-app.use("/api/RptLedgerReport", require("./modules/Reports/RptLedgerReport/rptLedgerReport.route"));
+app.use("/api/RptTransferRegister", require("./modules/Reports/RptTransferRegister/transferRegister.route"))
+app.use("/api/RptCashBankBalance", require("./modules/Reports/RptCashBankBalance/rptCashBankBalance.route"))
+app.use("/api/Classified", require ("./modules/Reports/RptClassifiedRegister/RptClassifiedRegisterDetails.route"))
+app.use("/api/Abstract", require("./modules/Reports/RptClassifiedAbstractSummary/RptClassifiedAbstract.route"))
+app.use("/api/RptLedgerReport", require("./modules/Reports/RptLedgerReport/rptLedgerReport.route"))
+app.use("/api/RptPaymentRegister", require("./modules/Reports/RptPaymentRegister/RptPaymentRegister.routes"));
+// app.use("/api/RptTransferRegister", require("./modules/Reports/RptTransferRegister/transferRegister.route"))
+app.use("/api/RptCashBankBalance", require("./modules/Reports/RptCashBankBalance/rptCashBankBalance.route"))
+app.use("/api/Classified", require ("./modules/Reports/RptClassifiedRegister/RptClassifiedRegisterDetails.route"))
+app.use("/api/Abstract", require("./modules/Reports/RptClassifiedAbstractSummary/RptClassifiedAbstract.route"))
+app.use("/api/RptLedgerReport", require("./modules/Reports/RptLedgerReport/rptLedgerReport.route"))
+app.use("/api/RptPaymentRegister", require("./modules/Reports/RptPaymentRegister/RptPaymentRegister.routes"));
 app.use("/api/RptRegister", require("./modules/Reports/FrmRptReceiptRegisterDetails/RptReceiptRegisterDetails.route"));
 app.use("/api/RptReceiptRegister", require("./modules/Reports/RptReceiptRegister/RptReceiptRegister.routes"));
 app.use("/api/ChecRegister",require("./modules/Reports/FrmChecRegisterRpt/FrmChecRegister.route"))
 app.use("/api/FrmBillRegisterRpt", require("./modules/Reports/FrmBillRegisterRpt/FrmBillRegisterRpt.routes"));
 app.use("/api/RptPaymentRegister", require("./modules/Reports/RptPaymentRegister/RptPaymentRegister.routes"));
 app.use("/api/RptTrialBalance", require("./modules/Reports/RptTrialBalance/RptTrialBalance.routes"))
+
 
 app.use(errorMiddleware);
 

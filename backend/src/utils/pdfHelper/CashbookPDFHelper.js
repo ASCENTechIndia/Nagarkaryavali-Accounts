@@ -168,11 +168,22 @@ const CashbookPDFHelper = async ({ reportData, openingBalanceData, filters, ulbI
       closing: formatNumber(absClosingBalance),
       closingDrCr: closingDrCr
     });
-    
-    const browser = await puppeteer.launch({
+
+    const chromePath = path.resolve(
+      __dirname,
+      "../../../node_modules/puppeteer/.cache/puppeteer/chrome/win64-135.0.7049.84/chrome-win64/chrome.exe"
+    );
+
+    const launchOptions = {
       headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"]
-    });
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    };
+
+    if (fs.existsSync(chromePath)) {
+      launchOptions.executablePath = chromePath;
+    }
+
+    const browser = await puppeteer.launch(launchOptions);
     
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "domcontentloaded" });
@@ -189,6 +200,7 @@ const CashbookPDFHelper = async ({ reportData, openingBalanceData, filters, ulbI
       },
     });
     
+    await page.close();
     await browser.close();
     
     const dir = path.resolve(__dirname, "../../../public/pdf");
