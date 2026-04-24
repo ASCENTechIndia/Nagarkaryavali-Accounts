@@ -1,14 +1,14 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { Button } from "@/components/ui/button"
-import './App.css'
-import FrmReceiptList from './pages/Transaction/FrmReceiptList';
-import FrmReceipt from './pages/Transaction/FrmReceipt';
-import FrmPaymentList from './pages/Transaction/FrmPaymentList';
-import FrmPayment from './pages/Transaction/FrmPayment';
-import FrmVoucherPreparationList from './pages/Transaction/FrmVoucherPreparationList';
-import FrmVoucherPreparation from './pages/Transaction/FrmVoucherPreparation';
-import Layout from './layout/main-layout';
-import Login from './pages/Login';
+import { Button } from "@/components/ui/button";
+import "./App.css";
+import FrmReceiptList from "./pages/Transaction/FrmReceiptList";
+import FrmReceipt from "./pages/Transaction/FrmReceipt";
+import FrmPaymentList from "./pages/Transaction/FrmPaymentList";
+import FrmPayment from "./pages/Transaction/FrmPayment";
+import FrmVoucherPreparationList from "./pages/Transaction/FrmVoucherPreparationList";
+import FrmVoucherPreparation from "./pages/Transaction/FrmVoucherPreparation";
+import Layout from "./layout/main-layout";
+import Login from "./pages/Login";
 import FrmGLMaster from "./pages/Master/FrmGLMaster";
 import FrmGLMasterList from "./pages/Master/FrmGLMasterList";
 import FrmPartyList from "./pages/Master/FrmPartyList";
@@ -59,7 +59,15 @@ import FrmSearchOption from "./pages/Transaction/FrmSearchOption";
 import RptClassifiedAbstractSummary from "./pages/Reports/RptClassifiedAbstractSummary";
 import FrmGovtTaxPayment from "./pages/Transaction/FrmGovtTaxPayment";
 import RptReceiptRegisterDetails from "./pages/ReportsForm/RptReceiptRegisterDetails";
-import RptLedgerReport from "./pages/Reports/RptLedgerReport";
+import RptTransferRegister from "./pages/ReportsForm/RptTransferRegister";
+import RptCashBook from "./pages/ReportsForm/RptCashBook";
+import RptCashBankBalance from "./pages/ReportsForm/RptCashBankBalance";
+// import RptClassifiedRegisterDetails from "./pages/ReportsForm/RptClassifiedRegisterDetails";
+import RptLedgerReport from "./pages/ReportsForm/RptLedgerReport";
+import RptPaymentRegister from "./pages/ReportsForm/RptPaymentRegister";
+import RptPaymentRegisterDetails from "./pages/ReportsForm/RptPaymentRegisterDetails";
+
+import FrmVoucherGeneration from "./pages/Transaction/FrmVoucherGeneration";
 import Frmconsolidatedreceipt from "./pages/Reports/Frmconsolidatedreceipt";
 import FrmNidhiList from "./pages/Master/FrmNidhiList";
 import FrmNidhiMaster from "./pages/Master/FrmNidhiMaster";
@@ -106,42 +114,41 @@ export const router = createBrowserRouter([
       },
       {
         path: "/Transactions/FrmBankReconciliation",
-        element: <FrmBankReconciliation />
+        element: <FrmBankReconciliation />,
       },
       {
         path: "/Transactions/FrmTransferList",
-        element: <FrmTransferList />
+        element: <FrmTransferList />,
       },
       {
         path: "/Transactions/FrmTransfer",
-        element: <FrmTransfer />
+        element: <FrmTransfer />,
       },
       {
         path: "/Transactions/FrmGovtTaxPayment",
-        element: <FrmGovtTaxPayment />
+        element: <FrmGovtTaxPayment />,
       },
       {
         path: "/Transactions/FrmContractList",
-        element: <FrmContractList />
+        element: <FrmContractList />,
       },
       {
         path: "/Transactions/FrmContractEntry",
-        element: <FrmContractEntry />
+        element: <FrmContractEntry />,
       },
       {
         path: "/Transactions/FrmBudgetAccountMap",
-        element: <FrmBudgetAccountMap />
+        element: <FrmBudgetAccountMap />,
       },
 
       {
         path: "/Transactions/FrmTransAuthList",
-        element: <FrmTransAuthList />
+        element: <FrmTransAuthList />,
       },
       {
         path: "/Transactions/FrmTransAuthMst",
-        element: <FrmTransAuthMst />
+        element: <FrmTransAuthMst />,
       },
-
 
       {
         path: "/Masters/FrmAccountListMst",
@@ -151,12 +158,6 @@ export const router = createBrowserRouter([
         path: "/Masters/FrmAccountMst",
         element: <FrmAccountMaster />,
       },
-      {
-        path: "Masters/FrmNidhiConfig",
-        element: <FrmNidhiConfig />
-      },
-      
-
 
       {
         path: "/Masters/FrmBalanceSheetGroupList",
@@ -176,20 +177,19 @@ export const router = createBrowserRouter([
       },
       {
         path: "/Masters/FrmGramPanchayat",
-        element: <FrmGrampanchayatMst />
+        element: <FrmGrampanchayatMst />,
       },
       {
         path: "/Masters/FrmGrampanchayatList",
-        element: <FrmGrampanchayatList />
+        element: <FrmGrampanchayatList />,
       },
       {
         path: "/Masters/FrmStateList",
-        element: <FrmStateList />
-      }
-      ,
+        element: <FrmStateList />,
+      },
       {
         path: "/Masters/FrmState",
-        element: <FrmState />
+        element: <FrmState />,
       },
       {
         path: "/Masters/FrmGLMaster",
@@ -202,149 +202,136 @@ export const router = createBrowserRouter([
       },
       {
         path: "/Masters/FrmPartyList",
-        element: <FrmPartyList />
+        element: <FrmPartyList />,
       },
       {
         path: "/Masters/FrmPartyMaster",
-        element: <FrmPartyMaster />
+        element: <FrmPartyMaster />,
       },
       {
         path: "/Masters/FrmInvestmentTypeList",
-        element: <FrmInvestmentTypeList />
+        element: <FrmInvestmentTypeList />,
       },
       {
         path: "/Masters/FrmBankBranchList",
-        element: <FrmBankBranchList />
+        element: <FrmBankBranchList />,
       },
       {
         path: "/Masters/FrmBudgetList",
-        element: <FrmBudgetList />
+        element: <FrmBudgetList />,
       },
       {
         path: "/Masters/FrmBudgetMst",
-        element: <FrmBudgetMst />
+        element: <FrmBudgetMst />,
       },
       {
         path: "/Masters/FrmBankBranchMst",
-        element: <FrmBankBranchMst />
+        element: <FrmBankBranchMst />,
       },
       {
         path: "/Masters/FrmInvestmentTypeMst",
-        element: <FrmInvestmentTypeMst />
+        element: <FrmInvestmentTypeMst />,
       },
       {
         path: "/Masters/FrmBanList",
-        element: <FrmBankList />
+        element: <FrmBankList />,
       },
       {
         path: "/Masters/FrmBankMst",
-        element: <FrmBankMst />
+        element: <FrmBankMst />,
       },
       {
         path: "/Masters/FrmzoneList",
-        element: <FrmZoneList />
+        element: <FrmZoneList />,
       },
       {
         path: "/Masters/FrmZoneMst",
-        element: <FrmZoneMst />
+        element: <FrmZoneMst />,
       },
       {
         path: "/Masters/FrmDepositTypeList",
-        element: <FrmDepositTypeList />
+        element: <FrmDepositTypeList />,
       },
       {
         path: "/Masters/FrmDepositTypeMst",
-        element: <FrmDepositTypeMst />
+        element: <FrmDepositTypeMst />,
       },
 
       {
         path: "/Masters/FrmBudgetHeadConfigList",
-        element: <FrmBudgetHeadConfigList />
+        element: <FrmBudgetHeadConfigList />,
       },
       {
         path: "/Masters/FrmBudgetHeadConfig",
-        element: <FrmBudgetHeadConfig />
+        element: <FrmBudgetHeadConfig />,
       },
       {
         path: "/Masters/FrmChequeBookMst",
-        element: <FrmChequeBookMst />
+        element: <FrmChequeBookMst />,
       },
 
       {
         path: "/Masters/FrmDistrictList",
-        element: <FrmDistrictList />
+        element: <FrmDistrictList />,
       },
       {
         path: "/Masters/FrmDistrictMst",
-        element: <FrmDistrictMst />
+        element: <FrmDistrictMst />,
       },
 
       {
         path: "/Masters/FrmCityList",
-        element: <FrmCityList />
+        element: <FrmCityList />,
       },
       {
         path: "/Masters/FrmCityMst",
-        element: <FrmCityMst />
+        element: <FrmCityMst />,
       },
-      {
-        path: "/Masters/FrmauthorizationconfigList",
-        element: <FrmauthorizationconfigList />
-      },
-      {
-        path: "/Masters/Frmauthorizationconfig",
-        element: <Frmauthorizationconfig />
-      },
-
       {
         path: "/Masters/FrmBudgetPrepration",
-        element: <FrmBudgetPrepration />
+        element: <FrmBudgetPrepration />,
       },
       {
         path: "/Masters/FrmNidhiList",
-        element: <FrmNidhiList />
+        element: <FrmNidhiList />,
       },
       {
         path: "/Masters/FrmNidhiMaster",
-        element: <FrmNidhiMaster />
+        element: <FrmNidhiMaster />,
       },
       {
         path: "/ReportsForm/RptClassifiedRegisterDetails",
-        element: <RptClassifiedRegisterDetails />
+        element: <RptClassifiedRegisterDetails />,
       },
       {
         path: "/ReportsForm/RptClassifiedAbstractSummary",
-        element: <RptClassifiedAbstractSummary />
+        element: <RptClassifiedAbstractSummary />,
       },
       {
         path: "/Transactions/FrmSearchOption",
-        element: <FrmSearchOption />
+        element: <FrmSearchOption />,
       },
 
       {
         path: "/ReportsForm/RptReceiptRegister",
-        element: <RptReceiptRegister />
+        element: <RptReceiptRegister />,
       },
       {
         path: "/ReportsForm/RptReceiptRegisterDetails",
-        element: <RptReceiptRegisterDetails />
+        element: <RptReceiptRegisterDetails />,
       },
 
       {
         path: "/ReportsForm/RptLedgerReport",
-        element: <RptLedgerReport />
+        element: <RptLedgerReport />,
       },
       {
         path: "/Reportsform/Frmconsolidatedreceipt",
-        element: <Frmconsolidatedreceipt />
+        element: <Frmconsolidatedreceipt />,
       },
       {
-        path: "/ReportsForm/FrmChecRegisterRpt",
-        element: <FrmChecRegisterRpt />
-      },
-      {
-        path: "/ReportsForm/FrmBillRegisterRpt",
-        element: <FrmBillRegisterRpt />
+        path: "/ReportsForm/RptPaymentRegister",
+        element: <RptPaymentRegister />,
       },
       {
         path: "/ReportsForm/RptCashBook",
@@ -354,14 +341,46 @@ export const router = createBrowserRouter([
         path: "/about",
         element: <About />,
       },
-    ]
+      {
+        path: "ReportsForm/RptCashBook",
+        element: <RptCashBook />,
+      },
+      {
+        path: "ReportsForm/RptTransferRegister",
+        element: <RptTransferRegister />,
+      },
+
+      {
+        path: "ReportsForm/RptCashBankBalance",
+        element: <RptCashBankBalance />,
+      },
+      {
+        path: "ReportsForm/RptClassifiedRegisterDetails",
+        element: <RptClassifiedRegisterDetails />,
+      },
+      {
+        path: "ReportsForm/RptLedgerReport",
+        element: <RptLedgerReport />,
+      },
+      {
+        path: "ReportsForm/RptPaymentRegisterDetails",
+        element: <RptPaymentRegisterDetails />,
+      },
+      {
+        path: "Transactions/FrmVoucherGeneration",
+        element: <FrmVoucherGeneration />,
+      },
+
+      {
+        path: "Masters/FrmNidhiConfig",
+        element: <FrmNidhiConfig />,
+      },
+    ],
   },
-
-
 ]);
 
 function App() {
   return <RouterProvider router={router} />;
 }
 
-export default App
+export default App;

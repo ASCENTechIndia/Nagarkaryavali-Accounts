@@ -6,7 +6,7 @@ const controller = require("./RptPaymentRegister.controller");
 router.post("/payment-register", auth(), controller.getPaymentRegister);
 
 router.post("/payment-register-report", controller.getPaymentRegisterReport);
-router.post("/payment-register-report-pdf", controller.getPaymentRegisterPDF);
+router.post("/paymentRegisterReportPdf", controller.getPaymentRegisterPDF);
 
 module.exports = router;
 
