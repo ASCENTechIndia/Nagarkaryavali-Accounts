@@ -406,7 +406,16 @@ const FrmReceipt = () => {
 
       if (tableData.length === 0) {
         Swal.fire({
-          text: "व्यवहार सूची रिक्त आहे",
+          text: "व्यवहार ची दिटैल्स व्यवहार सूची मध्ये जोडा",
+          confirmButtonColor: "#1e3a8a",
+        });
+        return;
+      }
+
+
+      if (values.totalAmount != values.finalTotal){
+        Swal.fire({
+          text: "एकूण रक्कम आणि यादीतील एकूण रक्कम जुळत नाही",
           confirmButtonColor: "#1e3a8a",
         });
         return;

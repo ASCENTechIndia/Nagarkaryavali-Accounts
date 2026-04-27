@@ -70,18 +70,13 @@ import Frmconsolidatedreceipt from "./pages/Reports/Frmconsolidatedreceipt";
 import FrmNidhiList from "./pages/Master/FrmNidhiList";
 import FrmNidhiMaster from "./pages/Master/FrmNidhiMaster";
 import FrmNidhiConfig from "./pages/Master/FrmNidhiConfig";
-// import FrmauthorizationconfigList from "./pages/Master/FrmauthorizationconfigList";
-// import Frmauthorizationconfig from "./pages/Master/Frmauthorizationconfig";
-import FrmBillRegisterRpt from "./pages/Reports/FrmBillRegisterRpt";
 import FrmChecRegisterRpt from "./pages/Reports/FrmChecRegisterRpt";
-import RptGovtTaxRegisters from "./pages/ReportsForm/RptGovtTaxRegisters";
+import FrmBillRegisterRpt from "./pages/Reports/FrmBillRegisterRpt";
 import FrmVoucherPreparreprint from "./pages/ReportsForm/FrmVoucherPreparreprint";
-// import RptGovtTaxRegisters from "./pages/ReportsForm/RptGovtTaxRegisters";
-
+import FrmHomePage from "./pages/FrmHomePage";
 
 
 const Home = () => <Button>Click me</Button>;
-const About = () => <h1>About Page</h1>;
 
 export const router = createBrowserRouter([
   {
@@ -354,8 +349,8 @@ export const router = createBrowserRouter([
         element: <RptCashBook />
       },
       {
-        path: "/about",
-        element: <About />,
+        path: "/HomePage/FrmHomePage",
+        element: <FrmHomePage />,
       },
       {
         path: "ReportsForm/RptCashBook",
@@ -385,12 +380,7 @@ export const router = createBrowserRouter([
         path: "ReportsForm/FrmChecRegisterRpt",
         element: <FrmChecRegisterRpt />,
       },
-
       {
-        path: "ReportsForm/RptGovtTaxRegisters",
-        element: <RptGovtTaxRegisters />,
-      },
-       {
         path: "ReportsForm/FrmVoucherPreparreprint",
         element: <FrmVoucherPreparreprint />,
       },

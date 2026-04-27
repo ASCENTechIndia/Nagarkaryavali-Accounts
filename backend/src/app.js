@@ -52,6 +52,9 @@ app.use("/api/admin", adminRoutes);
 
 app.use("/api/menu-access", require("./modules/MenuAccess/MenuAccess.routes"));
 
+// Dashboard
+app.use("/api/dashboard",require("./modules/Dashboard/dashboard.routes"))
+
 //MASTER
 app.use("/api/BudgetHeadConfig", require("./modules/Master/FrmBudgetHeadConfig/BudgetHeadConfig.route"));
 app.use("/api/FrmAccount", require("./modules/Master/FrmAccount/frmAccount.route"));
