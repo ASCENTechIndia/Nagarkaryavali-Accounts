@@ -106,6 +106,8 @@ app.use("/api/ChecRegister",require("./modules/Reports/FrmChecRegisterRpt/FrmChe
 app.use("/api/FrmBillRegisterRpt", require("./modules/Reports/FrmBillRegisterRpt/FrmBillRegisterRpt.routes"));
 app.use("/api/RptPaymentRegister", require("./modules/Reports/RptPaymentRegister/RptPaymentRegister.routes"));
 app.use("/api/RptTrialBalance", require("./modules/Reports/RptTrialBalance/RptTrialBalance.routes"))
+app.use("/api/FrmVoucherPreparreprint", require("./modules/Reports/FrmVoucherPreparreprint/FrmVoucherPreparreprint.routes"));
+app.use("/api/RptGovtTaxRegisters", require("./modules/Reports/RptGovtTaxRegisters/RptGovtTaxRegister.route"));
 
 
 app.use(errorMiddleware);

@@ -1,0 +1,210 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      body {
+        font-family: "Noto Sans Devanagari", Arial;
+        font-size: 12px;
+        margin: 20px;
+      }
+
+      /* TITLE */
+      .title {
+        text-align: center;
+        font-weight: bold;
+        font-size: 20px;
+      }
+
+      .subtitle {
+        text-align: center;
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 15px;
+      }
+
+      /* HEADER */
+      .header {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .left,
+      .right {
+        width: 48%;
+      }
+
+      .left .row {
+        justify-content: flex-start;
+      }
+
+      .right .row {
+        justify-content: flex-end;
+      }
+
+      .label {
+        font-weight: bold; /* ✅ ONLY label bold */
+      }
+      .row {
+        display: flex;
+        margin: 6px 0;
+      }
+
+      .row span {
+        min-width: 140px;
+      }
+
+      /* MID */
+      .mid {
+        display: flex;
+        justify-content: space-between;
+        margin: 15px 0;
+      }
+
+      /* TABLE */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+
+      th,
+      td {
+        border: 1px solid #000;
+        padding: 8px;
+      }
+
+      th {
+        text-align: center;
+        font-weight: bold;
+      }
+
+      td {
+        vertical-align: top;
+      }
+
+      .right-text {
+        text-align: right;
+      }
+
+      /* HEADER BOX STYLE */
+      thead tr:first-child th {
+        border-bottom: 1px solid #000;
+      }
+
+      /* GRAND TOTAL */
+      .total-row td {
+        font-weight: bold;
+      }
+
+      /* SUMMARY BOX */
+      .summary {
+        width: 45%;
+        margin-top: 10px;
+      }
+
+      .summary td {
+        border: 1px solid #000;
+        padding: 6px;
+      }
+
+      /* FOOTER */
+      .footer {
+        margin-top: 60px;
+        display: flex;
+        justify-content: space-between;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="title">{{corporationName}}</div>
+    <div class="subtitle">Bill Acknowledgement</div>
+
+    <div class="header">
+      <div class="left">
+        <div class="row"><span class="label">Party Code :</span>{{partyId}}</div>
+        <div class="row"><span class="label">Party Name :</span>{{partyName}}</div>
+        <div class="row"><span class="label">Party PAN :</span>{{pan}}</div>
+        <div class="row"><span class="label">बिल तपशील :</span>{{narration}}</div>
+      </div>
+
+      <div class="right">
+        <div class="row"><span class="label">दिनांक :</span>{{date}}</div>
+        <div class="row"><span class="label">वेळ :</span>{{time}}</div>
+        <div class="row"><span class="label">Voucher No. :</span>{{voucherNo}}</div>
+        <div class="row"><span class="label">Voucher Date :</span>{{voucherDate}}</div>
+      </div>
+    </div>
+
+    <div class="mid">
+      <div><span class="label">Zone :</span> {{zone}}</div>
+      <div><span class="label">Department :</span> {{department}}</div>
+      <div><span class="label">User name :</span> {{username}}</div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2">अ.क्र.</th>
+          <th rowspan="2">शीर्ष लेखांक</th>
+          <th rowspan="2">लेखाशीर्ष नाव</th>
+          <th rowspan="2">एकूण देय रक्कम</th>
+          <th colspan="2">वजाती व वसुली</th>
+          <th rowspan="2">निव्वळ देय रक्कम</th>
+        </tr>
+        <tr>
+          <th>तपशील</th>
+          <th>रक्कम</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {{#each items}}
+        <tr>
+          <td>{{sr}}</td>
+          <td>{{code}}</td>
+          <td>{{name}}</td>
+          <td class="right-text">{{total}}</td>
+
+          <td>{{{details}}}</td>
+          <td class="right-text">{{{amount}}}</td>
+
+          <td class="right-text">{{net}}</td>
+        </tr>
+        {{/each}}
+
+        <tr class="total-row">
+          <td colspan="3">Grand Total</td>
+          <td class="right-text">{{grandTotal}}</td>
+          <td></td>
+          <td class="right-text">{{totalDeduction}}</td>
+          <td class="right-text">{{netTotal}}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top: 10px" class="label">निव्वळ देय रक्कम (अक्षरात) : {{amountInWords}}</div>
+
+    <table class="summary">
+      <tr>
+        <td class="label">देय एकूण रक्कम</td>
+        <td class="right-text">{{grandTotal}}</td>
+      </tr>
+      <tr>
+        <td class="label">एकूण वजाती व वसुली</td>
+        <td class="right-text">{{totalDeduction}}</td>
+      </tr>
+      <tr>
+        <td class="label">निव्वळ देय रक्कम</td>
+        <td class="right-text">{{netTotal}}</td>
+      </tr>
+    </table>
+
+    <div class="footer">
+      <div>तयार केले</div>
+      <div>मान्यता दिली</div>
+    </div>
+  </body>
+</html>

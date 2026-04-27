@@ -608,6 +608,44 @@ const FrmVoucherPreparation = () => {
     "Select": "action",
   };
 
+  const handlePrintPDF = async (refNo) => {
+    try {
+      const loader = Swal.fire({
+        title: "Generating PDF...",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => Swal.showLoading(),
+      });
+
+      const res = await axios.post(
+        `${BASE_URL}/api/FrmVoucherPreparreprint/voucher-details-pdf`,
+        {
+          refNo: Number(refNo),
+          corp_id: Number(ulbId),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      loader.close();
+
+      if (res?.data?.success && res?.data?.pdfUrl) {
+        window.open(res.data.pdfUrl, "_blank");
+      } else {
+        throw new Error("PDF generation failed");
+      }
+    } catch (error) {
+      console.error("PDF Error:", error);
+      Swal.fire({
+        text: error.response?.data?.message || "PDF तयार करताना त्रुटी आली.",
+        confirmButtonColor: "#1e3a8a",
+      });
+    }
+  };
+
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     if (!values.prabhag || values.prabhag === "0") {
     Swal.fire({
@@ -792,11 +830,15 @@ const FrmVoucherPreparation = () => {
 
     if (response.data?.ok && response.data?.data?.out_ErrorCode === -100) {
       console.log("Insert Response: ", response);
+      const savedRefNo = response.data?.data?.out_ReturnStr;
       Swal.fire({
         text: response.data.data.out_ErrorMsg || 'व्यवहार यशस्वीरित्या जतन झाला',
         confirmButtonColor: '#1e3a8a'
-      }).then((result) => {
+      }).then(async (result) => {
         if (result.isConfirmed) {
+          if (savedRefNo) {
+            await handlePrintPDF(savedRefNo);
+          }
           navigate('/Transactions/FrmVoucherPreparationList');
         }
       });
