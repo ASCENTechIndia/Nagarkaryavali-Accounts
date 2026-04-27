@@ -20,7 +20,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/Components/ui/card";
 
 const initialValues = {
   prabhag: "-1",
-  reportType: "1",
+  reportType: "0",
   fromDate: new Date(),
   toDate: new Date(),
   kapatCode: "",
@@ -47,7 +47,6 @@ const RptGovtTaxRegisters = () => {
     if (!ulbId) return;
 
     const headers = { Authorization: `Bearer ${token}` };
-debugger;
     // PRABHAG
     axios
       .post(`${BASE_URL}/api/Receipt/zones`, { corp_id: ulbId }, { headers })
@@ -88,8 +87,77 @@ debugger;
     else setBankLedgers(rows);
   };
 
+const handleSubmit = async (values) => {
+  try {
+    if (!token) {
+      console.error("Token missing!");
+      return;
+    }
+
+    const headers = {
+      Authorization: `Bearer ${token}`,
+    };
+
+    const formatDate = (date) => {
+      const d = new Date(date);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+        d.getDate()
+      ).padStart(2, "0")}`;
+    };
+
+    const basePayload = {
+      fromDate: formatDate(values.fromDate),
+      toDate: formatDate(values.toDate),
+      ulbId: Number(ulbId),
+    };
+
+    const fullPayload = {
+      ...basePayload,
+      zoneId: Number(values.prabhag) || "",
+      partyId: Number(values.party) || "",
+      majorCode: Number(values.kapatCode) || "",
+      minorCode: Number(values.kapatLedger) || "",
+      bankGl: Number(values.bankCode) || "",
+      bankAcc: Number(values.bankLedger) || "",
+    };
+
+    let apiUrl = "";
+    let payload = {};
+
+    if (values.reportType === "0") {
+      // 👉 DETAIL PDF
+      apiUrl = `${BASE_URL}/api/RptGovtTaxRegisters/govt-tax-register-pdf1`;
+      payload = fullPayload;
+    } 
+    else if (values.reportType === "1") {
+    
+      apiUrl = `${BASE_URL}/api/RptGovtTaxRegisters/govt-tax-register-summary-pdf`;
+      payload = basePayload;
+    } 
+    else if (values.reportType === "2") {
+     
+      apiUrl = `${BASE_URL}/api/RptGovtTaxRegisters/govt-tax-summary2-pdf`;
+      payload = fullPayload;
+    }
+
+   
+    const res = await axios.post(apiUrl, payload, { headers });
+
+    if (res.data?.success) {
+      const pdfUrl = res.data.pdfUrl;
+
+      // ✅ open PDF
+      window.open(pdfUrl, "_blank");
+    } else {
+      console.error("PDF generation failed");
+    }
+  } catch (error) {
+    console.error("Error:", error);
+  }
+};
+
   return (
-    <Formik initialValues={initialValues} onSubmit={(v) => console.log(v)}>
+    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
       {({ values, setFieldValue, handleChange }) => (
         <Form>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -113,7 +181,7 @@ debugger;
                       value={values.prabhag}
                       onValueChange={(v) => setFieldValue("prabhag", v)}
                     >
-                      <SelectTrigger className="w-full sm:w-60">
+                      <SelectTrigger className="w-full ">
                         <SelectValue placeholder="-- ALL --" />
                       </SelectTrigger>
 
@@ -134,32 +202,32 @@ debugger;
                     <Label className="sm:text-left">अहवालाचा प्रकार</Label>
                     <span className="hidden sm:block">:</span>
                     <div className="flex flex-wrap gap-4">
-                      <label className="flex items-center gap-2">
+                      <Label className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          checked={values.reportType === "0"}
+                          onChange={() => setFieldValue("reportType", "0")}
+                        />
+                        कर प्राप्त
+                      </Label>
+
+                      <Label className="flex items-center gap-2">
                         <input
                           type="radio"
                           checked={values.reportType === "1"}
                           onChange={() => setFieldValue("reportType", "1")}
                         />
-                        कर प्राप्त
-                      </label>
+                        कर प्राप्त सारांश
+                      </Label>
 
-                      <label className="flex items-center gap-2">
+                      <Label className="flex items-center gap-2">
                         <input
                           type="radio"
                           checked={values.reportType === "2"}
                           onChange={() => setFieldValue("reportType", "2")}
                         />
-                        कर प्राप्त सारांश
-                      </label>
-
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="radio"
-                          checked={values.reportType === "3"}
-                          onChange={() => setFieldValue("reportType", "3")}
-                        />
                         सर्व
-                      </label>
+                      </Label>
                     </div>
                   </div>
                 </div>
@@ -274,14 +342,14 @@ debugger;
                   <div className="lg:col-span-2 flex flex-col sm:grid sm:grid-cols-[140px_10px_1fr] gap-2">
                     <Label className="sm:text-right">Export To</Label>
                     <span className="hidden sm:block">:</span>
-                    <label className="flex items-center gap-2">
+                    <Label className="flex items-center gap-2">
                       <input
                         type="radio"
                         checked={values.exportType === "PDF"}
                         onChange={() => setFieldValue("exportType", "PDF")}
                       />
                       PDF
-                    </label>
+                    </Label>
                   </div>
                 </div>
 

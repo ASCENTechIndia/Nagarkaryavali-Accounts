@@ -69,6 +69,11 @@ import Frmconsolidatedreceipt from "./pages/Reports/Frmconsolidatedreceipt";
 import FrmNidhiList from "./pages/Master/FrmNidhiList";
 import FrmNidhiMaster from "./pages/Master/FrmNidhiMaster";
 import FrmNidhiConfig from "./pages/Master/FrmNidhiConfig";
+import FrmauthorizationconfigList from "./pages/Master/FrmauthorizationconfigList";
+import Frmauthorizationconfig from "./pages/Master/Frmauthorizationconfig";
+import FrmBillRegisterRpt from "./pages/Reports/FrmBillRegisterRpt";
+import FrmChecRegisterRpt from "./pages/Reports/FrmChecRegisterRpt";
+import RptGovtTaxRegisters from "./pages/ReportsForm/RptGovtTaxRegisters";
 // import RptGovtTaxRegisters from "./pages/ReportsForm/RptGovtTaxRegisters";
 
 
@@ -379,10 +384,10 @@ export const router = createBrowserRouter([
         element: <FrmChecRegisterRpt />,
       },
 
-      // {
-      //   path: "ReportsForm/RptGovtTaxRegisters",
-      //   element: <RptGovtTaxRegisters />,
-      // }
+      {
+        path: "ReportsForm/RptGovtTaxRegisters",
+        element: <RptGovtTaxRegisters />,
+      }
     ],
   },
 ]);
