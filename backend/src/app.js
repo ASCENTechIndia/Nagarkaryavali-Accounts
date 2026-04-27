@@ -107,6 +107,7 @@ app.use("/api/FrmBillRegisterRpt", require("./modules/Reports/FrmBillRegisterRpt
 app.use("/api/RptPaymentRegister", require("./modules/Reports/RptPaymentRegister/RptPaymentRegister.routes"));
 app.use("/api/RptTrialBalance", require("./modules/Reports/RptTrialBalance/RptTrialBalance.routes"))
 app.use("/api/FrmVoucherPreparreprint", require("./modules/Reports/FrmVoucherPreparreprint/FrmVoucherPreparreprint.routes"));
+app.use("/api/RptGovtTaxRegisters", require("./modules/Reports/RptGovtTaxRegisters/RptGovtTaxRegister.route"));
 
 
 app.use(errorMiddleware);

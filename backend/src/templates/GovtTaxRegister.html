@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>कर प्राप्त</title>
+<style>
+body { font-family: Arial; font-size: 11px; }
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  width: 80px;
+}
+
+.title {
+  text-align: center;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.sub {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid #000;
+  padding: 5px;
+}
+
+th {
+  background: #eee;
+  text-align: center;
+}
+
+.right { text-align: right; }
+.center { text-align: center; }
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <img src="{{corporationLogo}}" class="logo" />
+  <div class="title">
+    {{corporationName}} <br/>
+    List of Payments And Surcharge Deductions Made And Submitted to Government
+  </div>
+  <div>
+    Date: {{currentDate}} <br/>
+    Time: {{currentTime}}
+  </div>
+</div>
+
+<div class="meta">
+  <div>
+  Deduction Head / शीर्षक : {{filters.deductionHead}} <br/>
+  Bank A/C No & Name : {{filters.bank}} <br/>
+  Voucher date / प्रमाणक दिनांक : {{filters.fromDate}} To {{filters.toDate}} <br/>
+  Vendor / पुरवठादाराचे नाव : {{filters.vendor}}
+</div>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>Sr</th>
+<th>Vendor Name</th>
+<th>Gross Bill</th>
+<th>Net Bill</th>
+<th>Deduction</th>
+<th>Actual Paid</th>
+<th>Balance</th>
+<th>Voucher No & Date</th>
+<th>Challan</th>
+<th>TDS</th>
+</tr>
+</thead>
+
+<tbody>
+{{#each data}}
+<tr>
+<td class="center">{{srNo}}</td>
+<td>{{party}}</td>
+<td class="right">{{gross}}</td>
+<td class="right">{{net}}</td>
+<td class="right">{{tax}}</td>
+<td class="right">{{paid}}</td>
+<td class="right">{{balance}}</td>
+
+<td class="center">
+  {{voucher1}} <br/>
+  {{voucher2}} <br/>
+  {{date}}
+</td>
+
+<td></td>
+<td></td>
+
+</tr>
+{{/each}}
+
+<tr>
+<td colspan="2" class="right"><b>Total</b></td>
+<td class="right"><b>{{totalGross}}</b></td>
+<td class="right"><b>{{totalNet}}</b></td>
+<td class="right"><b>{{totalTax}}</b></td>
+<td colspan="5"></td>
+</tr>
+
+</tbody>
+</table>
+
+</body>
+</html>
