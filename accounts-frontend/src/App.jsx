@@ -73,10 +73,10 @@ import FrmNidhiConfig from "./pages/Master/FrmNidhiConfig";
 import FrmChecRegisterRpt from "./pages/Reports/FrmChecRegisterRpt";
 import FrmBillRegisterRpt from "./pages/Reports/FrmBillRegisterRpt";
 import FrmVoucherPreparreprint from "./pages/ReportsForm/FrmVoucherPreparreprint";
+import FrmHomePage from "./pages/FrmHomePage";
 
 
 const Home = () => <Button>Click me</Button>;
-const About = () => <h1>About Page</h1>;
 
 export const router = createBrowserRouter([
   {
@@ -349,8 +349,8 @@ export const router = createBrowserRouter([
         element: <RptCashBook />
       },
       {
-        path: "/about",
-        element: <About />,
+        path: "/HomePage/FrmHomePage",
+        element: <FrmHomePage />,
       },
       {
         path: "ReportsForm/RptCashBook",

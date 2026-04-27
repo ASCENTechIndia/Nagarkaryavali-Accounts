@@ -472,7 +472,7 @@ const FrmChequeBookMst = () => {
                     type="button" 
                     variant="outline" 
                     className="px-8"
-                    onClick={() => navigate("/about")}
+                    onClick={() => navigate("/HomePage/FrmHomePage")}
                   >
                     परत
                   </Button>

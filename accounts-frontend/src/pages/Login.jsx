@@ -109,7 +109,7 @@ const Login = () => {
                     localStorage.setItem("token", token);
                     localStorage.setItem("user", JSON.stringify(user));
 
-                    navigate("/about");
+                    navigate("/HomePage/FrmHomePage");
                     // navigate("/dashboard");
                   } else {
                     setError(res.data?.message || "Login failed");
