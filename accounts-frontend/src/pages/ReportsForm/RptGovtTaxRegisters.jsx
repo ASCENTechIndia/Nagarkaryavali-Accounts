@@ -2,8 +2,8 @@ import { Formik, Form } from "formik";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
+import Swal from "sweetalert2";
 
 import { useAuth } from "@/context/AuthContext";
 import SearchableSelect from "@/components/SearchableSelect";
@@ -19,7 +19,7 @@ import { DatePicker } from "@/Components/ui/calendar";
 import { Card, CardHeader, CardTitle, CardContent } from "@/Components/ui/card";
 
 const initialValues = {
-  prabhag: "-1",
+  prabhag: "",
   reportType: "0",
   fromDate: new Date(),
   toDate: new Date(),
@@ -94,6 +94,16 @@ const handleSubmit = async (values) => {
       return;
     }
 
+    // ✅ SHOW LOADER
+    Swal.fire({
+      title: "Generating PDF...",
+      text: "Please wait",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
     const headers = {
       Authorization: `Bearer ${token}`,
     };
@@ -125,40 +135,60 @@ const handleSubmit = async (values) => {
     let payload = {};
 
     if (values.reportType === "0") {
-      // 👉 DETAIL PDF
       apiUrl = `${BASE_URL}/api/RptGovtTaxRegisters/govt-tax-register-pdf1`;
       payload = fullPayload;
-    } 
-    else if (values.reportType === "1") {
-    
+    } else if (values.reportType === "1") {
       apiUrl = `${BASE_URL}/api/RptGovtTaxRegisters/govt-tax-register-summary-pdf`;
       payload = basePayload;
-    } 
-    else if (values.reportType === "2") {
-     
+    } else if (values.reportType === "2") {
       apiUrl = `${BASE_URL}/api/RptGovtTaxRegisters/govt-tax-summary2-pdf`;
       payload = fullPayload;
     }
 
-   
     const res = await axios.post(apiUrl, payload, { headers });
+
+    // ✅ CLOSE LOADER
+    Swal.close();
 
     if (res.data?.success) {
       const pdfUrl = res.data.pdfUrl;
 
-      // ✅ open PDF
+      // ✅ SUCCESS MESSAGE (optional)
+      Swal.fire({
+        icon: "success",
+        title: "PDF Generated!",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      // open PDF
       window.open(pdfUrl, "_blank");
     } else {
-      console.error("PDF generation failed");
+      Swal.fire("Error", "PDF generation failed", "error");
     }
   } catch (error) {
+    Swal.close();
+
+    Swal.fire({
+      icon: "error",
+      title: "Something went wrong",
+      text: error.message || "API Error",
+    });
+
     console.error("Error:", error);
   }
 };
 
+
+
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-      {({ values, setFieldValue, handleChange }) => (
+  {({ values, setFieldValue }) => {
+
+    // ✅ Correct placement
+    const isAllSelected = values.reportType === "2";
+
+    return (
         <Form>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <Card className="shadow-sm border rounded-lg ">
@@ -259,6 +289,7 @@ const handleSubmit = async (values) => {
                     <Label className="sm:text-left">कपात संकेतांक</Label>
                     <span className="hidden sm:block">:</span>
                     <SearchableSelect
+                    disabled={isAllSelected}
                       options={glCodes.map((g) => ({
                         label: g.GLNAME,
                         value: String(g.GLCODE),
@@ -280,6 +311,7 @@ const handleSubmit = async (values) => {
                     <Label className="sm:text-left">कपात लेखाशिर्ष</Label>
                     <span className="hidden sm:block">:</span>
                     <SearchableSelect
+                    disabled={isAllSelected}
                       options={kapatLedgers.map((l) => ({
                         label: l.ACCNAME,
                         value: String(l.OBJECTCODE),
@@ -294,6 +326,7 @@ const handleSubmit = async (values) => {
                     <Label className="sm:text-left">बँक संकेतांक</Label>
                     <span className="hidden sm:block">:</span>
                     <SearchableSelect
+                      disabled={isAllSelected}
                       options={glCodes.map((g) => ({
                         label: g.GLNAME,
                         value: String(g.GLCODE),
@@ -315,6 +348,7 @@ const handleSubmit = async (values) => {
                     <Label className="sm:text-left">बँक लेखाशिर्ष</Label>
                     <span className="hidden sm:block">:</span>
                     <SearchableSelect
+                      disabled={isAllSelected}
                       options={bankLedgers.map((l) => ({
                         label: l.ACCNAME,
                         value: String(l.OBJECTCODE),
@@ -329,6 +363,7 @@ const handleSubmit = async (values) => {
                     <Label className="sm:text-left">पार्टी</Label>
                     <span className="hidden sm:block">:</span>
                     <SearchableSelect
+                      disabled={isAllSelected}
                       options={parties.map((p) => ({
                         label: p.VAR_PARTYMST_PARTYNAME,
                         value: String(p.NUM_PARTYMST_PARTYID),
@@ -365,7 +400,8 @@ const handleSubmit = async (values) => {
             </Card>
           </motion.div>
         </Form>
-      )}
+    );
+  }}
     </Formik>
   );
 };
