@@ -72,6 +72,7 @@ import FrmNidhiMaster from "./pages/Master/FrmNidhiMaster";
 import FrmNidhiConfig from "./pages/Master/FrmNidhiConfig";
 import FrmChecRegisterRpt from "./pages/Reports/FrmChecRegisterRpt";
 import FrmBillRegisterRpt from "./pages/Reports/FrmBillRegisterRpt";
+import FrmVoucherPreparreprint from "./pages/ReportsForm/FrmVoucherPreparreprint";
 
 
 const Home = () => <Button>Click me</Button>;
@@ -378,6 +379,10 @@ export const router = createBrowserRouter([
       {
         path: "ReportsForm/FrmChecRegisterRpt",
         element: <FrmChecRegisterRpt />,
+      },
+      {
+        path: "ReportsForm/FrmVoucherPreparreprint",
+        element: <FrmVoucherPreparreprint />,
       },
     ],
   },

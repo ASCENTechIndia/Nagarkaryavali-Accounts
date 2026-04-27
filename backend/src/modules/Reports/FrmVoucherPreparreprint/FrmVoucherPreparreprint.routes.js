@@ -4,8 +4,8 @@ const auth = require("../../../middlewares/auth.middleware");
 
 const controller = require("./FrmVoucherPreparreprint.controller");
 
-router.post("/voucher-list", controller.getVoucherList);
+router.post("/voucher-list", auth(), controller.getVoucherList);
 
-router.post("/voucher-details-pdf", controller.getVoucherPDF);
+router.post("/voucher-details-pdf", auth(), controller.getVoucherPDF);
 
 module.exports = router;
