@@ -105,19 +105,19 @@ const RptLedgerReportPDFHelper = async ({
       fromDate: formatDate(filters.fromDate),
       toDate: formatDate(filters.toDate),
 
-      openingDr: formatNumber(openingBalance),
-      openingCr: "0",
+      openingDr: "0",
+      openingCr: formatNumber(Math.abs(openingBalance)),
 
       rows,
 
-      totalDr: formatNumber(totalDr),
-      totalCr: formatNumber(totalCr),
+      totalDr: formatNumber(Math.abs(totalDr)),
+      totalCr: formatNumber(Math.abs(totalCr)),
 
       drCount,
       crCount,
 
       closingDr: "0",
-      closingCr: formatNumber(closingBalance),
+      closingCr: formatNumber(Math.abs(closingBalance)),
 
       printDate: new Date().toLocaleString("en-IN"),
     });

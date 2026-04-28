@@ -37,6 +37,8 @@ const getVoucherDetailsService = async ({ refNo, corp_id }) => {
     corp_id,
   });
 
+  console.log("Service Data: ", data);
+
   if (!data.length) {
     throw new AppError("No record found", 404);
   }

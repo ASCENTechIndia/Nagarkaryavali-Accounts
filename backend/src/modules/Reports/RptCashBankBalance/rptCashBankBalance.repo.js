@@ -169,12 +169,6 @@ async function getDailyTransactionDetailedReport(filters) {
     zoneFilter4 = " AND a.zoneid = :zone ";
     zoneFilter5 = " AND a.zoneid = :zone ";
     params.zone = zone;
-  } else {
-    zoneFilter1 = " AND c.ulbid = :ulbId ";
-    zoneFilter2 = " AND c.ulbid = :ulbId ";
-    zoneFilter3 = " AND c.ulbid = :ulbId ";
-    zoneFilter4 = " AND c.ulbid = :ulbId ";
-    zoneFilter5 = " AND c.ulbid = :ulbId ";
   }
 
   const sql = `
@@ -207,6 +201,7 @@ async function getDailyTransactionDetailedReport(filters) {
       AND a.amount>0
       AND (a.trnstypeid IN (1,2)
       OR (a.sourceid=6 AND c.accsubtypeid NOT IN (4820,4821,4822,4823,4829)))
+      AND c.ulbid = :ulbId
       ${mbmcFilter1}
       ${zoneFilter1}
 
@@ -242,6 +237,7 @@ async function getDailyTransactionDetailedReport(filters) {
     INNER JOIN aoac_trans_def ON num_vchprepmst_trnsno=num_trans_transno
 
     WHERE TRUNC(date_trans_trnsdate)=TO_DATE(:reportDate,'DD-MON-YYYY')
+      AND c.ulbid = :ulbId
       ${zoneFilter2}
       ${mbmcFilter2}
 
@@ -281,6 +277,7 @@ async function getDailyTransactionDetailedReport(filters) {
     INNER JOIN aoac_trans_def ON num_vchprepmst_trnsno=num_trans_transno
 
     WHERE TRUNC(date_trans_trnsdate)=TO_DATE(:reportDate,'DD-MON-YYYY')
+      AND c.ulbid = :ulbId
       ${zoneFilter3}
       ${mbmcFilter3}
 
@@ -311,6 +308,7 @@ async function getDailyTransactionDetailedReport(filters) {
     WHERE TRUNC(a.trnsdate)=TO_DATE(:reportDate,'DD-MON-YYYY')
       AND a.amount<0 AND a.trnstypeid IN (3,4)
       AND a.sourceid <> 6
+      AND c.ulbid = :ulbId
       ${mbmcFilter4}
       ${zoneFilter4}
 
@@ -340,6 +338,7 @@ async function getDailyTransactionDetailedReport(filters) {
     WHERE TRUNC(a.trnsdate)=TO_DATE(:reportDate,'DD-MON-YYYY')
       AND a.amount>0 AND a.trnstypeid=9
       AND a.sourceid <> 6
+      AND c.ulbid = :ulbId
       ${mbmcFilter5}
       ${zoneFilter5}
 
