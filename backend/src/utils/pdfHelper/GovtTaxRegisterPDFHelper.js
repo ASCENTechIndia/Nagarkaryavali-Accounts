@@ -128,7 +128,7 @@ const GovtTaxRegisterPDFHelper = async ({
     // =======================
     const chromePath = path.resolve(
       __dirname,
-      "../../../node_modules/puppeteer/.cache/puppeteer/chrome/win64-*/chrome.exe"
+      "../../../node_modules/puppeteer/.cache/puppeteer/chrome/win64-135.0.7049.84/chrome-win64/chrome.exe"
     );
 
     const launchOptions = {
