@@ -261,9 +261,9 @@ const FrmBudgetPrepration = () => {
             className="grid grid-cols-1 md:grid-cols-2 gap-6"
           >
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              {/* <Label lassName='w-36 shrink-0' text="नगरपालिका :" /> */}
+              {/* <Label lassName='w-36 shrink-0' text="महानगरपालिका :" /> */}
                 <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
-                    <Label text="नगरपालिका" />
+                    <Label text="महानगरपालिका" />
                     <span>:</span>
                 </div>
                 <Select
