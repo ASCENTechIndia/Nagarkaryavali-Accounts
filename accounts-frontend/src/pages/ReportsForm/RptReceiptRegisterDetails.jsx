@@ -26,7 +26,7 @@ import ShadCNTable from "@/components/ui/table";
 const getInitialValues = () => {
   const today = new Date();
   return {
-    ward: "",
+    ward: "-1",
     fromDate: today,
     toDate: today,
     deptCode: "",
@@ -179,7 +179,6 @@ const RptReceiptRegisterDetails = () => {
     }
   };
 
-  
   return (
     <Formik initialValues={getInitialValues()} onSubmit={handleSearch}>
       {({ values, setFieldValue, resetForm }) => (
@@ -201,13 +200,17 @@ const RptReceiptRegisterDetails = () => {
                 <div className="grid md:grid-cols-3 gap-4">
                   <Row label="प्रभाग">
                     <Select
-                      value={values.ward}
+                      value={values.ward || "ALL"}
                       onValueChange={(v) => setFieldValue("ward", v)}
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="-- निवडा --" />
                       </SelectTrigger>
+
                       <SelectContent>
+                        {/* 🔥 ALL OPTION */}
+                        <SelectItem value="-1">-- All --</SelectItem>
+
                         {zones.map((z) => (
                           <SelectItem key={z.ZONEID} value={String(z.ZONEID)}>
                             {z.ZONEENAME}
