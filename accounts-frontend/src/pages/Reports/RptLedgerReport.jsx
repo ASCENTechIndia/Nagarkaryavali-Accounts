@@ -132,7 +132,9 @@ const RptLedgerReport = () => {
       );
       
       if (response?.data?.ok && response?.data?.data) {
-        return response.data.data.balance ?? 0;
+        // return response.data.data.balance ?? 0;
+        const balance = response.data.data.balance ?? 0;
+        return Math.abs(balance);
       }
       return 0;
     } catch (error) {
@@ -469,11 +471,11 @@ const RptLedgerReport = () => {
 
   useEffect(() => {
     const totalDrAmount = transactions.reduce(
-      (sum, row) => sum + (parseFloat(row.debitAmount) || 0),
+      (sum, row) => sum + (Math.abs(parseFloat(row.debitAmount)) || 0),
       0
     );
     const totalCrAmount = transactions.reduce(
-      (sum, row) => sum + (parseFloat(row.creditAmount) || 0),
+      (sum, row) => sum + (Math.abs(parseFloat(row.creditAmount)) || 0),
       0
     );
     console.log("totalDrAmount:", totalDrAmount);
@@ -810,14 +812,14 @@ const RptLedgerReport = () => {
       acName: "",
       particulars: "",
       chequeNo: "",
-      amount: formatNumber(openingBalance),
+      amount: "0",
       dateCr: "",
       acCodeCr: "",
       acNameCr: "",
       panCardNo: "",
       particularsCr: "",
       chequeNoCr: "",
-      amountCr: "0",
+      amountCr: formatNumber(openingBalance),
     },
     ...transactions.map((row) => ({
       select: (
@@ -835,17 +837,23 @@ const RptLedgerReport = () => {
       date: row.drDate ? formatDateForDisplay(row.drDate) : "",
       acCode: row.drAcCode || "",
       acName: row.drAcName || "",
-      particulars: row.drParticulars || "",
+      // particulars: row.drParticulars || "",
+      particulars: row.drAcCode && row.drAcName && row.drParticulars 
+      ? `${row.drAcCode} - ${row.drAcName} - ${row.drParticulars}`
+      : row.drParticulars || "",
       chequeNo: row.drChequeNo || "",
-      amount: row.debitAmount ? formatNumber(row.debitAmount) : "0",
+      amount: row.debitAmount ? formatNumber(Math.abs(row.debitAmount)) : "0",
       // Credit side fields (for positive amounts)
       dateCr: row.crDate ? formatDateForDisplay(row.crDate) : "",
       acCodeCr: row.crAcCode || "",
       acNameCr: row.crAcName || "",
       panCardNo: row.crPanCard || row.drPanCard || "",
-      particularsCr: row.crParticulars || "",
+      // particularsCr: row.crParticulars || "",
+      particularsCr: row.crAcCode && row.crAcName && row.crParticulars
+      ? `${row.crAcCode} - ${row.crAcName} - ${row.crParticulars}`
+      : row.crParticulars || "",
       chequeNoCr: row.crChequeNo || "",
-      amountCr: row.creditAmount ? formatNumber(row.creditAmount) : "0",
+      amountCr: row.creditAmount ? formatNumber(Math.abs(row.creditAmount)) : "0",
     })),
     {
       select: <span className="font-semibold text-blue-700">Closing Balance:</span>,

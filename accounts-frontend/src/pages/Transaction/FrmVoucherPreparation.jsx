@@ -572,7 +572,7 @@ const FrmVoucherPreparation = () => {
     const totalPayable = calculateTotal();
     const totalDeduction = parseFloat(values.deductionAmount) || 0;
 
-    return totalPayable - totalDeduction;
+    return Math.abs(totalPayable - totalDeduction);
   };
 
   const transformedTableData = tableData.map(item => ({
@@ -697,6 +697,7 @@ const FrmVoucherPreparation = () => {
     return;
   }
   const totalAmount = calculateTotal();
+
   if (!totalAmount || totalAmount === 0) {
     Swal.fire({
       text: 'एकूण रक्कम रिक्त असू शकत नाही',
@@ -782,7 +783,8 @@ const FrmVoucherPreparation = () => {
       values.prabhag,                  // ZoneId
       "0",                             // GramPanchId 
       values.party,                    // PartyCode
-      totalAmount.toFixed(2),          // TotalAmount
+      // totalAmount.toFixed(2),          // TotalAmount
+      totalPayable.toFixed(2),          // TotalAmount
       values.deptCode,                 // DebitGL
       values.ledger,                   // DebitAcc
       selectedBankId || "0",           // PartyBankId
@@ -1154,7 +1156,7 @@ const FrmVoucherPreparation = () => {
                       value={values.pancard}
                       onChange={handleChange}
                       placeholder="पॅनकार्ड क्रमांक"
-                      className="w-full h-9"
+                      className="w-full h-9 disabled:opacity-100 disabled:text-black disabled:bg-white disabled:border-gray-400"
                       disabled
                     />
                   </div>
@@ -1172,7 +1174,7 @@ const FrmVoucherPreparation = () => {
                       value={values.gstNo}
                       onChange={handleChange}
                       placeholder="जी.एस.टी नंबर"
-                      className="w-full h-9"
+                      className="w-full h-9 disabled:opacity-100 disabled:text-black disabled:bg-white disabled:border-gray-400"
                       disabled
                     />
                   </div>
