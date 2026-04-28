@@ -77,7 +77,7 @@ const RptReceiptRegisterDetails = () => {
     if (!ulbId) return;
 
     axios
-      .get(`${BASE_URL}/api/FrmTransfer/gl-codes`, {
+      .get(`${BASE_URL}/api/Receipt/searchGLALL`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setGlCodes(res.data?.data?.rows || []))

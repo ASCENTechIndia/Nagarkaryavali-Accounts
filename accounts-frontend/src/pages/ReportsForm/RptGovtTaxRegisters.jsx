@@ -54,8 +54,16 @@ const RptGovtTaxRegisters = () => {
 
     // GL CODES
     axios
-      .get(`${BASE_URL}/api/FrmTransfer/gl-codes`, { headers })
-      .then((res) => setGlCodes(res.data?.data?.rows || []));
+  .get(`${BASE_URL}/api/Receipt/searchGLALL`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Cache-Control": "no-cache", // ✅ prevents 304 empty issue
+    },
+  })
+  .then((res) => {
+    setGlCodes(res.data?.data || []); // ✅ FIXED
+  })
+  .catch(() => Swal.fire("GL list load failed"));
 
     // PARTY
     axios
@@ -291,7 +299,7 @@ const handleSubmit = async (values) => {
                     <SearchableSelect
                     disabled={isAllSelected}
                       options={glCodes.map((g) => ({
-                        label: g.GLNAME,
+                         label: g.GLSEARCHNAME,
                         value: String(g.GLCODE),
                       }))}
                       value={values.kapatCode}
@@ -328,7 +336,7 @@ const handleSubmit = async (values) => {
                     <SearchableSelect
                       disabled={isAllSelected}
                       options={glCodes.map((g) => ({
-                        label: g.GLNAME,
+                        label: g.GLSEARCHNAME,
                         value: String(g.GLCODE),
                       }))}
                       value={values.bankCode}
