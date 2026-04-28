@@ -160,7 +160,7 @@ const Frmauthorizationconfig = () => {
 
                             <CardContent className="p-6 space-y-6">
                                 <div className="flex items-center gap-4">
-                                    <Label className="w-40 font-medium" text="नगरपालिका :" />
+                                    <Label className="w-40 font-medium" text="महानगरपालिका :" />
 
                                     <select
                                         name="ulbId"

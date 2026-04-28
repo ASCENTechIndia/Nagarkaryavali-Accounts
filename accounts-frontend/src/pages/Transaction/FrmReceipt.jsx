@@ -81,6 +81,7 @@ const FrmReceipt = () => {
     const newRow = {
       delete: (
         <button
+          type="button"
           onClick={() => handleDeleteRow(tableData.length)}
           className="text-red-600 font-semibold"
         >
@@ -105,6 +106,11 @@ const FrmReceipt = () => {
     setFieldValue("entryDeptCode", "");
     setFieldValue("entryHead", "");
     setFieldValue("entryAmount", "");
+    setFieldValue("remark", "");
+    setFieldValue("partyId", "");
+
+
+
   };
 
   const handleDeleteRow = (index) => {
@@ -117,7 +123,6 @@ const FrmReceipt = () => {
 
   const fetchZones = async () => {
     try {
-      debugger;
       const res = await axios.post(`${BASE_URL}/api/Receipt/zones`, {
         corp_id: ulbId,
       },
@@ -134,7 +139,6 @@ const FrmReceipt = () => {
 
   const fetchTransTypes = async () => {
     try {
-      debugger;
       const res = await axios.get(`${BASE_URL}/api/Receipt/transType`,
         {
           headers: {
@@ -413,7 +417,7 @@ const FrmReceipt = () => {
       }
 
 
-      if (values.totalAmount != values.finalTotal){
+      if (values.totalAmount != values.finalTotal) {
         Swal.fire({
           text: "एकूण रक्कम आणि यादीतील एकूण रक्कम जुळत नाही",
           confirmButtonColor: "#1e3a8a",
@@ -485,7 +489,7 @@ const FrmReceipt = () => {
         text: res.data?.data?.message,
         confirmButtonColor: "#1e3a8a",
       });
-
+      navigate("/Transactions/FrmReceiptList")
     } catch (err) {
       console.error("SAVE ERROR:", err);
       Swal.fire({
@@ -712,7 +716,7 @@ const FrmReceipt = () => {
                     <div>
                       <Label text="लेखाशीर्ष :" />
                       <SearchableSelect
-                        key={values.head}
+                        // key={values.head}
                         options={partyList}
                         name="head"
                         value={values.head}
@@ -722,7 +726,7 @@ const FrmReceipt = () => {
 
                     <div>
                       <Label text="एकूण रक्कम :" />
-                      <Input name="totalAmount" value={values.totalAmount} onChange={handleChange} />
+                      <Input name="totalAmount" value={values.totalAmount} onChange={handleChange} autoComplete="off" />
                     </div>
 
                     <div>
@@ -776,6 +780,7 @@ const FrmReceipt = () => {
                     <div>
                       <Label text="Select Remark :" />
                       <Select
+                        value={values.remark}
                         onValueChange={(v) => setFieldValue("remark", v)}
                       >
                         <SelectTrigger className="w-full border rounded-md">
@@ -798,7 +803,7 @@ const FrmReceipt = () => {
                     <div>
                       <Label text="रक्कम :" />
                       <div className="flex gap-2">
-                        <Input name="entryAmount" onChange={handleChange} />
+                        <Input name="entryAmount" value={values.entryAmount || ""} onChange={handleChange} />
                         <Select defaultValue="credit">
                           <SelectTrigger className="w-30 border rounded-md">
                             <SelectValue />

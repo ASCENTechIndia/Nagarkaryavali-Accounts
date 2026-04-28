@@ -25,12 +25,12 @@ const FrmauthorizationconfigList = () => {
     const [rawData, setRawData] = useState([]);
     const [searchText, setSearchText] = useState("");
 
-    const headers = ["निवडा", "नगरपालिका कोड", "नगरपालिका नाव", "स्थिती"];
+    const headers = ["निवडा", "महानगरपालिका कोड", "महानगरपालिका नाव", "स्थिती"];
 
     const keyMapping = {
         निवडा: "select",
-        "नगरपालिका कोड": "code",
-        "नगरपालिका नाव": "name",
+        "महानगरपालिका कोड": "code",
+        "महानगरपालिका नाव": "name",
         स्थिती: "status",
     };
 
