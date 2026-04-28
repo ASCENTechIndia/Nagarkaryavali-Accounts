@@ -547,7 +547,7 @@ const FrmTransfer = () => {
                         <Row label="विभाग कोड">
                           <SearchableSelect
                             options={glCodes.map((g) => ({
-                              label: g.GLNAME || "",
+                              label: g.GLSEARCHNAME || "",
                               value: String(g.GLCODE || ""),
                             }))}
                             value={values.debitDept}

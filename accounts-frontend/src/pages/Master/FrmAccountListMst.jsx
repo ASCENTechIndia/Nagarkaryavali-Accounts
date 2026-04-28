@@ -6,7 +6,7 @@ import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import {
   Select,
@@ -16,8 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
+import SearchableSelect from "@/components/SearchableSelect";
 import ShadCNTable from "@/components/ui/table";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -31,7 +30,9 @@ const FrmAccountList = () => {
   const [loading, setLoading] = useState(false);
 
   const [corporationList, setCorporationList] = useState([]);
-  const [corpLoading, setCorpLoading] = useState(false);
+  const [glList, setGlList] = useState([]);
+  const [ledgerOptions, setLedgerOptions] = useState([]);
+  const [ledgerLoading, setLedgerLoading] = useState(false);
 
   const [filters, setFilters] = useState({
     ulbId: "",
@@ -39,23 +40,29 @@ const FrmAccountList = () => {
     objectCode: "",
   });
 
-  const headers = ["निवडा", "जी.एल. कोड", "खाते नाव"];
+  const headers = [
+    "निवडा",
+    "GL Code",
+    "Account No",
+    "Old Account No",
+    "Account Name",
+    "Balance Sheet Group",
+  ];
 
   const keyMapping = {
     निवडा: "select",
-    "जी.एल. कोड": "code",
-    "खाते नाव": "name",
+    "GL Code": "FUNCTIONCODE",
+    "Account No": "OBJECTCODE",
+    "Old Account No": "OLDACCNO",
+    "Account Name": "name",
+    "Balance Sheet Group": "SUBTYPE",
   };
 
-  // ✅ GET CORPORATIONS
+  // ================= CORPORATION =================
   const getCorporations = async () => {
     try {
-      setCorpLoading(true);
-
       const res = await axios.get(`${BASE_URL}/api/FrmParty/corporation/list`, {
-        headers: {
-          Authorization: `Bearer ${user?.token}`,
-        },
+        headers: { Authorization: `Bearer ${user?.token}` },
       });
 
       const list = res.data?.data?.list || [];
@@ -68,210 +75,268 @@ const FrmAccountList = () => {
         }));
       }
     } catch (err) {
-      console.error("Corporation API Error:", err);
+      console.error(err);
+    }
+  };
+
+  // ================= GL LIST =================
+  const loadGLList = async () => {
+    try {
+      const res = await axios.get(`${BASE_URL}/api/Receipt/searchGLALL`, {
+        headers: {
+          Authorization: `Bearer ${user?.token}`,
+        },
+      });
+
+      setGlList(res.data?.data || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // ================= LEDGERS =================
+  const loadLedgers = async (glcode) => {
+    try {
+      if (!glcode) return;
+
+      setLedgerLoading(true);
+
+      const res = await axios.post(
+        `${BASE_URL}/api/FrmTransfer/credit-leasure`,
+        {
+          corp_id: Number(user?.ulbId),
+          glcode: Number(glcode),
+        },
+        {
+          headers: { Authorization: `Bearer ${user?.token}` },
+        },
+      );
+
+      setLedgerOptions(res.data?.data?.rows || []);
+    } catch (err) {
+      console.error(err);
     } finally {
-      setCorpLoading(false);
+      setLedgerLoading(false);
     }
   };
 
   useEffect(() => {
-    if (user?.token) {
-      getCorporations();
-    }
+    if (!user?.token) return;
+    getCorporations();
+    loadGLList();
   }, [user]);
 
-  // ✅ SEARCH API
+  // ================= SEARCH =================
   const handleSearch = async () => {
-    debugger;
     try {
       setLoading(true);
 
       const payload = {
-        functionCode: filters.functionCode || "",
-        ulbId: filters.ulbId || user?.ulbId || "-1",
-        objectCode: filters.objectCode || "",
+        ulbId: Number(filters.ulbId || user?.ulbId),
+        ...(filters.functionCode && {
+          functionCode: Number(filters.functionCode),
+        }),
+        ...(filters.objectCode && {
+          objectCode: Number(filters.objectCode),
+        }),
       };
+
+      console.log("Payload:", payload);
 
       const res = await axios.post(
         `${BASE_URL}/api/FrmAccount/account-details`,
         payload,
         {
-          headers: {
-            Authorization: `Bearer ${user?.token}`,
-          },
+          headers: { Authorization: `Bearer ${user?.token}` },
         },
       );
 
       console.log("API Response:", res.data);
 
-      const list = res.data?.data?.data || [];
+      // 🔥 SAFE DATA EXTRACTION
+      const list = res.data?.data?.data || res.data?.data?.rows || [];
 
-      if (list.length === 0) {
-        setTableData([]);
-        setShowTable(true);
-        return;
+    const mapped = list.map((row) => ({
+  select: (
+    <Button
+      variant="link"
+      className="text-blue-700 px-0 h-auto"
+      onClick={() =>
+        navigate("/Masters/FrmAccountMst", {
+          state: {
+            accNo: row.OBJECTCODE,
+            oldAccNo: row.OLDACCNO,
+            functionCode: row.FUNCTIONCODE,
+            ulbId: filters.ulbId,
+            balanceSheet: row.ACCSUBTYPE,
+          },
+        })
       }
+    >
+      निवडा
+    </Button>
+  ),
 
-      const mapped = list.map((row) => ({
-        select: (
-          <Button
-            variant="link"
-            className="text-blue-700 px-0 h-auto"
-            onClick={() =>
-              navigate("/Masters/FrmAccountMst", {
-                state: { mode: 2, data: row },
-              })
-            }
-          >
-            निवडा
-          </Button>
-        ),
-        code: row.OBJECTCODE,
-        name: row.VAR_ACCMASTER_ACCNAME,
-      }));
+  FUNCTIONCODE: row.FUNCTIONCODE,
+  OBJECTCODE: row.OBJECTCODE,
+
+  // ✅ CLEANED SUBTYPE
+  SUBTYPE: row.ACCSUBTYPE
+    ? row.ACCSUBTYPE
+        .replace(/\t/g, "")
+        .split("-")
+        .map((p) => p.trim())
+        .join(" - ")
+    : "",
+
+  name: row.VAR_ACCMASTER_ACCNAME,
+}));
 
       setTableData(mapped);
       setShowTable(true);
     } catch (err) {
-      console.error("Search API Error:", err);
+      console.error("Search Error:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-     
-    >
-      <Card className="shadow-sm border rounded-lg">
-        {/* HEADER */}
-        <CardHeader className="border-b flex justify-between items-center">
-          <CardTitle className="text-lg font-semibold">
-            खाते मास्टर यादी
-          </CardTitle>
+  useEffect(() => {
+    if (user?.ulbId) {
+      setFilters((prev) => ({
+        ...prev,
+        ulbId: String(user.ulbId),
+      }));
+    }
+  }, [user]);
 
-          <Button
-            className="bg-blue-900 text-white"
-            onClick={() => navigate("/Masters/FrmAccountMst")}
-          >
+  return (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+      <Card className="shadow-sm border rounded-lg">
+        <CardHeader className="border-b flex justify-between items-center">
+          <CardTitle>खाते मास्टर यादी</CardTitle>
+
+          <Button onClick={() => navigate("/Masters/FrmAccountMst")}>
             नवीन जोडा
           </Button>
         </CardHeader>
 
-        <CardContent className="p-6 space-y-6">
-          {/* FILTER */}
-          <div className="p-6">
-            <div className="space-y-5 max-w-3xl mx-auto">
-              {/* CORPORATION */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 items-center">
-                <span className="text-sm sm:text-right sm:pr-2 font-medium">
-                  नगरपालिका :
-                </span>
+        <CardContent className="p-6 space-y-8">
+          {/* FORM GRID */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* CORPORATION */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">महानगरपालिका</label>
+              <Select
+                value={filters.ulbId}
+                onValueChange={(v) => setFilters({ ...filters, ulbId: v })}
+                disabled
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="निवडा" />
+                </SelectTrigger>
 
-                <Select
-                  value={filters.ulbId}
-                  onValueChange={(val) =>
-                    setFilters({ ...filters, ulbId: val })
-                  }
-                  disabled
-                >
-                  <SelectTrigger className="w-full h-9">
-                    <SelectValue placeholder="-- निवडा --" />
-                  </SelectTrigger>
-
-                  <SelectContent>
-                    {corporationList.map((item) => (
-                      <SelectItem
-                        key={item.NUM_CORPORATION_ID}
-                        value={item.NUM_CORPORATION_ID.toString()}
-                      >
-                        {item.VAR_CORPORATION_NAME}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* FUNCTION CODE */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 items-center">
-                <span className="text-sm sm:text-right sm:pr-2 font-medium">
-                  जी.एल. नांव :
-                </span>
-
-                <Input
-                  className="w-full h-9"
-                  value={filters.functionCode}
-                  onChange={(e) =>
-                    setFilters({
-                      ...filters,
-                      functionCode: e.target.value,
-                    })
-                  }
-                />
-              </div>
-
-              {/* OBJECT CODE */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 items-center">
-                <span className="text-sm sm:text-right sm:pr-2 font-medium">
-                  खाते नांव :
-                </span>
-
-                <Input
-                  className="w-full h-9"
-                  value={filters.objectCode}
-                  onChange={(e) =>
-                    setFilters({
-                      ...filters,
-                      objectCode: e.target.value,
-                    })
-                  }
-                />
-              </div>
+                <SelectContent>
+                  {corporationList.map((c) => (
+                    <SelectItem
+                      key={c.NUM_CORPORATION_ID}
+                      value={String(c.NUM_CORPORATION_ID)}
+                    >
+                      {c.VAR_CORPORATION_NAME}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
-            {/* BUTTONS */}
-            <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mt-6 pt-6 border-t">
-              <Button
-                className="bg-blue-900 text-white px-6 w-full sm:w-auto"
-                onClick={handleSearch}
-                disabled={loading}
-              >
-                {loading ? "Loading..." : "शोधा"}
-              </Button>
-
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  setShowTable(false);
-                  setTableData([]);
+            {/* GL */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">जी.एल. नांव</label>
+              <SearchableSelect
+                className="w-full"
+                options={glList.map((g) => ({
+                  label: g.GLSEARCHNAME,
+                  value: String(g.GLCODE),
+                }))}
+                value={filters.functionCode}
+                onChange={(v) => {
+                  const gl = v?.value || "";
+                  setFilters((p) => ({
+                    ...p,
+                    functionCode: gl,
+                    objectCode: "",
+                  }));
+                  loadLedgers(gl);
                 }}
-                className="w-full sm:w-auto"
-              >
-                परत
-              </Button>
+              />
             </div>
+
+            {/* LEDGER */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">खाते नांव</label>
+              <SearchableSelect
+                className="w-full"
+                options={ledgerOptions.map((l) => ({
+                  label: l.ACCNAME,
+                  value: String(l.OBJECTCODE),
+                }))}
+                value={filters.objectCode}
+                onChange={(v) =>
+                  setFilters((p) => ({
+                    ...p,
+                    objectCode: v?.value || "",
+                  }))
+                }
+                isLoading={ledgerLoading}
+              />
+            </div>
+          </div>
+
+          {/* BUTTONS */}
+          <div className="flex flex-col md:flex-row gap-3 justify-center pt-6 border-t">
+            <Button
+              size="lg"
+              className="min-w-[120px]"
+              onClick={handleSearch}
+              disabled={loading}
+            >
+              {loading ? "Loading..." : "शोधा"}
+            </Button>
+
+            <Button
+              size="lg"
+              variant="destructive"
+              className="min-w-[120px]"
+              onClick={() => {
+                setFilters({
+                  ulbId: user?.ulbId?.toString() || "",
+                  functionCode: "",
+                  objectCode: "",
+                });
+                setShowTable(false);
+                setTableData([]);
+              }}
+            >
+              परत
+            </Button>
           </div>
 
           {/* TABLE */}
-          <div className="border rounded-md overflow-x-auto bg-white">
-            {showTable && (
-              <div className="border rounded-md overflow-hidden bg-white">
-                {tableData.length === 0 ? (
-                  <div className="p-4 text-center text-gray-500">
-                    No Data Found
-                  </div>
-                ) : (
-                  <ShadCNTable
-                    headers={headers}
-                    data={tableData}
-                    keyMapping={keyMapping}
-                  />
-                )}
-              </div>
-            )}
-          </div>
+          {showTable && (
+            <div className="border rounded-lg overflow-hidden shadow-sm">
+              {tableData.length === 0 ? (
+                <div className="p-6 text-center text-muted-foreground">
+                  No Data Found
+                </div>
+              ) : (
+                <ShadCNTable
+                  headers={headers}
+                  data={tableData}
+                  keyMapping={keyMapping}
+                />
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </motion.div>
