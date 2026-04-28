@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      body {
+        font-family: "Noto Sans Devanagari", Arial;
+        font-size: 12px;
+        margin: 15px;
+      }
+
+      /* HEADER */
+      .header {
+        text-align: center;
+        font-weight: bold;
+        font-size: 18px;
+      }
+
+      .subheader {
+        text-align: center;
+        font-weight: bold;
+        margin-bottom: 15px;
+      }
+
+      /* SCHEDULE TITLE */
+      .schedule-title {
+        font-weight: bold;
+        margin-top: 15px;
+      }
+
+      /* TABLE */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 5px;
+      }
+
+      th,
+      td {
+        border: 1px solid #000;
+        padding: 5px;
+      }
+
+      th {
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .right {
+        text-align: right;
+      }
+
+      /* TOTAL ROW */
+      .total {
+        font-weight: bold;
+      }
+
+      /* FOOTER */
+      .footer {
+        margin-top: 20px;
+        font-size: 10px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="header">अहिल्यानगर महानगरपालिका, अहिल्यानगर</div>
+    <div class="subheader">Balance Sheet Schedule Report</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Code No</th>
+          <th>Particulars</th>
+          <th>Current Year Amount</th>
+          <th>Previous Year Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each rows}} {{#if isTotal}}
+        <tr class="total">
+          <td></td>
+          <td style="text-align: center">{{label}}</td>
+          <td class="right">{{CURRENTYEAR}}</td>
+          <td class="right">{{PREVIOUSYEAR}}</td>
+        </tr>
+        {{else}}
+        <tr>
+          <td>{{code}}</td>
+          <td>{{name}}</td>
+          <td class="right">{{CURRENTYEAR}}</td>
+          <td class="right">{{PREVIOUSYEAR}}</td>
+        </tr>
+        {{/if}} {{/each}}
+      </tbody>
+    </table>
+  </body>
+</html>
