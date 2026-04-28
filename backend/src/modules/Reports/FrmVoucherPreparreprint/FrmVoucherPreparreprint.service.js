@@ -1,7 +1,8 @@
 const repo = require("./FrmVoucherPreparreprint.repo");
 const { AppError } = require("../../../libs/errors");
 
-const {VoucherPreparreprint} = require("../../../utils/pdfHelper/VoucherPreparreprint")
+const {VoucherPreparreprint} = require("../../../utils/pdfHelper/VoucherPreparreprint");
+const { getCorporationService } = require("../../MenuAccess/MenuAccess.service");
 const getVoucherListService = async ({ fromDate, toDate, corp_id, partyId }) => {
   if (!fromDate || !toDate) {
     throw new AppError("FromDate and ToDate required", 400);
@@ -29,6 +30,8 @@ const getVoucherDetailsService = async ({ refNo, corp_id }) => {
     throw new AppError("RefNo required", 400);
   }
 
+  const ulbInfo = await getCorporationService({ulbId: corp_id});
+
   const data = await repo.getVoucherPrepareReprintDetails({
     refNo,
     corp_id,
@@ -38,7 +41,7 @@ const getVoucherDetailsService = async ({ refNo, corp_id }) => {
     throw new AppError("No record found", 404);
   }
 
-  const pdf = await VoucherPreparreprint({ data });
+  const pdf = await VoucherPreparreprint({ data, ulbInfo });
 
    return {
     fileName: pdf.fileName,

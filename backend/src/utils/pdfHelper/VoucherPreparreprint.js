@@ -143,7 +143,7 @@ const numberToMarathiWords = (num) => {
   return getWords(Math.floor(num)).trim() + " रुपये";
 };
 
-const VoucherPreparreprint = async ({ data }) => {
+const VoucherPreparreprint = async ({ data, ulbInfo }) => {
   try {
     if (!data || !data.length) {
       throw new Error("No data for PDF");
@@ -180,7 +180,7 @@ const VoucherPreparreprint = async ({ data }) => {
     const currentDate = new Date();
 
     const html = template({
-      corporationName: "अहिल्यानगर महानगरपालिका, अहिल्यानगर",
+      corporationName: ulbInfo.ABC_MUNICIPAL_TEXT,
 
       partyId: main.PARTYID,
       partyName: main.PARTYNAME,
@@ -207,20 +207,37 @@ const VoucherPreparreprint = async ({ data }) => {
     });
 
     // ================= PUPPETEER =================
-    const browser = await puppeteer.launch({
+    const chromePath = path.resolve(
+      __dirname,
+      "../../../node_modules/puppeteer/.cache/puppeteer/chrome/win64-135.0.7049.84/chrome-win64/chrome.exe"
+    );
+
+    const launchOptions = {
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
+    };
+
+    if (fs.existsSync(chromePath)) {
+      launchOptions.executablePath = chromePath;
+    }
+
+    const browser = await puppeteer.launch(launchOptions);
+
+    // const browser = await puppeteer.launch({
+    //   headless: true,
+    //   args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    // });
 
     const page = await browser.newPage();
 
-    await page.setContent(html, { waitUntil: "domcontentloaded" });
+    await page.setContent(html, { waitUntil: "domcontentloaded",  timeout: 0 });
 
     const pdfBuffer = await page.pdf({
       format: "A4",
       printBackground: true,
     });
 
+    await page.close();
     await browser.close();
 
     // ================= SAVE =================
