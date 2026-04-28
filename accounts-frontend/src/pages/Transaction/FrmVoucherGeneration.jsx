@@ -88,8 +88,16 @@ const FrmVoucherGeneration = () => {
 
     // 🔷 GL CODES
     axios
-      .get(`${BASE_URL}/api/FrmTransfer/gl-codes`, { headers })
-      .then((res) => setGlCodes(res.data?.data?.rows || []));
+      .get(`${BASE_URL}/api/Receipt/searchGLALL`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Cache-Control": "no-cache", // ✅ prevent 304 issue
+        },
+      })
+      .then((res) => {
+        setGlCodes(res.data?.data || []); // ✅ FIXED (data not rows)
+      })
+      .catch(() => Swal.fire("GL list load failed"));
 
     // 🔷 PARTY LIST ✅ NEW
     axios
@@ -440,7 +448,7 @@ const FrmVoucherGeneration = () => {
 
                         <SelectContent>
                           {/* ✅ ALL OPTION */}
-                          <SelectItem >-- विकल्प निवडा --</SelectItem>
+                          <SelectItem>-- विकल्प निवडा --</SelectItem>
 
                           {/* EXISTING OPTIONS */}
                           {zones.map((z) => (
@@ -658,7 +666,7 @@ const FrmVoucherGeneration = () => {
                     <FormField label="विभाग कोड">
                       <SearchableSelect
                         options={glCodes.map((g) => ({
-                          label: g.GLNAME || "",
+                          label: g.GLSEARCHNAME || "", // ✅ FIXED
                           value: String(g.GLCODE || ""),
                         }))}
                         value={values.deptCode}
