@@ -231,7 +231,7 @@ const FrmPayment = () => {
             const balance = res.data?.data?.data?.BALANCE || 0;
             const crdr = res.data?.data?.data?.CRDR || "";
 
-            setFieldValue("bankBalance", `${balance}`);
+            setFieldValue("bankBalance", `${Math.abs(balance)}`);
 
         } catch (err) {
             console.error("Account Balance API Error:", err);
