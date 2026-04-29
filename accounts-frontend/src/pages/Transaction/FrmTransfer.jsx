@@ -77,74 +77,91 @@ const FrmTransfer = () => {
       .toLocaleString("en-US", { month: "short" })
       .toUpperCase()}-${date.getFullYear()}`;
   };
+useEffect(() => {
+  if (!ulbId) return;
 
-  useEffect(() => {
-    if (!ulbId) return;
-
-    const headers = { Authorization: `Bearer ${token}` };
-
-    /* ZONES */
-    axios
-      .post(`${BASE_URL}/api/Receipt/zones`, { corp_id: ulbId }, { headers })
-      .then((res) => setZones(res.data?.data || []));
-
-    /* TRANSACTION TYPES */
-    axios
-      .get(`${BASE_URL}/api/FrmTransfer/transaction-types`, { headers })
-      .then((res) => setTransactionTypes(res.data?.data?.rows || []));
-
-    /* GL CODES */
-    axios
-      .get(`${BASE_URL}/api/Receipt/searchGLALL`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Cache-Control": "no-cache",
-        },
-      })
-      .then((res) => {
-        setGlCodes(res.data?.data || []);
-      })
-      .catch(() => Swal.fire("GL list load failed"));
-
-    /* PARTY LIST */
-    axios
-      .post(
-        `${BASE_URL}/api/FrmTransfer/party-list`,
-        {
-          corpId: ulbId,
-        },
-        { headers },
-      )
-      .then((res) => setParties(res.data?.data?.rows || []));
-  }, [ulbId]);
-
-  const loadLedgers = async (glcode, type) => {
-    debugger;
-    if (!glcode || !ulbId) return [];
-
+  const loadInitialData = async () => {
     try {
-      const res = await axios.post(
-        `${BASE_URL}/api/FrmTransfer/credit-leasure`,
-        {
-          corp_id: Number(ulbId), // ✅ FIX
-          glcode: Number(glcode), // ✅ FIX
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      Swal.fire({
+        title: "Loading...",
+        text: "Please wait",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      });
 
-      const rows = res.data?.data?.rows || [];
+      const headers = { Authorization: `Bearer ${token}` };
 
-      if (type === "credit") setCreditLedgers([...rows]);
-      else setDebitLedgers([...rows]);
+      const [zonesRes, txnRes, glRes, partyRes] = await Promise.all([
+        axios.post(
+          `${BASE_URL}/api/Receipt/zones`,
+          { corp_id: ulbId },
+          { headers }
+        ),
+        axios.get(`${BASE_URL}/api/FrmTransfer/transaction-types`, {
+          headers,
+        }),
+        axios.get(`${BASE_URL}/api/Receipt/searchGLALL`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Cache-Control": "no-cache",
+          },
+        }),
+        axios.post(
+          `${BASE_URL}/api/FrmTransfer/party-list`,
+          { corpId: ulbId },
+          { headers }
+        ),
+      ]);
 
-      return rows; // ✅ CRITICAL FIX
+      setZones(zonesRes.data?.data || []);
+      setTransactionTypes(txnRes.data?.data?.rows || []);
+      setGlCodes(glRes.data?.data || []);
+      setParties(partyRes.data?.data?.rows || []);
     } catch (err) {
       console.error(err);
-      return [];
+      Swal.fire("डेटा लोड करण्यात अडचण आली");
+    } finally {
+      Swal.close(); // ✅ CLOSE LOADER
     }
   };
+
+  loadInitialData();
+}, [ulbId]);
+
+const loadLedgers = async (glcode, type) => {
+  if (!glcode || !ulbId) return [];
+
+  try {
+    Swal.fire({
+      title: "Loading...",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
+
+    const res = await axios.post(
+      `${BASE_URL}/api/FrmTransfer/credit-leasure`,
+      {
+        corp_id: Number(ulbId),
+        glcode: Number(glcode),
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    const rows = res.data?.data?.rows || [];
+
+    if (type === "credit") setCreditLedgers([...rows]);
+    else setDebitLedgers([...rows]);
+
+    return rows;
+  } catch (err) {
+    console.error(err);
+    return [];
+  } finally {
+    Swal.close();
+  }
+};
 
   useEffect(() => {
     if (!location?.state?.refNo || !token || !ulbId) return;
