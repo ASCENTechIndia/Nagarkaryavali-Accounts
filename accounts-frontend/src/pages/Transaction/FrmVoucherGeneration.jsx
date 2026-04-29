@@ -222,22 +222,33 @@ const FrmVoucherGeneration = () => {
 
   const fetchChequeBook = async (values) => {
     try {
-      // ✅ match .NET validation (6 digit cheque)
+      if (
+        !values.deptCode ||
+        !values.ledger ||
+        !values.department ||
+        !values.chequeNo
+      ) {
+        return;
+      }
+
+      // ✅ cheque must be 6 digit (same as .NET)
       if (!/^\d{6}$/.test(values.chequeNo)) {
         return;
       }
 
-      if (!values.deptCode || !values.ledger) return;
+      const payload = {
+        bank_glcode: String(values.deptCode),
+        bank_accno: String(values.ledger),
+        cheque_no: String(values.chequeNo),
+        corp_id: String(ulbId),
+        zone_id: String(values.department),
+      };
+
+      console.log("Cheque Book Payload:", payload);
 
       const res = await axios.post(
         `${BASE_URL}/api/FrmVoucherGeneration/cheque-book`,
-        {
-          bank_glcode: values.deptCode,
-          bank_accno: values.ledger,
-          cheque_no: values.chequeNo,
-          corp_id: ulbId,
-          zone_id: values.department,
-        },
+        payload,
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -266,6 +277,37 @@ const FrmVoucherGeneration = () => {
       setVoucherDetails(res.data?.rows || []);
     } catch {
       Swal.fire("Voucher details failed");
+    }
+  };
+
+  const fetchBankBalance = async (glcode, accno, setFieldValue) => {
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/api/frmPayment/account-balance`,
+        {
+          targetDate: new Date()
+            .toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            })
+            .replace(/ /g, "-"), // 👉 29-APR-2026 format
+          corpId: Number(ulbId),
+          ulbid: Number(ulbId),
+          glcode: Number(glcode),
+          accno: Number(accno),
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      const balance = res.data?.data?.data?.BALANCE || 0;
+
+      setFieldValue("bankBalance", balance);
+    } catch (err) {
+      console.error(err);
+      Swal.fire("Bank balance fetch failed");
     }
   };
 
@@ -399,6 +441,16 @@ const FrmVoucherGeneration = () => {
         })
         .join("$");
 
+      const chequeNo =
+        values.paymentType === "2" || values.paymentType === "3"
+          ? values.chequeNo
+          : "";
+
+      const chequeBook =
+        values.paymentType === "2" || values.paymentType === "3"
+          ? values.chequeBookNo
+          : "";
+
       const str1 = [
         status,
         4,
@@ -406,13 +458,13 @@ const FrmVoucherGeneration = () => {
         deptCode,
         ledger,
         totalSelectedAmount,
-        values.chequeNo || "",
+        chequeNo, // ✅ FIX
         formatDate(values.chequeDate),
         values.department || 0,
         0,
         formatDate(values.transactionDate),
         values.budgetId || "",
-        values.chequeBookNo || "",
+        chequeBook, // ✅ FIX
         values.paymentType || 2,
         values.nidhi_id || "",
       ].join("~");
@@ -440,6 +492,15 @@ const FrmVoucherGeneration = () => {
 
       if (res.data?.success) {
         Swal.fire("Success", res.data.errorMsg, "success");
+
+        // ✅ RESET FORM
+        formikHelpers.resetForm();
+
+        // ✅ CLEAR EXTRA STATES (VERY IMPORTANT)
+        setVoucherList([]);
+        setVoucherDetails([]);
+        setChequeBooks([]);
+        setSearchDone(false);
       } else {
         Swal.fire("Error", res.data.errorMsg, "error");
       }
@@ -798,19 +859,16 @@ const FrmVoucherGeneration = () => {
 
                           setFieldValue("ledger", value);
 
-                          // 🔍 find selected ledger object
                           const selectedLedger = ledgers.find(
                             (l) => String(l.OBJECTCODE) === String(value),
                           );
 
                           if (selectedLedger) {
-                            // ✅ 1. Auto fill bank balance
-                            setFieldValue(
-                              "bankBalance",
-                              selectedLedger.BALANCE || 0,
+                            fetchBankBalance(
+                              values.deptCode,
+                              value,
+                              setFieldValue,
                             );
-
-                            // ✅ 2. Auto fill details (ACCNAME)
                             setFieldValue(
                               "details",
                               selectedLedger.ACCNAME || "",
@@ -902,18 +960,23 @@ const FrmVoucherGeneration = () => {
                           name="chequeNo"
                           value={values.chequeNo}
                           onChange={(e) => {
-                            handleChange(e);
+                            const value = e.target.value;
 
-                            // 🔥 clear old data
+                            setFieldValue("chequeNo", value);
+
+                            // reset first
                             setChequeBooks([]);
                             setFieldValue("chequeBookNo", "");
 
                             const updatedValues = {
                               ...values,
-                              chequeNo: e.target.value,
+                              chequeNo: value,
                             };
 
-                            fetchChequeBook(updatedValues);
+                            // ✅ delay to ensure state updated
+                            setTimeout(() => {
+                              fetchChequeBook(updatedValues);
+                            }, 300);
                           }}
                           className="h-9 w-full"
                         />
@@ -955,6 +1018,7 @@ const FrmVoucherGeneration = () => {
                 </Button>
 
                 <Button
+                type="button"
                   variant="outline"
                   onClick={resetForm}
                   className="w-full sm:w-auto"
@@ -963,6 +1027,7 @@ const FrmVoucherGeneration = () => {
                 </Button>
 
                 <Button
+                type="button"
                   variant="destructive"
                   onClick={() => navigate("/")}
                   className="w-full sm:w-auto"

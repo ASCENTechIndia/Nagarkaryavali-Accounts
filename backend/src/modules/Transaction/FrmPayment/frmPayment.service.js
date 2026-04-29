@@ -96,27 +96,38 @@ async function getPaymentDetailsService(payload) {
     };
 }
 
+// async function searchAccountService(payload) {
+//     console.log("📥 Service: Search Account", payload);
+
+//     const data = await repo.searchAccountRepo(payload);
+
+//     return {
+//         success: true,
+//         count: data.length,
+//         data,
+//     };
+// }
+
 async function searchAccountService(payload) {
-    console.log("📥 Service: Search Account", payload);
+  console.log("📥 Service Payload:", payload);
 
-    const data = await repo.searchAccountRepo(payload);
+  const data = await repo.getAccountBalanceRepo({
+    targetDate: payload.targetDate,
+    corpId: payload.corpId,
+    ulbid: payload.ulbid,
+    glcode: payload.glcode,   // ✅ REQUIRED
+    accno: payload.accno      // ✅ REQUIRED
+  });
 
-    return {
-        success: true,
-        count: data.length,
-        data,
-    };
+  return {
+    success: true,
+    data,
+  };
 }
 
 async function getAccountBalanceService(payload) {
-    console.log("📥 Service: Fetch Account Balance", payload);
-
-    const data = await repo.getAccountBalanceRepo(payload);
-
-    return {
-        success: true,
-        data: data[0] || {},
-    };
+    const row = await repo.getAccountBalanceRepo(payload);
+    return { success: true, data: row };
 }
 
 async function getCorporationByIdService(payload) {

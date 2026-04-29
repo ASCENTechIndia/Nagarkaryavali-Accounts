@@ -141,24 +141,42 @@ exports.searchAccount = asyncHandler(async (req, res) => {
   return ok(res, data, "Accounts fetched successfully");
 });
 
+// exports.getAccountBalance = asyncHandler(async (req, res) => {
+//   console.log("📥 Request Body:", req.body);
+
+//   const { targetDate, corpId, ulbid } = req.body;
+
+//   if (!targetDate) {
+//     throw new AppError("targetDate is required", 400);
+//   }
+
+//   if (!corpId) {
+//     throw new AppError("corpId is required", 400);
+//   }
+
+//   if (!ulbid) {
+//     throw new AppError("ulbid is required", 400);
+//   }
+
+//   const payload = { targetDate, corpId, ulbid };
+
+//   const data = await service.getAccountBalanceService(payload);
+
+//   return ok(res, data, "Account balance fetched successfully");
+// });
+
 exports.getAccountBalance = asyncHandler(async (req, res) => {
   console.log("📥 Request Body:", req.body);
 
-  const { targetDate, corpId, ulbid } = req.body;
+  const { targetDate, corpId, ulbid, glcode, accno } = req.body;
 
-  if (!targetDate) {
-    throw new AppError("targetDate is required", 400);
-  }
+  if (!targetDate) throw new AppError("targetDate is required", 400);
+  if (!corpId) throw new AppError("corpId is required", 400);
+  if (!ulbid) throw new AppError("ulbid is required", 400);
+  if (!glcode) throw new AppError("glcode is required", 400);
+  if (!accno) throw new AppError("accno is required", 400);
 
-  if (!corpId) {
-    throw new AppError("corpId is required", 400);
-  }
-
-  if (!ulbid) {
-    throw new AppError("ulbid is required", 400);
-  }
-
-  const payload = { targetDate, corpId, ulbid };
+  const payload = { targetDate, corpId, ulbid, glcode, accno };
 
   const data = await service.getAccountBalanceService(payload);
 

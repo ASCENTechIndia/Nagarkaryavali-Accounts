@@ -152,7 +152,6 @@ const FrmTransfer = () => {
 
     const fetchData = async () => {
       try {
-        // ✅ SHOW LOADER
         Swal.fire({
           title: "डेटा लोड होत आहे...",
           text: "कृपया थांबा",
@@ -168,15 +167,17 @@ const FrmTransfer = () => {
           { headers },
         );
 
-        const rows = res.data?.data?.rows || [];
-        if (!rows.length) {
+        console.log("Contra details response:", res.data);
+
+        const apiRows = res.data?.data?.rows || [];
+        if (!apiRows.length) {
           Swal.close();
           return;
         }
 
-        const first = rows[0];
-        const credit = rows.find((r) => Number(r.CREDIT) > 0);
-        const debit = rows.find((r) => Number(r.DEBIT) > 0);
+        const first = apiRows[0];
+        const creditRow = apiRows.find((r) => Number(r.CREDIT) > 0);
+        const debitRow = apiRows.find((r) => Number(r.DEBIT) > 0);
 
         const form = formikRef.current;
         if (!form) {
@@ -200,25 +201,46 @@ const FrmTransfer = () => {
         form.setFieldValue("department", String(first.ZONEID || ""));
         form.setFieldValue("transactionType", String(first.TRNSTYPEID || ""));
 
-        // 🔥 CREDIT
-        if (credit?.GLCODE) {
-          await loadLedgers(String(credit.GLCODE), "credit");
+        // 🔥 CREDIT SECTION
+        if (creditRow?.GLCODE) {
+          const creditGL = String(creditRow.GLCODE);
+          const creditObj = String(creditRow.OBJECTCODE);
 
-          form.setFieldValue("creditDept", String(credit.GLCODE));
-          form.setFieldValue("creditLedger", String(credit.OBJECTCODE));
-          form.setFieldValue("creditAmount", Math.abs(credit.CREDIT || 0));
+          form.setFieldValue("creditDept", creditGL);
+
+          const creditLedgerRows = await loadLedgers(creditGL, "credit");
+
+          const creditExists = creditLedgerRows.find(
+            (r) => String(r.OBJECTCODE) === creditObj,
+          );
+
+          if (creditExists) {
+            form.setFieldValue("creditLedger", creditObj);
+          }
+
+          form.setFieldValue("creditAmount", Math.abs(creditRow.CREDIT || 0));
         }
 
-        // 🔥 DEBIT
-        if (debit?.GLCODE) {
-          await loadLedgers(String(debit.GLCODE), "debit");
+        // 🔥 DEBIT SECTION
+        if (debitRow?.GLCODE) {
+          const debitGL = String(debitRow.GLCODE);
+          const debitObj = String(debitRow.OBJECTCODE);
 
-          form.setFieldValue("debitDept", String(debit.GLCODE));
-          form.setFieldValue("debitLedger", String(debit.OBJECTCODE));
-          form.setFieldValue("debitAmount", Math.abs(debit.DEBIT || 0));
+          form.setFieldValue("debitDept", debitGL);
+
+          const debitLedgerRows = await loadLedgers(debitGL, "debit");
+
+          const debitExists = debitLedgerRows.find(
+            (r) => String(r.OBJECTCODE) === debitObj,
+          );
+
+          if (debitExists) {
+            form.setFieldValue("debitLedger", debitObj);
+          }
+
+          form.setFieldValue("debitAmount", Math.abs(debitRow.DEBIT));
         }
 
-        // ✅ CLOSE LOADER AFTER EVERYTHING DONE
         Swal.close();
       } catch (err) {
         console.error("contra-details error:", err);
@@ -231,6 +253,7 @@ const FrmTransfer = () => {
         });
       }
     };
+
     fetchData();
   }, [location?.state?.refNo, token, ulbId]);
 
@@ -473,9 +496,15 @@ const FrmTransfer = () => {
                           <Input
                             className="w-full h-8"
                             value={values.creditAmount}
-                            onChange={(e) =>
-                              setFieldValue("creditAmount", e.target.value)
-                            }
+                            onChange={(e) => {
+                              const val = e.target.value;
+
+                              // ✅ update credit
+                              setFieldValue("creditAmount", val);
+
+                              // ✅ auto sync debit
+                              setFieldValue("debitAmount", val);
+                            }}
                           />
                         </Row>
                         {showChequeFields && (
@@ -587,9 +616,14 @@ const FrmTransfer = () => {
                           <Input
                             className="w-full h-8"
                             value={values.debitAmount}
-                            onChange={(e) =>
-                              setFieldValue("debitAmount", e.target.value)
-                            }
+                            onChange={(e) => {
+                              const val = e.target.value;
+
+                              setFieldValue("creditAmount", val);
+
+                              // 🔥 AUTO FILL DEBIT
+                              setFieldValue("debitAmount", val);
+                            }}
                           />
                         </Row>
                       </div>
@@ -599,12 +633,13 @@ const FrmTransfer = () => {
                   {/* BUTTONS */}
                   <div className="flex justify-center gap-3 mt-6">
                     <Button
-                    type="submit"
-                     className="bg-blue-900 text-white px-6">
+                      type="submit"
+                      className="bg-blue-900 text-white px-6"
+                    >
                       स्वीकार
                     </Button>
                     <Button
-                    type="button"
+                      type="button"
                       variant="destructive"
                       className="px-6"
                       onClick={() => navigate("/Transactions/FrmTransferList")}
@@ -612,7 +647,7 @@ const FrmTransfer = () => {
                       रद्द
                     </Button>
                     <Button
-                    type="button"
+                      type="button"
                       variant="secondary"
                       className="px-6"
                       onClick={() => formikRef.current.resetForm()}
