@@ -111,6 +111,7 @@ app.use("/api/RptPaymentRegister", require("./modules/Reports/RptPaymentRegister
 app.use("/api/RptTrialBalance", require("./modules/Reports/RptTrialBalance/RptTrialBalance.routes"))
 app.use("/api/FrmVoucherPreparreprint", require("./modules/Reports/FrmVoucherPreparreprint/FrmVoucherPreparreprint.routes"));
 app.use("/api/FrmBalanceSheet",require("./modules/Reports/FrmBalancesheetRpt/BalancesheetRpt.routes"))
+app.use("/api/FrmBudgetReportPDF",require("./modules/Reports/FrmBudgetReport/FrmBudgetReport.routes"));
 
 app.use(errorMiddleware);
 

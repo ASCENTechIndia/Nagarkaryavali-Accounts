@@ -1,0 +1,177 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      body {
+        font-family: "Noto Sans Devanagari", Arial;
+        font-size: 10px;
+      }
+
+      .header {
+        text-align: center;
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+
+      th,
+      td {
+        border: 1px solid #000;
+        padding: 4px;
+        font-size: 11px;
+      }
+
+      .right {
+        text-align: right;
+      }
+
+      th:nth-child(1),
+      td:nth-child(1) {
+        width: 5%;
+      }
+      th:nth-child(2),
+      td:nth-child(2) {
+        width: 10%;
+      }
+      th:nth-child(3),
+      td:nth-child(3) {
+        width: 12%;
+      }
+      th:nth-child(4),
+      td:nth-child(4) {
+        width: 8%;
+      }
+      th:nth-child(5),
+      td:nth-child(5) {
+        width: 12%;
+      }
+      th:nth-child(6),
+      td:nth-child(6) {
+        width: 12%;
+      }
+      th:nth-child(7),
+      td:nth-child(7) {
+        width: 18%;
+      }
+      th:nth-child(8),
+      td:nth-child(8) {
+        width: 10%;
+      }
+      th:nth-child(9),
+      td:nth-child(9) {
+        width: 10%;
+      }
+      th:nth-child(10),
+      td:nth-child(10) {
+        width: 10%;
+      }
+      th:nth-child(11),
+      td:nth-child(11) {
+        width: 5%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="header">मालेगाव महानगरपालिका मालेगाव</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>वर्णन</th>
+          <th>वर्णन</th>
+          <th>वर्णन</th>
+          <th>संयुक्त संकेतांक</th>
+          <th>वर्णन</th>
+          <th>संयुक्त संकेतांक</th>
+          <th>वर्णन</th>
+          <th>अर्थसंकल्पात तरतूद</th>
+          <th>सुधारित अर्थसंकल्पाची</th>
+          <th>वास्तविक खर्च</th>
+          <th>%</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {{#each rows}} {{!-- G1 --}} {{#if isG1}}
+        <tr>
+          <td><b>{{name}}</b></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        {{/if}} {{!-- G2 --}} {{#if isG2}}
+        <tr>
+          <td></td>
+          <td><b>{{name}}</b></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        {{/if}} {{!-- G3 --}} {{#if isG3}}
+        <tr>
+          <td></td>
+          <td></td>
+          <td>{{name}}</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        {{/if}} {{!-- G4 --}} {{#if isG4}}
+        <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>{{glfunction}}</td>
+          <td>{{name}}</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        {{/if}} {{!-- DETAILS --}} {{#if isAcc}}
+        <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>{{accno}}</td>
+          <td>{{accname}}</td>
+          <td class="right">{{budget}}</td>
+          <td class="right">{{revised}}</td>
+          <td class="right">{{actual}}</td>
+          <td class="right">{{percent}}</td>
+        </tr>
+        {{/if}} {{/each}}
+      </tbody>
+    </table>
+  </body>
+</html>

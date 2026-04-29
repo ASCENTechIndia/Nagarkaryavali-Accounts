@@ -3,6 +3,9 @@ const service = require("./BalancesheetRpt.service");
 const path = require("path");
 const { AppError } = require("../../../libs/errors");
 
+const { generateSummaryPDF } = require("../../../utils/pdfHelper/BalancesheetSummaryPDF");
+const { generateDetailPDF } = require("../../../utils/pdfHelper/BalancesheetDetailPDF");
+
 exports.getBalanceSheetPDF = asyncHandler(async (req, res) => {
   const { fromDate, type } = req.body;
 
@@ -12,12 +15,17 @@ exports.getBalanceSheetPDF = asyncHandler(async (req, res) => {
     throw new AppError("corp_id is required", 400);
   }
 
-  const pdf = await service.getBalanceSheetPDF({
+  // ✅ STEP 1: GET DATA
+  const data = await service.getBalanceSheetPDF({
     fromDate,
     corp_id,
-    type, 
+    type,
   });
 
+  // ✅ STEP 2: GENERATE PDF
+  const pdf = type === "0" ? await generateSummaryPDF({ data }) : await generateDetailPDF({ data });
+
+  // ✅ STEP 3: RESPONSE
   const baseUrl = `${req.protocol}://${req.get("host")}`;
 
   return res.json({
