@@ -3,129 +3,191 @@
   <head>
     <meta charset="UTF-8" />
     <style>
+      @page {
+        size: A4 landscape;
+        margin: 0px;
+      }
+
       body {
-        font-family: "Arial", sans-serif;
+        font-family: Arial;
+        font-size: 11px;
         margin: 0;
         padding: 0;
       }
-      /* Ensures the header repeats on every page */
-      thead {
-        display: table-header-group;
+
+      /* ========== FIXED HEADER - REPEATS ON EVERY PAGE ========== */
+      .page-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 10px 40px 5px 40px;
+        z-index: 100;
       }
-      
+
+      .logo-img {
+        height: 40px;
+        width: auto;
+      }
+
+      .company-name {
+        text-align: center;
+        font-weight: bold;
+        font-size: 14px;
+        margin-bottom: 3px;
+      }
+
+      .report-title {
+        text-align: center;
+        font-weight: bold;
+        font-size: 13px;
+        margin-bottom: 3px;
+      }
+
+      .report-subtitle {
+        text-align: center;
+        font-size: 10px;
+        color: #555;
+        margin-bottom: 5px;
+      }
+
+      .header-line {
+        border-top: 2px solid black;
+        margin: 5px 0 0 0;
+      }
+
+      /* ========== FIXED FOOTER - REPEATS ON EVERY PAGE ========== */
+      .page-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 5px 40px;
+        font-size: 9px;
+        display: flex;
+        justify-content: space-between;
+        border-top: 1px solid #ccc;
+        z-index: 100;
+      }
+
+      /* ========== PAGE CONTAINER ========== */
+      .page-container {
+        page-break-after: always;
+        margin-top: 110px;
+        margin-bottom: 45px;
+        padding: 0 40px;
+      }
+
+      .page-container:last-child {
+        page-break-after: auto;
+      }
+
+      /* ========== TABLE STYLES ========== */
       table {
         width: 100%;
         border-collapse: collapse;
-        table-layout: fixed;
-        word-wrap: break-word;
       }
 
       th {
-        /* Increased border thickness and solid color for visibility on all pages */
-        border-bottom: 2px solid #000000 !important;
-        padding: 8px 2px;
+        border-bottom: 2px solid black;
+        border-top: 1px solid black;
+        padding: 8px 5px;
         text-align: center;
         font-weight: bold;
-        font-size: 9px;
-        background-color: white;
-        vertical-align: bottom;
+        font-size: 10px;
       }
 
       td {
-        padding: 6px 2px;
+        padding: 6px 4px;
         vertical-align: top;
-        font-size: 9px;
-        border-bottom: 0.5px solid #cccccc;
-      }
-
-      /* Define exact widths for all 13 columns (must total 100%) */
-      .col-chqbook {
-        width: 6%;
-      }
-      .col-chqno {
-        width: 5%;
-      }
-      .col-trnsno {
-        width: 6%;
-      }
-      .col-date {
-        width: 8%;
-      }
-      .col-type {
-        width: 8%;
-      }
-      .col-voucher {
-        width: 9%;
-      }
-      .col-chqdate {
-        width: 8%;
-      }
-      .col-zone {
-        width: 4%;
-      }
-      .col-amount {
-        width: 6%;
-      }
-      .col-major {
-        width: 4%;
-      }
-      .col-minor {
-        width: 6%;
-      }
-      .col-mname {
-        width: 15%;
-      }
-      .col-party {
-        width: 15%;
+        border-bottom: 1px solid #eee;
       }
 
       .right {
         text-align: right;
       }
+
       .center {
         text-align: center;
+      }
+
+      .page-number {
+        text-align: center;
+        font-size: 9px;
+        margin-top: 10px;
       }
     </style>
   </head>
 
   <body>
-    <table>
-      <thead>
+    <!-- Fixed Header - Appears on Every Page -->
+    <div class="page-header">
+      <table style="width: 100%; border: none; margin-top: 0;">
         <tr>
-          <th class="col-chqbook">चेक बुक क्र</th>
-          <th class="col-chqno">धनादेश क्र</th>
-          <th class="col-trnsno">व्यवहार क्र</th>
-          <th class="col-date">व्यवहार तारीख</th>
-          <th class="col-type">व्यवहार प्रकार</th>
-          <th class="col-voucher">व्हाऊचर क्र</th>
-          <th class="col-chqdate">धनादेश तारीख</th>
-          <th class="col-zone">झोन</th>
-          <th class="col-amount">रक्कम</th>
-          <th class="col-major">मेजर</th>
-          <th class="col-minor">मायनर</th>
-          <th class="col-mname">मायनर नाव</th>
-          <th class="col-party">पार्टी नाव</th>
+          <td style="width: 80px; border: none; text-align: left;">
+            {{#if logo}}
+              <img src="{{logo}}" class="logo-img" alt="Logo" />
+            {{/if}}
+          </td>
+          <td style="border: none; text-align: center;">
+            <div class="company-name">{{corporationName}}</div>
+            <div class="report-title">धनादेश पुस्तक तपशील</div>
+            <div class="report-subtitle">{{headerText}}</div>
+          </td>
         </tr>
-      </thead>
-      <tbody>
-        {{#each rows}}
-        <tr>
-          <td class="col-chqbook center">{{chqbookno}}</td>
-          <td class="col-chqno center">{{chqno}}</td>
-          <td class="col-trnsno center">{{trnsno}}</td>
-          <td class="col-date center">{{trnsdate}}</td>
-          <td class="col-type">{{trnstype}}</td>
-          <td class="col-voucher">{{docno}}</td>
-          <td class="col-chqdate center">{{chqdate}}</td>
-          <td class="col-zone center">{{zone}}</td>
-          <td class="col-amount right">{{amount}}</td>
-          <td class="col-major center">{{major}}</td>
-          <td class="col-minor">{{minor}}</td>
-          <td class="col-mname">{{minorname}}</td>
-          <td class="col-party">{{party}}</td>
-        </tr>
-        {{/each}}
-      </tbody>
-    </table>
+      </table>
+      <div class="header-line"></div>
+    </div>
+
+    <!-- Fixed Footer - Appears on Every Page -->
+    <div class="page-footer">
+      <div>दिनांक: {{currentDate}} &nbsp;|&nbsp; वेळ: {{currentTime}}</div>
+    </div>
+
+    <!-- Pages with Tables - Batch Wise (10 rows per page) -->
+    {{#each pages}}
+    <div class="page-container">
+      <table>
+        <thead>
+          <tr>
+            <th>चेक बुक क्र</th>
+            <th>धनादेश क्र</th>
+            <th>व्यवहार क्र</th>
+            <th>व्यवहार तारीख</th>
+            <th>व्यवहार प्रकार</th>
+            <th>व्हाऊचर क्र</th>
+            <th>धनादेश तारीख</th>
+            <th>झोन</th>
+            <th>रक्कम</th>
+            <th>मेजर</th>
+            <th>मायनर</th>
+            <th>मायनर नाव</th>
+            <th>पार्टी नाव</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each rows}}
+          <tr>
+            <td class="center">{{chqbookno}}</td>
+            <td class="center">{{chqno}}</td>
+            <td class="center">{{trnsno}}</td>
+            <td class="center">{{trnsdate}}</td>
+            <td>{{trnstype}}</td>
+            <td class="center">{{docno}}</td>
+            <td class="center">{{chqdate}}</td>
+            <td class="center">{{zone}}</td>
+            <td class="right">{{amount}}</td>
+            <td class="center">{{major}}</td>
+            <td class="center">{{minor}}</td>
+            <td>{{minorname}}</td>
+            <td>{{party}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+    {{/each}}
   </body>
 </html>
