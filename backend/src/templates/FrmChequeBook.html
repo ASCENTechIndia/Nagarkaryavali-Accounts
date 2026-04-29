@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      body {
+        font-family: Arial;
+        font-size: 11px;
+      }
+
+      .title {
+        text-align: center;
+        font-weight: bold;
+        font-size: 16px;
+      }
+
+      .subtitle {
+        text-align: center;
+        margin-bottom: 5px;
+      }
+
+      .header-line {
+        border-top: 2px solid black;
+        margin: 10px 0;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      thead {
+        display: table-header-group;
+      }
+
+      th {
+        border-bottom: 2px solid black;
+        padding: 5px;
+        text-align: center;
+        font-weight: bold;
+      }
+
+      td {
+        padding: 6px 4px;
+        vertical-align: top;
+      }
+
+      tr {
+        page-break-inside: avoid;
+      }
+
+      .right {
+        text-align: right;
+      }
+    </style>
+  </head>
+
+  <body>
+
+
+    <table>
+      <thead>
+        <tr>
+          <th>चेक बुक क्र</th>
+          <th>धनादेश क्र</th>
+          <th>व्यवहार क्र</th>
+          <th>व्यवहार तारीख</th>
+          <th>व्यवहार प्रकार</th>
+          <th>व्हाऊचर क्र</th>
+          <th>धनादेश तारीख</th>
+          <th>झोन</th>
+          <th>रक्कम</th>
+          <th>मेजर</th>
+          <th>मायनर</th>
+          <th>मायनर नाव</th>
+          <th>पार्टी नाव</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {{#each rows}}
+        <tr>
+          <td>{{chqbookno}}</td>
+          <td>{{chqno}}</td>
+          <td>{{trnsno}}</td>
+          <td>{{trnsdate}}</td>
+          <td>{{trnstype}}</td>
+          <td>{{docno}}</td>
+          <td>{{chqdate}}</td>
+          <td>{{zone}}</td>
+          <td class="right">{{amount}}</td>
+          <td>{{major}}</td>
+          <td>{{minor}}</td>
+          <td>{{minorname}}</td>
+          <td>{{party}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </body>
+</html>

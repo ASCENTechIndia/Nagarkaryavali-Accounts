@@ -112,6 +112,7 @@ app.use("/api/RptTrialBalance", require("./modules/Reports/RptTrialBalance/RptTr
 app.use("/api/FrmVoucherPreparreprint", require("./modules/Reports/FrmVoucherPreparreprint/FrmVoucherPreparreprint.routes"));
 app.use("/api/FrmBalanceSheet",require("./modules/Reports/FrmBalancesheetRpt/BalancesheetRpt.routes"))
 app.use("/api/FrmBudgetReportPDF",require("./modules/Reports/FrmBudgetReport/FrmBudgetReport.routes"));
+app.use("/api/FrmChequeBook",require("./modules/Reports/FrmChequeBook/FrmChequeBook.routes"))
 
 app.use(errorMiddleware);
 
