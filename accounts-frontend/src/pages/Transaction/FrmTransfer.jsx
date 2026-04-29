@@ -95,8 +95,16 @@ const FrmTransfer = () => {
 
     /* GL CODES */
     axios
-      .get(`${BASE_URL}/api/FrmTransfer/gl-codes`, { headers })
-      .then((res) => setGlCodes(res.data?.data?.rows || []));
+      .get(`${BASE_URL}/api/Receipt/searchGLALL`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Cache-Control": "no-cache",
+        },
+      })
+      .then((res) => {
+        setGlCodes(res.data?.data || []);
+      })
+      .catch(() => Swal.fire("GL list load failed"));
 
     /* PARTY LIST */
     axios
@@ -143,87 +151,86 @@ const FrmTransfer = () => {
     if (!location?.state?.refNo || !token || !ulbId) return;
 
     const fetchData = async () => {
-  try {
-    // ✅ SHOW LOADER
-    Swal.fire({
-      title: "डेटा लोड होत आहे...",
-      text: "कृपया थांबा",
-      allowOutsideClick: false,
-      didOpen: () => Swal.showLoading(),
-    });
+      try {
+        // ✅ SHOW LOADER
+        Swal.fire({
+          title: "डेटा लोड होत आहे...",
+          text: "कृपया थांबा",
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading(),
+        });
 
-    const headers = { Authorization: `Bearer ${token}` };
+        const headers = { Authorization: `Bearer ${token}` };
 
-    const res = await axios.post(
-      `${BASE_URL}/api/FrmTransfer/contra-details`,
-      { tranRef: location.state.refNo },
-      { headers }
-    );
+        const res = await axios.post(
+          `${BASE_URL}/api/FrmTransfer/contra-details`,
+          { tranRef: location.state.refNo },
+          { headers },
+        );
 
-    const rows = res.data?.data?.rows || [];
-    if (!rows.length) {
-      Swal.close();
-      return;
-    }
+        const rows = res.data?.data?.rows || [];
+        if (!rows.length) {
+          Swal.close();
+          return;
+        }
 
-    const first = rows[0];
-    const credit = rows.find((r) => Number(r.CREDIT) > 0);
-    const debit = rows.find((r) => Number(r.DEBIT) > 0);
+        const first = rows[0];
+        const credit = rows.find((r) => Number(r.CREDIT) > 0);
+        const debit = rows.find((r) => Number(r.DEBIT) > 0);
 
-    const form = formikRef.current;
-    if (!form) {
-      Swal.close();
-      return;
-    }
+        const form = formikRef.current;
+        if (!form) {
+          Swal.close();
+          return;
+        }
 
-    // 🔹 BASIC
-    form.setFieldValue("date", new Date(first.TRNSDATE));
-    form.setFieldValue("voucherNo", first.VCHNO || "");
-    form.setFieldValue("details", first.NARRATION || "");
+        // 🔹 BASIC
+        form.setFieldValue("date", new Date(first.TRNSDATE));
+        form.setFieldValue("voucherNo", first.VCHNO || "");
+        form.setFieldValue("details", first.NARRATION || "");
 
-    const partyId =
-      first.PARTYID ||
-      first.NUM_PARTYID ||
-      first.NUM_PARTYMST_PARTYID ||
-      first.PARTYMST_PARTYID ||
-      "";
+        const partyId =
+          first.PARTYID ||
+          first.NUM_PARTYID ||
+          first.NUM_PARTYMST_PARTYID ||
+          first.PARTYMST_PARTYID ||
+          "";
 
-    form.setFieldValue("party", String(partyId || ""));
-    form.setFieldValue("department", String(first.ZONEID || ""));
-    form.setFieldValue("transactionType", String(first.TRNSTYPEID || ""));
+        form.setFieldValue("party", String(partyId || ""));
+        form.setFieldValue("department", String(first.ZONEID || ""));
+        form.setFieldValue("transactionType", String(first.TRNSTYPEID || ""));
 
-    // 🔥 CREDIT
-    if (credit?.GLCODE) {
-      await loadLedgers(String(credit.GLCODE), "credit");
+        // 🔥 CREDIT
+        if (credit?.GLCODE) {
+          await loadLedgers(String(credit.GLCODE), "credit");
 
-      form.setFieldValue("creditDept", String(credit.GLCODE));
-      form.setFieldValue("creditLedger", String(credit.OBJECTCODE));
-      form.setFieldValue("creditAmount", Math.abs(credit.CREDIT || 0));
-    }
+          form.setFieldValue("creditDept", String(credit.GLCODE));
+          form.setFieldValue("creditLedger", String(credit.OBJECTCODE));
+          form.setFieldValue("creditAmount", Math.abs(credit.CREDIT || 0));
+        }
 
-    // 🔥 DEBIT
-    if (debit?.GLCODE) {
-      await loadLedgers(String(debit.GLCODE), "debit");
+        // 🔥 DEBIT
+        if (debit?.GLCODE) {
+          await loadLedgers(String(debit.GLCODE), "debit");
 
-      form.setFieldValue("debitDept", String(debit.GLCODE));
-      form.setFieldValue("debitLedger", String(debit.OBJECTCODE));
-      form.setFieldValue("debitAmount", Math.abs(debit.DEBIT || 0));
-    }
+          form.setFieldValue("debitDept", String(debit.GLCODE));
+          form.setFieldValue("debitLedger", String(debit.OBJECTCODE));
+          form.setFieldValue("debitAmount", Math.abs(debit.DEBIT || 0));
+        }
 
-    // ✅ CLOSE LOADER AFTER EVERYTHING DONE
-    Swal.close();
+        // ✅ CLOSE LOADER AFTER EVERYTHING DONE
+        Swal.close();
+      } catch (err) {
+        console.error("contra-details error:", err);
 
-  } catch (err) {
-    console.error("contra-details error:", err);
+        Swal.close();
 
-    Swal.close();
-
-    Swal.fire({
-      icon: "error",
-      text: "डेटा लोड करण्यात अडचण आली",
-    });
-  }
-};
+        Swal.fire({
+          icon: "error",
+          text: "डेटा लोड करण्यात अडचण आली",
+        });
+      }
+    };
     fetchData();
   }, [location?.state?.refNo, token, ulbId]);
 
@@ -435,18 +442,9 @@ const FrmTransfer = () => {
                         <Row label="विभाग कोड">
                           <SearchableSelect
                             options={glCodes.map((g) => ({
-                              label: g.GLNAME || "",
+                              label: g.GLSEARCHNAME || "", // ✅ FIXED
                               value: String(g.GLCODE || ""),
                             }))}
-                            value={values.creditDept}
-                            onChange={async (v) => {
-                              const glcode = v?.value || v; // handles both cases
-
-                              setFieldValue("creditDept", glcode);
-                              setFieldValue("creditLedger", "");
-
-                              await loadLedgers(glcode, "credit");
-                            }}
                           />
                         </Row>
 
@@ -549,7 +547,7 @@ const FrmTransfer = () => {
                         <Row label="विभाग कोड">
                           <SearchableSelect
                             options={glCodes.map((g) => ({
-                              label: g.GLNAME || "",
+                              label: g.GLSEARCHNAME || "",
                               value: String(g.GLCODE || ""),
                             }))}
                             value={values.debitDept}
@@ -595,12 +593,18 @@ const FrmTransfer = () => {
                     <Button className="bg-blue-900 text-white px-6">
                       स्वीकार
                     </Button>
-                    <Button variant="destructive" className="px-6" 
-                    onClick={()=> navigate("/Transactions/FrmTransferList")}
+                    <Button
+                      variant="destructive"
+                      className="px-6"
+                      onClick={() => navigate("/Transactions/FrmTransferList")}
                     >
                       रद्द
                     </Button>
-                    <Button variant="secondary" className="px-6" onClick={() => formikRef.current.resetForm()}>
+                    <Button
+                      variant="secondary"
+                      className="px-6"
+                      onClick={() => formikRef.current.resetForm()}
+                    >
                       बदल
                     </Button>
                   </div>

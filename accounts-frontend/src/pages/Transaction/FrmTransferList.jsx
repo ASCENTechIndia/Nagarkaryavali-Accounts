@@ -36,7 +36,43 @@ const FrmTransferList = () => {
     return config;
   });
 
-  /* 🔥 Load Transfer List (FIXED POSITION) */
+  /* 🔥 Load Corporations */
+  useEffect(() => {
+    api.get("/api/FrmParty/corporation/list").then((res) => {
+      const corpList = res.data?.data?.list || [];
+      setCorporations(corpList);
+    });
+  }, []);
+
+  /* 🔥 Auto Select Corporation (FIXED) */
+  useEffect(() => {
+    if (!user?.ulbId || corporations.length === 0) return;
+
+    const selected = corporations.find(
+      (c) => c.NUM_CORPORATION_ID === Number(user.ulbId)
+    );
+
+    if (selected) {
+      setSelectedCorp(selected.NUM_CORPORATION_ID.toString());
+    }
+  }, [user?.ulbId, corporations]);
+
+  /* 🔥 Load Zones */
+  useEffect(() => {
+    if (!selectedCorp) return;
+
+    api
+      .post("/api/Receipt/zones", {
+        corp_id: Number(selectedCorp),
+      })
+      .then((res) => {
+        setZones(res.data?.data || []);
+        setSelectedZone("");
+        setList([]);
+      });
+  }, [selectedCorp]);
+
+  /* 🔥 Load Transfer List */
   const loadTransferList = async (zoneId) => {
     try {
       const res = await api.post("/api/FrmTransfer/transfer-list", {
@@ -50,43 +86,9 @@ const FrmTransferList = () => {
     }
   };
 
-  /* 🔥 Load Corporations + Auto Select */
-  useEffect(() => {
-    if (!user?.ulbId) return;
-
-    api.get("/api/FrmParty/corporation/list").then((res) => {
-      const corpList = res.data?.data?.list || [];
-      setCorporations(corpList);
-
-      const selected = corpList.find(
-        (c) => c.NUM_CORPORATION_ID === user.ulbId
-      );
-
-      if (selected) {
-        setSelectedCorp(selected.NUM_CORPORATION_ID.toString());
-      }
-    });
-  }, [user?.ulbId]);
-
-  /* 🔥 Load Zones (NO AUTO SELECT) */
-  useEffect(() => {
-    if (!selectedCorp) return;
-
-    api
-      .post("/api/Receipt/zones", {
-        corp_id: Number(selectedCorp),
-      })
-      .then((res) => {
-        setZones(res.data?.data || []);
-        setSelectedZone(""); // clear previous
-        setList([]); // clear table
-      });
-  }, [selectedCorp]);
-
-  /* 🔥 Load Table ONLY when zone selected */
+  /* 🔥 Load Table */
   useEffect(() => {
     if (!selectedZone) return;
-
     loadTransferList(selectedZone);
   }, [selectedZone]);
 
@@ -150,7 +152,6 @@ const FrmTransferList = () => {
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
       <Card className="shadow-sm border rounded-lg">
 
-        {/* Header */}
         <CardHeader className="border-b flex justify-between items-center">
           <CardTitle className="text-lg font-semibold">
             हस्तांतरण करार यादी
@@ -164,21 +165,19 @@ const FrmTransferList = () => {
           </Button>
         </CardHeader>
 
-        {/* Content */}
         <CardContent className="p-4">
           <div className="bg-white border rounded-md p-4">
 
-            {/* FILTERS */}
             <div className="space-y-2">
 
               {/* Corporation */}
               <div className="grid grid-cols-[120px_300px] items-center gap-3">
-                <Label className="text-sm font-medium">नगरपालिका :</Label>
+                <Label className="text-sm font-medium">महानगरपालिका :</Label>
 
                 <Select
                   value={selectedCorp}
                   onValueChange={setSelectedCorp}
-                  disabled={!!user?.ulbId} // disable if user has ulbId (auto-selected)
+                  disabled={!!user?.ulbId}
                 >
                   <SelectTrigger className="h-8 text-sm w-full">
                     <SelectValue placeholder="Select" />
@@ -224,7 +223,6 @@ const FrmTransferList = () => {
 
             </div>
 
-            {/* TABLE */}
             <div className="mt-4 border rounded-md overflow-hidden">
               <ShadCNTable
                 headers={headers}

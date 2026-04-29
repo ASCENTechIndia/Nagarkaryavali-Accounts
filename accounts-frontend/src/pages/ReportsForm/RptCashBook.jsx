@@ -801,8 +801,8 @@ const RptCashBook = () => {
                     data={tableRows}
                     keyMapping={keyMapping}
                     className="min-w-350"
-                    pagination
-                    rowsPerPage={10}
+                    // pagination
+                    // rowsPerPage={10}
                   />
 
                   <div className="flex justify-end items-center gap-4 p-4 border-t">

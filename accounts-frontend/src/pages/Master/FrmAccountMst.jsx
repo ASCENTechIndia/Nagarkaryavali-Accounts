@@ -1,7 +1,13 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { Formik, Form } from "formik";
+import { motion } from "framer-motion";
 import axios from "axios";
-import Swal from "sweetalert2";
 import { useAuth } from "@/context/AuthContext";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import Swal from "sweetalert2";
 
 import {
   Select,
@@ -9,250 +15,513 @@ import {
   SelectValue,
   SelectContent,
   SelectItem,
-} from "@/Components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/Components/ui/button";
+} from "@/components/ui/select";
 
-/* ================= FIELD ================= */
-const Field = ({ label, children }) => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-center">
-    <span className="sm:text-right font-medium">{label} :</span>
-    <div>{children}</div>
-  </div>
-);
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-const FrmNidhiConfig = () => {
+const FrmAccountMaster = () => {
   const { user } = useAuth();
-  const token = user?.token;
-
-  const BASE_URL = import.meta.env.VITE_BASE_URL;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isEditMode = Boolean(location?.state?.accNo);
 
   const [corporations, setCorporations] = useState([]);
-  const [budgets, setBudgets] = useState([]);
+  const [glList, setGlList] = useState([]);
+  const [objectCodes, setObjectCodes] = useState([]);
   const [nidhiList, setNidhiList] = useState([]);
 
-  const [selectedCorp, setSelectedCorp] = useState(user?.ulbId?.toString() || "");
-  const [selectedBudget, setSelectedBudget] = useState("");
+  const [initialValues, setInitialValues] = useState({
+    corp: "",
+    fund: "",
+    functionCode: "",
+    objectCode: "",
+    accId: "",
+    oldAcc: "",
+    nameMarathi: "",
+    nameEnglish: "",
+    budgetAmt: "",
+    revisedAmt: "",
+    openingBal: "",
+    limit: "",
+  });
 
-  /* ================= LOAD CORPORATION ================= */
+  const api = axios.create({ baseURL: BASE_URL });
+
+  api.interceptors.request.use((config) => {
+    const token = user?.token || localStorage.getItem("token");
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+    return config;
+  });
+
+  /* ================= LOAD DATA ================= */
+
   useEffect(() => {
-    axios
-      .get(`${BASE_URL}/api/FrmParty/corporation/list`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
-        setCorporations(res.data?.data?.list || []);
-      })
-      .catch(() => Swal.fire("Corporation load failed"));
-  }, []);
+    if (!user?.token) return;
 
-  /* ================= LOAD BUDGET ================= */
-  useEffect(() => {
-    if (!selectedCorp) return;
+    const loadAll = async () => {
+      try {
+        const [corpRes, glRes, objRes, nidhiRes] = await Promise.all([
+          api.get("/api/FrmParty/corporation/list"),
+          api.get("/api/FrmAccount/gl-master"),
+          api.get("/api/FrmAccount/account-subTypes"),
+          api.get("/api/FrmAccount/nidhi-master"),
+        ]);
 
-    axios
-      .get(`${BASE_URL}/api/BudgetHeadConfig/head`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
-        setBudgets(res.data?.data?.data || []);
-      })
-      .catch(() => Swal.fire("Budget load failed"));
-  }, [selectedCorp]);
+        setCorporations(corpRes.data?.data?.list || []);
+        setGlList(glRes.data?.data?.data || []);
+        setObjectCodes(objRes.data?.data?.data || []);
+        setNidhiList(nidhiRes.data?.data?.data || []);
 
-  /* ================= FETCH NIDHI MASTER ================= */
-  const fetchNidhiMaster = async (budgetId) => {
+        if (user?.ulbId) {
+          setInitialValues((prev) => ({
+            ...prev,
+            corp: String(user.ulbId),
+          }));
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    loadAll();
+  }, [user?.token]);
+
+useEffect(() => {
+  if (!location?.state?.accNo || !location?.state?.functionCode) return;
+
+  // 🔥 WAIT until dropdown data is loaded
+  if (!glList.length || !objectCodes.length || !nidhiList.length) return;
+
+  const loadAllDetails = async () => {
     try {
-      const res = await axios.post(
-        `${BASE_URL}/api/FrmNidhiConfig/nidhi-master-config`,
+      Swal.fire({
+        title: "डेटा लोड होत आहे...",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      });
+
+      const { accNo, functionCode, ulbId } = location.state;
+
+      const mapRes = await api.post(
+        "/api/FrmAccount/account-mapping-details",
         {
-          ulbId: selectedCorp,
-          budgetId,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
+          glCode: functionCode,
+          accNo,
+        }
       );
 
-      const master = res.data?.data?.list || [];
+      const map = mapRes.data?.data?.data?.[0];
 
-      const updated = master.map((n) => ({
-        ...n,
-        checked: false,
-      }));
-
-      // 🔥 fetch config
-      fetchNidhiConfig(budgetId, updated);
-    } catch {
-      Swal.fire("Nidhi master load failed");
-    }
-  };
-
-  /* ================= FETCH CONFIG ================= */
-  const fetchNidhiConfig = async (budgetId, masterList) => {
-    try {
-      const res = await axios.post(
-        `${BASE_URL}/api/FrmNidhiConfig/nidhi-config-list`,
-        {
-          ulbId: selectedCorp,
-          budgetId,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      const config = res.data?.data?.list || [];
-
-      const updated = masterList.map((n) => ({
-        ...n,
-        checked: config.some((c) => c.NIDHIID === n.NIDHIID),
-      }));
-
-      setNidhiList(updated);
-    } catch {
-      console.error("Config load failed");
-    }
-  };
-
-  /* ================= CHECK ================= */
-  const toggleCheck = (index, checked) => {
-    const updated = [...nidhiList];
-    updated[index].checked = checked;
-    setNidhiList(updated);
-  };
-
-  const handleSelectAll = (checked) => {
-    setNidhiList(nidhiList.map((n) => ({ ...n, checked })));
-  };
-
-  /* ================= SAVE ================= */
-  const handleSave = async () => {
-    try {
-      const selected = nidhiList.filter((n) => n.checked);
-
-      if (!selected.length) {
-        Swal.fire("किमान एक निधी निवडा");
+      if (!map) {
+        Swal.close();
         return;
       }
 
-      const nidhiCfgStr = selected
-        .map((n) => `${n.NIDHIID}#N#Y`)
-        .join("$");
+      // 🔥 IMPORTANT: all values must be STRING
+     setInitialValues({
+  corp: String(ulbId || user?.ulbId || ""),
 
-      await axios.post(
-        `${BASE_URL}/api/FrmNidhiConfig/nidhi-config-insert`,
-        {
-          userId: user?.userId,
-          ulbId: selectedCorp,
-          budgetId: selectedBudget,
-          nidhiCfgStr,
-          mode: "1",
-          ipAddress: "127.0.0.1",
-          source: "RW",
+  fund: String(map.NUM_ACCMASTER_NIDHIID || ""),
+
+  // 🔥 FIXED GL CODE (PADDED)
+  functionCode: String(map.NUM_ACCMASTER_GLCODE || "").padStart(3, "0"),
+
+  // ✅ OBJECT CODE
+  objectCode: String(map.ACCSUBTYPE || ""),
+
+  accId: String(map.NUM_ACCMASTER_ACCNO || ""),
+  oldAcc: map.OLDACCNO || "",
+
+  nameMarathi: map.ACCNAME || "",
+  nameEnglish: map.VAR_ACCMASTER_ACCNAMEENG || map.ACCNAME || "",
+
+  budgetAmt: "",
+  revisedAmt: "",
+  openingBal: "",
+  limit: "",
+});
+
+      Swal.close();
+    } catch (err) {
+      console.error(err);
+      Swal.close();
+    }
+  };
+
+  loadAllDetails();
+}, [location.state, glList, objectCodes, nidhiList]);
+
+  const handleSubmit = async (values, { resetForm }) => {
+    try {
+      // 🔄 Show loading
+      Swal.fire({
+        title: isEditMode ? "Updating..." : "Saving...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
         },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      });
+      const mode = isEditMode ? 2 : 1;
+      const res = await api.post("/api/FrmAccount/save-account", {
+        mode: mode,
+        ulbId: Number(values.corp),
+        glCode: Number(values.functionCode),
+        accNo: Number(values.accId),
+        accName: values.nameMarathi,
+        accNameEng: values.nameEnglish,
+        userId: user?.username || "admin",
+        subTypeId: Number(values.objectCode),
+        oldAccNo: values.oldAcc,
+        nidhiId: Number(values.fund),
+        openingBal: Number(values.openingBal || 0),
+        budgetAmt: Number(values.budgetAmt || 0),
+        maxLimit: Number(values.limit || 0),
+        revBudgetAmt: Number(values.revisedAmt || 0),
+      });
 
-      Swal.fire("Saved successfully");
-    } catch {
-      Swal.fire("Save failed");
+      const result = res.data?.data;
+
+      // ✅ Close loading before showing result
+      Swal.close();
+
+      if (result?.errorCode === -100) {
+        await Swal.fire({
+          icon: "success",
+          title: "यशस्वी!",
+          text: result?.message || "डेटा साठवला गेला",
+        });
+
+        resetForm();
+
+        // optional reset / reload
+        // window.location.reload();
+      } else {
+        Swal.fire({
+          icon: "warning",
+          title: "सूचना",
+          text: result?.message || "काहीतरी चूक आहे",
+        });
+      }
+    } catch (err) {
+      console.error(err);
+
+      Swal.close();
+
+      Swal.fire({
+        icon: "error",
+        title: "चूक झाली!",
+        text: "सर्व्हरशी संपर्क होत नाही",
+      });
     }
   };
 
   return (
-    <div className="p-6 bg-white rounded shadow space-y-6">
+    <Formik
+      initialValues={initialValues}
+      enableReinitialize
+      onSubmit={handleSubmit}
+    >
+      {({ values, setFieldValue, resetForm }) => {
+        /* 🔥 AUTO ACCOUNT NUMBER */
+        useEffect(() => {
+          if (!values.functionCode || !values.objectCode || !values.corp)
+            return;
 
-      <h2 className="text-lg font-semibold">Nidhi Configuration</h2>
+          const generate = async () => {
+            try {
+              const res = await api.post("/api/FrmAccount/next-accountNo", {
+                ulbId: Number(values.corp),
+                glCode: Number(values.functionCode),
+                subTypeId: Number(values.objectCode),
+              });
 
-      {/* ================= CORPORATION ================= */}
-      <Field label="महानगरपालिका">
-        <Select
-          value={selectedCorp}
-          onValueChange={(v) => {
-            setSelectedCorp(v);
-            setSelectedBudget("");
-            setNidhiList([]);
-          }}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select Corporation" />
-          </SelectTrigger>
+              const next = res.data?.data?.data?.NEXTACCNO || "";
+              const map = `${values.functionCode}${values.objectCode}${next}`;
 
-          <SelectContent>
-            {corporations.map((c) => (
-              <SelectItem
-                key={c.NUM_CORPORATION_ID}
-                value={c.NUM_CORPORATION_ID.toString()}
-              >
-                {c.VAR_CORPORATION_NAME}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </Field>
+              setFieldValue("accId", map);
+            } catch (err) {
+              console.error(err);
+            }
+          };
 
-      {/* ================= BUDGET ================= */}
-      <Field label="Budget">
-        <Select
-          value={selectedBudget}
-          onValueChange={(v) => {
-            setSelectedBudget(v);
-            fetchNidhiMaster(v);
-          }}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select Budget" />
-          </SelectTrigger>
+          generate();
+        }, [values.functionCode, values.objectCode, values.corp]);
 
-          <SelectContent>
-            {budgets.map((b) => (
-              <SelectItem key={b.HEADID} value={String(b.HEADID)}>
-                {b.BUDGETNAME}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </Field>
+        return (
+          <Form>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <Card className="border shadow-sm rounded-lg">
+                {/* HEADER */}
+                <CardHeader className="border-b">
+                  <CardTitle className="text-lg font-semibold">
+                    खाते मास्टर
+                  </CardTitle>
+                </CardHeader>
 
-      {/* ================= TABLE ================= */}
-      <div className="border rounded">
+                <CardContent className="p-6 space-y-6">
+                  {/* ROW 1 */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* CORPORATION */}
+                    <div className="flex items-center gap-3">
+                      <label className="w-40 text-right text-sm font-medium">
+                        महानगरपालिका :
+                      </label>
 
-        {/* HEADER */}
-        <div className="grid grid-cols-[50px_1fr] bg-blue-900 text-white p-2">
-          <div className="flex justify-center">
-            <Checkbox
-              checked={nidhiList.length > 0 && nidhiList.every((n) => n.checked)}
-              onCheckedChange={handleSelectAll}
-            />
-          </div>
-          <div>Nidhi</div>
-        </div>
+                      <Select
+                        value={values.corp || ""}
+                        onValueChange={(v) => setFieldValue("corp", v)}
+                        disabled={!!user?.ulbId}
+                      >
+                        <SelectTrigger className="flex-1 h-9">
+                          <SelectValue placeholder="निवडा" />
+                        </SelectTrigger>
 
-        {/* BODY */}
-        {nidhiList.map((n, i) => (
-          <div key={n.NIDHIID} className="grid grid-cols-[50px_1fr] p-2 border-b">
-            <div className="flex justify-center">
-              <Checkbox
-                checked={n.checked}
-                onCheckedChange={(checked) => toggleCheck(i, checked)}
-              />
-            </div>
-            <div>{n.NIDHINAME}</div>
-          </div>
-        ))}
+                        <SelectContent>
+                          {corporations.map((c) => (
+                            <SelectItem
+                              key={c.NUM_CORPORATION_ID}
+                              value={String(c.NUM_CORPORATION_ID)}
+                            >
+                              {c.VAR_CORPORATION_MNAME ||
+                                c.VAR_CORPORATION_NAME}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-        {nidhiList.length === 0 && (
-          <div className="p-4 text-center text-red-500">
-            No records found
-          </div>
-        )}
-      </div>
+                    {/* FUND */}
+                    <div className="flex items-center gap-3">
+                      <label className="w-40 text-right text-sm font-medium">
+                        निधी :
+                      </label>
 
-      {/* ================= SAVE ================= */}
-      <div className="text-center">
-        <Button onClick={handleSave} className="bg-blue-900 text-white">
-          Save
-        </Button>
-      </div>
-    </div>
+                      <Select
+                        value={values.fund || ""}
+                        onValueChange={(v) => setFieldValue("fund", v)}
+                      >
+                        <SelectTrigger className="flex-1 h-9">
+                          <SelectValue placeholder="निवडा" />
+                        </SelectTrigger>
+
+                        <SelectContent>
+                          {nidhiList.map((n) => (
+                            <SelectItem
+                              key={n.NUM_NIDHI_ID}
+                              value={String(n.NUM_NIDHI_ID)}
+                            >
+                              {n.VAR_NIDHI_NIDHINAME.trim()}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* ROW 2 */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* GL */}
+                    <div className="flex items-center gap-3">
+                      <label className="w-40 text-right text-sm font-medium">
+                        जी.एल. फंक्शन :
+                      </label>
+
+                      <Select
+                        value={values.functionCode || ""}
+                        onValueChange={(v) => {
+                          setFieldValue("functionCode", v);
+                          setFieldValue("objectCode", "");
+                          setFieldValue("accId", "");
+                        }}
+                      >
+                        <SelectTrigger className="flex-1 h-9">
+                          <SelectValue placeholder="निवडा" />
+                        </SelectTrigger>
+
+                        <SelectContent>
+                          {glList.map((g) => (
+                            <SelectItem key={g.GLCODE} value={g.GLCODE}>
+                              {g.GLCODE} - {g.GLNAME}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* OBJECT CODE */}
+                    <div className="flex items-center gap-3">
+                      <label className="w-40 text-right text-sm font-medium">
+                        ऑब्जेक्ट कोड :
+                      </label>
+
+                      <Select
+                        value={values.objectCode || ""}
+                        onValueChange={(v) => setFieldValue("objectCode", v)}
+                      >
+                        <SelectTrigger className="flex-1 h-9">
+                          <SelectValue placeholder="निवडा" />
+                        </SelectTrigger>
+
+                        <SelectContent>
+                          {objectCodes.map((o) => (
+                            <SelectItem
+                              key={o.NUM_ACCSUBTYPEMST_ACCSUBTYPEID}
+                              value={String(o.NUM_ACCSUBTYPEMST_ACCSUBTYPEID)}
+                            >
+                              {o.VAR_ACCSUBTYPEMST_ACCSUBTYPE}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* ROW 3 */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="flex items-center gap-3">
+                      <label className="w-40 text-right text-sm font-medium">
+                        खाते आयडी :
+                      </label>
+
+                      <Input
+                        value={values.accId}
+                        disabled
+                        className="flex-1 h-9"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <label className="w-40 text-right text-sm font-medium">
+                        जुना खाते क्र. :
+                      </label>
+
+                      <Input
+                        value={values.oldAcc}
+                        onChange={(e) =>
+                          setFieldValue("oldAcc", e.target.value)
+                        }
+                        className="flex-1 h-9"
+                      />
+                    </div>
+                  </div>
+
+                  {/* ROW 4 */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="flex items-center gap-3">
+                      <label className="w-40 text-right text-sm font-medium">
+                        खाते नाव (मराठी) :
+                      </label>
+
+                      <Input
+                        className="flex-1 h-9"
+                        value={values.nameMarathi}
+                        onChange={(e) =>
+                          setFieldValue("nameMarathi", e.target.value)
+                        }
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <label className="w-40 text-right text-sm font-medium">
+                        खाते नाव (English) :
+                      </label>
+
+                      <Input
+                        className="flex-1 h-9"
+                        value={values.nameEnglish}
+                        onChange={(e) =>
+                          setFieldValue("nameEnglish", e.target.value)
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  {/* ROW 5 */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="flex items-center gap-3">
+                      <label className="w-40 text-right text-sm font-medium">
+                        बजेट :
+                      </label>
+
+                      <Input
+                        className="flex-1 h-9"
+                        value={values.budgetAmt}
+                        onChange={(e) =>
+                          setFieldValue("budgetAmt", e.target.value)
+                        }
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <label className="w-40 text-right text-sm font-medium">
+                        सुधारित बजेट :
+                      </label>
+
+                      <Input
+                        className="flex-1 h-9"
+                        value={values.revisedAmt}
+                        onChange={(e) =>
+                          setFieldValue("revisedAmt", e.target.value)
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  {/* ROW 6 */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="flex items-center gap-3">
+                      <label className="w-40 text-right text-sm font-medium">
+                        प्रारंभिक शिल्लक :
+                      </label>
+
+                      <Input
+                        className="flex-1 h-9"
+                        value={values.openingBal}
+                        onChange={(e) =>
+                          setFieldValue("openingBal", e.target.value)
+                        }
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <label className="w-40 text-right text-sm font-medium">
+                        कमाल मर्यादा :
+                      </label>
+
+                      <Input
+                        className="flex-1 h-9"
+                        value={values.limit}
+                        onChange={(e) => setFieldValue("limit", e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* BUTTONS */}
+                  <div className="flex justify-center gap-4 pt-6 border-t">
+                    <Button type="submit">साठवा</Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => resetForm()}
+                    >
+                      रद्द
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={() => navigate("/Masters/FrmAccountListMst")}
+                    >
+                      परत
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </Form>
+        );
+      }}
+    </Formik>
   );
 };
 
-export default FrmNidhiConfig;
+export default FrmAccountMaster;

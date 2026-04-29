@@ -20,6 +20,17 @@ import {
 import { DatePicker } from "@/components/ui/calendar";
 import ShadCNTable from "@/components/ui/table";
 
+/* ✅ API INSTANCE (OUTSIDE COMPONENT) */
+const api = axios.create({
+  baseURL: import.meta.env.VITE_BASE_URL,
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
 /* ✅ FIELD */
 const Field = ({ label, children }) => (
   <div className="flex items-center gap-3">
@@ -31,38 +42,20 @@ const Field = ({ label, children }) => (
 
 const FrmGovtTaxPayment = () => {
   const { user } = useAuth();
-  const BASE_URL = import.meta.env.VITE_BASE_URL;
 
   const [zoneList, setZoneList] = useState([]);
   const [glList, setGlList] = useState([]);
   const [creditList, setCreditList] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [showTable, setShowTable] = useState(false);
-  /* ✅ API INSTANCE */
-  const api = axios.create({ baseURL: BASE_URL });
 
-  api.interceptors.request.use((config) => {
-    const token = localStorage.getItem("token");
-    if (token) config.headers.Authorization = `Bearer ${token}`;
-    return config;
-  });
-
-  /* 🔥 LOAD INITIAL */
-  useEffect(() => {
-    loadInitial();
-  }, []);
-
-  const loadInitial = async () => {
+  /* 🔥 LOAD GL LIST */
+  const fetchGLList = async () => {
     try {
-      const [zonesRes, glRes] = await Promise.all([
-        api.post("/api/Receipt/zones", { corp_id: user?.ulbId }),
-        api.get("/api/FrmTransfer/gl-codes"),
-      ]);
-
-      setZoneList(zonesRes.data?.data || []);
-      setGlList(glRes.data?.data?.rows || []);
+      const res = await api.get("/api/Receipt/searchGLALL");
+      setGlList(res.data?.data || []);
     } catch (err) {
-      console.error(err);
+      console.error("GL API Error:", err);
     }
   };
 
@@ -76,18 +69,24 @@ const FrmGovtTaxPayment = () => {
 
       setCreditList(res.data?.data?.rows || []);
     } catch (err) {
-      console.error(err);
+      console.error("Credit API Error:", err);
     }
   };
 
+  /* 🔥 LOAD INITIAL */
+  useEffect(() => {
+    fetchGLList();
+  }, []);
+
   /* 🔥 DATE FORMAT */
-  const formatDate = (date) => (date ? date.toISOString().split("T")[0] : "");
+  const formatDate = (date) =>
+    date ? date.toISOString().split("T")[0] : "";
 
   /* 🔥 SEARCH */
   const handleSubmit = async (values) => {
     try {
       Swal.fire({ title: "Loading...", didOpen: () => Swal.showLoading() });
-debugger;
+
       const payload = {
         glCode: values.glCode,
         fromDate: formatDate(values.fromDate),
@@ -98,7 +97,7 @@ debugger;
 
       const res = await api.post(
         "/api/FrmGovtTaxPayment/govt-tax-payment",
-        payload,
+        payload
       );
 
       const rows =
@@ -106,10 +105,9 @@ debugger;
           ...r,
           TRNSDATE: r.TRNSDATE?.split("T")[0],
         })) || [];
-      console.log("Table Data:", rows);
 
       setTableData(rows);
-      showTable(true);
+      setShowTable(true); // ✅ FIXED
 
       Swal.close();
     } catch (err) {
@@ -146,8 +144,8 @@ debugger;
 
               {/* CONTENT */}
               <CardContent className="p-6 space-y-6">
-                {/* 🔥 3 COLUMN LAYOUT */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
                   {/* प्रभाग */}
                   <Field label="प्रभाग">
                     <Select
@@ -188,7 +186,7 @@ debugger;
                             key={g.GLCODE}
                             value={g.GLCODE.toString()}
                           >
-                            {g.GLNAME}
+                            {g.GLSEARCHNAME} {/* ✅ FIXED */}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -241,7 +239,7 @@ debugger;
                   </div>
                 </div>
 
-                {/* 🔥 TABLE ALWAYS RENDER */}
+                {/* TABLE */}
                 {showTable && (
                   <ShadCNTable
                     headers={[
@@ -271,6 +269,7 @@ debugger;
                     rowsPerPage={5}
                   />
                 )}
+
                 {showTable && tableData.length === 0 && (
                   <div className="text-center text-red-500 mt-4">
                     No records found

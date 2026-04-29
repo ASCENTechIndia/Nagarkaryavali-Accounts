@@ -215,7 +215,7 @@ const FrmPaymentList = () => {
                     className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="w-32">नगरपालिका</span>
+                      <span className="w-32">महानगरपालिका</span>
                       <span>:</span>
                       <Select
                         value={values.municipality}
