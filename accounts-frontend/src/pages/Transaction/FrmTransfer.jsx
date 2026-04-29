@@ -442,12 +442,20 @@ const FrmTransfer = () => {
                         <Row label="विभाग कोड">
                           <SearchableSelect
                             options={glCodes.map((g) => ({
-                              label: g.GLSEARCHNAME || "", // ✅ FIXED
+                              label: g.GLSEARCHNAME || "",
                               value: String(g.GLCODE || ""),
                             }))}
+                            value={values.creditDept}
+                            onChange={async (v) => {
+                              const glcode = v?.value || v;
+
+                              setFieldValue("creditDept", glcode);
+                              setFieldValue("creditLedger", "");
+
+                              await loadLedgers(glcode, "credit"); // 🔥 THIS WAS MISSING
+                            }}
                           />
                         </Row>
-
                         <Row label="लेखाशिर्ष">
                           <SearchableSelect
                             options={creditLedgers.map((l) => ({
@@ -590,10 +598,13 @@ const FrmTransfer = () => {
 
                   {/* BUTTONS */}
                   <div className="flex justify-center gap-3 mt-6">
-                    <Button className="bg-blue-900 text-white px-6">
+                    <Button
+                    type="submit"
+                     className="bg-blue-900 text-white px-6">
                       स्वीकार
                     </Button>
                     <Button
+                    type="button"
                       variant="destructive"
                       className="px-6"
                       onClick={() => navigate("/Transactions/FrmTransferList")}
@@ -601,6 +612,7 @@ const FrmTransfer = () => {
                       रद्द
                     </Button>
                     <Button
+                    type="button"
                       variant="secondary"
                       className="px-6"
                       onClick={() => formikRef.current.resetForm()}
