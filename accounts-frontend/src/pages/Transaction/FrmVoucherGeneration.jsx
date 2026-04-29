@@ -72,9 +72,9 @@ const FrmVoucherGeneration = () => {
   const [chequeBooks, setChequeBooks] = useState([]);
   const [searchDone, setSearchDone] = useState(false);
 
-  const totalSelectedAmount = voucherList
-    .filter((v) => v.selected)
-    .reduce((sum, v) => sum + (v.deyRakkam || 0), 0);
+const totalSelectedAmount = voucherList
+  .filter((v) => v.selected)
+  .reduce((sum, v) => sum + Math.abs(v.deyRakkam || 0), 0); // ✅ FIX
 
   useEffect(() => {
     if (!ulbId) return;
@@ -201,9 +201,9 @@ const FrmVoucherGeneration = () => {
 
       finalData.forEach((v) => {
         const nival = v.BALAMT || v.TOTALAMT - v.AMT;
-        v.deyRakkam = nival;
-      });
 
+        v.deyRakkam = Math.abs(nival); // ✅ FIX
+      });
       setVoucherList(finalData);
       setCurrentPage(1);
 
@@ -304,6 +304,8 @@ const FrmVoucherGeneration = () => {
 
       const balance = res.data?.data?.data?.BALANCE || 0;
 
+      setFieldValue("bankBalance", Math.abs(balance)); // ✅ FIX
+
       setFieldValue("bankBalance", balance);
     } catch (err) {
       console.error(err);
@@ -400,16 +402,17 @@ const FrmVoucherGeneration = () => {
       const str3 = selectedRows
         .map((v) => {
           const nivalDey =
-            v.BALAMT !== undefined
-              ? v.BALAMT
-              : (v.TOTALAMT || 0) - (v.AMT || 0);
-          const dey = v.deyRakkam ?? nivalDey;
-          const shillak = nivalDey - dey;
+            v.BALAMT != null
+              ? Math.abs(Number(v.BALAMT)) // ✅ FIX
+              : Math.abs((v.TOTALAMT || 0) - (v.AMT || 0));
+
+          const deyRakkam = Math.abs(v.deyRakkam ?? nivalDey); // ✅ FIX
+          const shillak = Math.abs(nivalDey - deyRakkam); // ✅ FIX
 
           return [
             v.REFNO,
             nivalDey,
-            dey,
+            deyRakkam,
             shillak,
             v.TOTALAMT || 0,
             v.AMT || 0,
@@ -1018,7 +1021,7 @@ const FrmVoucherGeneration = () => {
                 </Button>
 
                 <Button
-                type="button"
+                  type="button"
                   variant="outline"
                   onClick={resetForm}
                   className="w-full sm:w-auto"
@@ -1027,7 +1030,7 @@ const FrmVoucherGeneration = () => {
                 </Button>
 
                 <Button
-                type="button"
+                  type="button"
                   variant="destructive"
                   onClick={() => navigate("/")}
                   className="w-full sm:w-auto"
