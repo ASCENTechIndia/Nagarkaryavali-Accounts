@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 
 import ShadCNTable from "@/components/ui/table";
+import Swal from "sweetalert2";
 
 const container = {
   hidden: { opacity: 0, y: 20 },
@@ -31,6 +32,7 @@ const item = {
 const FrmPaymentList = () => {
   const [tableData, setTableData] = useState([]);
   const [corporations, setCorporations] = useState([]);
+  const [defaultMunicipality, setDefaultMunicipality] = useState("");
   const navigate = useNavigate();
   const [zones, setZones] = useState([]);
   const { user } = useAuth();
@@ -63,17 +65,24 @@ const FrmPaymentList = () => {
   };
 
   const initialValues = {
-    municipality: "",
+    municipality: defaultMunicipality,
     zone: "",
   };
 
-  const fetchCorporations = async (setFieldValue) => {
+  const fetchCorporations = async () => {
     try {
+
+      Swal.fire({
+        title: "Loading...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
       const res = await axios.post(
         `${BASE_URL}/api/Receipt/corporation`,
-        {
-          corp_id: ulbId,
-        },
+        { corp_id: ulbId },
         {
           headers: {
             Authorization: `Bearer ${user.token}`,
@@ -87,9 +96,10 @@ const FrmPaymentList = () => {
       if (corpData.length > 0) {
         const defaultCorp = corpData[0].CORPORATIONID.toString();
 
-        setFieldValue("municipality", defaultCorp);
+        setDefaultMunicipality(defaultCorp);
         fetchZones(defaultCorp);
       }
+      Swal.close();
     } catch (err) {
       console.error("Corporation API Error:", err);
     }
@@ -115,6 +125,14 @@ const FrmPaymentList = () => {
 
   const fetchPaymentList = async (zoneId, corpId) => {
     try {
+      Swal.fire({
+            title: "Loading...",
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            },
+        });
+
       const res = await axios.post(
         `${BASE_URL}/api/frmPayment/payment-list`,
         {
@@ -140,21 +158,22 @@ const FrmPaymentList = () => {
       }));
 
       setTableData(formatted);
+       Swal.close();
     } catch (err) {
       console.error("Payment API Error:", err);
       setTableData([]);
     }
   };
 
-  return (
-    <Formik initialValues={initialValues} onSubmit={() => { }}>
-      {({ values, setFieldValue }) => {
+  useEffect(() => {
+    if (ulbId && user?.token) {
+      fetchCorporations();
+    }
+  }, [ulbId, user]);
 
-        useEffect(() => {
-          if (ulbId) {
-            fetchCorporations(setFieldValue);
-          }
-        }, []);
+  return (
+    <Formik initialValues={initialValues} enableReinitialize onSubmit={() => { }}>
+      {({ values, setFieldValue }) => {
 
         const tableRows = tableData.map((row) => ({
           select: (

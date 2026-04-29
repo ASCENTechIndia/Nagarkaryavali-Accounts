@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Formik, Form } from "formik";
 import { motion } from "framer-motion";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useAuth } from "@/context/AuthContext";
@@ -55,7 +55,7 @@ const formatDate = (date) => {
 const FrmPayment = () => {
     const { user } = useAuth();
     const location = useLocation();
-
+    const navigate = useNavigate();
     const refNo = location.state?.referenceNo;
     const ulbId = user?.ulbId;
     const token = user?.token;
@@ -67,7 +67,7 @@ const FrmPayment = () => {
     const [glList, setGlList] = useState([]);
     const [entryHeadList, setEntryHeadList] = useState([]);
     const [partyList, setPartyList] = useState([]);
-
+    const [isLoading, setIsLoading] = useState(false);
     const [tempLedger, setTempLedger] = useState(null);
     const [tempDebtorLedger, setTempDebtorLedger] = useState(null);
 
@@ -165,13 +165,13 @@ const FrmPayment = () => {
 
     const fetchPaymentDetails = async (setFieldValue) => {
         try {
-            Swal.fire({
-                title: "Loading ...",
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                },
-            });
+            // Swal.fire({
+            //     title: "Loading ...",
+            //     allowOutsideClick: false,
+            //     didOpen: () => {
+            //         Swal.showLoading();
+            //     },
+            // });
             const res = await axios.post(
                 `${BASE_URL}/api/frmPayment/payment-details`,
                 { refno: refNo },
@@ -191,7 +191,6 @@ const FrmPayment = () => {
             setFieldValue("details", data.NARRATION);
             setFieldValue("partyCode", data.PARTYCODE?.toString());
             setFieldValue("debtorType", data.PAYMENTTYPE?.toString());
-            setFieldValue("bankBalance", data.BANKBALANCE || "");
             setFieldValue("costomerName", data.PARTYNAME || "");
 
             setFieldValue("deptCode", data.GLCODE?.toString());
@@ -205,21 +204,95 @@ const FrmPayment = () => {
 
         } catch (err) {
             console.error("Payment Details API Error:", err);
-        } finally{
+        } finally {
             Swal.close();
+        }
+    };
+
+    const fetchAccountBalance = async (values, setFieldValue) => {
+        try {
+            debugger;
+            if (!values.deptCode || !values.ledgerHead) return;
+
+            const payload = {
+                targetDate: formatDate(new Date()),
+                corpId: Number(ulbId),
+                ulbid: Number(ulbId),
+                glcode: values.deptCode,
+                accno: values.ledgerHead,
+            };
+
+            const res = await axios.post(
+                `${BASE_URL}/api/frmPayment/account-balance`,
+                payload,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            const balance = res.data?.data?.data?.BALANCE || 0;
+            const crdr = res.data?.data?.data?.CRDR || "";
+
+            setFieldValue("bankBalance", `${balance}`);
+
+        } catch (err) {
+            console.error("Account Balance API Error:", err);
+            setFieldValue("bankBalance", "");
+        }
+    };
+
+    const fetchChequeBook = async (values, setFieldValue) => {
+        try {
+            if (!values.deptCode || !values.ledgerHead || !values.chequeNo) return;
+
+            const payload = {
+                bank_glcode: values.deptCode,
+                bank_accno: values.ledgerHead,
+                cheque_no: values.chequeNo,
+                corp_id: ulbId.toString(),
+                zone_id: values.zoneId,
+            };
+
+            const res = await axios.post(
+                `${BASE_URL}/api/FrmVoucherGeneration/cheque-book`,
+                payload,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            console.log("Cheque API Response:", res.data);
+
+            const rows = res.data?.rows ?? [];
+
+            if (rows.length > 0) {
+                setFieldValue("chequePageNo", rows[0].BOOKNO.toString());
+            } else {
+                setFieldValue("chequePageNo", "");
+            }
+
+        } catch (err) {
+            console.error("Cheque Book API Error:", err);
+            setFieldValue("chequePageNo", "");
         }
     };
 
     const handleSubmit = async (values) => {
         try {
+            const isEdit = Boolean(refNo);
+            const inMode = isEdit ? 2 : 1;
+            const currentRefNo = isEdit ? refNo : 0;
+
+            const isBankPayment = values.transactionType === "4";
+
+            const chqDate = isBankPayment
+                ? formatDate(values.date)
+                : formatDate(values.chequeDate || values.date);
+
             const paramStr = [
                 formatDate(values.date),
-                0,
+                ulbId == 2 ? "" : (values.voucherNo || ""),
                 values.transactionType,
                 values.zoneId,
-                10,
-                values.voucherNo,
-                formatDate(values.chequeDate),
+                "0",
+                isBankPayment ? (values.chequeNo || "") : "",
+                chqDate,
                 values.deptCode,
                 values.ledgerHead,
                 values.debtorDeptCode,
@@ -227,21 +300,31 @@ const FrmPayment = () => {
                 values.amount,
                 values.details,
                 values.partyCode,
-                1, 0, 3, 1, 2, 1, 11, 5, 1,
+                inMode,
+                currentRefNo,
+                values.transactionType,
+                1,
+                "",
+                "",
+                isBankPayment ? (values.chequePageNo || "") : "",
+                "",
+                values.debtorType,
                 values.costomerName,
-                values.chequeNo,
-                formatDate(values.chequeDate),
+                "",
+                "",
             ].join("~");
 
-            const paramStr2 = [
-                values.deptCode,
-                values.ledgerHead,
-                values.debtorDeptCode,
-                values.debtorLedgerHead,
-                values.amount,
-                values.voucherNo,
-                formatDate(values.date),
-            ].join("#");
+            const paramStr2 = values.debtorDeptCode && values.debtorLedgerHead
+                ? [
+                    values.debtorDeptCode,
+                    values.partyCode,
+                    values.debtorDeptCode,
+                    values.debtorLedgerHead,
+                    values.amount,
+                    values.voucherNo || 0,
+                    formatDate(values.date),
+                ].join("#")
+                : "";
 
             const payload = {
                 paramStr,
@@ -251,20 +334,33 @@ const FrmPayment = () => {
                 zoneId: Number(values.zoneId),
             };
 
+            console.log("Payload →", JSON.stringify(payload, null, 2));
+
             const res = await axios.post(
                 `${BASE_URL}/api/frmPayment/save-payment`,
                 payload,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            Swal.fire({
-                text: res.data?.data?.message,
-                confirmButtonColor: "#1e3a8a",
-            });
+
+            const result = res.data?.data;
+
+            if (result?.errorCode === -100) {
+                Swal.fire({
+                    text: result.message,
+                    confirmButtonColor: "#1e3a8a",
+                });
+                navigate("/Transactions/FrmPaymentList")
+            } else {
+                Swal.fire({
+                    text: result?.message || "Transaction failed.",
+                    confirmButtonColor: "#1e3a8a",
+                });
+            }
 
         } catch (err) {
             console.error("Submit error:", err);
             Swal.fire({
-                text: "Something went wrong!",
+                text: err.response?.data?.message || "Something went wrong!",
                 confirmButtonColor: "#1e3a8a",
             });
         }
@@ -272,11 +368,36 @@ const FrmPayment = () => {
 
     useEffect(() => {
         if (!ulbId) return;
-        fetchZones();
-        fetchTransTypes();
-        fetchPaymentTypes();
-        fetchPartyMaster();
-        fetchGLList();
+
+        setIsLoading(true);
+
+        Swal.fire({
+            title: "Loading...",
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            },
+        });
+
+        Promise.all([
+            fetchZones(),
+            fetchTransTypes(),
+            fetchPaymentTypes(),
+            fetchPartyMaster(),
+            fetchGLList()
+        ])
+            .then(() => {
+                // 👉 If NOT edit mode → close here
+                if (!refNo) {
+                    setIsLoading(false);
+                    Swal.close();
+                }
+            })
+            .catch(() => {
+                Swal.close();
+                setIsLoading(false);
+            });
+
     }, [ulbId]);
 
 
@@ -330,11 +451,25 @@ const FrmPayment = () => {
                 useEffect(() => {
                     const allLoaded =
                         refNo && ulbId &&
-                        zones.length && transTypes.length &&
-                        paymentTypes.length && partyMaster.length && glList.length;
+                        zones.length &&
+                        transTypes.length &&
+                        paymentTypes.length &&
+                        partyMaster.length &&
+                        glList.length;
 
-                    if (allLoaded) fetchPaymentDetails(setFieldValue);
+                    if (allLoaded) {
+                        fetchPaymentDetails(setFieldValue).finally(() => {
+                            setIsLoading(false);
+                            Swal.close();
+                        });
+                    }
                 }, [refNo, ulbId, zones, transTypes, paymentTypes, partyMaster, glList]);
+
+                useEffect(() => {
+                    if (values.deptCode && values.ledgerHead) {
+                        fetchAccountBalance(values, setFieldValue);
+                    }
+                }, [values.deptCode, values.ledgerHead, values.date]);
 
                 const isBankPayment = values.transactionType === "4";
 
@@ -450,38 +585,72 @@ const FrmPayment = () => {
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        <div>
-                                            <Label text="व्हाउचर क्रमांक :" />
-                                            <Input name="voucherNo" value={values.voucherNo} onChange={handleChange} />
-                                            {errors.voucherNo && touched.voucherNo && (
-                                                <p className="text-red-500 text-sm">{errors.voucherNo}</p>
-                                            )}
-                                        </div>
+                                        {ulbId != 2 && (
+                                            <div>
+                                                <Label text="व्हाउचर क्रमांक :" />
+                                                <Input name="voucherNo" value={values.voucherNo} onChange={handleChange} />
+                                                {errors.voucherNo && touched.voucherNo && (
+                                                    <p className="text-red-500 text-sm">{errors.voucherNo}</p>
+                                                )}
+                                            </div>
+                                        )}
 
                                         <div>
                                             <Label text="बैंकची शिल्लक :" />
-                                            <Input name="bankBalance" value={values.bankBalance} onChange={handleChange} type="number" />
+                                            <Input name="bankBalance" value={values.bankBalance} type="number" disabled />
                                             {errors.bankBalance && touched.bankBalance && (
                                                 <p className="text-red-500 text-sm">{errors.bankBalance}</p>
                                             )}
                                         </div>
-
-                                        {isBankPayment && (
-                                            <div>
-                                                <Label text="धनादेश क्रमांक :" />
-                                                <Input name="chequeNo" value={values.chequeNo} onChange={handleChange} />
-                                                {errors.chequeNo && touched.chequeNo && (
-                                                    <p className="text-red-500 text-sm">{errors.chequeNo}</p>
-                                                )}
-                                            </div>
-                                        )}
                                     </div>
 
                                     {isBankPayment && (
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                                            {isBankPayment && (
+                                                <div>
+                                                    <Label text="धनादेश क्रमांक :" />
+                                                    <Input
+                                                        name="chequeNo"
+                                                        value={values.chequeNo}
+                                                        onChange={(e) => {
+                                                            let val = e.target.value;
+                                                            val = val.replace(/\D/g, "");
+                                                            if (val.length <= 6) {
+                                                                setFieldValue("chequeNo", val);
+                                                            }
+                                                        }}
+                                                        inputMode="numeric"
+                                                        maxLength={6}
+                                                        onBlur={() => {
+                                                            if (!values.chequeNo) return;
+
+                                                            if (values.chequeNo.length < 6) {
+                                                                Swal.fire({
+                                                                    text: "Cheque number must be 6 digits",
+                                                                    confirmButtonColor: "#1e3a8a",
+                                                                });
+                                                                return;
+                                                            }
+
+                                                            if (
+                                                                values.deptCode &&
+                                                                values.ledgerHead &&
+                                                                values.zoneId
+                                                            ) {
+                                                                fetchChequeBook(values, setFieldValue);
+                                                            }
+                                                        }}
+                                                    />
+                                                    {errors.chequeNo && touched.chequeNo && (
+                                                        <p className="text-red-500 text-sm">{errors.chequeNo}</p>
+                                                    )}
+                                                </div>
+                                            )}
+
                                             <div>
-                                                <Label text="धनादेश पृष्ठिका क्रमांक :" />
-                                                <Input name="chequePageNo" value={values.chequePageNo} onChange={handleChange} />
+                                                <Label text="धनादेश पृष्ठिका क्रमांक :" className="whitespace-nowrap" />
+                                                <Input name="chequePageNo" value={values.chequePageNo} disabled />
                                                 {errors.chequePageNo && touched.chequePageNo && (
                                                     <p className="text-red-500 text-sm">{errors.chequePageNo}</p>
                                                 )}
@@ -499,7 +668,7 @@ const FrmPayment = () => {
 
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         <div>
-                                            <Label text="देयकाधाराकाचे नाव :" className="w-40" />
+                                            <Label text="देयकाधाराकाचे नाव :" className="whitespace-nowrap" />
                                             <Input name="costomerName" value={values.costomerName} onChange={handleChange} />
                                             {errors.costomerName && touched.costomerName && (
                                                 <p className="text-red-500 text-sm">{errors.costomerName}</p>
