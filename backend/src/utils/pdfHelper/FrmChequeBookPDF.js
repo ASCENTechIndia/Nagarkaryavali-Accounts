@@ -62,10 +62,23 @@ const generateChequeBookPDF = async ({ data, filters, corporationName, corporati
       corporationName,
     });
 
-    const browser = await puppeteer.launch({
-      headless: "new",
+    // const browser = await puppeteer.launch({
+    //   headless: "new",
+    //   args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    // });
+
+    const chromePath = path.resolve(__dirname, "../../../node_modules/puppeteer/.cache/puppeteer/chrome/win64-135.0.7049.84/chrome-win64/chrome.exe");
+
+    const launchOptions = {
+      headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
+    };
+
+    if (fs.existsSync(chromePath)) {
+      launchOptions.executablePath = chromePath;
+    }
+
+    const browser = await puppeteer.launch(launchOptions);
 
     const page = await browser.newPage();
 
@@ -82,37 +95,26 @@ const generateChequeBookPDF = async ({ data, filters, corporationName, corporati
       format: "A4",
       landscape: true,
       printBackground: true,
-
       displayHeaderFooter: true,
-
       margin: {
-        top: "120px", // increase for header space
-        bottom: "80px",
-        left: "20px",
-        right: "20px",
+        top: "100px", // Give the header plenty of room
+        bottom: "60px",
+        left: "10px",
+        right: "10px",
       },
-
       headerTemplate: `
-    <div style="width:100%;padding:5px 20px;font-size:10px;">
-
-      <div style="display:flex;align-items:center;">
-        <img src="${logo}" style="width:70px;" />
-        <div style="flex:1;text-align:center;font-size:14px;font-weight:bold;">
-          ${corporationName}
-        </div>
-      </div>
-
-      <div style="text-align:center;font-size:12px;margin-top:2px;">
-        धनादेश पुस्तक तपशील
-      </div>
-
-      <div style="text-align:center;font-size:11px;margin-top:2px;">
-        ${headerText}
-      </div>
-
-      <div style="border-top:1px solid black;margin-top:5px;"></div>
-    </div>
-  `,
+                    <div style="width:100%; font-family: Arial; padding: 0 10px;">
+                      <div style="display:flex; align-items:center; justify-content: space-between;">
+                        <img src="${logo}" style="height:45px;" />
+                        <div style="text-align:center; flex-grow: 1;">
+                          <div style="font-size:16px; font-weight:bold;">${corporationName}</div>
+                          <div style="font-size:12px; margin-top:4px;">धनादेश पुस्तक तपशील</div>
+                          <div style="font-size:10px;">${headerText}</div>
+                        </div>
+                        <div style="width:45px;"></div> </div>
+                      <div style="border-bottom: 2px solid black; margin-top: 10px;"></div>
+                    </div>
+                     `,
 
       footerTemplate: `
     <div style="

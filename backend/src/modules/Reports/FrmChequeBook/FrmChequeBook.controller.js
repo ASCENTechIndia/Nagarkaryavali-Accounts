@@ -6,6 +6,14 @@ const { getCorporationService } = require("../../MenuAccess/MenuAccess.service")
 
 const { generateChequeBookPDF } = require("../../../utils/pdfHelper/FrmChequeBookPDF");
 
+exports.getChequeBook = asyncHandler(async (req, res) => {
+  const payload = req.body;
+
+  const data = await service.getChequeBookReport(payload);
+
+  return ok(res, data, "Cheque book data fetched");
+});
+
 exports.getChequeBookPDF = asyncHandler(async (req, res) => {
   const payload = req.body;
 

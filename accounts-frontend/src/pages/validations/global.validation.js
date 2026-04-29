@@ -317,3 +317,29 @@ export const ledgerReportValidationSchema = z.object({
   message: "दिनांका पर्यंत हा दिनांका पासून पेक्षा मोठा असावा",
   path: ["toDate"],
 });
+
+// FrmChequeBook
+export const FrmChequeBookValidationSchema = z.object({
+  prabhag: z.string().min(1, "प्रभाग निवडा"),
+  deptCode: z.string().min(1, "विभाग संकेतांक निवडा"),
+  ledger: z.string().min(1, "लेखाशीर्ष निवडा"),
+  chequeFrom: z
+    .string()
+    .trim()
+    .regex(/^\d{0,6}$/, "धनादेश पासून फक्त अंक आणि जास्तीत जास्त 6 अंक असावेत")
+    .optional()
+    .or(z.literal("")),
+  chequeTo: z
+    .string()
+    .trim()
+    .regex(/^\d{0,6}$/, "धनादेश पर्यंत फक्त अंक आणि जास्तीत जास्त 6 अंक असावेत")
+    .optional()
+    .or(z.literal("")),
+}).refine((data) => {
+  if (!data.chequeFrom || !data.chequeTo) return true;
+  return Number(data.chequeFrom) <= Number(data.chequeTo);
+},
+{
+  message: "धनादेश पासून हा धनादेश पर्यंत पेक्षा लहान किंवा समान असावा",
+  path: ["chequeTo"],
+});
