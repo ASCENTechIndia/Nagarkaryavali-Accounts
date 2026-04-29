@@ -312,7 +312,7 @@ const FrmChequeBook = () => {
     debugger;
       loaderSwal = Swal.fire({
           title: "Generating...",
-          text: "Please wait for ledger pdf generation",
+          text: "Please wait for cheque book pdf generation",
           allowOutsideClick: false,
           showConfirmButton: false,
           didOpen: () => {
