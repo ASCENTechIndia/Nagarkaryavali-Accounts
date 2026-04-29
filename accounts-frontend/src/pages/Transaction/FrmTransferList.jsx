@@ -40,8 +40,8 @@ const FrmTransferList = () => {
   /* ================= Swal Loader ================= */
   const showLoader = () => {
     Swal.fire({
-      title: "लोड होत आहे...",
-      text: "कृपया थांबा",
+      title: "Loading...",
+      text: "Please wait",
       allowOutsideClick: false,
       didOpen: () => Swal.showLoading(),
     });
@@ -75,7 +75,7 @@ const FrmTransferList = () => {
     if (!user?.ulbId || corporations.length === 0) return;
 
     const selected = corporations.find(
-      (c) => c.NUM_CORPORATION_ID === Number(user.ulbId)
+      (c) => c.NUM_CORPORATION_ID === Number(user.ulbId),
     );
 
     if (selected) {
@@ -206,58 +206,56 @@ const FrmTransferList = () => {
 
         <CardContent className="p-4">
           <div className="bg-white border rounded-md p-4">
-          <div className="space-y-2">
-  {/* Corporation */}
-  <div className="grid grid-cols-[120px_300px] items-center gap-3">
-    <Label>महानगरपालिका :</Label>
+            <div className="space-y-2">
+              {/* Corporation */}
+              <div className="grid grid-cols-[120px_300px] items-center gap-3">
+                <Label>महानगरपालिका :</Label>
 
-    <Select
-      value={selectedCorp}
-      onValueChange={setSelectedCorp}
-      disabled={!!user?.ulbId}
-    >
-      <SelectTrigger className="h-8 w-full">  {/* ✅ FIX */}
-        <SelectValue placeholder="Select" />
-      </SelectTrigger>
+                <Select
+                  value={selectedCorp}
+                  onValueChange={setSelectedCorp}
+                  disabled={!!user?.ulbId}
+                >
+                  <SelectTrigger className="h-8 w-full">
+                    {" "}
+                    {/* ✅ FIX */}
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
 
-      <SelectContent>
-        {corporations.map((c) => (
-          <SelectItem
-            key={c.NUM_CORPORATION_ID}
-            value={c.NUM_CORPORATION_ID.toString()}
-          >
-            {c.VAR_CORPORATION_NAME}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  </div>
+                  <SelectContent>
+                    {corporations.map((c) => (
+                      <SelectItem
+                        key={c.NUM_CORPORATION_ID}
+                        value={c.NUM_CORPORATION_ID.toString()}
+                      >
+                        {c.VAR_CORPORATION_NAME}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-  {/* Zone */}
-  <div className="grid grid-cols-[120px_300px] items-center gap-3">
-    <Label>झोन :</Label>
+              {/* Zone */}
+              <div className="grid grid-cols-[120px_300px] items-center gap-3">
+                <Label>झोन :</Label>
 
-    <Select
-      value={selectedZone}
-      onValueChange={setSelectedZone}
-    >
-      <SelectTrigger className="h-8 w-full">  {/* ✅ FIX */}
-        <SelectValue placeholder="Select Zone" />
-      </SelectTrigger>
+                <Select value={selectedZone} onValueChange={setSelectedZone}>
+                  <SelectTrigger className="h-8 w-full">
+                    {" "}
+                    {/* ✅ FIX */}
+                    <SelectValue placeholder="Select Zone" />
+                  </SelectTrigger>
 
-      <SelectContent>
-        {zones.map((z) => (
-          <SelectItem
-            key={z.ZONEID}
-            value={z.ZONEID.toString()}
-          >
-            {z.ZONEENAME}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  </div>
-</div>
+                  <SelectContent>
+                    {zones.map((z) => (
+                      <SelectItem key={z.ZONEID} value={z.ZONEID.toString()}>
+                        {z.ZONEENAME}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
 
             {/* Table */}
             <div className="mt-4 border rounded-md overflow-hidden">

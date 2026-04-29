@@ -135,7 +135,6 @@ const FrmTransfer = () => {
       );
 
       const rows = res.data?.data?.rows || [];
-      console.log(`Ledgers for GLCODE ${glcode} fetched:`, rows);
 
       if (type === "credit") setCreditLedgers([...rows]);
       else setDebitLedgers([...rows]);
@@ -153,8 +152,8 @@ const FrmTransfer = () => {
     const fetchData = async () => {
       try {
         Swal.fire({
-          title: "डेटा लोड होत आहे...",
-          text: "कृपया थांबा",
+          title: "Loading...",
+          text: "Please wait",
           allowOutsideClick: false,
           didOpen: () => Swal.showLoading(),
         });
@@ -166,8 +165,6 @@ const FrmTransfer = () => {
           { tranRef: location.state.refNo },
           { headers },
         );
-
-        console.log("Contra details response:", res.data);
 
         const apiRows = res.data?.data?.rows || [];
         if (!apiRows.length) {
@@ -185,7 +182,7 @@ const FrmTransfer = () => {
           return;
         }
 
-        // 🔹 BASIC
+        /* ================= BASIC ================= */
         form.setFieldValue("date", new Date(first.TRNSDATE));
         form.setFieldValue("voucherNo", first.VCHNO || "");
         form.setFieldValue("details", first.NARRATION || "");
@@ -201,7 +198,7 @@ const FrmTransfer = () => {
         form.setFieldValue("department", String(first.ZONEID || ""));
         form.setFieldValue("transactionType", String(first.TRNSTYPEID || ""));
 
-        // 🔥 CREDIT SECTION
+        /* ================= CREDIT ================= */
         if (creditRow?.GLCODE) {
           const creditGL = String(creditRow.GLCODE);
           const creditObj = String(creditRow.OBJECTCODE);
@@ -220,8 +217,27 @@ const FrmTransfer = () => {
 
           form.setFieldValue("creditAmount", Math.abs(creditRow.CREDIT || 0));
         }
+        // 🔁 CREDIT FALLBACK (if only debit present)
+        else if (debitRow) {
+          const fallbackGL = String(debitRow.GLCODE);
+          const fallbackObj = String(debitRow.OBJECTCODE);
 
-        // 🔥 DEBIT SECTION
+          form.setFieldValue("creditDept", fallbackGL);
+
+          const creditLedgerRows = await loadLedgers(fallbackGL, "credit");
+
+          const exists = creditLedgerRows.find(
+            (r) => String(r.OBJECTCODE) === fallbackObj,
+          );
+
+          if (exists) {
+            form.setFieldValue("creditLedger", fallbackObj);
+          }
+
+          form.setFieldValue("creditAmount", Math.abs(debitRow.DEBIT || 0));
+        }
+
+        /* ================= DEBIT ================= */
         if (debitRow?.GLCODE) {
           const debitGL = String(debitRow.GLCODE);
           const debitObj = String(debitRow.OBJECTCODE);
@@ -238,7 +254,26 @@ const FrmTransfer = () => {
             form.setFieldValue("debitLedger", debitObj);
           }
 
-          form.setFieldValue("debitAmount", Math.abs(debitRow.DEBIT));
+          form.setFieldValue("debitAmount", Math.abs(debitRow.DEBIT || 0));
+        }
+        // 🔁 DEBIT FALLBACK (if only credit present)
+        else if (creditRow) {
+          const fallbackGL = String(creditRow.GLCODE);
+          const fallbackObj = String(creditRow.OBJECTCODE);
+
+          form.setFieldValue("debitDept", fallbackGL);
+
+          const debitLedgerRows = await loadLedgers(fallbackGL, "debit");
+
+          const exists = debitLedgerRows.find(
+            (r) => String(r.OBJECTCODE) === fallbackObj,
+          );
+
+          if (exists) {
+            form.setFieldValue("debitLedger", fallbackObj);
+          }
+
+          form.setFieldValue("debitAmount", Math.abs(creditRow.CREDIT || 0));
         }
 
         Swal.close();
