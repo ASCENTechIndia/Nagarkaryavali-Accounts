@@ -149,35 +149,67 @@ const FrmVoucherGeneration = () => {
         to_date: values.fromDateEnabled
           ? values.toDate.toLocaleDateString("en-GB")
           : "",
-        party_id: Number(values.partyCode),
-        corp_id: ulbId,
+        party_id: values.partyCode ? Number(values.partyCode) : null,
+        budget_id: values.budgetId ? Number(values.budgetId) : null,
+        nidhi_id: values.nidhiId ? Number(values.nidhiId) : null,
+        corp_id: Number(ulbId),
       };
 
       const headers = { Authorization: `Bearer ${token}` };
 
-      let res = await axios.post(
-        `${BASE_URL}/api/FrmVoucherGeneration/balance-voucher`,
-        payload,
-        { headers },
-      );
-
-      let data = res.data?.rows || [];
-
-      if (!data.length) {
-        const prepRes = await axios.post(
+      const [balanceRes, prepRes] = await Promise.all([
+        axios.post(
+          `${BASE_URL}/api/FrmVoucherGeneration/balance-voucher`,
+          payload,
+          { headers },
+        ),
+        axios.post(
           `${BASE_URL}/api/FrmVoucherGeneration/voucher-prep`,
           payload,
           { headers },
-        );
-        data = prepRes.data?.rows || [];
-      }
+        ),
+      ]);
 
-      setVoucherList(data);
+      const normalizeData = (data) =>
+        (data || []).map((row) => ({
+          REFNO: row.REFNO ?? row.refno,
+          TRNSDATE: row.TRNSDATE ?? row.trnsdate,
+          VCHNO: row.VCHNO ?? row.vchno,
+
+          ZONENAME: row.ZONENAME ?? row.zonename,
+          GRAMPANCH: row.GRAMPANCH ?? row.grampanch ?? "",
+          PARTYNAME: row.PARTYNAME ?? row.partyname ?? "",
+
+          TOTALAMT: Number(row.TOTALAMT ?? row.totalamt ?? 0),
+          AMT: Number(row.AMT ?? row.amt ?? 0),
+          BALAMT: Number(row.BALAMT ?? row.balamt ?? 0),
+
+          DRGL: row.DRGL ?? row.drgl,
+          GLNAME: row.GLNAME ?? row.glname,
+          DRACC: row.DRACC ?? row.dracc,
+          ACCNAME: row.ACCNAME ?? row.accname,
+
+          PRENARRATION: row.PRENARRATION ?? row.prenarration ?? "",
+          PARTYCODE: row.PARTYCODE ?? row.partycode ?? 0,
+          DEPTID: row.DEPTID ?? row.deptid ?? 0,
+        }));
+
+      const balanceData = normalizeData(balanceRes.data?.rows);
+      const prepData = normalizeData(prepRes.data?.rows);
+
+      const finalData = [...balanceData, ...prepData];
+
+      finalData.forEach((v) => {
+        const nival = v.BALAMT || v.TOTALAMT - v.AMT;
+        v.deyRakkam = nival;
+      });
+
+      setVoucherList(finalData);
+      setCurrentPage(1);
 
       Swal.close();
 
-      // ✅ ONLY disable when data exists
-      if (data.length > 0) {
+      if (finalData.length > 0) {
         setSearchDone(true);
       } else {
         Swal.fire("No data found");
@@ -190,22 +222,33 @@ const FrmVoucherGeneration = () => {
 
   const fetchChequeBook = async (values) => {
     try {
-      // ✅ match .NET validation (6 digit cheque)
+      if (
+        !values.deptCode ||
+        !values.ledger ||
+        !values.department ||
+        !values.chequeNo
+      ) {
+        return;
+      }
+
+      // ✅ cheque must be 6 digit (same as .NET)
       if (!/^\d{6}$/.test(values.chequeNo)) {
         return;
       }
 
-      if (!values.deptCode || !values.ledger) return;
+      const payload = {
+        bank_glcode: String(values.deptCode),
+        bank_accno: String(values.ledger),
+        cheque_no: String(values.chequeNo),
+        corp_id: String(ulbId),
+        zone_id: String(values.department),
+      };
+
+      console.log("Cheque Book Payload:", payload);
 
       const res = await axios.post(
         `${BASE_URL}/api/FrmVoucherGeneration/cheque-book`,
-        {
-          bank_glcode: values.deptCode,
-          bank_accno: values.ledger,
-          cheque_no: values.chequeNo,
-          corp_id: ulbId,
-          zone_id: values.department,
-        },
+        payload,
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -236,6 +279,43 @@ const FrmVoucherGeneration = () => {
       Swal.fire("Voucher details failed");
     }
   };
+
+  const fetchBankBalance = async (glcode, accno, setFieldValue) => {
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/api/frmPayment/account-balance`,
+        {
+          targetDate: new Date()
+            .toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            })
+            .replace(/ /g, "-"), // 👉 29-APR-2026 format
+          corpId: Number(ulbId),
+          ulbid: Number(ulbId),
+          glcode: Number(glcode),
+          accno: Number(accno),
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      const balance = res.data?.data?.data?.BALANCE || 0;
+
+      setFieldValue("bankBalance", balance);
+    } catch (err) {
+      console.error(err);
+      Swal.fire("Bank balance fetch failed");
+    }
+  };
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 10;
+
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const paginatedData = voucherList.slice(startIndex, startIndex + rowsPerPage);
 
   const fetchVoucherFullData = async (voucherNo) => {
     try {
@@ -319,7 +399,10 @@ const FrmVoucherGeneration = () => {
 
       const str3 = selectedRows
         .map((v) => {
-          const nivalDey = (v.TOTALAMT || 0) - (v.AMT || 0);
+          const nivalDey =
+            v.BALAMT !== undefined
+              ? v.BALAMT
+              : (v.TOTALAMT || 0) - (v.AMT || 0);
           const dey = v.deyRakkam ?? nivalDey;
           const shillak = nivalDey - dey;
 
@@ -358,6 +441,16 @@ const FrmVoucherGeneration = () => {
         })
         .join("$");
 
+      const chequeNo =
+        values.paymentType === "2" || values.paymentType === "3"
+          ? values.chequeNo
+          : "";
+
+      const chequeBook =
+        values.paymentType === "2" || values.paymentType === "3"
+          ? values.chequeBookNo
+          : "";
+
       const str1 = [
         status,
         4,
@@ -365,13 +458,13 @@ const FrmVoucherGeneration = () => {
         deptCode,
         ledger,
         totalSelectedAmount,
-        values.chequeNo || "",
+        chequeNo, // ✅ FIX
         formatDate(values.chequeDate),
         values.department || 0,
         0,
         formatDate(values.transactionDate),
         values.budgetId || "",
-        values.chequeBookNo || "",
+        chequeBook, // ✅ FIX
         values.paymentType || 2,
         values.nidhi_id || "",
       ].join("~");
@@ -399,6 +492,15 @@ const FrmVoucherGeneration = () => {
 
       if (res.data?.success) {
         Swal.fire("Success", res.data.errorMsg, "success");
+
+        // ✅ RESET FORM
+        formikHelpers.resetForm();
+
+        // ✅ CLEAR EXTRA STATES (VERY IMPORTANT)
+        setVoucherList([]);
+        setVoucherDetails([]);
+        setChequeBooks([]);
+        setSearchDone(false);
       } else {
         Swal.fire("Error", res.data.errorMsg, "error");
       }
@@ -463,6 +565,7 @@ const FrmVoucherGeneration = () => {
                     <FormField label="दिनांक पासून">
                       <div className="flex items-center gap-3">
                         <Checkbox
+                          className="border-gray-700 data-[state=checked]:bg-blue-900"
                           checked={values.fromDateEnabled}
                           onCheckedChange={(v) =>
                             setFieldValue("fromDateEnabled", v)
@@ -546,82 +649,120 @@ const FrmVoucherGeneration = () => {
 
                 <section className="border rounded-lg p-4 sm:p-5 space-y-4">
                   {voucherList.length > 0 && (
-                    <div className="mt-4 rounded-xl border bg-white shadow-sm overflow-hidden">
+                    <div className="mt-4  border bg-white shadow-sm overflow-hidden">
                       {/* TABLE WRAPPER */}
-                      <div className="overflow-x-auto">
+                      <div className=" border border-gray-300 bg-white shadow-sm overflow-hidden">
                         <table className="w-full text-sm">
-                          {/* HEADER */}
-                          <thead className="bg-muted border-b">
-                            <tr className="text-muted-foreground">
-                              <th className="p-3 text-left">Select</th>
-                              <th className="p-3 text-left">Ref No</th>
-                              <th className="p-3 text-left">दिनांक</th>
-                              <th className="p-3 text-left">Voucher</th>
-                              <th className="p-3 text-left">Zone</th>
-                              <th className="p-3 text-left">Party</th>
-                              <th className="p-3 text-right">Total</th>
-                              <th className="p-3 text-right">Amt</th>
-                              <th className="p-3 text-right">निव्वळ देय</th>
-                              <th className="p-3 text-right">देय रक्कम</th>
-                              <th className="p-3 text-right">शिल्लक</th>
+                          <thead className="bg-[#163e72] text-white">
+                            <tr>
+                              <th className="p-2">Select</th>
+                              <th className="p-2">रेफ. क्र.</th>
+                              <th className="p-2">दिनांक</th>
+                              <th className="p-2">व्हा. क्र.</th>
+                              <th className="p-2">झोन</th>
+                              <th className="p-2">पार्टी</th>
+
+                              <th className="p-2 text-right">एकूण रक्कम</th>
+
+                              <th className="p-2">डेबिट जीएल</th>
+                              <th className="p-2">डेबिट जीएल नाव</th>
+                              <th className="p-2">डेबिट खाते</th>
+                              <th className="p-2">डेबिट खाते नाव</th>
+
+                              <th className="p-2">तपशील</th>
+
+                              <th className="p-2 text-right">रक्कम</th>
+                              <th className="p-2 text-right">निव्वळ देय</th>
+                              <th className="p-2 text-right">देय रक्कम</th>
+                              <th className="p-2 text-right">शिल्लक</th>
                             </tr>
                           </thead>
 
-                          {/* BODY */}
                           <tbody>
-                            {voucherList.map((row, i) => {
+                            {paginatedData.map((row, i) => {
+                              const actualIndex = startIndex + i;
+
                               const nivalDey =
-                                (row.TOTALAMT || 0) - (row.AMT || 0);
+                                row.BALAMT != null
+                                  ? Number(row.BALAMT)
+                                  : (row.TOTALAMT || 0) - (row.AMT || 0);
+
                               const deyRakkam = row.deyRakkam ?? nivalDey;
                               const shillak = nivalDey - deyRakkam;
 
                               return (
                                 <tr
                                   key={i}
-                                  className="border-b hover:bg-muted/50 transition-colors"
+                                  className="border-b hover:bg-gray-50"
                                 >
-                                  {/* CHECKBOX */}
-                                  <td className="p-3">
+                                  {/* SELECT */}
+                                  <td className="p-2 text-center">
                                     <Checkbox
                                       checked={row.selected || false}
                                       onCheckedChange={(checked) => {
-                                        const updated = [...voucherList];
-                                        updated[i].selected = checked;
-                                        updated[i].deyRakkam = checked
-                                          ? updated[i].deyRakkam || nivalDey
-                                          : 0;
+                                        const updated = voucherList.map(
+                                          (v, idx) =>
+                                            idx === actualIndex
+                                              ? {
+                                                  ...v,
+                                                  selected: checked,
+                                                  deyRakkam: checked
+                                                    ? (v.deyRakkam ?? nivalDey)
+                                                    : 0,
+                                                }
+                                              : v,
+                                        );
                                         setVoucherList(updated);
                                       }}
                                     />
                                   </td>
 
-                                  <td className="p-3">{row.REFNO}</td>
+                                  <td className="p-2">{row.REFNO}</td>
 
-                                  <td className="p-3">
-                                    {new Date(
-                                      row.TRNSDATE,
-                                    ).toLocaleDateString()}
+                                  <td className="p-2">
+                                    {row.TRNSDATE
+                                      ? new Date(
+                                          row.TRNSDATE,
+                                        ).toLocaleDateString("en-GB")
+                                      : "-"}
                                   </td>
 
-                                  <td className="p-3 font-medium">
-                                    {row.VCHNO}
-                                  </td>
-                                  <td className="p-3">{row.ZONENAME}</td>
-                                  <td className="p-3">{row.PARTYNAME}</td>
+                                  <td className="p-2">{row.VCHNO}</td>
 
-                                  <td className="p-3 text-right">
+                                  <td className="p-2">{row.ZONENAME || "-"}</td>
+
+                                  <td className="p-2">
+                                    {row.PARTYNAME || `ID: ${row.PARTYCODE}`}
+                                  </td>
+
+                                  {/* TOTAL */}
+                                  <td className="p-2 text-right">
                                     {row.TOTALAMT}
                                   </td>
-                                  <td className="p-3 text-right">{row.AMT}</td>
 
-                                  {/* निव्वळ देय */}
-                                  <td className="p-3 text-right font-medium">
+                                  {/* GL */}
+                                  <td className="p-2">{row.DRGL}</td>
+                                  <td className="p-2">{row.GLNAME}</td>
+
+                                  {/* ACCOUNT */}
+                                  <td className="p-2">{row.DRACC}</td>
+                                  <td className="p-2">{row.ACCNAME}</td>
+
+                                  {/* NARRATION */}
+                                  <td className="p-2">{row.PRENARRATION}</td>
+
+                                  {/* AMT */}
+                                  <td className="p-2 text-right">{row.AMT}</td>
+
+                                  {/* NIVAL */}
+                                  <td className="p-2 text-right font-semibold">
                                     {nivalDey}
                                   </td>
 
                                   {/* EDITABLE */}
-                                  <td className="p-3 text-right">
+                                  <td className="p-2 text-right">
                                     <Input
+                                      className="h-7 w-24 text-right"
                                       value={deyRakkam}
                                       disabled={!row.selected}
                                       onChange={(e) => {
@@ -634,27 +775,52 @@ const FrmVoucherGeneration = () => {
                                           return;
                                         }
 
-                                        const updated = [...voucherList];
-                                        updated[i].deyRakkam = val;
+                                        const updated = voucherList.map(
+                                          (v, idx) =>
+                                            idx === actualIndex
+                                              ? { ...v, deyRakkam: val }
+                                              : v,
+                                        );
+
                                         setVoucherList(updated);
                                       }}
-                                      className="h-8 w-24 text-right"
                                     />
                                   </td>
 
-                                  {/* शिल्लक */}
-                                  <td
-                                    className={`p-3 text-right font-medium ${
-                                      shillak < 0 ? "text-red-600" : ""
-                                    }`}
-                                  >
-                                    {shillak}
-                                  </td>
+                                  {/* BALANCE */}
+                                  <td className="p-2 text-right">{shillak}</td>
                                 </tr>
                               );
                             })}
                           </tbody>
                         </table>
+                        <div className="flex justify-between items-center p-4">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            disabled={currentPage === 1}
+                            onClick={() => setCurrentPage((prev) => prev - 1)}
+                          >
+                            Previous
+                          </Button>
+
+                          <span className="text-sm">
+                            Page {currentPage} of{" "}
+                            {Math.ceil(voucherList.length / rowsPerPage)}
+                          </span>
+
+                          <Button
+                            type="button"
+                            variant="outline"
+                            disabled={
+                              currentPage ===
+                              Math.ceil(voucherList.length / rowsPerPage)
+                            }
+                            onClick={() => setCurrentPage((prev) => prev + 1)}
+                          >
+                            Next
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -693,19 +859,16 @@ const FrmVoucherGeneration = () => {
 
                           setFieldValue("ledger", value);
 
-                          // 🔍 find selected ledger object
                           const selectedLedger = ledgers.find(
                             (l) => String(l.OBJECTCODE) === String(value),
                           );
 
                           if (selectedLedger) {
-                            // ✅ 1. Auto fill bank balance
-                            setFieldValue(
-                              "bankBalance",
-                              selectedLedger.BALANCE || 0,
+                            fetchBankBalance(
+                              values.deptCode,
+                              value,
+                              setFieldValue,
                             );
-
-                            // ✅ 2. Auto fill details (ACCNAME)
                             setFieldValue(
                               "details",
                               selectedLedger.ACCNAME || "",
@@ -797,18 +960,23 @@ const FrmVoucherGeneration = () => {
                           name="chequeNo"
                           value={values.chequeNo}
                           onChange={(e) => {
-                            handleChange(e);
+                            const value = e.target.value;
 
-                            // 🔥 clear old data
+                            setFieldValue("chequeNo", value);
+
+                            // reset first
                             setChequeBooks([]);
                             setFieldValue("chequeBookNo", "");
 
                             const updatedValues = {
                               ...values,
-                              chequeNo: e.target.value,
+                              chequeNo: value,
                             };
 
-                            fetchChequeBook(updatedValues);
+                            // ✅ delay to ensure state updated
+                            setTimeout(() => {
+                              fetchChequeBook(updatedValues);
+                            }, 300);
                           }}
                           className="h-9 w-full"
                         />
@@ -850,6 +1018,7 @@ const FrmVoucherGeneration = () => {
                 </Button>
 
                 <Button
+                type="button"
                   variant="outline"
                   onClick={resetForm}
                   className="w-full sm:w-auto"
@@ -858,6 +1027,7 @@ const FrmVoucherGeneration = () => {
                 </Button>
 
                 <Button
+                type="button"
                   variant="destructive"
                   onClick={() => navigate("/")}
                   className="w-full sm:w-auto"

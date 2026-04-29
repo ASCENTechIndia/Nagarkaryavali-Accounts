@@ -294,14 +294,12 @@ async function searchAccountRepo({ ulbid, searchText, functionCode }) {
     return result.rows;
 }
 
-async function getAccountBalanceRepo({ targetDate, corpId, ulbid }) {
-    console.log("📤 Repo: Fetch Account Balance", {
-        targetDate,
-        corpId,
-        ulbid,
-    });
+async function getAccountBalanceRepo({ targetDate, corpId, glcode, accno, ulbid }) {
+  console.log("📤 Repo: Fetch Account Balance", {
+    targetDate, corpId, glcode, accno, ulbid
+  });
 
-    const sql = `
+  const sql = `
     SELECT 
       SUM(balance) AS balance,
       CASE 
@@ -312,31 +310,31 @@ async function getAccountBalanceRepo({ targetDate, corpId, ulbid }) {
       SELECT NVL(
         SUM(
           openingbal + (
-            SELECT NVL(SUM(amount), 0)
-            FROM transview a
+            SELECT NVL(SUM(amount), 0) 
+            FROM transview a  
             WHERE a.glcode = c.glcode
               AND a.accno = c.accno
-              AND TRUNC(a.trnsdate) <= TO_DATE(:targetDate, 'DD-MON-YYYY')
+              AND TRUNC(a.trnsdate) <= TO_DATE(:targetDate, 'DD-MON-YYYY') 
               AND a.ulbid = :corpId
           )
         ), 0
       ) AS balance
-      FROM accountview_web c
-      WHERE c.glcode = 2
-        AND c.accno = 0
+      FROM accountview_web c 
+      WHERE c.glcode = :glcode  
+        AND c.accno = :accno 
         AND c.ulbid = :ulbid
     )
   `;
 
-    const binds = { targetDate, corpId, ulbid };
+  const binds = { targetDate, corpId, glcode, accno, ulbid };
 
-    const result = await executeQuery(sql, binds);
+  const result = await executeQuery(sql, binds);
 
-    if (!result.success) {
-        throw new Error(result.error);
-    }
+  if (!result.success) {
+    throw new Error(result.error);
+  }
 
-    return result.rows;
+  return result.rows.length > 0 ? result.rows[0] : { balance: 0, crdr: 'Cr.' };
 }
 
 async function getCorporationByIdRepo({ corpId }) {

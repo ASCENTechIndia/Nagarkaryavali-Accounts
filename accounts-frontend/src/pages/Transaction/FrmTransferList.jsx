@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import Swal from "sweetalert2";
 import { useAuth } from "@/context/AuthContext";
 
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/Components/ui/select";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -36,20 +37,45 @@ const FrmTransferList = () => {
     return config;
   });
 
-  /* 🔥 Load Corporations */
-  useEffect(() => {
-    api.get("/api/FrmParty/corporation/list").then((res) => {
-      const corpList = res.data?.data?.list || [];
-      setCorporations(corpList);
+  /* ================= Swal Loader ================= */
+  const showLoader = () => {
+    Swal.fire({
+      title: "Loading...",
+      text: "Please wait",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
     });
+  };
+
+  const hideLoader = () => {
+    Swal.close();
+  };
+
+  /* ================= Load Corporations ================= */
+  useEffect(() => {
+    const loadCorporations = async () => {
+      try {
+        showLoader();
+
+        const res = await api.get("/api/FrmParty/corporation/list");
+        const corpList = res.data?.data?.list || [];
+        setCorporations(corpList);
+      } catch (err) {
+        Swal.fire("Corporation load failed");
+      } finally {
+        hideLoader();
+      }
+    };
+
+    loadCorporations();
   }, []);
 
-  /* 🔥 Auto Select Corporation (FIXED) */
+  /* ================= Auto Select Corporation ================= */
   useEffect(() => {
     if (!user?.ulbId || corporations.length === 0) return;
 
     const selected = corporations.find(
-      (c) => c.NUM_CORPORATION_ID === Number(user.ulbId)
+      (c) => c.NUM_CORPORATION_ID === Number(user.ulbId),
     );
 
     if (selected) {
@@ -57,24 +83,36 @@ const FrmTransferList = () => {
     }
   }, [user?.ulbId, corporations]);
 
-  /* 🔥 Load Zones */
+  /* ================= Load Zones ================= */
   useEffect(() => {
     if (!selectedCorp) return;
 
-    api
-      .post("/api/Receipt/zones", {
-        corp_id: Number(selectedCorp),
-      })
-      .then((res) => {
+    const loadZones = async () => {
+      try {
+        showLoader();
+
+        const res = await api.post("/api/Receipt/zones", {
+          corp_id: Number(selectedCorp),
+        });
+
         setZones(res.data?.data || []);
         setSelectedZone("");
         setList([]);
-      });
+      } catch (err) {
+        Swal.fire("Zone load failed");
+      } finally {
+        hideLoader();
+      }
+    };
+
+    loadZones();
   }, [selectedCorp]);
 
-  /* 🔥 Load Transfer List */
+  /* ================= Load Transfer List ================= */
   const loadTransferList = async (zoneId) => {
     try {
+      showLoader();
+
       const res = await api.post("/api/FrmTransfer/transfer-list", {
         zoneId: Number(zoneId),
         ulbId: Number(selectedCorp),
@@ -82,24 +120,25 @@ const FrmTransferList = () => {
 
       setList(res.data?.data?.rows || []);
     } catch (err) {
-      console.error("Error loading transfer list", err);
+      Swal.fire("Error loading transfer list");
+    } finally {
+      hideLoader();
     }
   };
 
-  /* 🔥 Load Table */
   useEffect(() => {
     if (!selectedZone) return;
     loadTransferList(selectedZone);
   }, [selectedZone]);
 
-  /* 🔥 Format Date */
+  /* ================= Format Date ================= */
   const formatDate = (d) => {
     if (!d) return "";
     const date = new Date(d);
     return `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
   };
 
-  /* 🔥 Table Mapping */
+  /* ================= Table Mapping ================= */
   const tableData = list.map((row) => ({
     select: (
       <Button
@@ -148,10 +187,10 @@ const FrmTransferList = () => {
     "दिनांक वेळ": "datetime",
   };
 
+  /* ================= UI ================= */
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
       <Card className="shadow-sm border rounded-lg">
-
         <CardHeader className="border-b flex justify-between items-center">
           <CardTitle className="text-lg font-semibold">
             हस्तांतरण करार यादी
@@ -167,19 +206,19 @@ const FrmTransferList = () => {
 
         <CardContent className="p-4">
           <div className="bg-white border rounded-md p-4">
-
             <div className="space-y-2">
-
               {/* Corporation */}
               <div className="grid grid-cols-[120px_300px] items-center gap-3">
-                <Label className="text-sm font-medium">महानगरपालिका :</Label>
+                <Label>महानगरपालिका :</Label>
 
                 <Select
                   value={selectedCorp}
                   onValueChange={setSelectedCorp}
                   disabled={!!user?.ulbId}
                 >
-                  <SelectTrigger className="h-8 text-sm w-full">
+                  <SelectTrigger className="h-8 w-full">
+                    {" "}
+                    {/* ✅ FIX */}
                     <SelectValue placeholder="Select" />
                   </SelectTrigger>
 
@@ -198,31 +237,27 @@ const FrmTransferList = () => {
 
               {/* Zone */}
               <div className="grid grid-cols-[120px_300px] items-center gap-3">
-                <Label className="text-sm font-medium">झोन :</Label>
+                <Label>झोन :</Label>
 
-                <Select
-                  value={selectedZone}
-                  onValueChange={setSelectedZone}
-                >
-                  <SelectTrigger className="h-8 text-sm w-full">
+                <Select value={selectedZone} onValueChange={setSelectedZone}>
+                  <SelectTrigger className="h-8 w-full">
+                    {" "}
+                    {/* ✅ FIX */}
                     <SelectValue placeholder="Select Zone" />
                   </SelectTrigger>
 
                   <SelectContent>
                     {zones.map((z) => (
-                      <SelectItem
-                        key={z.ZONEID}
-                        value={z.ZONEID.toString()}
-                      >
+                      <SelectItem key={z.ZONEID} value={z.ZONEID.toString()}>
                         {z.ZONEENAME}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-
             </div>
 
+            {/* Table */}
             <div className="mt-4 border rounded-md overflow-hidden">
               <ShadCNTable
                 headers={headers}
@@ -231,10 +266,8 @@ const FrmTransferList = () => {
                 pagination={true}
               />
             </div>
-
           </div>
         </CardContent>
-
       </Card>
     </motion.div>
   );
