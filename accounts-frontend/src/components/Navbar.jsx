@@ -270,7 +270,19 @@ const Navbar = () => {
                 {children.length > 0 && (
                   <MenubarContent
                     align="start"
-                    className="z-50 bg-white text-black border shadow-lg rounded-md min-w-50 p-1"
+                    // className="z-50 bg-white text-black border shadow-lg rounded-md min-w-50 p-1"
+                    sideOffset={4}
+                    className="
+                      z-50
+                      bg-white text-black
+                      border shadow-lg rounded-md
+                      min-w-[240px]
+                      max-h-[70vh]
+                      overflow-y-auto
+                      overflow-x-hidden
+                      p-1
+                      scrollbar-thin
+                    "
                   >
                     {children.map((child) => (
                       <MenubarItem

@@ -1,0 +1,262 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      @page {
+        size: A4 landscape;
+        margin: 0px;
+      }
+
+      body {
+        font-family: 'Arial', 'SimHei', 'Microsoft Sans Serif', sans-serif;
+        font-size: 9px;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* ========== FIXED HEADER - REPEATS ON EVERY PAGE ========== */
+      .page-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 8px 20px 5px 20px;
+        z-index: 100;
+      }
+
+      .logo-img {
+        height: 45px;
+        width: auto;
+      }
+
+      .company-name {
+        text-align: center;
+        font-weight: bold;
+        font-size: 14px;
+        margin-bottom: 3px;
+        color: #1a1a1a;
+      }
+
+      .report-title {
+        text-align: center;
+        font-weight: bold;
+        font-size: 13px;
+        margin-bottom: 3px;
+        color: #2c3e50;
+      }
+
+      .report-subtitle {
+        text-align: center;
+        font-size: 10px;
+        color: #555;
+        margin-bottom: 3px;
+      }
+
+      .zone-info {
+        text-align: center;
+        font-size: 9px;
+        color: #666;
+        margin-bottom: 3px;
+      }
+
+      .header-line {
+        border-top: 2px solid #333;
+        margin: 5px 0 0 0;
+      }
+
+      /* ========== FIXED FOOTER - REPEATS ON EVERY PAGE ========== */
+      .page-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 5px 20px;
+        font-size: 8px;
+        display: flex;
+        justify-content: space-between;
+        border-top: 1px solid #ccc;
+        z-index: 100;
+      }
+
+      /* ========== PAGE CONTAINER ========== */
+      .page-container {
+        page-break-after: always;
+        margin-top: 130px;
+        margin-bottom: 50px;
+        padding: 0 20px;
+      }
+
+      .page-container:last-child {
+        page-break-after: auto;
+      }
+
+      /* ========== TABLE STYLES ========== */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 10px;
+      }
+
+      th {
+        border: 1px solid #000;
+        padding: 6px 3px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 10px;
+        vertical-align: middle;
+      }
+
+      td {
+        border: 1px solid #000;
+        padding: 4px 3px;
+        vertical-align: top;
+        font-size: 10px;
+      }
+
+      .right {
+        text-align: right;
+      }
+
+      .center {
+        text-align: center;
+      }
+
+      .left {
+        text-align: left;
+      }
+
+      .bold {
+        font-weight: bold;
+      }
+
+      .summary-row {
+        margin-top: 10px;
+        font-weight: bold;
+        text-align: right;
+        padding: 5px;
+        border-top: 1px solid #333;
+        font-size: 12px;
+      }
+
+      .total-label {
+        font-weight: bold;
+      }
+
+      .total-value {
+        margin-left: 10px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Fixed Header - Appears on Every Page -->
+    <div class="page-header">
+      <table style="width: 100%; border: none; margin-top: 0; border-collapse: collapse;">
+        <tr>
+          <td style="width: 80px; border: none; text-align: left; vertical-align: middle;">
+            {{#if logo}}
+              <img src="{{logo}}" class="logo-img" alt="Logo" />
+            {{/if}}
+          </td>
+          <td style="border: none; text-align: center; vertical-align: middle;">
+            <div class="company-name">{{corporationName}}</div>
+            <div class="report-title">{{reportTitle}}</div>
+            <div class="report-subtitle">{{reportSubtitle}}</div>
+          </td>
+        </tr>
+      </table>
+      <div class="header-line"></div>
+    </div>
+
+    <div class="page-footer">
+      <div>दिनांक: {{currentDate}} &nbsp;|&nbsp; वेळ: {{currentTime}}</div>
+    </div>
+
+    {{#each pages}}
+    <div class="page-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 5%;">पार्टी क्र</th>
+            <th style="width: 15%;">
+                पार्टी नाव<br/>
+                <span>ठेव क्र</span>
+            </th>
+            <th style="width: 8%;">
+                पॅन कार्ड<br/>
+                <span>बँक खाते क्र</span>
+            </th>
+            <th style="width: 15%;">
+                मालकाचे नाव<br/>
+                <span>ठेव तपशील</span>
+            </th>
+            <th style="width: 5%;">मेजर</th>
+            <th style="width: 12%;">
+                मेजर नाव<br/>
+                <span>व्यवहार क्र</span>
+            </th>
+            <th style="width: 13%;">
+                मायनर नाव<br/>
+                <span>प्राप्त तारीख</span>
+            </th>
+            <th style="width: 5%;">पार्टी व्यवहार क्र</th>
+            <th style="width: 5%;">
+                रक्कम<br/>
+                <span>झोन</span>
+            </th>
+            <th style="width: 8%;">पार्टी व्यवहार तारीख</th>
+            <th style="width: 9%;">ठेव प्रकार</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each rows}}
+          <tr>
+            <td class="center">{{partyId}}</td>
+            <td class="left">
+              {{partyName}}<br/>
+              <span>{{depositNo}}</span>
+            </td>
+            <td class="left">
+              {{panCard}}<br/>
+              <span>{{bankAccNo}}</span>
+            </td>
+            <td class="left">
+              {{propName}}<br/>
+              <span>{{depoDetail}}</span>
+            </td>
+            <td class="center">{{major}}</td>
+            <td class="left">
+              {{majorName}}<br/>
+              <span>{{transNo}}</span>
+            </td>
+            <td class="left">
+              {{minorName}}<br/>
+              <span>{{formatDate receivedDate}}</span>
+            </td>
+            <td class="center">{{partyTransNo}}</td>
+            <td class="right">
+              {{amount}}<br/>
+              <span>{{zone}}</span>
+            </td>
+            <td class="center">{{formatDate partyTransDate}}</td>
+            <td class="center">{{depositType}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+      
+      {{#if @last}}
+        {{#if ../totalRecords}}
+          <div class="summary-row">
+            <span class="total-label">एकूण रक्कम: ₹</span>
+            <span class="total-value">{{../totalAmount}}</span>
+          </div>
+        {{/if}}
+      {{/if}}
+    </div>
+    {{/each}}
+  </body>
+</html>

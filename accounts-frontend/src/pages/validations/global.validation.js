@@ -343,3 +343,14 @@ export const FrmChequeBookValidationSchema = z.object({
   message: "धनादेश पासून हा धनादेश पर्यंत पेक्षा लहान किंवा समान असावा",
   path: ["chequeTo"],
 });
+
+export const FrmSecurityDepositValidationSchema = z.object({
+  prabhag: z.string().min(1, "प्रभाग निवडा"),
+  fromDate: z.date()
+    .refine(date => date instanceof Date && !isNaN(date), "दिनांका पासून निवडा"),
+  toDate: z.date()
+    .refine(date => date instanceof Date && !isNaN(date), "दिनांका पर्यंत निवडा"),
+}).refine(data => data.fromDate <= data.toDate, {
+  message: "दिनांका पर्यंत हा दिनांका पासून पेक्षा मोठा असावा",
+  path: ["toDate"],
+});
