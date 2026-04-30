@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<style>
+  body {
+    font-family: Arial;
+    font-size: 12px;
+  }
+
+  .outer {
+    border: 2px solid black;
+    padding: 10px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  td, th {
+    border: 1px solid black;
+    padding: 5px;
+  }
+
+  .no-border td {
+    border: none;
+  }
+
+  .center { text-align: center; }
+  .left { text-align: left; }
+  .right { text-align: right; }
+
+  .header-logo {
+    width: 80px;
+  }
+
+  .title {
+    font-weight: bold;
+    font-size: 14px;
+  }
+
+  .small {
+    font-size: 11px;
+  }
+
+  .mt-5 { margin-top: 5px; }
+  .mt-10 { margin-top: 10px; }
+
+  .signature {
+    margin-top: 80px;
+    text-align: right;
+  }
+</style>
+</head>
+
+<body>
+<div class="outer">
+
+  <!-- HEADER -->
+  <table>
+    <tr>
+      <td style="width: 15%;" class="center">
+        {{#if corporationLogo}}
+          <img src="{{corporationLogo}}" class="header-logo" />
+        {{/if}}
+      </td>
+
+      <td style="width: 55%;" class="center">
+        <div class="title">{{corporationName}}</div>
+        <div>Form No. / अर्ज क्र. ६</div>
+        <div>(See Rule No.97) नियम क्र. ९७</div>
+      </td>
+
+      <td style="width: 30%;" class="small">
+        <div>Date / दिनांक : {{currentDate}}</div>
+        <div>Time / वेळ : {{currentTime}}</div>
+        <div>Page / पान : 1</div>
+      </td>
+    </tr>
+  </table>
+
+  <!-- TITLE -->
+  <table class="mt-5">
+    <tr>
+      <td class="center title">Contra Entry Voucher</td>
+      <td class="left">
+        <div>Date / दिनांक : {{currentDate}}</div>
+        <div>Voucher No / प्रमाण क्र : {{voucherNo}}</div>
+        <div>Cheque No / धनादेश क्र : {{chequeNo}}</div>
+      </td>
+    </tr>
+  </table>
+
+  <!-- SUB TITLE -->
+  <div class="center mt-5">
+    <b>काँन्ट्रा एंट्री व्हाउचर</b>
+  </div>
+
+  <!-- DR CR TABLE -->
+  <table class="mt-10">
+    <tr>
+      <th colspan="3">Dr. (जमा)</th>
+      <th colspan="3">Cr. (खर्च)</th>
+    </tr>
+
+    <tr>
+      <th>Account Code / खाते संकेतांक</th>
+      <th>Particulars / पर्टिक्युलर्स</th>
+      <th>Amount / रक्कम</th>
+
+      <th>Account Code / खाते संकेतांक</th>
+      <th>Particulars / पर्टिक्युलर्स</th>
+      <th>Amount / रक्कम</th>
+    </tr>
+
+    {{#each rows}}
+    <tr>
+      <td>{{this.drCode}}</td>
+      <td>{{this.drParticular}}</td>
+      <td class="right">{{this.drAmount}}</td>
+
+      <td>{{this.crCode}}</td>
+      <td>{{this.crParticular}}</td>
+      <td class="right">{{this.crAmount}}</td>
+    </tr>
+    {{/each}}
+  </table>
+
+  <!-- SIGNATURE -->
+  <div class="signature">
+    <b>मुख्यलेखाधिकारी</b><br/>
+    {{corporationName}}
+  </div>
+
+</div>
+</body>
+</html>

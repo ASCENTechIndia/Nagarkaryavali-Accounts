@@ -14,4 +14,6 @@ router.post("/transfer-list",  auth(), controller.getTransferList);
 router.post("/transfer-save",  auth(), controller.transferInsertUpdate);
 router.post("/credit-leasure",  auth(), controller.creditLeasure);
 
+router.post("/counter-voucher-pdf",  auth(), controller.getCounterVoucherPDF);
+
 module.exports = router;

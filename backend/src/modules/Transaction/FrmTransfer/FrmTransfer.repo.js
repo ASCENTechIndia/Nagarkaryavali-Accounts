@@ -170,6 +170,27 @@ const creditLeasure = async (corp_id, glcode) => {
   return executeQuery(query, { corp_id, glcode });
 };
 
+
+const getCounterVoucher = async ({ refno, ulbId }) => {
+  const query = `
+    SELECT 
+      DrAccountcode,
+      DrParticulars,
+      DrAmount,
+      CrAccountcode,
+      CrParticulars,
+      CrAmount,
+      TO_CHAR(VoucherDate,'dd/MM/yyyy') AS VoucherDate,
+      Voucherno,
+      chqno
+    FROM vw_counterentvoucher
+    WHERE refno = :refno
+    AND ulbid = :ulbId
+  `;
+
+  return await executeQuery(query, { refno, ulbId });
+};
+
 module.exports = {
   getTransactionTypes,
   getDepartments,
@@ -179,5 +200,6 @@ module.exports = {
   getContraDetails,
   getTransferList,
   transferInsertUpdate,
-  creditLeasure
+  creditLeasure,
+  getCounterVoucher
 };
