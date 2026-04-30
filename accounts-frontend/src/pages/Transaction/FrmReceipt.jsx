@@ -59,6 +59,7 @@ const FrmReceipt = () => {
   const [tempHead, setTempHead] = useState(null);
   const [glAllList, setGlAllList] = useState([]);
   const [tableData, setTableData] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
 
   const handleAddRow = (values, setFieldValue) => {
@@ -228,14 +229,36 @@ const FrmReceipt = () => {
   };
 
   useEffect(() => {
-    if (ulbId) {
-      fetchZones();
-      fetchTransTypes();
-      fetchDepartments();
-      fetchRemarks();
-      fetchPartyMaster();
-      fetchGLAll();
-    }
+    if (!ulbId) return;
+
+    setIsLoading(true);
+
+    Swal.fire({
+      title: "Loading...",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
+
+    Promise.all([
+      fetchZones(),
+      fetchTransTypes(),
+      fetchDepartments(),
+      fetchRemarks(),
+      fetchPartyMaster(),
+      fetchGLAll(),
+    ])
+      .then(() => {
+        // if NOT edit mode → close loader here
+        if (!refNo) {
+          setIsLoading(false);
+          Swal.close();
+        }
+      })
+      .catch(() => {
+        Swal.close();
+        setIsLoading(false);
+      });
+
   }, [ulbId]);
 
 
@@ -488,8 +511,54 @@ const FrmReceipt = () => {
       Swal.fire({
         text: res.data?.data?.message,
         confirmButtonColor: "#1e3a8a",
+      }).then(async () => {
+
+        Swal.fire({
+          title: "Generating PDF...",
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+
+
+        try {
+          const generatedRefNo = res.data?.data?.refNo || RefNo;
+          const pdfRes = await axios.post(
+            `${BASE_URL}/api/Receipt/receipt-pdf`,
+            {
+              refno: generatedRefNo,
+              ulbid: user?.ulbId,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${user.token}`,
+              },
+            }
+          );
+
+          Swal.close();
+
+          if (pdfRes.data?.pdfUrl) {
+            window.open(pdfRes.data.pdfUrl, "_blank");
+          } else {
+            Swal.fire({
+              text: "PDF generation failed",
+              icon: "error",
+            });
+          }
+
+        } catch (pdfErr) {
+          console.error("PDF ERROR:", pdfErr);
+          Swal.fire({
+            text: "PDF generation failed",
+            icon: "error",
+          });
+        }
+
+        navigate("/Transactions/FrmReceiptList");
       });
-      navigate("/Transactions/FrmReceiptList")
+
     } catch (err) {
       console.error("SAVE ERROR:", err);
       Swal.fire({
@@ -550,17 +619,22 @@ const FrmReceipt = () => {
         touched,
       }) => {
         useEffect(() => {
-          if (
+          const allLoaded =
             refNo &&
             ulbId &&
             zones.length &&
             transTypes.length &&
-            departments.length
-          ) {
-            fetchReceiptDetails(refNo, setFieldValue);
-          }
-        }, [refNo, ulbId, zones, transTypes, departments]);
+            departments.length &&
+            remarks.length &&
+            glAllList.length;
 
+          if (allLoaded) {
+            fetchReceiptDetails(refNo, setFieldValue).finally(() => {
+              setIsLoading(false);
+              Swal.close();
+            });
+          }
+        }, [refNo, ulbId, zones, transTypes, departments, remarks, glAllList]);
         useEffect(() => {
           if (values.transactionType) {
             fetchGLList();
