@@ -5,14 +5,22 @@ const getPaymentRegisterService = async (payload) => {
   return await repo.getPaymentRegister(payload);
 };
 
-
 async function getPaymentRegisterReportService(body) {
-  const { fromDate, toDate } = body;
+  const {
+    fromDate, toDate, ulbid,
+    glcode, functioncode, objectcode,
+    zoneid, grampanchid, budgetid, nidhi_id
+  } = body;
 
   if (!fromDate) throw new AppError("From Date is required", 400);
   if (!toDate) throw new AppError("To Date is required", 400);
+  if (!ulbid) throw new AppError("ULB ID is required", 400);
 
-  const result = await repo.getPaymentRegisterReport(body);
+  const result = await repo.getPaymentRegisterReport({
+    fromDate, toDate, ulbid,
+    glcode, functioncode, objectcode,
+    zoneid, grampanchid, budgetid, nidhi_id
+  });
 
   if (!result.success) {
     throw new AppError(result.error, 500);
@@ -24,6 +32,5 @@ async function getPaymentRegisterReportService(body) {
     rowCount: result.rows.length,
   };
 }
-
 
 module.exports = { getPaymentRegisterService, getPaymentRegisterReportService };

@@ -133,9 +133,10 @@ const FrmPayment = () => {
     const fetchGLList = async () => {
         try {
             const res = await axios.get(
-                `${BASE_URL}/api/Receipt/searchGL`,
+                `${BASE_URL}/api/Receipt/searchGLALL`,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
+
             setGlList(res.data?.data || []);
         } catch (err) {
             console.error("GL List API Error:", err);
@@ -145,6 +146,7 @@ const FrmPayment = () => {
     const fetchCreditLeasure = async (glcode, type) => {
         if (!glcode) return;
         try {
+            debugger;
             const res = await axios.post(
                 `${BASE_URL}/api/FrmTransfer/credit-leasure`,
                 { corp_id: ulbId, glcode },
@@ -211,7 +213,6 @@ const FrmPayment = () => {
 
     const fetchAccountBalance = async (values, setFieldValue) => {
         try {
-            debugger;
             if (!values.deptCode || !values.ledgerHead) return;
 
             const payload = {
@@ -348,8 +349,9 @@ const FrmPayment = () => {
                 Swal.fire({
                     text: result.message,
                     confirmButtonColor: "#1e3a8a",
+                }).then(() => {
+                    navigate("/Transactions/FrmPaymentList");
                 });
-                navigate("/Transactions/FrmPaymentList")
             } else {
                 Swal.fire({
                     text: result?.message || "Transaction failed.",
@@ -421,7 +423,10 @@ const FrmPayment = () => {
         }
     }, [partyList, tempDebtorLedger]);
 
-    const glOptions = glList.map((g) => ({ label: g.GLNAME, value: g.GLCODE?.toString() }));
+    const glOptions = glList.map((g) => ({
+        label: g.GLSEARCHNAME,
+        value: g.GLFUNCTION?.toString()
+    }));
 
 
     return (
