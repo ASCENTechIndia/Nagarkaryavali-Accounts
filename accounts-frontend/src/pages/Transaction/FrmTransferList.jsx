@@ -258,14 +258,16 @@ const FrmTransferList = () => {
             </div>
 
             {/* Table */}
-            <div className="mt-4 border rounded-md overflow-hidden">
-              <ShadCNTable
-                headers={headers}
-                data={tableData}
-                keyMapping={keyMapping}
-                pagination={true}
-              />
-            </div>
+            {selectedZone && list.length > 0 && (
+              <div className="mt-4 border rounded-md overflow-hidden">
+                <ShadCNTable
+                  headers={headers}
+                  data={tableData}
+                  keyMapping={keyMapping}
+                  pagination={true}
+                />
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

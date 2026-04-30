@@ -72,9 +72,9 @@ const FrmVoucherGeneration = () => {
   const [chequeBooks, setChequeBooks] = useState([]);
   const [searchDone, setSearchDone] = useState(false);
 
-const totalSelectedAmount = voucherList
-  .filter((v) => v.selected)
-  .reduce((sum, v) => sum + Math.abs(v.deyRakkam || 0), 0); // ✅ FIX
+  const totalSelectedAmount = voucherList
+    .filter((v) => v.selected)
+    .reduce((sum, v) => sum + Math.abs(v.deyRakkam || 0), 0); // ✅ FIX
 
   useEffect(() => {
     if (!ulbId) return;
@@ -220,47 +220,58 @@ const totalSelectedAmount = voucherList
     }
   };
 
-  const fetchChequeBook = async (values) => {
+  const fetchChequeBook = async ({
+    chequeNo,
+    deptCode,
+    ledger,
+    department,
+    setFieldValue,
+  }) => {
     try {
-      if (
-        !values.deptCode ||
-        !values.ledger ||
-        !values.department ||
-        !values.chequeNo
-      ) {
-        return;
-      }
-
-      // ✅ cheque must be 6 digit (same as .NET)
-      if (!/^\d{6}$/.test(values.chequeNo)) {
-        return;
-      }
-
       const payload = {
-        bank_glcode: String(values.deptCode),
-        bank_accno: String(values.ledger),
-        cheque_no: String(values.chequeNo),
+        bank_glcode: String(deptCode),
+        bank_accno: String(ledger),
+        cheque_no: String(chequeNo),
         corp_id: String(ulbId),
-        zone_id: String(values.department),
+        zone_id: String(department),
       };
-
-      console.log("Cheque Book Payload:", payload);
 
       const res = await axios.post(
         `${BASE_URL}/api/FrmVoucherGeneration/cheque-book`,
         payload,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
-      setChequeBooks(res.data?.rows || []);
+      const books = res.data?.rows || [];
+
+      console.log("Books:", books);
+
+      setChequeBooks(books);
+
+      if (books.length > 0) {
+        const bookNo = String(books[0].NUM_CHEQUEBOOK_BOOKNO);
+
+        // ✅ ensure state updated first
+        setTimeout(() => {
+          setFieldValue("chequeBookNo", bookNo);
+        }, 100);
+      }
+      // ✅ FORCE AUTO SELECT
+      if (books.length > 0) {
+        const bookNo = String(books[0].NUM_CHEQUEBOOK_BOOKNO);
+
+        // 🔥 important: delay ensures dropdown is ready
+        setTimeout(() => {
+          setFieldValue("chequeBookNo", bookNo);
+        }, 0);
+      } else {
+        setFieldValue("chequeBookNo", "");
+      }
     } catch (err) {
       console.error(err);
       Swal.fire("Cheque book fetch failed");
     }
   };
-
   const fetchVoucherDetails = async (selectedRefs) => {
     try {
       const res = await axios.post(
@@ -304,9 +315,8 @@ const totalSelectedAmount = voucherList
 
       const balance = res.data?.data?.data?.BALANCE || 0;
 
-      setFieldValue("bankBalance", Math.abs(balance)); // ✅ FIX
+      setFieldValue("bankBalance", Math.abs(balance));
 
-      setFieldValue("bankBalance", balance);
     } catch (err) {
       console.error(err);
       Swal.fire("Bank balance fetch failed");
@@ -654,7 +664,7 @@ const totalSelectedAmount = voucherList
                   {voucherList.length > 0 && (
                     <div className="mt-4  border bg-white shadow-sm overflow-hidden">
                       {/* TABLE WRAPPER */}
-                      <div className=" border border-gray-300 bg-white shadow-sm overflow-hidden">
+                      <div className="border border-gray-300 bg-white shadow-sm overflow-x-auto  max-h-[400px] overflow-y-auto">
                         <table className="w-full text-sm">
                           <thead className="bg-[#163e72] text-white">
                             <tr>
@@ -928,7 +938,7 @@ const totalSelectedAmount = voucherList
                       values.paymentType === "3") && (
                       <FormField label="धनादेश पुस्तिका क्रमांक">
                         <Select
-                          value={values.chequeBookNo}
+                          value={values.chequeBookNo || ""}
                           onValueChange={(v) =>
                             setFieldValue("chequeBookNo", v)
                           }
@@ -941,7 +951,7 @@ const totalSelectedAmount = voucherList
                               chequeBooks.map((b) => (
                                 <SelectItem
                                   key={b.NUM_CHEQUEBOOK_BOOKNO}
-                                  value={String(b.NUM_CHEQUEBOOK_BOOKNO)}
+                                  value={String(b.NUM_CHEQUEBOOK_BOOKNO)} // ✅ string only
                                 >
                                   {b.BOOKNO}
                                 </SelectItem>
@@ -967,20 +977,31 @@ const totalSelectedAmount = voucherList
 
                             setFieldValue("chequeNo", value);
 
-                            // reset first
+                            // reset previous result
                             setChequeBooks([]);
                             setFieldValue("chequeBookNo", "");
 
-                            const updatedValues = {
-                              ...values,
-                              chequeNo: value,
-                            };
-
-                            // ✅ delay to ensure state updated
-                            setTimeout(() => {
-                              fetchChequeBook(updatedValues);
-                            }, 300);
+                            if (
+                              value &&
+                              /^\d{6}$/.test(value) &&
+                              values.deptCode &&
+                              values.ledger &&
+                              values.department
+                            ) {
+                              fetchChequeBook({
+                                chequeNo: value,
+                                deptCode: values.deptCode,
+                                ledger: values.ledger,
+                                department: values.department,
+                                setFieldValue,
+                              });
+                            }
                           }}
+                          disabled={
+                            !values.deptCode ||
+                            !values.ledger ||
+                            !values.department
+                          } // ✅ IMPORTANT
                           className="h-9 w-full"
                         />
                       </FormField>

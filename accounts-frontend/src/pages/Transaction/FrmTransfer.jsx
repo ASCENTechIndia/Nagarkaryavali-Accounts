@@ -163,243 +163,282 @@ const loadLedgers = async (glcode, type) => {
   }
 };
 
-  useEffect(() => {
-    if (!location?.state?.refNo || !token || !ulbId) return;
 
-    const fetchData = async () => {
-      try {
-        Swal.fire({
-          title: "Loading...",
-          text: "Please wait",
-          allowOutsideClick: false,
-          didOpen: () => Swal.showLoading(),
-        });
 
-        const headers = { Authorization: `Bearer ${token}` };
+useEffect(() => {
+  if (
+    !location?.state?.refNo ||
+    !token ||
+    !ulbId ||
+    zones.length === 0 ||
+    transactionTypes.length === 0
+  ) return;
 
-        const res = await axios.post(
-          `${BASE_URL}/api/FrmTransfer/contra-details`,
-          { tranRef: location.state.refNo },
-          { headers },
-        );
-
-        const apiRows = res.data?.data?.rows || [];
-        if (!apiRows.length) {
-          Swal.close();
-          return;
-        }
-
-        const first = apiRows[0];
-        const creditRow = apiRows.find((r) => Number(r.CREDIT) > 0);
-        const debitRow = apiRows.find((r) => Number(r.DEBIT) > 0);
-
-        const form = formikRef.current;
-        if (!form) {
-          Swal.close();
-          return;
-        }
-
-        /* ================= BASIC ================= */
-        form.setFieldValue("date", new Date(first.TRNSDATE));
-        form.setFieldValue("voucherNo", first.VCHNO || "");
-        form.setFieldValue("details", first.NARRATION || "");
-
-        const partyId =
-          first.PARTYID ||
-          first.NUM_PARTYID ||
-          first.NUM_PARTYMST_PARTYID ||
-          first.PARTYMST_PARTYID ||
-          "";
-
-        form.setFieldValue("party", String(partyId || ""));
-        form.setFieldValue("department", String(first.ZONEID || ""));
-        form.setFieldValue("transactionType", String(first.TRNSTYPEID || ""));
-
-        /* ================= CREDIT ================= */
-        if (creditRow?.GLCODE) {
-          const creditGL = String(creditRow.GLCODE);
-          const creditObj = String(creditRow.OBJECTCODE);
-
-          form.setFieldValue("creditDept", creditGL);
-
-          const creditLedgerRows = await loadLedgers(creditGL, "credit");
-
-          const creditExists = creditLedgerRows.find(
-            (r) => String(r.OBJECTCODE) === creditObj,
-          );
-
-          if (creditExists) {
-            form.setFieldValue("creditLedger", creditObj);
-          }
-
-          form.setFieldValue("creditAmount", Math.abs(creditRow.CREDIT || 0));
-        }
-        // 🔁 CREDIT FALLBACK (if only debit present)
-        else if (debitRow) {
-          const fallbackGL = String(debitRow.GLCODE);
-          const fallbackObj = String(debitRow.OBJECTCODE);
-
-          form.setFieldValue("creditDept", fallbackGL);
-
-          const creditLedgerRows = await loadLedgers(fallbackGL, "credit");
-
-          const exists = creditLedgerRows.find(
-            (r) => String(r.OBJECTCODE) === fallbackObj,
-          );
-
-          if (exists) {
-            form.setFieldValue("creditLedger", fallbackObj);
-          }
-
-          form.setFieldValue("creditAmount", Math.abs(debitRow.DEBIT || 0));
-        }
-
-        /* ================= DEBIT ================= */
-        if (debitRow?.GLCODE) {
-          const debitGL = String(debitRow.GLCODE);
-          const debitObj = String(debitRow.OBJECTCODE);
-
-          form.setFieldValue("debitDept", debitGL);
-
-          const debitLedgerRows = await loadLedgers(debitGL, "debit");
-
-          const debitExists = debitLedgerRows.find(
-            (r) => String(r.OBJECTCODE) === debitObj,
-          );
-
-          if (debitExists) {
-            form.setFieldValue("debitLedger", debitObj);
-          }
-
-          form.setFieldValue("debitAmount", Math.abs(debitRow.DEBIT || 0));
-        }
-        // 🔁 DEBIT FALLBACK (if only credit present)
-        else if (creditRow) {
-          const fallbackGL = String(creditRow.GLCODE);
-          const fallbackObj = String(creditRow.OBJECTCODE);
-
-          form.setFieldValue("debitDept", fallbackGL);
-
-          const debitLedgerRows = await loadLedgers(fallbackGL, "debit");
-
-          const exists = debitLedgerRows.find(
-            (r) => String(r.OBJECTCODE) === fallbackObj,
-          );
-
-          if (exists) {
-            form.setFieldValue("debitLedger", fallbackObj);
-          }
-
-          form.setFieldValue("debitAmount", Math.abs(creditRow.CREDIT || 0));
-        }
-
-        Swal.close();
-      } catch (err) {
-        console.error("contra-details error:", err);
-
-        Swal.close();
-
-        Swal.fire({
-          icon: "error",
-          text: "डेटा लोड करण्यात अडचण आली",
-        });
-      }
-    };
-
-    fetchData();
-  }, [location?.state?.refNo, token, ulbId]);
-
-  /* ================= SUBMIT ================= */
-  const handleSubmit = async (values, { resetForm }) => {
+  const fetchData = async () => {
     try {
-      if (!values.department) return Swal.fire("प्रभाग निवडा");
-      if (!values.transactionType) return Swal.fire("व्यवहार प्रकार निवडा");
-
-      if (!values.creditDept || !values.creditLedger)
-        return Swal.fire("Credit खाते निवडा");
-
-      if (!values.debitDept || !values.debitLedger)
-        return Swal.fire("Debit खाते निवडा");
-
-      if (Number(values.debitAmount) > Number(values.creditAmount))
-        return Swal.fire("Debit > Credit नाही");
-
-      const paramStr = [
-        formatDate(values.date),
-        values.voucherNo || "1",
-        values.department,
-        "0",
-        values.transactionType,
-        "1",
-        "0",
-        "",
-        "",
-        "",
-        "",
-        values.chequeNo || "0",
-        formatDate(values.chequeDate),
-        values.chequeRef || "0",
-      ].join("~");
-
-      const credit = [
-        values.creditDept,
-        values.creditLedger,
-        values.creditAmount,
-        values.details,
-        values.party || " ",
-      ].join("#");
-
-      const debit = [
-        values.debitDept,
-        values.debitLedger,
-        -Math.abs(values.debitAmount),
-        values.details,
-        values.party || " ",
-      ].join("#");
-
-      const paramStr2 = `${credit}$${debit}`;
-
       Swal.fire({
-        title: "Saving...",
+        title: "Loading...",
+        text: "Please wait",
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading(),
       });
 
+      const headers = { Authorization: `Bearer ${token}` };
+
       const res = await axios.post(
-        `${BASE_URL}/api/FrmTransfer/transfer-save`,
-        {
-          userId: user?.userId,
-          paramStr,
-          paramStr2,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
+        `${BASE_URL}/api/FrmTransfer/contra-details`,
+        { tranRef: location.state.refNo },
+        { headers }
       );
 
-      Swal.close();
+      const apiRows = res.data?.data?.rows || [];
+      if (!apiRows.length) {
+        Swal.close();
+        return;
+      }
 
-      const result = res.data?.data;
+      const first = apiRows[0];
+      const creditRow = apiRows.find((r) => Number(r.CREDIT) > 0);
+      const debitRow = apiRows.find((r) => Number(r.DEBIT) > 0);
 
-      // ✅ FIX: backend success condition is correct
-      if (result?.errorCode === -100) {
-        Swal.fire(
-          "Success",
-          result?.message, // ✔ this now shows proper backend message
-          "success",
+      const form = formikRef.current;
+      if (!form) {
+        Swal.close();
+        return;
+      }
+
+      /* ================= BASIC ================= */
+      form.setFieldValue("date", new Date(first.TRNSDATE));
+      form.setFieldValue("voucherNo", first.VCHNO || "");
+      form.setFieldValue("details", first.NARRATION || "");
+
+      const partyId =
+        first.PARTYID ||
+        first.NUM_PARTYID ||
+        first.NUM_PARTYMST_PARTYID ||
+        first.PARTYMST_PARTYID ||
+        "";
+
+      form.setFieldValue("party", String(partyId || ""));
+
+      // ✅ SAFE MATCHING
+      const zoneMatch = zones.find(
+        (z) => String(z.ZONEID) === String(first.ZONEID)
+      );
+
+      if (zoneMatch) {
+        form.setFieldValue("department", String(zoneMatch.ZONEID));
+      }
+
+      const txnMatch = transactionTypes.find(
+        (t) =>
+          String(t.NUM_TRNSTYPE_TRNSTYPEID) ===
+          String(first.TRNSTYPEID)
+      );
+
+      if (txnMatch) {
+        form.setFieldValue(
+          "transactionType",
+          String(txnMatch.NUM_TRNSTYPE_TRNSTYPEID)
+        );
+      }
+
+      /* ================= CREDIT ================= */
+      if (creditRow?.GLCODE) {
+        const creditGL = String(creditRow.GLCODE);
+        const creditObj = String(creditRow.OBJECTCODE);
+
+        form.setFieldValue("creditDept", creditGL);
+
+        const creditLedgerRows = await loadLedgers(creditGL, "credit");
+
+        const creditExists = creditLedgerRows.find(
+          (r) => String(r.OBJECTCODE) === creditObj
         );
 
-        resetForm(); // ✅ clears Formik properly
+        if (creditExists) {
+          form.setFieldValue("creditLedger", creditObj);
+        }
 
-        navigate("/Transactions/FrmTransferList");
-      } else {
-        Swal.fire("Error", result?.message || "Something went wrong", "error");
+        form.setFieldValue("creditAmount", Math.abs(creditRow.CREDIT || 0));
+      } else if (debitRow) {
+        const fallbackGL = String(debitRow.GLCODE);
+        const fallbackObj = String(debitRow.OBJECTCODE);
+
+        form.setFieldValue("creditDept", fallbackGL);
+
+        const creditLedgerRows = await loadLedgers(fallbackGL, "credit");
+
+        const exists = creditLedgerRows.find(
+          (r) => String(r.OBJECTCODE) === fallbackObj
+        );
+
+        if (exists) {
+          form.setFieldValue("creditLedger", fallbackObj);
+        }
+
+        form.setFieldValue("creditAmount", Math.abs(debitRow.DEBIT || 0));
       }
-    } catch (err) {
+
+      /* ================= DEBIT ================= */
+      if (debitRow?.GLCODE) {
+        const debitGL = String(debitRow.GLCODE);
+        const debitObj = String(debitRow.OBJECTCODE);
+
+        form.setFieldValue("debitDept", debitGL);
+
+        const debitLedgerRows = await loadLedgers(debitGL, "debit");
+
+        const debitExists = debitLedgerRows.find(
+          (r) => String(r.OBJECTCODE) === debitObj
+        );
+
+        if (debitExists) {
+          form.setFieldValue("debitLedger", debitObj);
+        }
+
+        form.setFieldValue("debitAmount", Math.abs(debitRow.DEBIT || 0));
+      } else if (creditRow) {
+        const fallbackGL = String(creditRow.GLCODE);
+        const fallbackObj = String(creditRow.OBJECTCODE);
+
+        form.setFieldValue("debitDept", fallbackGL);
+
+        const debitLedgerRows = await loadLedgers(fallbackGL, "debit");
+
+        const exists = debitLedgerRows.find(
+          (r) => String(r.OBJECTCODE) === fallbackObj
+        );
+
+        if (exists) {
+          form.setFieldValue("debitLedger", fallbackObj);
+        }
+
+        form.setFieldValue("debitAmount", Math.abs(creditRow.CREDIT || 0));
+      }
+
       Swal.close();
-      Swal.fire("Server Error");
+    } catch (err) {
+      console.error("contra-details error:", err);
+
+      Swal.close();
+
+      Swal.fire({
+        icon: "error",
+        text: "डेटा लोड करण्यात अडचण आली",
+      });
     }
   };
+
+  fetchData();
+}, [location?.state?.refNo, token, ulbId, zones, transactionTypes]);
+
+  /* ================= SUBMIT ================= */
+const handleSubmit = async (values, { resetForm }) => {
+  try {
+    if (!values.department) return Swal.fire("प्रभाग निवडा");
+    if (!values.transactionType) return Swal.fire("व्यवहार प्रकार निवडा");
+
+    if (!values.creditDept || !values.creditLedger)
+      return Swal.fire("Credit खाते निवडा");
+
+    if (!values.debitDept || !values.debitLedger)
+      return Swal.fire("Debit खाते निवडा");
+
+    if (Number(values.debitAmount) > Number(values.creditAmount))
+      return Swal.fire("Debit > Credit नाही");
+
+    const paramStr = [
+      formatDate(values.date),
+      values.voucherNo || "1",
+      values.department,
+      "0",
+      values.transactionType,
+      "1",
+      "0",
+      "",
+      "",
+      "",
+      "",
+      values.chequeNo || "0",
+      formatDate(values.chequeDate),
+      values.chequeRef || "0",
+    ].join("~");
+
+    const credit = [
+      values.creditDept,
+      values.creditLedger,
+      values.creditAmount,
+      values.details,
+      values.party || " ",
+    ].join("#");
+
+    const debit = [
+      values.debitDept,
+      values.debitLedger,
+      -Math.abs(values.debitAmount),
+      values.details,
+      values.party || " ",
+    ].join("#");
+
+    const paramStr2 = `${credit}$${debit}`;
+
+    Swal.fire({
+      title: "Saving...",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
+
+    const res = await axios.post(
+      `${BASE_URL}/api/FrmTransfer/transfer-save`,
+      {
+        userId: user?.userId,
+        paramStr,
+        paramStr2,
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    Swal.close();
+
+    // ✅ FULL RESPONSE HANDLING
+    const response = res.data;
+if (response?.ok && response?.data?.success) {
+  await Swal.fire({
+    icon: "success",
+    title: "Success",
+    text: response.data.message, // shows reference no
+    confirmButtonText: "OK",
+  });
+
+  resetForm();
+
+  navigate("/Transactions/FrmTransferList");
+
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text:
+          response?.data?.message ||
+          response?.message ||
+          "Something went wrong",
+      });
+    }
+  } catch (err) {
+    Swal.close();
+
+    Swal.fire({
+      icon: "error",
+      title: "Server Error",
+      text: "Something went wrong while saving",
+    });
+
+    console.error(err);
+  }
+};
   /* ================= UI ================= */
   return (
     <Formik
