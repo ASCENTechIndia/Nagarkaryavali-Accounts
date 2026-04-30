@@ -29,4 +29,6 @@ router.post("/receiptInsertUpdate", auth(), controller.receiptInsertUpdate);
 
 router.get("/budget-heads", auth(), controller.getBudgetHeads);
 
+router.post("/receipt-pdf", controller.getReceiptPDF);
+
 module.exports = router;

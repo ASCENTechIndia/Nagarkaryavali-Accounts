@@ -1,0 +1,222 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<style>
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  margin: 0;
+  padding: 15px;
+}
+
+/* OUTER BORDER */
+.wrapper {
+  border: 1px solid #000;
+  padding: 3px;
+}
+
+/* COMMON */
+.bold { font-weight: bold; }
+.center { text-align: center; }
+.right { text-align: right; }
+
+/* ================= HEADER ================= */
+.header {
+  border-bottom: 1px solid #000;
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #000;
+}
+
+.logo {
+  width: 90px;
+  border-right: 1px solid #000;
+  text-align: center;
+}
+
+.logo img {
+  width: 70px;
+}
+
+.title-block {
+  flex: 1;
+  text-align: center;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.form {
+  width: 120px;
+  text-align: right;
+  padding-right: 10px;
+}
+
+/* ================= INFO ================= */
+.info {
+  display: flex;
+  border-bottom: 1px solid #000;
+}
+
+.info-left {
+  flex: 1;
+  padding: 5px;
+}
+
+.info-right {
+  width: 260px;
+  border-left: 1px solid #000;
+  padding: 5px;
+  text-align: right;
+  line-height: 1.8;
+}
+
+/* ================= ACCOUNT ================= */
+.account {
+  border-bottom: 1px solid #000;
+  padding: 5px;
+}
+
+.account-name {
+  padding-left: 20px;
+  margin-top: 5px;
+}
+
+/* ================= TABLE ================= */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th, .table td {
+  border: 1px solid #000;
+  padding: 5px;
+}
+
+.table th {
+  text-align: center;
+  font-weight: bold;
+}
+
+.table td {
+  height: 28px;
+}
+
+.total-row td {
+  font-weight: bold;
+}
+
+/* ================= FOOTER ================= */
+.footer {
+  border-top: 1px solid #000;
+}
+
+.words {
+  padding: 8px;
+  border-bottom: 1px solid #000;
+  font-weight: bold;
+}
+
+.sign {
+  text-align: right;
+  padding: 40px 20px 20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-row">
+      <div class="logo">
+        <img src="{{logo}}" />
+      </div>
+
+      <div class="title-block">
+        <div class="title">{{corporationName}}</div>
+        <div>लेखा विभाग</div>
+        <div class="bold">पावती</div>
+      </div>
+
+      <div class="form">Form Gen-8</div>
+    </div>
+
+    <!-- INFO -->
+    <div class="info">
+      <div class="info-left">
+        <b>प्रभाग</b> : {{zone}}
+      </div>
+
+      <div class="info-right">
+        <b>पावती क्रमांक</b> : {{refno}}<br/>
+        <b>पावती दिनांक</b> : {{date}}<br/>
+        <b>व्यवहार प्रकार</b> : {{trnstype}}
+      </div>
+    </div>
+
+    <!-- ACCOUNT -->
+    <div class="account">
+      <div><b>खाते क्रमांक व नाव</b> : {{rows.[0].accno}}</div>
+      <div class="account-name">{{rows.[0].accname}}</div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <table class="table">
+    <thead>
+      <tr>
+        <th style="width:40px">अ.क्र.</th>
+        <th style="width:100px">लेख संकेतांक</th>
+        <th>लेख शीर्ष नाव</th>
+        <th style="width:90px">तपशील</th>
+        <th style="width:80px">पार्टी कोड</th>
+        <th style="width:120px">पार्टीचे नाव</th>
+        <th style="width:100px">देय रक्कम</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {{#each rows}}
+      <tr>
+        <td class="center">{{sr}}</td>
+        <td class="center">{{taxac}}</td>
+        <td>{{taxname}}</td>
+        <td class="center">{{remarks}}</td>
+        <td class="center">{{partycode}}</td>
+        <td>{{party}}</td>
+        <td class="right">{{amount}}</td>
+      </tr>
+      {{/each}}
+
+      <tr class="total-row">
+        <td colspan="6" class="right">एकूण रक्कम</td>
+        <td class="right">{{total}}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="words">
+      रक्कम (अक्षरात) : {{amountWords}}
+    </div>
+
+    <div class="sign">
+      <div class="bold">मुख्यलेखाधिकारी</div>
+      <div class="bold">{{corporationName}}</div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

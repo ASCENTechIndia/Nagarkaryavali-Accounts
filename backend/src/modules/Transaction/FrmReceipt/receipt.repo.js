@@ -2,7 +2,6 @@ const oracledb = require("oracledb");
 const { withTx } = require("../../../db/tx");
 const { executeQuery } = require("../../../db/queryExecutor");
 
-
 // ✅ 1. Get Receipt List
 const getReceiptListRepo = (ddl_ZoneID, ddl_ULB_ID) =>
   executeQuery(
@@ -39,9 +38,8 @@ const getReceiptListRepo = (ddl_ZoneID, ddl_ULB_ID) =>
               date_receiptmst_insdate,
               num_receiptmst_trnstypeid
      ORDER BY num_receiptmst_refno`,
-    { ddl_ZoneID, ddl_ULB_ID }
+    { ddl_ZoneID, ddl_ULB_ID },
   );
-
 
 // ✅ 2. Get Zones
 const getZonesRepo = (corp_id) =>
@@ -49,9 +47,8 @@ const getZonesRepo = (corp_id) =>
     `SELECT zoneename, zoneid 
      FROM view_zone 
      WHERE corpid = :corp_id`,
-    { corp_id }
+    { corp_id },
   );
-
 
 // ✅ 3. Get Corporation
 const getCorporationRepo = (corp_id) =>
@@ -60,9 +57,8 @@ const getCorporationRepo = (corp_id) =>
             num_corporation_id CorporationID
      FROM admins.aoma_corporation_mas
      WHERE num_corporation_id = :corp_id`,
-    { corp_id }
+    { corp_id },
   );
-
 
 // ✅ 4. Get Departments
 const getDepartmentsRepo = (ulbid) =>
@@ -70,9 +66,8 @@ const getDepartmentsRepo = (ulbid) =>
     `SELECT deptname, deptid 
      FROM prop.vw_deptconfig 
      WHERE ulbid = :ulbid`,
-    { ulbid }
+    { ulbid },
   );
-
 
 // ✅ 5. Get Narration
 const getNarrationRepo = () =>
@@ -81,9 +76,8 @@ const getNarrationRepo = () =>
      FROM aoac_narration_mst
      WHERE var_narration_type = 'R'
      ORDER BY var_narration_type`,
-    {}
+    {},
   );
-
 
 // ✅ 6. Get Transaction Type
 const getTransTypeRepo = () =>
@@ -92,9 +86,8 @@ const getTransTypeRepo = () =>
             num_trnstype_trnstypeid ValueField
      FROM aoac_trnstype_def
      WHERE num_trnstype_trnstypeid IN (1,2)`,
-    {}
+    {},
   );
-
 
 // ✅ 7. Get Receipt Details
 const getReceiptDetailsRepo = (RefNo) =>
@@ -134,9 +127,8 @@ const getReceiptDetailsRepo = (RefNo) =>
        AND c.num_receiptdet_accno = acc.accno 
        AND a.num_receiptmst_ulbid = acc.ulbid
      WHERE a.num_receiptmst_refno = :RefNo`,
-    { RefNo }
+    { RefNo },
   );
-
 
 // ✅ 8. Get Party
 const getPartyRepo = (ulbid) =>
@@ -146,9 +138,8 @@ const getPartyRepo = (ulbid) =>
      FROM aoac_partymst_def
      WHERE num_partymst_ulbid = :ulbid
      ORDER BY num_partymst_partyid`,
-    { ulbid }
+    { ulbid },
   );
-
 
 // ✅ 9. Search GL
 const searchGLRepo = () =>
@@ -160,17 +151,15 @@ const searchGLRepo = () =>
      INNER JOIN aoac_accmaster_def
        ON var_accmst_function = num_glmaster_glcode
       AND num_accmaster_accsubtype IN (4820, 4822, 4821, 4823, 4810)`,
-    {}
+    {},
   );
 
-
-  const searchGLALLRepo = () =>
+const searchGLALLRepo = () =>
   executeQuery(
     `select distinct glcode, glsearchname, glfunction 
         from view_glweb`,
-    {}
+    {},
   );
-
 
 // ✅ 10. Insert / Update Receipt (TRANSACTION)
 const receiptInsertUpdateRepo = (data) =>
@@ -196,18 +185,18 @@ const receiptInsertUpdateRepo = (data) =>
         out_ReturnStr: {
           dir: oracledb.BIND_OUT,
           type: oracledb.STRING,
-          maxSize: 500
+          maxSize: 500,
         },
         out_ErrorCode: {
           dir: oracledb.BIND_OUT,
-          type: oracledb.NUMBER
+          type: oracledb.NUMBER,
         },
         out_ErrorMsg: {
           dir: oracledb.BIND_OUT,
           type: oracledb.STRING,
-          maxSize: 2000
-        }
-      }
+          maxSize: 2000,
+        },
+      },
     );
 
     console.log("Result: ", result);
@@ -215,16 +204,36 @@ const receiptInsertUpdateRepo = (data) =>
     return {
       refNo: result.outBinds.out_ReturnStr,
       errorCode: result.outBinds.out_ErrorCode,
-      message: result.outBinds.out_ErrorMsg
+      message: result.outBinds.out_ErrorMsg,
     };
   });
-
 
 const getBudgetHeadsRepo = () =>
   executeQuery(`select var_budgetconfig_budgetname,
                         num_budgetconfig_headid
                 from aoac_budgetconfig_det
                 where num_budgetconfig_level=1`);
+
+const getReceiptDetailsPdfRepo = (refno, ulbid) =>
+  executeQuery(
+    `SELECT REFNO,
+            TRANSDATE,
+            TRANSTYPE,
+            ZONEENAME,
+            ACCNAME,
+            ACCNO,
+            TAXNAME,
+            TAXAC,
+            REMARKS,
+            AMOUNT,
+            PARTYNAME,
+            ULBID,
+            partycode
+     FROM VW_Receiptdetails
+     WHERE REFNO = :refno
+       AND ulbid = :ulbid`,
+    { refno, ulbid },
+  );
 
 module.exports = {
   getReceiptListRepo,
@@ -238,5 +247,6 @@ module.exports = {
   searchGLRepo,
   receiptInsertUpdateRepo,
   searchGLALLRepo,
-  getBudgetHeadsRepo
+  getBudgetHeadsRepo,
+  getReceiptDetailsPdfRepo
 };

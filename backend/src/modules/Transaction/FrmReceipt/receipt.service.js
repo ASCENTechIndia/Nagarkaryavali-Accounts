@@ -1,13 +1,9 @@
 const repo = require("./receipt.repo");
 const { AppError } = require("../../../libs/errors");
 
-
 // ================= 1. Receipt List =================
 async function getReceiptList(data) {
-  const result = await repo.getReceiptListRepo(
-    data.ddl_ZoneID,
-    data.ddl_ULB_ID
-  );
+  const result = await repo.getReceiptListRepo(data.ddl_ZoneID, data.ddl_ULB_ID);
 
   if (!result) {
     throw new AppError("Failed to fetch receipt list", 500);
@@ -15,7 +11,6 @@ async function getReceiptList(data) {
 
   return result.rows;
 }
-
 
 // ================= 2. Zones =================
 async function getZones(data) {
@@ -28,7 +23,6 @@ async function getZones(data) {
   return result.rows;
 }
 
-
 // ================= 3. Corporation =================
 async function getCorporation(data) {
   const result = await repo.getCorporationRepo(data.corp_id);
@@ -39,7 +33,6 @@ async function getCorporation(data) {
 
   return result.rows;
 }
-
 
 // ================= 4. Departments =================
 async function getDepartments(data) {
@@ -52,7 +45,6 @@ async function getDepartments(data) {
   return result.rows;
 }
 
-
 // ================= 5. Narration =================
 async function getNarration() {
   const result = await repo.getNarrationRepo();
@@ -63,7 +55,6 @@ async function getNarration() {
 
   return result.rows;
 }
-
 
 // ================= 6. Transaction Type =================
 async function getTransType() {
@@ -76,7 +67,6 @@ async function getTransType() {
   return result.rows;
 }
 
-
 // ================= 7. Receipt Details =================
 async function getReceiptDetails(data) {
   const result = await repo.getReceiptDetailsRepo(data.RefNo);
@@ -88,7 +78,6 @@ async function getReceiptDetails(data) {
   return result.rows;
 }
 
-
 // ================= 8. Party =================
 async function getParty(data) {
   const result = await repo.getPartyRepo(data.ulbid);
@@ -99,7 +88,6 @@ async function getParty(data) {
 
   return result.rows;
 }
-
 
 // ================= 9. Search GL =================
 async function searchGL() {
@@ -122,7 +110,6 @@ async function searchGLALL() {
   return result.rows;
 }
 
-
 // ================= 10. Insert / Update Receipt =================
 async function receiptInsertUpdate(data) {
   const result = await repo.receiptInsertUpdateRepo(data);
@@ -141,7 +128,6 @@ async function receiptInsertUpdate(data) {
   return result;
 }
 
-
 async function getBudgetHeads() {
   const result = await repo.getBudgetHeadsRepo();
 
@@ -152,6 +138,18 @@ async function getBudgetHeads() {
   return result.rows;
 }
 
+const getReceiptPdfData = async (payload) => {
+  const { refno, ulbid } = payload;
+
+  if (!refno) throw new AppError("RefNo is required", 400);
+  if (!ulbid) throw new AppError("ULBID is required", 400);
+
+  const data = await repo.getReceiptDetailsPdfRepo(refno, ulbid);
+
+  if (!data.rows.length) throw new AppError("No data found", 404);
+
+  return data.rows;
+};
 // ================= EXPORT =================
 module.exports = {
   getReceiptList,
@@ -165,5 +163,6 @@ module.exports = {
   searchGL,
   receiptInsertUpdate,
   searchGLALL,
-  getBudgetHeads
+  getBudgetHeads,
+  getReceiptPdfData,
 };
