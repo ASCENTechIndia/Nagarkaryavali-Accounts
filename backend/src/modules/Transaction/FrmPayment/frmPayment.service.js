@@ -1,3 +1,4 @@
+const { AppError } = require("../../../libs/errors");
 const repo = require("./frmPayment.repo");
 
 async function getFrmPaymentService(payload) {
@@ -163,7 +164,7 @@ async function savePaymentService(payload) {
     success: result.out_ErrorCode === -100,
     errorCode: result.out_ErrorCode,
     message: result.out_ErrorMsg,
-    // refno: result.out_ReturnStr,
+    refno: result.out_ReturnStr,
   };
 }
 

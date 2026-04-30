@@ -344,12 +344,64 @@ const FrmPayment = () => {
             );
 
             const result = res.data?.data;
+            console.log(result);
 
             if (result?.errorCode === -100) {
                 Swal.fire({
                     text: result.message,
                     confirmButtonColor: "#1e3a8a",
-                }).then(() => {
+                }).then(async () => {
+ debugger;
+                    try {
+                        // ✅ SHOW LOADER AFTER OK CLICK
+                        Swal.fire({
+                            title: "Generating PDF...",
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            },
+                        });
+
+                        const generatedRefNo = result?.refno || currentRefNo;
+
+                       
+                        const pdfRes = await axios.post(
+                            `${BASE_URL}/api/frmPayment/payment-pdf`,
+                            {
+                                refno: generatedRefNo,
+                                ulbid: user?.ulbId,
+                            },
+                            {
+                                headers: {
+                                    Authorization: `Bearer ${token}`,
+                                },
+                            }
+                        );
+
+                        // ✅ CLOSE LOADER
+                        Swal.close();
+
+                        if (pdfRes.data?.pdfUrl) {
+                            window.open(pdfRes.data.pdfUrl, "_blank");
+                        } else {
+                            Swal.fire({
+                                text: "PDF generation failed",
+                                icon: "error",
+                            });
+                        }
+
+                    } catch (pdfErr) {
+                        console.error("PDF ERROR:", pdfErr);
+
+                        Swal.close();
+
+                        Swal.fire({
+                            text: "PDF generation failed",
+                            icon: "error",
+                        });
+                    }
+
+                    // ✅ NAVIGATE AFTER PDF
                     navigate("/Transactions/FrmPaymentList");
                 });
             } else {
