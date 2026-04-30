@@ -63,6 +63,7 @@ const FrmTransfer = () => {
   const [glCodes, setGlCodes] = useState([]);
   const [creditLedgers, setCreditLedgers] = useState([]);
   const [debitLedgers, setDebitLedgers] = useState([]);
+  const [chequeBooks, setChequeBooks] = useState([]);
 
   const [parties, setParties] = useState([]);
 
@@ -77,265 +78,293 @@ const FrmTransfer = () => {
       .toLocaleString("en-US", { month: "short" })
       .toUpperCase()}-${date.getFullYear()}`;
   };
-useEffect(() => {
-  if (!ulbId) return;
+  useEffect(() => {
+    if (!ulbId) return;
 
-  const loadInitialData = async () => {
-    try {
-      Swal.fire({
-        title: "Loading...",
-        text: "Please wait",
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading(),
-      });
+    const loadInitialData = async () => {
+      try {
+        Swal.fire({
+          title: "Loading...",
+          text: "Please wait",
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading(),
+        });
 
-      const headers = { Authorization: `Bearer ${token}` };
+        const headers = { Authorization: `Bearer ${token}` };
 
-      const [zonesRes, txnRes, glRes, partyRes] = await Promise.all([
-        axios.post(
-          `${BASE_URL}/api/Receipt/zones`,
-          { corp_id: ulbId },
-          { headers }
-        ),
-        axios.get(`${BASE_URL}/api/FrmTransfer/transaction-types`, {
-          headers,
-        }),
-        axios.get(`${BASE_URL}/api/Receipt/searchGLALL`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Cache-Control": "no-cache",
-          },
-        }),
-        axios.post(
-          `${BASE_URL}/api/FrmTransfer/party-list`,
-          { corpId: ulbId },
-          { headers }
-        ),
-      ]);
+        const [zonesRes, txnRes, glRes, partyRes] = await Promise.all([
+          axios.post(
+            `${BASE_URL}/api/Receipt/zones`,
+            { corp_id: ulbId },
+            { headers },
+          ),
+          axios.get(`${BASE_URL}/api/FrmTransfer/transaction-types`, {
+            headers,
+          }),
+          axios.get(`${BASE_URL}/api/Receipt/searchGLALL`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Cache-Control": "no-cache",
+            },
+          }),
+          axios.post(
+            `${BASE_URL}/api/FrmTransfer/party-list`,
+            { corpId: ulbId },
+            { headers },
+          ),
+        ]);
 
-      setZones(zonesRes.data?.data || []);
-      setTransactionTypes(txnRes.data?.data?.rows || []);
-      setGlCodes(glRes.data?.data || []);
-      setParties(partyRes.data?.data?.rows || []);
-    } catch (err) {
-      console.error(err);
-      Swal.fire("डेटा लोड करण्यात अडचण आली");
-    } finally {
-      Swal.close(); // ✅ CLOSE LOADER
-    }
-  };
-
-  loadInitialData();
-}, [ulbId]);
-
-const loadLedgers = async (glcode, type) => {
-  if (!glcode || !ulbId) return [];
-
-  try {
-    Swal.fire({
-      title: "Loading...",
-      allowOutsideClick: false,
-      didOpen: () => Swal.showLoading(),
-    });
-
-    const res = await axios.post(
-      `${BASE_URL}/api/FrmTransfer/credit-leasure`,
-      {
-        corp_id: Number(ulbId),
-        glcode: Number(glcode),
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` },
+        setZones(zonesRes.data?.data || []);
+        setTransactionTypes(txnRes.data?.data?.rows || []);
+        setGlCodes(glRes.data?.data || []);
+        setParties(partyRes.data?.data?.rows || []);
+      } catch (err) {
+        console.error(err);
+        Swal.fire("डेटा लोड करण्यात अडचण आली");
+      } finally {
+        Swal.close(); // ✅ CLOSE LOADER
       }
-    );
+    };
 
-    const rows = res.data?.data?.rows || [];
+    loadInitialData();
+  }, [ulbId]);
 
-    if (type === "credit") setCreditLedgers([...rows]);
-    else setDebitLedgers([...rows]);
+  const loadLedgers = async (glcode, type) => {
+    if (!glcode || !ulbId) return [];
 
-    return rows;
-  } catch (err) {
-    console.error(err);
-    return [];
-  } finally {
-    Swal.close();
-  }
-};
-
-
-
-useEffect(() => {
-  if (
-    !location?.state?.refNo ||
-    !token ||
-    !ulbId ||
-    zones.length === 0 ||
-    transactionTypes.length === 0
-  ) return;
-
-  const fetchData = async () => {
     try {
       Swal.fire({
         title: "Loading...",
-        text: "Please wait",
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading(),
       });
-
-      const headers = { Authorization: `Bearer ${token}` };
 
       const res = await axios.post(
-        `${BASE_URL}/api/FrmTransfer/contra-details`,
-        { tranRef: location.state.refNo },
-        { headers }
+        `${BASE_URL}/api/FrmTransfer/credit-leasure`,
+        {
+          corp_id: Number(ulbId),
+          glcode: Number(glcode),
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
       );
 
-      const apiRows = res.data?.data?.rows || [];
-      if (!apiRows.length) {
-        Swal.close();
-        return;
-      }
+      const rows = res.data?.data?.rows || [];
 
-      const first = apiRows[0];
-      const creditRow = apiRows.find((r) => Number(r.CREDIT) > 0);
-      const debitRow = apiRows.find((r) => Number(r.DEBIT) > 0);
+      if (type === "credit") setCreditLedgers([...rows]);
+      else setDebitLedgers([...rows]);
 
-      const form = formikRef.current;
-      if (!form) {
-        Swal.close();
-        return;
-      }
-
-      /* ================= BASIC ================= */
-      form.setFieldValue("date", new Date(first.TRNSDATE));
-      form.setFieldValue("voucherNo", first.VCHNO || "");
-      form.setFieldValue("details", first.NARRATION || "");
-
-      const partyId =
-        first.PARTYID ||
-        first.NUM_PARTYID ||
-        first.NUM_PARTYMST_PARTYID ||
-        first.PARTYMST_PARTYID ||
-        "";
-
-      form.setFieldValue("party", String(partyId || ""));
-
-      // ✅ SAFE MATCHING
-      const zoneMatch = zones.find(
-        (z) => String(z.ZONEID) === String(first.ZONEID)
-      );
-
-      if (zoneMatch) {
-        form.setFieldValue("department", String(zoneMatch.ZONEID));
-      }
-
-      const txnMatch = transactionTypes.find(
-        (t) =>
-          String(t.NUM_TRNSTYPE_TRNSTYPEID) ===
-          String(first.TRNSTYPEID)
-      );
-
-      if (txnMatch) {
-        form.setFieldValue(
-          "transactionType",
-          String(txnMatch.NUM_TRNSTYPE_TRNSTYPEID)
-        );
-      }
-
-      /* ================= CREDIT ================= */
-      if (creditRow?.GLCODE) {
-        const creditGL = String(creditRow.GLCODE);
-        const creditObj = String(creditRow.OBJECTCODE);
-
-        form.setFieldValue("creditDept", creditGL);
-
-        const creditLedgerRows = await loadLedgers(creditGL, "credit");
-
-        const creditExists = creditLedgerRows.find(
-          (r) => String(r.OBJECTCODE) === creditObj
-        );
-
-        if (creditExists) {
-          form.setFieldValue("creditLedger", creditObj);
-        }
-
-        form.setFieldValue("creditAmount", Math.abs(creditRow.CREDIT || 0));
-      } else if (debitRow) {
-        const fallbackGL = String(debitRow.GLCODE);
-        const fallbackObj = String(debitRow.OBJECTCODE);
-
-        form.setFieldValue("creditDept", fallbackGL);
-
-        const creditLedgerRows = await loadLedgers(fallbackGL, "credit");
-
-        const exists = creditLedgerRows.find(
-          (r) => String(r.OBJECTCODE) === fallbackObj
-        );
-
-        if (exists) {
-          form.setFieldValue("creditLedger", fallbackObj);
-        }
-
-        form.setFieldValue("creditAmount", Math.abs(debitRow.DEBIT || 0));
-      }
-
-      /* ================= DEBIT ================= */
-      if (debitRow?.GLCODE) {
-        const debitGL = String(debitRow.GLCODE);
-        const debitObj = String(debitRow.OBJECTCODE);
-
-        form.setFieldValue("debitDept", debitGL);
-
-        const debitLedgerRows = await loadLedgers(debitGL, "debit");
-
-        const debitExists = debitLedgerRows.find(
-          (r) => String(r.OBJECTCODE) === debitObj
-        );
-
-        if (debitExists) {
-          form.setFieldValue("debitLedger", debitObj);
-        }
-
-        form.setFieldValue("debitAmount", Math.abs(debitRow.DEBIT || 0));
-      } else if (creditRow) {
-        const fallbackGL = String(creditRow.GLCODE);
-        const fallbackObj = String(creditRow.OBJECTCODE);
-
-        form.setFieldValue("debitDept", fallbackGL);
-
-        const debitLedgerRows = await loadLedgers(fallbackGL, "debit");
-
-        const exists = debitLedgerRows.find(
-          (r) => String(r.OBJECTCODE) === fallbackObj
-        );
-
-        if (exists) {
-          form.setFieldValue("debitLedger", fallbackObj);
-        }
-
-        form.setFieldValue("debitAmount", Math.abs(creditRow.CREDIT || 0));
-      }
-
-      Swal.close();
+      return rows;
     } catch (err) {
-      console.error("contra-details error:", err);
-
+      console.error(err);
+      return [];
+    } finally {
       Swal.close();
-
-      Swal.fire({
-        icon: "error",
-        text: "डेटा लोड करण्यात अडचण आली",
-      });
     }
   };
 
-  fetchData();
-}, [location?.state?.refNo, token, ulbId, zones, transactionTypes]);
+  const fetchChequeBook = async (values, chequeNo, setFieldValue) => {
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/api/FrmVoucherGeneration/cheque-book`,
+        {
+          bank_glcode: values.creditDept,
+          bank_accno: values.creditLedger,
+          cheque_no: chequeNo,
+          corp_id: ulbId,
+          zone_id: values.department,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      const books = res.data?.rows || [];
+      console.log("Fetched cheque books:", books);
+
+      setChequeBooks(books);
+
+      // ✅ AUTO SELECT
+      if (books.length > 0) {
+        setFieldValue("chequeRef", String(books[0].NUM_CHEQUEBOOK_BOOKNO));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    if (
+      !location?.state?.refNo ||
+      !token ||
+      !ulbId ||
+      zones.length === 0 ||
+      transactionTypes.length === 0
+    )
+      return;
+
+    const fetchData = async () => {
+      try {
+        Swal.fire({
+          title: "Loading...",
+          text: "Please wait",
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading(),
+        });
+
+        const headers = { Authorization: `Bearer ${token}` };
+
+        const res = await axios.post(
+          `${BASE_URL}/api/FrmTransfer/contra-details`,
+          { tranRef: location.state.refNo },
+          { headers },
+        );
+
+        const apiRows = res.data?.data?.rows || [];
+        if (!apiRows.length) {
+          Swal.close();
+          return;
+        }
+
+        const first = apiRows[0];
+        const creditRow = apiRows.find((r) => Number(r.CREDIT) > 0);
+        const debitRow = apiRows.find((r) => Number(r.DEBIT) > 0);
+
+        const form = formikRef.current;
+        if (!form) {
+          Swal.close();
+          return;
+        }
+
+        /* ================= BASIC ================= */
+        form.setFieldValue("date", new Date(first.TRNSDATE));
+        form.setFieldValue("voucherNo", first.VCHNO || "");
+        form.setFieldValue("details", first.NARRATION || "");
+
+        const partyId =
+          first.PARTYID ||
+          first.NUM_PARTYID ||
+          first.NUM_PARTYMST_PARTYID ||
+          first.PARTYMST_PARTYID ||
+          "";
+
+        form.setFieldValue("party", String(partyId || ""));
+
+        // ✅ SAFE MATCHING
+        const zoneMatch = zones.find(
+          (z) => String(z.ZONEID) === String(first.ZONEID),
+        );
+
+        if (zoneMatch) {
+          form.setFieldValue("department", String(zoneMatch.ZONEID));
+        }
+
+        const txnMatch = transactionTypes.find(
+          (t) => String(t.NUM_TRNSTYPE_TRNSTYPEID) === String(first.TRNSTYPEID),
+        );
+
+        if (txnMatch) {
+          form.setFieldValue(
+            "transactionType",
+            String(txnMatch.NUM_TRNSTYPE_TRNSTYPEID),
+          );
+        }
+
+        /* ================= CREDIT ================= */
+        if (creditRow?.GLCODE) {
+          const creditGL = String(creditRow.GLCODE);
+          const creditObj = String(creditRow.OBJECTCODE);
+
+          form.setFieldValue("creditDept", creditGL);
+
+          const creditLedgerRows = await loadLedgers(creditGL, "credit");
+
+          const creditExists = creditLedgerRows.find(
+            (r) => String(r.OBJECTCODE) === creditObj,
+          );
+
+          if (creditExists) {
+            form.setFieldValue("creditLedger", creditObj);
+          }
+
+          form.setFieldValue("creditAmount", Math.abs(creditRow.CREDIT || 0));
+        } else if (debitRow) {
+          const fallbackGL = String(debitRow.GLCODE);
+          const fallbackObj = String(debitRow.OBJECTCODE);
+
+          form.setFieldValue("creditDept", fallbackGL);
+
+          const creditLedgerRows = await loadLedgers(fallbackGL, "credit");
+
+          const exists = creditLedgerRows.find(
+            (r) => String(r.OBJECTCODE) === fallbackObj,
+          );
+
+          if (exists) {
+            form.setFieldValue("creditLedger", fallbackObj);
+          }
+
+          form.setFieldValue("creditAmount", Math.abs(debitRow.DEBIT || 0));
+        }
+
+        /* ================= DEBIT ================= */
+        if (debitRow?.GLCODE) {
+          const debitGL = String(debitRow.GLCODE);
+          const debitObj = String(debitRow.OBJECTCODE);
+
+          form.setFieldValue("debitDept", debitGL);
+
+          const debitLedgerRows = await loadLedgers(debitGL, "debit");
+
+          const debitExists = debitLedgerRows.find(
+            (r) => String(r.OBJECTCODE) === debitObj,
+          );
+
+          if (debitExists) {
+            form.setFieldValue("debitLedger", debitObj);
+          }
+
+          form.setFieldValue("debitAmount", Math.abs(debitRow.DEBIT || 0));
+        } else if (creditRow) {
+          const fallbackGL = String(creditRow.GLCODE);
+          const fallbackObj = String(creditRow.OBJECTCODE);
+
+          form.setFieldValue("debitDept", fallbackGL);
+
+          const debitLedgerRows = await loadLedgers(fallbackGL, "debit");
+
+          const exists = debitLedgerRows.find(
+            (r) => String(r.OBJECTCODE) === fallbackObj,
+          );
+
+          if (exists) {
+            form.setFieldValue("debitLedger", fallbackObj);
+          }
+
+          form.setFieldValue("debitAmount", Math.abs(creditRow.CREDIT || 0));
+        }
+
+        Swal.close();
+      } catch (err) {
+        console.error("contra-details error:", err);
+
+        Swal.close();
+
+        Swal.fire({
+          icon: "error",
+          text: "डेटा लोड करण्यात अडचण आली",
+        });
+      }
+    };
+
+    fetchData();
+  }, [location?.state?.refNo, token, ulbId, zones, transactionTypes]);
 
   /* ================= SUBMIT ================= */
 const handleSubmit = async (values, { resetForm }) => {
   try {
+    /* ================= VALIDATION ================= */
     if (!values.department) return Swal.fire("प्रभाग निवडा");
     if (!values.transactionType) return Swal.fire("व्यवहार प्रकार निवडा");
 
@@ -348,6 +377,7 @@ const handleSubmit = async (values, { resetForm }) => {
     if (Number(values.debitAmount) > Number(values.creditAmount))
       return Swal.fire("Debit > Credit नाही");
 
+    /* ================= PARAM BUILD ================= */
     const paramStr = [
       formatDate(values.date),
       values.voucherNo || "1",
@@ -383,13 +413,14 @@ const handleSubmit = async (values, { resetForm }) => {
 
     const paramStr2 = `${credit}$${debit}`;
 
+    /* ================= SAVE ================= */
     Swal.fire({
       title: "Saving...",
       allowOutsideClick: false,
       didOpen: () => Swal.showLoading(),
     });
 
-    const res = await axios.post(
+    const saveRes = await axios.post(
       `${BASE_URL}/api/FrmTransfer/transfer-save`,
       {
         userId: user?.userId,
@@ -403,21 +434,70 @@ const handleSubmit = async (values, { resetForm }) => {
 
     Swal.close();
 
-    // ✅ FULL RESPONSE HANDLING
-    const response = res.data;
-if (response?.ok && response?.data?.success) {
-  await Swal.fire({
-    icon: "success",
-    title: "Success",
-    text: response.data.message, // shows reference no
-    confirmButtonText: "OK",
-  });
+    const response = saveRes.data;
 
-  resetForm();
+    /* ================= SUCCESS ================= */
+    if (response?.ok && response?.data?.success) {
+      await Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: response.data.message,
+        confirmButtonText: "OK",
+      });
 
-  navigate("/Transactions/FrmTransferList");
+      /* ================= 🔥 CORRECT REFNO EXTRACTION ================= */
+      const message = response.data.message;
 
+      // ✅ Extract ONLY "Reference No"
+      const refMatch = message.match(/Reference No\. *: *(\d+)/);
+      const refNo = refMatch ? refMatch[1] : null;
+
+      console.log("Extracted Reference No:", refNo);
+
+      /* ================= PDF ================= */
+      if (refNo) {
+        try {
+          const pdfRes = await axios.post(
+            `${BASE_URL}/api/FrmTransfer/counter-voucher-pdf`,
+            {
+              refno: Number(refNo), // ✅ CORRECT VALUE
+              ulbId: user?.ulbId,
+            },
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+
+          const pdfUrl = pdfRes?.data?.pdfUrl;
+
+          console.log("PDF URL:", pdfUrl);
+
+          if (pdfUrl) {
+            window.open(pdfUrl, "_blank"); // ✅ clean open
+          } else {
+            Swal.fire("PDF तयार करण्यात अडचण आली");
+          }
+        } catch (err) {
+          console.error("PDF error:", err);
+
+          Swal.fire({
+            icon: "error",
+            title: "PDF Error",
+            text: "PDF तयार करण्यात अडचण आली",
+          });
+        }
+      } else {
+        console.warn("Reference No not found in message");
+      }
+
+      /* ================= RESET + NAVIGATE ================= */
+      resetForm();
+
+      setTimeout(() => {
+        navigate("/Transactions/FrmTransferList");
+      }, 800);
     } else {
+      /* ================= FAILURE ================= */
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -430,13 +510,13 @@ if (response?.ok && response?.data?.success) {
   } catch (err) {
     Swal.close();
 
+    console.error("Submit error:", err);
+
     Swal.fire({
       icon: "error",
       title: "Server Error",
       text: "Something went wrong while saving",
     });
-
-    console.error(err);
   }
 };
   /* ================= UI ================= */
@@ -604,9 +684,26 @@ if (response?.ok && response?.data?.success) {
                               <Input
                                 className="w-full h-8"
                                 value={values.chequeNo}
-                                onChange={(e) =>
-                                  setFieldValue("chequeNo", e.target.value)
-                                }
+                                onChange={(e) => {
+                                  const value = e.target.value;
+
+                                  setFieldValue("chequeNo", value);
+
+                                  // 🔥 Trigger when valid
+                                  if (
+                                    value &&
+                                    /^\d{1,6}$/.test(value) &&
+                                    values.creditDept &&
+                                    values.creditLedger &&
+                                    values.department
+                                  ) {
+                                    fetchChequeBook(
+                                      values,
+                                      value,
+                                      setFieldValue,
+                                    );
+                                  }
+                                }}
                               />
                             </Row>
 
@@ -619,13 +716,25 @@ if (response?.ok && response?.data?.success) {
                             </Row>
 
                             <Row label="धनादेश पुष्टिका क्रमांक">
-                              <Select>
+                              <Select
+                                value={values.chequeRef || ""}
+                                onValueChange={(v) =>
+                                  setFieldValue("chequeRef", v)
+                                }
+                              >
                                 <SelectTrigger className="w-full h-8">
                                   <SelectValue placeholder="Select" />
                                 </SelectTrigger>
 
                                 <SelectContent>
-                                  <SelectItem value="1">1</SelectItem>
+                                  {chequeBooks.map((b) => (
+                                    <SelectItem
+                                      key={b.NUM_CHEQUEBOOK_BOOKNO}
+                                      value={String(b.NUM_CHEQUEBOOK_BOOKNO)}
+                                    >
+                                      {b.BOOKNO}
+                                    </SelectItem>
+                                  ))}
                                 </SelectContent>
                               </Select>
                             </Row>

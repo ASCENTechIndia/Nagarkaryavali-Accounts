@@ -1,6 +1,9 @@
 const { ok } = require("../../../libs/response");
 const asyncHandler = require("../../../libs/asyncHandler");
 const service = require("./FrmTransfer.service");
+const { CounterVoucherPDFHelper } = require("../../../utils/pdfHelper/CounterVoucherPDFHelper");
+const path = require("path");
+const { getCorporationService } = require("../../MenuAccess/MenuAccess.service");
 
 const getTransactionTypes = asyncHandler(async (req, res) => {
   const data = await service.getTransactionTypesService();
@@ -59,6 +62,40 @@ const creditLeasure = asyncHandler(async (req, res) => {
   return ok(res, data);
 });
 
+
+
+const getCounterVoucherPDF = asyncHandler(async (req, res) => {
+  const filters = req.body;
+
+  const result = await service.getCounterVoucherService(filters);
+
+  if (!result.rows.length) {
+    return res.status(404).json({
+      success: false,
+      message: "No records found",
+    });
+  }
+
+  // ✅ GET CORPORATION INFO (same as GovtTax)
+  const corpInfo = await getCorporationService(filters);
+
+  const pdf = await CounterVoucherPDFHelper({
+    reportData: result.rows,
+    corporationName: corpInfo.ABC_MUNICIPAL_TEXT || "",
+    corporationLogo: corpInfo.ULBLOGO || "", // ✅ ADD THIS
+  });
+
+  const baseUrl = `${req.protocol}://${req.get("host")}`;
+  const pdfUrl = `${baseUrl}/pdf/${path.basename(pdf.filePath)}`;
+
+  res.json({
+    success: true,
+    message: "PDF Generated Successfully",
+    fileName: pdf.fileName,
+    pdfUrl,
+  });
+});
+
 module.exports = {
   getTransactionTypes,
   getDepartments,
@@ -68,5 +105,6 @@ module.exports = {
   getContraDetails,
   getTransferList,
   transferInsertUpdate,
-  creditLeasure
+  creditLeasure,
+  getCounterVoucherPDF
 };

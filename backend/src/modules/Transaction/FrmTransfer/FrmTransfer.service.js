@@ -57,6 +57,20 @@ const creditLeasureService = async (corp_id, glcode) => {
   return await repo.creditLeasure(corp_id, glcode);
 };
 
+const getCounterVoucherService = async (body = {}) => {
+  const { refno, ulbId } = body;
+
+  if (!refno) throw new AppError("Ref No required", 400);
+
+  const result = await repo.getCounterVoucher(body);
+
+  return {
+    success: true,
+    rows: result.rows,
+    rowCount: result.rows.length,
+  };
+};
+
 module.exports = {
   getTransactionTypesService,
   getDepartmentsService,
@@ -67,4 +81,5 @@ module.exports = {
   getTransferListService,
   transferInsertUpdateService,
   creditLeasureService,
+  getCounterVoucherService
 };
