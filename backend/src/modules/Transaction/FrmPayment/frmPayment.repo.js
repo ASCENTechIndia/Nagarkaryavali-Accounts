@@ -3,9 +3,9 @@ const oracledb = require("oracledb");
 const { executeProcedure } = require("../../../db/procedureExecutor");
 
 async function getFrmPaymentRepo({ zoneId, ulbId }) {
-    console.log("📤 Repo: Fetch FrmPayment", { zoneId, ulbId });
+  console.log("📤 Repo: Fetch FrmPayment", { zoneId, ulbId });
 
-    const sql = `
+  const sql = `
     SELECT 
         num_payment_refno AS refno, 
         date_payment_trnsdate AS trnsdate, 
@@ -44,21 +44,21 @@ async function getFrmPaymentRepo({ zoneId, ulbId }) {
     ORDER BY num_payment_refno
   `;
 
-    const binds = { zoneId, ulbId };
+  const binds = { zoneId, ulbId };
 
-    const result = await executeQuery(sql, binds);
+  const result = await executeQuery(sql, binds);
 
-    if (!result.success) {
-        throw new Error(result.error);
-    }
+  if (!result.success) {
+    throw new Error(result.error);
+  }
 
-    return result.rows;
+  return result.rows;
 }
 
 async function getTransactionTypeRepo() {
-    console.log("📤 Repo: Fetch Transaction Types");
+  console.log("📤 Repo: Fetch Transaction Types");
 
-    const sql = `
+  const sql = `
     SELECT 
         num_trnstype_trnstypeid AS id, 
         var_trnstype_trnstype AS englishname, 
@@ -68,19 +68,19 @@ async function getTransactionTypeRepo() {
     ORDER BY num_trnstype_trnstypeid
   `;
 
-    const result = await executeQuery(sql);
+  const result = await executeQuery(sql);
 
-    if (!result.success) {
-        throw new Error(result.error);
-    }
+  if (!result.success) {
+    throw new Error(result.error);
+  }
 
-    return result.rows;
+  return result.rows;
 }
 
 async function getPartyMasterRepo({ ulbId }) {
-    console.log("📤 Repo: Fetch Party Master", { ulbId });
+  console.log("📤 Repo: Fetch Party Master", { ulbId });
 
-    const sql = `
+  const sql = `
     SELECT 
         num_partymst_partyid || '-' || var_partymst_partyname AS partyname,
         num_partymst_partyid AS partyid
@@ -89,21 +89,21 @@ async function getPartyMasterRepo({ ulbId }) {
     ORDER BY var_partymst_partyname
   `;
 
-    const binds = { ulbId };
+  const binds = { ulbId };
 
-    const result = await executeQuery(sql, binds);
+  const result = await executeQuery(sql, binds);
 
-    if (!result.success) {
-        throw new Error(result.error);
-    }
+  if (!result.success) {
+    throw new Error(result.error);
+  }
 
-    return result.rows;
+  return result.rows;
 }
 
 async function getAccountDetailsRepo({ glcode, accno }) {
-    console.log("📤 Repo: Fetch Account Details", { glcode, accno });
+  console.log("📤 Repo: Fetch Account Details", { glcode, accno });
 
-    const sql = `
+  const sql = `
     SELECT 
       accname AS accname,
       accsubtypeid AS accsubtypeid,
@@ -114,26 +114,26 @@ async function getAccountDetailsRepo({ glcode, accno }) {
       AND accno = :accno
   `;
 
-    const binds = { glcode, accno };
+  const binds = { glcode, accno };
 
-    const result = await executeQuery(sql, binds);
+  const result = await executeQuery(sql, binds);
 
-    if (!result.success) {
-        throw new Error(result.error);
-    }
+  if (!result.success) {
+    throw new Error(result.error);
+  }
 
-    return result.rows;
+  return result.rows;
 }
 
 async function getSecurityDepositRepo({ partyId, glcode, accno, ulbId }) {
-    console.log("📤 Repo: Fetch Security Deposit", {
-        partyId,
-        glcode,
-        accno,
-        ulbId,
-    });
+  console.log("📤 Repo: Fetch Security Deposit", {
+    partyId,
+    glcode,
+    accno,
+    ulbId,
+  });
 
-    const sql = `
+  const sql = `
     SELECT 
         num_secdeposit_deptid AS deptid, 
         zonemname AS deptname, 
@@ -157,21 +157,21 @@ async function getSecurityDepositRepo({ partyId, glcode, accno, ulbId }) {
     ORDER BY num_secdeposit_rectrnsno
   `;
 
-    const binds = { partyId, glcode, accno, ulbId };
+  const binds = { partyId, glcode, accno, ulbId };
 
-    const result = await executeQuery(sql, binds);
+  const result = await executeQuery(sql, binds);
 
-    if (!result.success) {
-        throw new Error(result.error);
-    }
+  if (!result.success) {
+    throw new Error(result.error);
+  }
 
-    return result.rows;
+  return result.rows;
 }
 
 async function getPaymentTypesRepo() {
-    console.log("📤 Repo: Fetch Payment Types (1,2,3)");
+  console.log("📤 Repo: Fetch Payment Types (1,2,3)");
 
-    const sql = `
+  const sql = `
     SELECT 
         var_paymenttype_paymenttype AS displaytext, 
         num_paymenttype_paymenttypeid AS valuefield
@@ -179,19 +179,19 @@ async function getPaymentTypesRepo() {
     WHERE num_paymenttype_paymenttypeid IN (1, 2, 3)
   `;
 
-    const result = await executeQuery(sql);
+  const result = await executeQuery(sql);
 
-    if (!result.success) {
-        throw new Error(result.error);
-    }
+  if (!result.success) {
+    throw new Error(result.error);
+  }
 
-    return result.rows;
+  return result.rows;
 }
 
 async function getAdvancePaymentTypeRepo() {
-    console.log("📤 Repo: Fetch Payment Type (7)");
+  console.log("📤 Repo: Fetch Payment Type (7)");
 
-    const sql = `
+  const sql = `
     SELECT 
         var_paymenttype_paymenttype AS displaytext, 
         num_paymenttype_paymenttypeid AS valuefield
@@ -199,19 +199,19 @@ async function getAdvancePaymentTypeRepo() {
     WHERE num_paymenttype_paymenttypeid = 7
   `;
 
-    const result = await executeQuery(sql);
+  const result = await executeQuery(sql);
 
-    if (!result.success) {
-        throw new Error(result.error);
-    }
+  if (!result.success) {
+    throw new Error(result.error);
+  }
 
-    return result.rows;
+  return result.rows;
 }
 
 async function getPaymentDetailsRepo({ refno }) {
-    console.log("📤 Repo: Fetch Payment Details", { refno });
+  console.log("📤 Repo: Fetch Payment Details", { refno });
 
-    const sql = `
+  const sql = `
     SELECT 
         a.date_payment_trnsdate AS trnsdate, 
         a.num_payment_vchno AS vchno, 
@@ -254,21 +254,21 @@ async function getPaymentDetailsRepo({ refno }) {
     WHERE a.num_payment_refno = :refno
   `;
 
-    const binds = { refno };
+  const binds = { refno };
 
-    const result = await executeQuery(sql, binds);
+  const result = await executeQuery(sql, binds);
 
-    if (!result.success) {
-        throw new Error(result.error);
-    }
+  if (!result.success) {
+    throw new Error(result.error);
+  }
 
-    return result.rows;
+  return result.rows;
 }
 
 async function searchAccountRepo({ ulbid, searchText, functionCode }) {
-    console.log("📤 Repo: Search Account", { ulbid, searchText, functionCode });
+  console.log("📤 Repo: Search Account", { ulbid, searchText, functionCode });
 
-    const sql = `
+  const sql = `
     SELECT 
       objectcode,
       objectcode || '-' || accname AS accname,
@@ -283,20 +283,24 @@ async function searchAccountRepo({ ulbid, searchText, functionCode }) {
       )
   `;
 
-    const binds = { ulbid, searchText, functionCode };
+  const binds = { ulbid, searchText, functionCode };
 
-    const result = await executeQuery(sql, binds);
+  const result = await executeQuery(sql, binds);
 
-    if (!result.success) {
-        throw new Error(result.error);
-    }
+  if (!result.success) {
+    throw new Error(result.error);
+  }
 
-    return result.rows;
+  return result.rows;
 }
 
 async function getAccountBalanceRepo({ targetDate, corpId, glcode, accno, ulbid }) {
   console.log("📤 Repo: Fetch Account Balance", {
-    targetDate, corpId, glcode, accno, ulbid
+    targetDate,
+    corpId,
+    glcode,
+    accno,
+    ulbid,
   });
 
   const sql = `
@@ -334,13 +338,13 @@ async function getAccountBalanceRepo({ targetDate, corpId, glcode, accno, ulbid 
     throw new Error(result.error);
   }
 
-  return result.rows.length > 0 ? result.rows[0] : { balance: 0, crdr: 'Cr.' };
+  return result.rows.length > 0 ? result.rows[0] : { balance: 0, crdr: "Cr." };
 }
 
 async function getCorporationByIdRepo({ corpId }) {
-    console.log("📤 Repo: Fetch Corporation", { corpId });
+  console.log("📤 Repo: Fetch Corporation", { corpId });
 
-    const sql = `
+  const sql = `
     SELECT 
       var_corporation_code AS corporationcode, 
       num_corporation_id AS corporationid
@@ -348,15 +352,15 @@ async function getCorporationByIdRepo({ corpId }) {
     WHERE num_corporation_id = :corpId
   `;
 
-    const binds = { corpId };
+  const binds = { corpId };
 
-    const result = await executeQuery(sql, binds);
+  const result = await executeQuery(sql, binds);
 
-    if (!result.success) {
-        throw new Error(result.error);
-    }
+  if (!result.success) {
+    throw new Error(result.error);
+  }
 
-    return result.rows;
+  return result.rows;
 }
 
 async function getPaymentDetailsViewRepo({ refno, ulbid }) {
@@ -437,19 +441,46 @@ async function savePaymentRepo(payload) {
   return result.outBinds;
 }
 
+const getPaymentDetailsPDF = (refno, ulbid) =>
+  executeQuery(
+    `SELECT 
+        REFNO,
+        VOUCHERNO,
+        TRANSDATE,
+        ZONEENAME,
+        CHQNO,
+        CHQBOOKNO,
+        PAYMENTTYPE,
+        ACCNO,
+        ACCNAME,
+        AMT,
+        PARTYNAME,
+        PARTYCODE,
+        NARRATION,
+        ULBID,
+        PACNO,
+        PCACCNAME,
+        deyakdharak,
+        TRANSNO
+     FROM VW_Paymentdetails
+     WHERE REFNO = :refno
+       AND ULBID = :ulbid`,
+    { refno, ulbid },
+  );
 
 module.exports = {
-    getFrmPaymentRepo,
-    getTransactionTypeRepo,
-    getPartyMasterRepo,
-    getAccountDetailsRepo,
-    getSecurityDepositRepo,
-    getPaymentTypesRepo,
-    getAdvancePaymentTypeRepo,
-    getPaymentDetailsRepo,
-    searchAccountRepo,
-    getAccountBalanceRepo,
-    getCorporationByIdRepo,
-    getPaymentDetailsViewRepo,
-    savePaymentRepo,
+  getFrmPaymentRepo,
+  getTransactionTypeRepo,
+  getPartyMasterRepo,
+  getAccountDetailsRepo,
+  getSecurityDepositRepo,
+  getPaymentTypesRepo,
+  getAdvancePaymentTypeRepo,
+  getPaymentDetailsRepo,
+  searchAccountRepo,
+  getAccountBalanceRepo,
+  getCorporationByIdRepo,
+  getPaymentDetailsViewRepo,
+  savePaymentRepo,
+  getPaymentDetailsPDF
 };

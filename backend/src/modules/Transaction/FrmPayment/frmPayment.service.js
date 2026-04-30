@@ -168,6 +168,22 @@ async function savePaymentService(payload) {
 }
 
 
+async function getPaymentDetailsServicePDF(payload) {
+  const { refno, ulbid } = payload;
+
+  if (!refno) throw new AppError("refno is required", 400);
+  if (!ulbid) throw new AppError("ulbid is required", 400);
+
+  const result = await repo.getPaymentDetailsPDF(refno, ulbid);
+
+  if (!result.rows.length) {
+    throw new AppError("No data found", 404);
+  }
+
+  return result.rows;
+}
+
+
 
 module.exports = {
     getFrmPaymentService,
@@ -183,4 +199,5 @@ module.exports = {
     getCorporationByIdService,
     getPaymentDetailsViewService,
     savePaymentService,
+    getPaymentDetailsServicePDF
 };
