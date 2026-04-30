@@ -25,24 +25,44 @@ const BudgetExpenditurePDFHelper = async ({ reportData, filters, ulbInfo }) => {
     let totalExpenditure = 0;
     let totalBudget = 0;
     let totalBalance = 0;
+    let totalExcess = 0;
 
     const rows = reportData.map((row) => {
       const actual = Number(row.ACTUAL_PAYMENT || 0);
       const budget = Number(row.BUDGPROV || 0);
-      const balance = Number(row.BALANCE || 0);
+      const rawBalance = Number(row.BALANCE || 0);
 
-      totalActual += actual;
-      totalExpenditure += actual;
-      totalBudget += budget;
-      totalBalance += balance;
+      let finalBalance = 0;
+      let excessAmount = 0;
+
+      if (actual > budget) {
+        finalBalance = 0;
+        excessAmount = rawBalance;
+      } else {
+        finalBalance = rawBalance;
+        excessAmount = 0;
+      }
+
+      // Convert to absolute (like .NET)
+      const absActual = Math.abs(actual);
+      const absBudget = Math.abs(budget);
+      const absBalance = Math.abs(finalBalance);
+      const absExcess = Math.abs(excessAmount);
+
+      totalActual += absActual;
+      totalExpenditure += absActual;
+      totalBudget += absBudget;
+      totalBalance += absBalance;
+      totalExcess += absExcess;
 
       return {
         ACCOUNTCODE: row.ACCOUNTCODE,
         ACCNAME: row.ACCNAME,
-        ACTUAL: formatNumber(actual),
-        EXPENDITURE: formatNumber(actual),
-        BUDGET: formatNumber(budget),
-        BALANCE: formatNumber(balance)
+        ACTUAL: formatNumber(absActual),
+        EXPENDITURE: formatNumber(absActual),
+        BUDGET: formatNumber(absBudget),
+        BALANCE: formatNumber(absBalance),
+        EXCESS: formatNumber(absExcess), 
       };
     });
 
@@ -55,6 +75,7 @@ const BudgetExpenditurePDFHelper = async ({ reportData, filters, ulbInfo }) => {
       totalExpenditure: formatNumber(totalExpenditure),
       totalBudget: formatNumber(totalBudget),
       totalBalance: formatNumber(totalBalance),
+      totalExcess: formatNumber(totalExcess),
       currentDate: new Date().toLocaleString("en-IN")
     });
 

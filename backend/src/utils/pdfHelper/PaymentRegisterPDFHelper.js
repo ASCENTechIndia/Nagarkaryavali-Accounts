@@ -56,7 +56,7 @@ const PaymentRegisterPDFHelper = async ({
     let totalAmount = 0;
 
     const formattedData = reportData.map((row, index) => {
-      const amt = Number(row.AMOUNT || 0);
+      const amt = Number(Math.abs(row.AMOUNT) || 0);
       totalAmount += amt;
 
       return {

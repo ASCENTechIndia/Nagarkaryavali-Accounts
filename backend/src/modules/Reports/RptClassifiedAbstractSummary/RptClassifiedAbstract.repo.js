@@ -14,82 +14,199 @@ async function getBudgetExpenditureReport(filters) {
 
   let sql = "";
 
+  // =========================
+  // ✅ RECEIPT (CORRECT)
+  // =========================
   if (isReceipt) {
-    // ✅ RECEIPT
     sql = `
       SELECT 
-        a.glcode, acc.glname, a.accno, acc.accname AS ACCNAME, 
-        NVL(acc.budgetamt, 0) AS BUDGPROV,
-        acc.functioncode, acc.objectcode AS ACCOUNTCODE,
-        SUM(a.amount) AS ACTUAL_PAYMENT, 
-        SUM(a.amount) AS EXPENDITURE, 
-        NVL(acc.budgetamt, 0) - SUM(a.amount) AS BALANCE
-      FROM transview a 
+        a.glcode,
+        acc.glname,
+        a.accno,
+        acc.accname AS ACCNAME,
+        NVL(budgetamt, 0) AS BUDGPROV,
+        acc.functioncode,
+        acc.objectcode AS ACCOUNTCODE,
+        SUM(a.amount) AS ACTUAL_PAYMENT,
+        SUM(a.amount) AS EXPENDITURE,
+        NVL(budgetamt, 0) - SUM(a.amount) AS BALANCE
+
+      FROM transview a
       INNER JOIN accountview_web acc 
         ON acc.glcode = a.glcode 
        AND acc.accno = a.accno 
        AND acc.ulbid = a.ulbid
 
-      WHERE a.trnsdate >= TO_DATE(:fromDate, 'DD-MON-YYYY') 
-        AND a.trnsdate <= TO_DATE(:toDate, 'DD-MON-YYYY')
+      LEFT JOIN aoac_budgetaccmap_det 
+        ON num_budgetaccmap_glcode = a.glcode
+       AND num_budgetaccmap_accountno = a.accno
+       AND num_budgetaccmap_ulbid = a.ulbid
+
+      WHERE 
+        a.trnsdate BETWEEN TO_DATE(:fromDate, 'DD-MON-YYYY') 
+                        AND TO_DATE(:toDate, 'DD-MON-YYYY')
         AND a.ulbid = :ulbId
-        AND (a.trnstypeid IN (1, 2) OR (a.trnstypeid = 4 AND a.amount > 0))
-        AND acc.accsubtypeid NOT IN (1, 2)
-        AND a.accno NOT IN ('4148100001', '4148210004')
-        AND acc.accsubtypeid NOT IN (4820, 4821, 2110, 2272)
+        AND a.amount > 0
+        AND a.trnstypeid IN (1, 2)
     `;
 
-  } else {
-    // ✅ EXPENDITURE
-    params.finYearStart = filters.finYearStart || "01-APR-2025";
+    // ✅ Zone filter
+    if (filters.zoneId && filters.zoneId !== "-1") {
+      sql += ` AND a.zoneid = :zoneId `;
+      params.zoneId = filters.zoneId;
+    }
 
+    sql += `
+      GROUP BY 
+        a.glcode,
+        acc.glname,
+        a.accno,
+        acc.accname,
+        budgetamt,
+        acc.functioncode,
+        acc.objectcode
+    `;
+  }
+
+  // =========================
+  // ✅ EXPENDITURE (CORRECT)
+  // =========================
+  else {
     sql = `
       SELECT 
-        a.glcode, acc.glname, a.accno, acc.accname AS ACCNAME, 
-        NVL(acc.budgetamt, 0) AS BUDGPROV,
-        acc.functioncode, acc.objectcode AS ACCOUNTCODE,
-        SUM(a.amount) AS ACTUAL_PAYMENT, 
-        SUM(a.amount) AS EXPENDITURE, 
-        NVL(acc.budgetamt, 0) - SUM(a.amount) AS BALANCE,
+        glcode,
+        glname,
+        accno,
+        accname,
+        budgprov,
+        accountcode,
+        SUM(actual_payment) AS actual_payment,
+        SUM(expenditure) AS expenditure,
+        SUM(balance) AS balance,
+        SUM(progressive_total) AS progressive_total,
+        accno_type_no,
+        accno_type_name,
+        functioncode
 
-        ABS((
-          SELECT NVL(SUM(b.amount), 0)
-          FROM transview b 
-          WHERE b.trnsdate <= TO_DATE(:toDate, 'DD-MON-YYYY') 
-            AND b.trnsdate >= TO_DATE(:finYearStart, 'DD-MON-YYYY')
-            AND b.trnstypeid IN (1, 2, 4)
-            AND b.glcode = a.glcode 
-            AND b.accno = a.accno
-        )) AS progressive_total
+      FROM (
+        SELECT 
+          a.glcode,
+          acc.glname,
+          a.accno,
+          acc.accname,
+          NVL(budgetamt, 0) AS budgprov,
+          acc.functioncode,
+          acc.objectcode AS accountcode,
 
-      FROM transview a 
-      INNER JOIN accountview_web acc 
-        ON acc.glcode = a.glcode 
-       AND acc.accno = a.accno 
-       AND acc.ulbid = a.ulbid
+          /* ACTUAL PAYMENT */
+          (
+            NVL((
+              SELECT SUM(d.num_vchtransbaldet_amount * -1)
+              FROM aoac_vchtransbal_def vb
+              INNER JOIN aoac_vchtransbaldet_def d
+                ON d.num_vchtransbaldet_transno = vb.num_vchtransbal_vchtransbalno
+               AND d.num_vchtransbaldet_vchrefno = vb.num_vchtransbal_vchrefno
+              WHERE vb.num_vchtransbal_transno = a.transno
+                AND d.num_vchtransbaldet_accno = a.accno
+                AND d.num_vchtransbaldet_amount < 0
+            ), 0)
+            +
+            NVL((
+              SELECT SUM(d.num_vchtransbaldet_amount)
+              FROM aoac_vchtransbal_def vb
+              INNER JOIN aoac_vchtransbaldet_def d
+                ON d.num_vchtransbaldet_transno = vb.num_vchtransbal_vchtransbalno
+               AND d.num_vchtransbaldet_vchrefno = vb.num_vchtransbal_vchrefno
+              WHERE vb.num_vchtransbal_transno = a.transno
+                AND vb.num_vchtransbal_accno = a.accno
+                AND d.num_vchtransbaldet_amount > 0
+            ), 0)
+          ) AS actual_payment,
 
-      WHERE a.trnsdate >= TO_DATE(:fromDate, 'DD-MON-YYYY') 
-        AND a.trnsdate <= TO_DATE(:toDate, 'DD-MON-YYYY')
-        AND a.ulbid = :ulbId
-        AND a.trnstypeid IN (3, 4) 
-        AND a.amount < 0
-        AND acc.accsubtypeid NOT IN (1, 2)
-        AND a.accno NOT IN ('4148100001', '4148210004')
-        AND acc.accsubtypeid NOT IN (4820, 4821)
+          /* EXPENDITURE */
+          SUM(a.amount) AS expenditure,
+
+          NVL(budgetamt, 0) - SUM(a.amount) AS balance,
+
+          /* PROGRESSIVE TOTAL */
+          NVL(ABS((
+            SELECT 
+              NVL(SUM(b.amount), 0)
+            FROM transview b
+            WHERE 
+              b.trnsdate BETWEEN TO_DATE(:fromDate, 'DD-MON-YYYY') 
+                              AND TO_DATE(:toDate, 'DD-MON-YYYY')
+              AND b.trnstypeid IN (1, 2, 4)
+              AND b.glcode = a.glcode
+              AND b.accno = a.accno
+          )), 0) AS progressive_total,
+
+          /* ACCOUNT TYPE */
+          CASE 
+            WHEN SUBSTR(acc.objectcode, 4, 1) = '2' THEN '2'
+            WHEN SUBSTR(acc.objectcode, 4, 1) = '3' THEN '3'
+            WHEN SUBSTR(acc.objectcode, 4, 1) = '4' THEN '4'
+          END AS accno_type_no,
+
+          CASE 
+            WHEN SUBSTR(acc.objectcode, 4, 1) = '2' THEN 'खर्च'
+            WHEN SUBSTR(acc.objectcode, 4, 1) = '3' THEN 'दायित्व'
+            WHEN SUBSTR(acc.objectcode, 4, 1) = '4' THEN 'मत्ता'
+          END AS accno_type_name
+
+        FROM transview a
+        INNER JOIN accountview_web acc 
+          ON acc.glcode = a.glcode 
+         AND acc.accno = a.accno 
+         AND acc.ulbid = a.ulbid
+
+        LEFT JOIN aoac_budgetaccmap_det 
+          ON num_budgetaccmap_glcode = a.glcode
+         AND num_budgetaccmap_accountno = a.accno
+         AND num_budgetaccmap_ulbid = a.ulbid
+
+        WHERE 
+          a.trnsdate BETWEEN TO_DATE(:fromDate, 'DD-MON-YYYY') 
+                          AND TO_DATE(:toDate, 'DD-MON-YYYY')
+          AND a.ulbid = :ulbId
+          AND a.sourceid IN (6)
+          AND a.amount < 0
+          AND acc.accsubtypeid NOT IN (1, 2)
+          AND a.accno NOT IN ('4148100001','4148210004')
+          AND acc.accsubtypeid NOT IN (4820, 4821)
+    `;
+
+    // ✅ Zone filter
+    if (filters.zoneId && filters.zoneId !== "-1") {
+      sql += ` AND a.zoneid = :zoneId `;
+      params.zoneId = filters.zoneId;
+    }
+
+    sql += `
+        GROUP BY 
+          a.transno,
+          a.glcode,
+          acc.glname,
+          a.accno,
+          acc.accname,
+          budgetamt,
+          acc.functioncode,
+          acc.objectcode
+      )
+      WHERE accno_type_no IS NOT NULL
+      GROUP BY 
+        glcode,
+        glname,
+        accno,
+        accname,
+        budgprov,
+        accountcode,
+        accno_type_no,
+        accno_type_name,
+        functioncode
+      ORDER BY accno_type_no
     `;
   }
-
-  // ✅ Optional Zone Filter (SAFE)
-  if (filters.zoneId && filters.zoneId !== "-1") {
-    sql += " AND a.zoneid = :zoneId ";
-    params.zoneId = filters.zoneId;
-  }
-
-  sql += `
-    GROUP BY 
-      a.glcode, acc.glname, a.accno, acc.accname,
-      acc.budgetamt, acc.functioncode, acc.objectcode
-  `;
 
   const result = await executeQuery(sql, params);
 
