@@ -3,6 +3,10 @@ const { ok } = require("../../../libs/response");
 const { AppError } = require("../../../libs/errors");
 const service = require("./frmPayment.service");
 
+const { generatePaymentPDF } = require("../../../utils/pdfHelper/paymentPDF");
+const { getCorporationService } = require("../../MenuAccess/MenuAccess.service");
+const path = require("path");
+
 exports.getFrmPayment = asyncHandler(async (req, res) => {
   console.log("📥 Request Body:", req.body);
 
@@ -130,9 +134,9 @@ exports.searchAccount = asyncHandler(async (req, res) => {
     throw new AppError("functionCode is required", 400);
   }
 
-//   if (!searchText) {
-//     throw new AppError("searchText is required", 400);
-//   }
+  //   if (!searchText) {
+  //     throw new AppError("searchText is required", 400);
+  //   }
 
   const payload = { ulbid, searchText, functionCode };
 
@@ -244,4 +248,29 @@ exports.savePayment = asyncHandler(async (req, res) => {
   const data = await service.savePaymentService(payload);
 
   return ok(res, data, "Payment operation executed successfully");
+});
+
+exports.getPaymentPDF = asyncHandler(async (req, res) => {
+  const payload = req.body;
+
+  const corpInfo = await getCorporationService({
+    ulbId: payload.ulbid,
+  });
+
+  const data = await service.getPaymentDetailsServicePDF(payload);
+
+  const pdf = await generatePaymentPDF({
+    data,
+    corporationName: corpInfo.ABC_MUNICIPAL_TEXT || "",
+    corporationLogo: corpInfo.ULBLOGO || "",
+  });
+
+  const baseUrl = `${req.protocol}://${req.get("host")}`;
+
+  return res.json({
+    success: true,
+    fileName: pdf.fileName,
+    pdfUrl: `${baseUrl}/pdf/${path.basename(pdf.filePath)}`,
+    data: data,
+  });
 });

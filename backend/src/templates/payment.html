@@ -1,0 +1,221 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      body {
+        font-family: Arial;
+        font-size: 12px;
+        padding: 12px;
+      }
+
+      .main {
+        width: 100%;
+        border: 2px solid #000;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+
+      .main td {
+        border: 1px solid #000;
+        padding: 6px;
+        vertical-align: middle;
+      }
+
+      /* HEADER */
+      .header-box td {
+        border: 1px solid #000;
+      }
+
+      .logo {
+        width: 85px;
+      }
+
+      /* TEXT */
+      .bold {
+        font-weight: bold;
+      }
+      .center {
+        text-align: center;
+      }
+      .right {
+        text-align: right;
+      }
+
+      /* LABEL STRUCTURE */
+      .label {
+        width: 28%;
+        font-weight: bold;
+      }
+      .value {
+        width: 42%;
+      }
+      .meta {
+        width: 30%;
+      }
+
+      /* GRID */
+      .grid {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+
+      .grid th,
+      .grid td {
+        border: 1px solid #000;
+        padding: 6px;
+      }
+
+      .grid th {
+        font-weight: bold;
+        text-align: center;
+      }
+
+      /* FIXED WIDTHS */
+      .w-sr {
+        width: 40px;
+      }
+      .w-code {
+        width: 120px;
+      }
+      .w-party {
+        width: 90px;
+      }
+      .w-amt {
+        width: 100px;
+      }
+
+      /* TOTAL BOX */
+      .total {
+        text-align: right;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+
+  <body>
+    <table class="main">
+      <!-- HEADER -->
+      <tr>
+        <td colspan="3" style="padding: 0">
+          <table width="100%" class="header-box">
+            <tr>
+              <td style="width: 100px" class="center">
+                <img src="{{logo}}" class="logo" />
+              </td>
+
+              <td class="center">
+                <div class="bold" style="font-size: 16px">{{corporationName}}</div>
+                <div>लेखा विभाग</div>
+                <div class="bold">थेट पेमेंट - पोचपावती</div>
+              </td>
+
+              <td class="right" style="width: 160px">
+                दिनांक : {{date}}<br />
+                वेळ : {{time}}
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <!-- ROW 1 -->
+      <tr>
+        <td class="label">प्रभाग</td>
+        <td class="value">: {{data.ZONEENAME}}</td>
+        <td class="meta right">प्रमाणक क्रमांक : {{data.VOUCHERNO}}</td>
+      </tr>
+
+      <!-- ROW 2 -->
+      <tr>
+        <td class="label">देयकधारकाचे नाव</td>
+        <td class="value">: {{data.DEYAKDHARAK}}</td>
+        <td class="meta right">प्रमाणक दिनांक : {{date}}</td>
+      </tr>
+
+      <!-- ROW 3 -->
+      <tr>
+        <td class="label">बँक खाते क्रमांक व नाव</td>
+        <td class="value">: {{data.ACCNO}} - {{data.PCACCNAME}}</td>
+        <td class="meta right">
+          <b>Reference No.</b> : {{data.REFNO}}<br />
+          <b>Transaction No</b> : {{data.TRANSNO}}
+        </td>
+      </tr>
+
+      <!-- FULL WIDTH ROWS -->
+      <tr>
+        <td class="label">व्यवहार प्रकार</td>
+        <td colspan="2">: {{data.PAYMENTTYPE}}</td>
+      </tr>
+
+      <tr>
+        <td class="label">धनादेश पुस्तिका क्रमांक</td>
+        <td colspan="2">: {{data.CHQBOOKNO}}</td>
+      </tr>
+
+      <tr>
+        <td class="label">धनादेश क्रमांक</td>
+        <td colspan="2">: {{data.CHQNO}}</td>
+      </tr>
+
+      <tr>
+        <td class="label">तपशील</td>
+        <td colspan="2">: {{data.NARRATION}}</td>
+      </tr>
+
+      <!-- GRID -->
+      <tr>
+        <td colspan="3" style="padding: 0">
+          <table class="grid">
+            <thead>
+              <tr>
+                <th class="w-sr">अ.क्र.</th>
+                <th class="w-code">लेख संकेतांक</th>
+                <th>लेख शीर्ष नाव</th>
+                <th class="w-party">पार्टी कोड</th>
+                <th>पार्टीचे नाव</th>
+                <th class="w-amt">देय रक्कम</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {{#each rows}}
+              <tr>
+                <td class="center">{{sr}}</td>
+                <td>{{accno}}</td>
+                <td>{{accname}}</td>
+                <td class="center">{{partycode}}</td>
+                <td>{{party}}</td>
+                <td class="right">{{amount}}</td>
+              </tr>
+              {{/each}}
+
+              <tr>
+                <td colspan="5" class="total">एकूण</td>
+                <td class="right bold">{{total}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </td>
+      </tr>
+
+      <!-- AMOUNT WORDS -->
+      <tr>
+        <td class="label">देय रक्कम (अक्षरात)</td>
+        <td colspan="2">: {{amountWords}}</td>
+      </tr>
+
+      <!-- SIGN -->
+      <tr>
+        <td colspan="3" style="height: 90px">
+          <div style="float: right; text-align: right">
+            मुख्यलेखाधिकारी<br />
+            {{corporationName}}
+          </div>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

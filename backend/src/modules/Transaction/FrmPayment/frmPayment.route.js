@@ -16,5 +16,6 @@ router.post("/account-balance", auth(), controller.getAccountBalance);
 router.post("/corporation-by-id", auth(), controller.getCorporationById);
 router.post("/payment-details-view", auth(), controller.getPaymentDetailsView);
 router.post("/save-payment", auth(), controller.savePayment);
+router.post("/payment-pdf", controller.getPaymentPDF);
 
 module.exports = router;

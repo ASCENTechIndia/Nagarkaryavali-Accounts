@@ -48,6 +48,7 @@ const generateReceiptPDF = async ({ data, corporationName, corporationLogo }) =>
         amount: Number(row.AMOUNT).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
         taxac: row.TAXAC,
         taxname: row.TAXNAME,
+        remarks : row.REMARKS
       };
     });
 
@@ -64,10 +65,23 @@ const generateReceiptPDF = async ({ data, corporationName, corporationLogo }) =>
       corporationName,
     });
 
-    const browser = await puppeteer.launch({
+    // const browser = await puppeteer.launch({
+    //   headless: true,
+    //   args: ["--no-sandbox"],
+    // });
+
+    const chromePath = path.resolve(__dirname, "../../../node_modules/puppeteer/.cache/puppeteer/chrome/win64-135.0.7049.84/chrome-win64/chrome.exe");
+
+    const launchOptions = {
       headless: true,
-      args: ["--no-sandbox"],
-    });
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    };
+
+    if (fs.existsSync(chromePath)) {
+      launchOptions.executablePath = chromePath;
+    }
+
+    const browser = await puppeteer.launch(launchOptions);
 
     const page = await browser.newPage();
 
