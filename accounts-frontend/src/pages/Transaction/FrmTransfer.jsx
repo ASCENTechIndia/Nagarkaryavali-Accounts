@@ -416,6 +416,7 @@ const handleSubmit = async (values, { resetForm }) => {
     /* ================= SAVE ================= */
     Swal.fire({
       title: "Saving...",
+      text: "Please wait",
       allowOutsideClick: false,
       didOpen: () => Swal.showLoading(),
     });
@@ -445,22 +446,27 @@ const handleSubmit = async (values, { resetForm }) => {
         confirmButtonText: "OK",
       });
 
-      /* ================= 🔥 CORRECT REFNO EXTRACTION ================= */
+      /* ================= REFNO ================= */
       const message = response.data.message;
-
-      // ✅ Extract ONLY "Reference No"
       const refMatch = message.match(/Reference No\. *: *(\d+)/);
       const refNo = refMatch ? refMatch[1] : null;
 
       console.log("Extracted Reference No:", refNo);
 
-      /* ================= PDF ================= */
+      /* ================= PDF GENERATION ================= */
       if (refNo) {
         try {
+          Swal.fire({
+            title: "PDF तयार होत आहे...",
+            text: "कृपया थांबा",
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading(),
+          });
+
           const pdfRes = await axios.post(
             `${BASE_URL}/api/FrmTransfer/counter-voucher-pdf`,
             {
-              refno: Number(refNo), // ✅ CORRECT VALUE
+              refno: Number(refNo),
               ulbId: user?.ulbId,
             },
             {
@@ -468,16 +474,20 @@ const handleSubmit = async (values, { resetForm }) => {
             }
           );
 
+          Swal.close();
+
           const pdfUrl = pdfRes?.data?.pdfUrl;
 
           console.log("PDF URL:", pdfUrl);
 
           if (pdfUrl) {
-            window.open(pdfUrl, "_blank"); // ✅ clean open
+            window.open(pdfUrl, "_blank");
           } else {
             Swal.fire("PDF तयार करण्यात अडचण आली");
           }
         } catch (err) {
+          Swal.close();
+
           console.error("PDF error:", err);
 
           Swal.fire({
@@ -496,6 +506,7 @@ const handleSubmit = async (values, { resetForm }) => {
       setTimeout(() => {
         navigate("/Transactions/FrmTransferList");
       }, 800);
+
     } else {
       /* ================= FAILURE ================= */
       Swal.fire({
@@ -507,6 +518,7 @@ const handleSubmit = async (values, { resetForm }) => {
           "Something went wrong",
       });
     }
+
   } catch (err) {
     Swal.close();
 
