@@ -316,7 +316,6 @@ const FrmVoucherGeneration = () => {
       const balance = res.data?.data?.data?.BALANCE || 0;
 
       setFieldValue("bankBalance", Math.abs(balance));
-
     } catch (err) {
       console.error(err);
       Swal.fire("Bank balance fetch failed");
@@ -355,7 +354,6 @@ const FrmVoucherGeneration = () => {
 
   const handleSubmit = async (values, formikHelpers) => {
     formikHelpers.setSubmitting(true);
-
     const status = "A";
 
     try {
@@ -366,12 +364,13 @@ const FrmVoucherGeneration = () => {
         return;
       }
 
-      if (values.paymentType === "2" || values.paymentType === "3") {
+      const isCheque = values.paymentType === "2" || values.paymentType === "3";
+
+      if (isCheque) {
         if (!values.chequeNo) {
           Swal.fire("Cheque number required");
           return;
         }
-
         if (!values.chequeBookNo) {
           Swal.fire("Cheque book required");
           return;
@@ -396,8 +395,15 @@ const FrmVoucherGeneration = () => {
 
       const deptCode = firstTax?.GLCODE || values.deptCode;
       const ledger = firstTax?.ACCNO || values.ledger;
-      const narration = fullData.table?.[0]?.DRACCNO || values.details || "-";
+      const narration = fullData.table?.[0]?.NARRATION || values.details || "-";
 
+      // ✅ TOTAL AMOUNT FIX
+      const totalSelectedAmount = selectedRows.reduce(
+        (sum, v) => sum + Number(v.deyRakkam || 0),
+        0,
+      );
+
+      // ✅ DATE FORMATTERS
       const formatDate = (date) =>
         new Date(date)
           .toLocaleDateString("en-GB", {
@@ -407,31 +413,40 @@ const FrmVoucherGeneration = () => {
           })
           .replace(/ /g, "-");
 
+      const formatDate2 = (date) =>
+        new Date(date).toLocaleDateString("en-GB").replace(/\//g, "-");
+
       const str2 = selectedRows.map((v) => v.REFNO).join(",");
 
+      // ✅ IMPORTANT: numeric voucher no
+      const getVoucherNo = (v) =>
+        v.VOUCHERNO || formatDate2(v.TRNSDATE).replace(/-/g, "");
+
+      // ✅ STR3
       const str3 = selectedRows
         .map((v) => {
           const nivalDey =
             v.BALAMT != null
-              ? Math.abs(Number(v.BALAMT)) // ✅ FIX
+              ? Math.abs(Number(v.BALAMT))
               : Math.abs((v.TOTALAMT || 0) - (v.AMT || 0));
 
-          const deyRakkam = Math.abs(v.deyRakkam ?? nivalDey); // ✅ FIX
-          const shillak = Math.abs(nivalDey - deyRakkam); // ✅ FIX
+          const dey = Math.abs(v.deyRakkam ?? nivalDey);
+          const shillak = Math.abs(nivalDey - dey);
 
           return [
             v.REFNO,
             nivalDey,
-            deyRakkam,
+            dey,
             shillak,
             v.TOTALAMT || 0,
             v.AMT || 0,
-            v.VCHNO,
+            getVoucherNo(v),
             v.DEPTID || 0,
           ].join("#");
         })
         .join("$");
 
+      // ✅ STR4
       const str4 = selectedRows
         .map((v) => {
           const nivalDey = (v.TOTALAMT || 0) - (v.AMT || 0);
@@ -440,8 +455,8 @@ const FrmVoucherGeneration = () => {
 
           return [
             v.REFNO,
-            new Date(v.TRNSDATE).toLocaleDateString("en-GB"),
-            v.VCHNO,
+            formatDate2(v.TRNSDATE),
+            getVoucherNo(v),
             deptCode,
             ledger,
             narration,
@@ -454,16 +469,18 @@ const FrmVoucherGeneration = () => {
         })
         .join("$");
 
-      const chequeNo =
-        values.paymentType === "2" || values.paymentType === "3"
-          ? values.chequeNo
-          : "";
+      // ✅ CHEQUE VALUES
+      let chequeNo = "0";
+      let chequeDate = "0";
+      let chequeBook = "0";
 
-      const chequeBook =
-        values.paymentType === "2" || values.paymentType === "3"
-          ? values.chequeBookNo
-          : "";
+      if (isCheque) {
+        chequeNo = values.chequeNo;
+        chequeBook = values.chequeBookNo;
+        chequeDate = formatDate(values.chequeDate);
+      }
 
+      // ✅ FIXED STR1 (CRITICAL)
       const str1 = [
         status,
         4,
@@ -471,15 +488,15 @@ const FrmVoucherGeneration = () => {
         deptCode,
         ledger,
         totalSelectedAmount,
-        chequeNo, // ✅ FIX
-        formatDate(values.chequeDate),
-        values.department || 0,
-        0,
+        chequeNo,
+        chequeDate,
+        values.zoneId || 0, // ✅ FIXED
+        values.grampanchayatId || 0, // ✅ FIXED
         formatDate(values.transactionDate),
-        values.budgetId || "",
-        chequeBook, // ✅ FIX
-        values.paymentType || 2,
-        values.nidhi_id || "",
+        values.budgetId || 0,
+        chequeBook,
+        values.paymentType,
+        values.nidhi_id || 0,
       ].join("~");
 
       const payload = {
@@ -504,12 +521,15 @@ const FrmVoucherGeneration = () => {
       Swal.close();
 
       if (res.data?.success) {
-        Swal.fire("Success", res.data.errorMsg, "success");
+        Swal.fire({
+          title: "Success",
+          text: res.data.errorMsg,
+          icon: "success",
+          timer: 1200,
+          showConfirmButton: false,
+        });
 
-        // ✅ RESET FORM
         formikHelpers.resetForm();
-
-        // ✅ CLEAR EXTRA STATES (VERY IMPORTANT)
         setVoucherList([]);
         setVoucherDetails([]);
         setChequeBooks([]);

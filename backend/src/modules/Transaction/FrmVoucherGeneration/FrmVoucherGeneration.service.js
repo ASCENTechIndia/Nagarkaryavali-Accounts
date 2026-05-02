@@ -63,6 +63,48 @@ async function voucherGenerationService(data) {
 }
 
 
+async function getCounterVoucherService(body = {}) {
+  const { refno, ulbId } = body;
+
+  // ✅ Proper validation
+  if (!refno) throw new AppError("Ref No required", 400);
+  if (!ulbId) throw new AppError("ULB ID required", 400);
+
+  // ✅ Fetch header
+  const headerRes = await repo.getCounterVoucherHeader({
+    refno,
+    ulbId,
+  });
+
+  if (!headerRes.rows?.length) {
+    throw new AppError("No voucher found", 404);
+  }
+
+  const header = headerRes.rows[0];
+
+  // ⚠️ Critical safety check
+  if (!header.TRANSNO) {
+    throw new AppError("Invalid voucher data (missing TRANSNO)", 500);
+  }
+
+  // ✅ Fetch details
+  const detailsRes = await repo.getCounterVoucherDetails({
+    transno: header.TRANSNO,
+    ulbId,
+  });
+
+  const details = detailsRes.rows || [];
+
+  return {
+    success: true,
+    header,
+    details,
+    meta: {
+      detailCount: details.length,
+    },
+  };
+}
+
 module.exports = {
   getGLListService,
   getPartyListService,
@@ -72,5 +114,6 @@ module.exports = {
   getVoucherDetailsService,
   getVoucherTableDetailsService,
   getVoucherTaxService,
-  voucherGenerationService
+  voucherGenerationService,
+  getCounterVoucherService
 };

@@ -378,6 +378,39 @@ const voucherGeneration = (data) =>
     };
   });
 
+
+  const getCounterVoucherHeader = async ({ refno, ulbId }) => {
+  const query = `
+    SELECT 
+        REFNO, PARTYID, PARTYNAME, ZONEENAME, ZONEID,
+    DRGLCODE, DRACCNO, AMT, USERNAME,
+    CRACNAME, CRAMT, NARRATION, ULBID,
+    PREVCHNO, DEPTNAME, MANUALNO, SYSTEMBILLNO,
+    TRANSNO, BALAMT,
+    CHQNO, CHQDATE, CHQBOOKNO, BANKNAME,
+    PAYMODE, TRANSDATE, GROSSAMOUNT
+    FROM vw_vchgendtlsrpt
+    WHERE REFNO = :refno
+      AND ULBID = :ulbId
+  `;
+
+  return await executeQuery(query, { refno, ulbId });
+};
+
+const getCounterVoucherDetails = async ({ transno, ulbId }) => {
+  const query = `
+    SELECT 
+       GLCODE, ACCNO, AMOUNT, ACCNAME,
+    ULBID, TRANSNO, PAYAMT
+    FROM vw_vchgendtlsrpt_details
+    WHERE TRANSNO = :transno
+      AND ULBID = :ulbId
+  `;
+
+  return await executeQuery(query, { transno, ulbId });
+};
+
+
 module.exports = {
   getGLList,
   getPartyList,
@@ -387,5 +420,7 @@ module.exports = {
   getVoucherDetails,
   getVoucherTableDetails,
   getVoucherTaxDetails,
-  voucherGeneration
+  voucherGeneration,
+  getCounterVoucherHeader,
+  getCounterVoucherDetails
 };
