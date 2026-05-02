@@ -114,6 +114,7 @@ app.use("/api/FrmBalanceSheet",require("./modules/Reports/FrmBalancesheetRpt/Bal
 app.use("/api/FrmBudgetReportPDF",require("./modules/Reports/FrmBudgetReport/FrmBudgetReport.routes"));
 app.use("/api/FrmChequeBook",require("./modules/Reports/FrmChequeBook/FrmChequeBook.routes"))
 app.use("/api/FrmSecurityDeposit",require("./modules/Reports/FrmSecurityDeposit/FrmSecurityDeposit.routes"))
+app.use("/api/FrmAccIntDataRpt",require("./modules/Reports/FrmAccIntDataRpt/FrmAccIntDataRpt.Routes"))
 
 app.use(errorMiddleware);
 
