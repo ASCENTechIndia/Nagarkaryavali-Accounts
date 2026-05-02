@@ -28,7 +28,7 @@ async function getDepartmentTransactionsRepo(params) {
         ON num_dept_id = num_depttrns_deptid
     LEFT JOIN prop.aoms_recmode_mas 
         ON num_recmode_id = num_depttrns_paymodeid
-    WHERE num_depttrns_ulbid = '2'
+    WHERE num_depttrns_ulbid = :ulbid
       AND (:status = '-1' OR var_depttrns_statusflag = :status)
       AND (:deptId = '-1' OR num_depttrns_deptid = :deptId)
       AND TRUNC(dat_depttrns_transdate) >= TO_DATE(:fromDate,'DD-MON-YYYY')

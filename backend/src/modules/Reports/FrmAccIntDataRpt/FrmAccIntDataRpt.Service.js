@@ -3,13 +3,14 @@ const repo = require("./FrmAccIntDataRpt.Repo");
 const { AppError } = require("../../../libs/errors");
 
 async function getDepartmentTransactionsService(body) {
-  const { status, deptId, fromDate, toDate } = body;
+  const { ulbid, status, deptId, fromDate, toDate } = body;
 
   if (!fromDate || !toDate) {
     throw new AppError("From Date and To Date are required", 400);
   }
 
   const result = await repo.getDepartmentTransactionsRepo({
+    ulbid,
     status,
     deptId,
     fromDate,

@@ -354,3 +354,14 @@ export const FrmSecurityDepositValidationSchema = z.object({
   message: "दिनांका पर्यंत हा दिनांका पासून पेक्षा मोठा असावा",
   path: ["toDate"],
 });
+
+export const FrmAccIntDataRptValidationSchema = z.object({
+  corporation: z.string().min(1, "नगरपालिका निवडा"),
+  fromDate: z.date()
+    .refine(date => date instanceof Date && !isNaN(date), "दिनांका पासून निवडा"),
+  toDate: z.date()
+    .refine(date => date instanceof Date && !isNaN(date), "दिनांका पर्यंत निवडा"),
+}).refine(data => data.fromDate <= data.toDate, {
+  message: "दिनांका पर्यंत हा दिनांका पासून पेक्षा मोठा असावा",
+  path: ["toDate"],
+});
