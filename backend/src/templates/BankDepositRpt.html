@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+
+@page {
+  size: A4 landscape;
+  margin: 10mm;
+}
+
+body {
+  font-family: Arial;
+  font-size: 10px;
+}
+
+.header {
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.title {
+  text-align: center;
+  font-size: 14px;
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+.sub {
+  text-align: center;
+  font-size: 11px;
+  margin-bottom: 10px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid black;
+  padding: 4px;
+}
+
+th {
+  background: #eee;
+}
+
+.right {
+  text-align: right;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <img src="{{logo}}" style="height:50px;" />
+  <div class="main-title">{{corporationName}}</div>
+</div>
+<div class="title">{{header}}</div>
+<div class="sub">{{subHeader}}</div>
+
+<table>
+<thead>
+<tr>
+  <th>तारीख</th>
+  <th>व्यवहार क्र</th>
+  <th>दस्तऐवज क्र</th>
+  <th>मेजर</th>
+  <th>मेजर नाव</th>
+  <th>मायनर</th>
+  <th>मायनर नाव</th>
+  <th>झोन</th>
+  <th>क्रेडिट</th>
+  <th>डेबिट</th>
+</tr>
+</thead>
+
+<tbody>
+{{#each rows}}
+<tr>
+  <td>{{DATE}}</td>
+  <td>{{TRANSNO}}</td>
+  <td>{{DOCNO}}</td>
+  <td>{{GLCODE}}</td>
+  <td>{{GLNAME}}</td>
+  <td>{{ACCNO}}</td>
+  <td>{{ACCNAME}}</td>
+  <td>{{ZONE}}</td>
+  <td class="right">{{CREDIT}}</td>
+  <td class="right">{{DEBIT}}</td>
+</tr>
+{{/each}}
+
+<tr>
+  <td colspan="8"><b>एकूण</b></td>
+  <td class="right"><b>{{totalCredit}}</b></td>
+  <td class="right"><b>{{totalDebit}}</b></td>
+</tr>
+
+</tbody>
+</table>
+
+</body>
+</html>
