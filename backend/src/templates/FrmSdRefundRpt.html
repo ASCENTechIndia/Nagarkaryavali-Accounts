@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 8mm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10.5px;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ===== HEADER ===== */
+        .page-header {
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .header-table {
+            width: 100%;
+            border: none !important;
+        }
+
+        .logo-img {
+            height: 55px;
+        }
+
+        .company-name {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .fiscal-year {
+            font-weight: bold;
+            font-size: 12px;
+            margin: 2px 0;
+        }
+
+        .report-title {
+            font-weight: bold;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .report-subtitle {
+            font-weight: bold;
+            font-size: 11px;
+            margin-top: 3px;
+        }
+
+        /* ===== TABLE ===== */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1.5px solid black;
+        }
+
+        th {
+            border: 1px solid black;
+            padding: 6px 3px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 10px;
+            /* 🔥 important */
+        }
+
+        td {
+            border: 1px solid black;
+            padding: 5px 3px;
+            font-size: 10px;
+            line-height: 1.2;
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .right {
+            text-align: right;
+        }
+
+        /* ===== PAGE ===== */
+        .page-container {
+            page-break-after: always;
+        }
+
+        .page-container:last-child {
+            page-break-after: auto;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            text-align: right;
+            font-size: 10px;
+            margin-top: 4px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    {{#each pages}}
+    <div class="page-container">
+        <!-- Header -->
+        <div class="page-header">
+            <table class="header-table">
+                <tr>
+                    <td style="width: 80px; border:none;">
+                        {{#if ../logo}}
+                        <img src="{{../logo}}" class="logo-img" />
+                        {{/if}}
+                    </td>
+
+                    <td style="border:none; text-align:center;">
+                        <div class="company-name">{{../corporationName}}</div>
+                        <div class="fiscal-year">F.Y. 2026-2027</div>
+                        <div class="report-title">वर्षाची आगाऊ रक्कम, ठेवी यांची नोंदवही</div>
+                        <div class="report-subtitle">
+                            अहवालाचा कालावधी दिनांक : {{../headerText}}
+                        </div>
+                    </td>
+
+                    <td style="width:80px; border:none;"></td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:3%;">अ.क्र.</th>
+                    <th style="width:7%;">दिनांक</th>
+                    <th style="width:7%;">व्यवहार क्र.</th>
+                    <th style="width:6%;">पार्टी कोड</th>
+                    <th style="width:20%;">कंत्राटदार / कंपनी चे नाव</th>
+                    <th style="width:20%;">लेखा सांकेतांक व नाव</th>
+                    <th style="width:8%;">पावती क्र.</th>
+                    <th style="width:8%;">परतफेड दिनांक</th>
+                    <th style="width:8%;">रक्कम</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each rows}}
+                <tr>
+                    <td class="center">{{add @index 1}}</td>
+                    <td class="center">{{RECTRNSDATE}}</td>
+                    <td class="center">{{RECNO}}</td>
+                    <td class="center">{{PARTYID}}</td>
+                    <td>{{PARTYNAME}}</td>
+                    <td>{{NIDHINAME}} {{ACCNAME}}</td>
+                    <td class="center">{{CERTINO}}</td>
+                    <td class="center">{{SDDT}}</td>
+                    <td class="right">{{amount}}</td>
+                </tr>
+                {{/each}}
+                {{#ifLastPage @index ../pages.length}}
+                <tr>
+                    <td colspan="8" class="right" style="font-weight:bold;">
+                        Total Refund
+                    </td>
+                    <td class="right" style="font-weight:bold;">
+                        {{../grandTotal}}
+                    </td>
+                </tr>
+                {{/ifLastPage}}
+            </tbody>
+        </table>
+
+
+    </div>
+    {{/each}}
+</body>
+
+</html>

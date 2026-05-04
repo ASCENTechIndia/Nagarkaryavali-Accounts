@@ -78,6 +78,7 @@ import RptGovtTaxRegisters from "./pages/ReportsForm/RptGovtTaxRegisters";
 import FrmChequeBook from "./pages/Reports/FrmChequeBook";
 import FrmSecurityDeposit from "./pages/Reports/FrmSecurityDeposit";
 import FrmAccIntDataRpt from "./pages/Reports/FrmAccIntDataRpt";
+import FrmSdRefundRpt from "./pages/Reports/FrmSdRefundRpt";
 
 
 const Home = () => <Button>Click me</Button>;
@@ -403,6 +404,10 @@ export const router = createBrowserRouter([
        {
         path: "ReportsForm/FrmAccIntDataRpt",
         element: <FrmAccIntDataRpt />,
+      },
+       {
+        path: "ReportsForm/FrmSdRefundRpt",
+        element: <FrmSdRefundRpt />,
       },
 
     ],

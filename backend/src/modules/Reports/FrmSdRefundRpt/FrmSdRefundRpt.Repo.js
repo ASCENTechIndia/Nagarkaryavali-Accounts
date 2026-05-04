@@ -6,11 +6,7 @@ async function getPartySearch1Repo(params) {
       num_partymst_partyid || '-' || var_partymst_partyname AS partyname,
       num_partymst_partyid AS partyid
     FROM aoac_partymst_def
-    WHERE (
-      UPPER(var_partymst_partyname) LIKE UPPER('%' || :searchText || '%')
-      OR TO_CHAR(num_partymst_partyid) LIKE '%' || :searchText || '%'
-    )
-    AND num_partymst_ulbid = :ulbid
+    WHERE num_partymst_ulbid = :ulbid
   `;
   return await executeQuery(query, params);
 }
@@ -21,10 +17,7 @@ async function getPartySearch2Repo(params) {
       var_partymst_partyname AS partyname,
       num_partymst_partyid AS partyid
     FROM aoac_partymst_def
-    WHERE 
-      UPPER(var_partymst_partyname) LIKE UPPER('%' || :searchText || '%')
-      OR TO_CHAR(num_partymst_partyid) LIKE :searchText || '%'
-    AND num_partymst_ulbid = :ulbid
+    WHERE num_partymst_ulbid = :ulbid
     ORDER BY var_partymst_partyname
   `;
   return await executeQuery(query, params);
