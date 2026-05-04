@@ -169,6 +169,8 @@ async function searchGL(prefix) {
   if (!result.success) throw new Error(result.error);
   return result.rows;
 }
+
+
 async function insertCashierReceipt(data) {
   return await withTx(async (connection) => {
     const result = await connection.execute(

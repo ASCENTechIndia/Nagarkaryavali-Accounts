@@ -6,11 +6,15 @@ const controller = require("./BankDepositReports.controller");
 const router = express.Router();
 
 router.get("/department",auth(), controller.getDepartments);
+
 router.post("/summary",auth(), controller.getSummary);
+
 router.post("/account-wise",auth(), controller.getAccountWise);
 router.post("/challan",auth(), controller.getChallan);
-router.get("/search-gl",auth(), controller.searchGL);
-router.post("/insert-cashier-receipt",auth(), controller.insertCashierReceipt);
 router.post("/dropdown",auth(), controller.getZoneDropdown);
+
+router.get("/search-gl",auth(), controller.searchGL);
+
+router.post("/insert-cashier-receipt",auth(), controller.insertCashierReceipt);
 
 module.exports = router;
