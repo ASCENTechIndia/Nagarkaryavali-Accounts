@@ -115,6 +115,7 @@ app.use("/api/FrmBudgetReportPDF",require("./modules/Reports/FrmBudgetReport/Frm
 app.use("/api/FrmChequeBook",require("./modules/Reports/FrmChequeBook/FrmChequeBook.routes"))
 app.use("/api/FrmSecurityDeposit",require("./modules/Reports/FrmSecurityDeposit/FrmSecurityDeposit.routes"))
 app.use("/api/FrmAccIntDataRpt",require("./modules/Reports/FrmAccIntDataRpt/FrmAccIntDataRpt.Routes"))
+app.use("/api/RptGovtTaxRegisters", require("./modules/Reports/RptGovtTaxRegisters/RptGovtTaxRegister.route"))
 
 app.use(errorMiddleware);
 
