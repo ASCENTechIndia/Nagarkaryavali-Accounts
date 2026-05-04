@@ -4,8 +4,8 @@ const auth = require("../../../middlewares/auth.middleware");
 
 const controller = require("./RptTrialBalance.controller");
 
-router.post("/trial-balance", controller.getTrialBalance);
+router.post("/trial-balance", auth(), controller.getTrialBalance);
 
-router.post("/trial-balance-pdf", controller.getTrialBalancePDF);
+router.post("/trial-balance-pdf", auth(), controller.getTrialBalancePDF);
 
 module.exports = router;
