@@ -375,3 +375,23 @@ export const FrmSdRefundRptValidationSchema = z.object({
   message: "दिनांका पर्यंत हा दिनांका पासून पेक्षा मोठा असावा",
   path: ["toDate"],
 });
+
+export const FrmTransferRegisterRptValidationSchema = z.object({
+  fromDate: z.date()
+    .refine(date => date instanceof Date && !isNaN(date), "दिनांका पासून निवडा"),
+  toDate: z.date()
+    .refine(date => date instanceof Date && !isNaN(date), "दिनांका पर्यंत निवडा"),
+  useGL: z.boolean(),
+  deptCode: z.string().optional(),
+  ledger: z.string().optional(),
+  party: z.string().optional(),
+}).refine(data => data.fromDate <= data.toDate, {
+  message: "दिनांका पर्यंत हा दिनांका पासून पेक्षा मोठा असावा",
+  path: ["toDate"],
+}).refine(data => !data.useGL || (data.useGL && data.deptCode), {
+  message: "क्रेडिट जी.एल. रिक्त असू शकत नाही",
+  path: ["deptCode"],
+}).refine(data => !data.useGL || (data.useGL && data.ledger), {
+  message: "क्रेडिट खाते रिक्त असू शकत नाही",
+  path: ["ledger"],
+});
