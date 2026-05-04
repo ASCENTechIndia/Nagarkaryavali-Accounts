@@ -286,9 +286,107 @@ async function getRdoReport147(corpId, zoneId, fromDate, toDate) {
   return result.rows;
 }
 
+async function getTransactionLedger(filters) {
+  let params = {
+    fromDate: new Date(filters.fromDate),
+    toDate: new Date(filters.toDate),
+    ulbId: filters.ulbId
+  };
+
+  let sql = `
+    SELECT 
+      a.trnsdate,
+      a.transno,
+      a.docno,
+      a.glcode,
+      acc.glname,
+      a.accno,
+      acc.accname,
+      vz.zoneename AS deptname,
+      ag.var_grampanch_grampanch AS grampanch,
+
+      CASE WHEN a.amount > 0 THEN a.amount ELSE 0 END AS credit,
+      CASE WHEN a.amount < 0 THEN a.amount * -1 ELSE 0 END AS debit,
+
+      0 AS BudgetCode,
+      acc.functioncode,
+      acc.objectcode
+
+    FROM transview a
+
+    INNER JOIN accountview_web acc 
+      ON a.glcode = acc.glcode 
+      AND a.accno = acc.accno 
+      AND acc.ulbid = a.ulbid
+
+    INNER JOIN view_zone vz 
+      ON vz.zoneid = a.zoneid
+
+    LEFT JOIN aoac_grampanch_def ag 
+      ON ag.num_grampanch_grampanchid = a.grampanchid
+
+    LEFT JOIN aoac_partymst_def ap 
+      ON ap.num_partymst_partyid = a.partycode
+
+    WHERE TRUNC(a.trnsdate) BETWEEN :fromDate AND :toDate
+      AND a.ulbid = :ulbId
+  `;
+
+  // 🔹 Transaction Type filter
+  if (filters.trnsType && filters.trnsType !== "0") {
+    sql += ` AND a.trnstypeid IN (${filters.trnsType}) `;
+    // NOTE: IN binding not used because multiple values string
+  }
+
+  // 🔹 Zone filter
+  if (filters.zoneId && filters.zoneId !== "-1") {
+    sql += ` AND a.zoneid = :zoneId `;
+    params.zoneId = filters.zoneId;
+  }
+
+  // 🔹 MBMC Filters
+  if (filters.corpCode === "MBMC") {
+    if (filters.budgetId && filters.budgetId !== "-1") {
+      sql += ` AND a.budgetid = :budgetId `;
+      params.budgetId = filters.budgetId;
+    }
+
+    if (filters.nidhiId && filters.nidhiId !== "-1") {
+      sql += ` AND a.nidhi_id = :nidhiId `;
+      params.nidhiId = filters.nidhiId;
+    }
+  }
+
+  sql += ` ORDER BY a.trnsdate, a.transno, a.amount DESC `;
+
+  const result = await executeQuery(sql, params);
+
+  if (!result.success) throw new Error(result.error);
+
+  return result.rows;
+}
+async function getTransactionTypes() {
+  const sql = `
+    SELECT 
+      var_trnstype_trnstype AS name,
+      num_trnstype_trnstypeid AS id
+    FROM aoac_trnstype_def
+    WHERE num_trnstype_trnstypeid IN (5,8,9)
+    ORDER BY num_trnstype_trnstypeid
+  `;
+
+  const result = await executeQuery(sql);
+
+  if (!result.success) throw new Error(result.error);
+
+  return result.rows;
+}
+
 module.exports = {
   getRbtDepReceived,
   getRbtDepoPayment,
   getRbtUnpaid,
-  getRdoReport147
+  getRdoReport147,
+  getTransactionLedger,
+  getTransactionTypes
 };
