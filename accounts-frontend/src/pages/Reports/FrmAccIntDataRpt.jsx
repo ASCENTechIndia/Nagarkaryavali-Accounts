@@ -411,7 +411,7 @@ const FrmAccIntDataRpt = () => {
                     >
                       हटवा
                     </Button>
-                    <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+                    <Button type="button" variant="outline" path="/HomePage/FrmHomePage">
                       बाहेर
                     </Button>
                   </div>
