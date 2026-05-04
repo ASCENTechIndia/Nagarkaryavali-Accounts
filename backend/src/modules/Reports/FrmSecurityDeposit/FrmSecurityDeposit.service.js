@@ -130,10 +130,31 @@ async function getRdoReport147Service(corpId, zoneId, fromDate, toDate) {
     list: data,
   };
 }
+const getTransactionLedgerService = async (filters) => {
+  const data = await repo.getTransactionLedger(filters);
+
+  return {
+    success: true,
+    count: data.length,
+    list: data
+  };
+};
+
+const getTransactionTypesService = async () => {
+  const data = await repo.getTransactionTypes();
+
+  return {
+    success: true,
+    count: data.length,
+    list: data
+  };
+};
 
 module.exports = {
   getRbtDepReceivedService,
   getRbtDepoPaymentService,
   getRbtUnpaidService,
   getRdoReport147Service,
+  getTransactionLedgerService,
+  getTransactionTypesService
 };
