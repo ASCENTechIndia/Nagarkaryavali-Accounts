@@ -73,8 +73,9 @@ const getGovtTaxRegisterSummaryPDF = asyncHandler(async (req, res) => {
 
 const getGovtTaxSummary2PDF = asyncHandler(async (req, res) => {
   const filters = req.body;
-
+  
   const result = await service.getGovtTaxSummary2Service(filters);
+  console.log("result",result);
 
   if (!result.rows.length) {
     return res.status(404).json({
