@@ -1,3 +1,5 @@
+// utils/pdfHelper/CounterVoucherPDFHelper.js
+
 const fs = require("fs");
 const path = require("path");
 const puppeteer = require("puppeteer");
@@ -7,7 +9,7 @@ const Handlebars = require("handlebars");
 // FORMAT HELPERS
 // =======================
 const formatDate = (date) =>
-  date ? new Date(date).toLocaleDateString("en-GB") : "";
+  date ? new Date(date).toLocaleDateString("en-GB") : "-";
 
 const formatNumber = (num) =>
   Number(num || 0).toLocaleString("en-IN", {
@@ -16,49 +18,59 @@ const formatNumber = (num) =>
   });
 
 // =======================
-// MAIN HELPER
+// MAIN FUNCTION
 // =======================
 const CounterVoucherPDFHelper = async ({
-  reportData,
-   corporationName = "",
+  header = {},
+  details = [],
+  corporationName = "",
   corporationLogo = "",
 }) => {
   let browser;
   let page;
 
   try {
-    if (!reportData || !reportData.length) {
-      throw new Error("No data found for PDF");
-    }
-
-    const row = reportData[0];
+    // ✅ Safe handling (no crash)
+    const safeDetails = details || [];
 
     // =======================
-    // DATA MAPPING
+    // PREPARE DATA FOR TEMPLATE
     // =======================
-const now = new Date();
+    let totalAmount = 0;
 
-const data = {
-  corporationName,
-  corporationLogo,
+    const rows = safeDetails.map((d, index) => {
+      const amt = Number(d.AMOUNT || 0);
+      totalAmount += amt;
 
-  voucherDate: formatDate(row.VOUCHERDATE),
-  voucherNo: row.VOUCHERNO || "",
-  chequeNo: row.CHQNO || "0",
+      return {
+        sr: index + 1,
+        glcode: d.GLCODE || "-",
+        accno: d.ACCNO || "-",
+        accname: d.ACCNAME || "-",
+        amount: formatNumber(amt),
+      };
+    });
 
-  currentDate: formatDate(now),
-  currentTime: now.toLocaleTimeString(),
+    // ✅ Add total row
+    rows.push({
+      isTotal: true,
+      label: "Total",
+      amount: formatNumber(totalAmount),
+    });
 
-   rows: reportData.map((r) => ({
-    drCode: r.DRACCOUNTCODE,
-    drParticular: r.DRPARTICULARS,
-    drAmount: formatNumber(r.DRAMOUNT),
+    const data = {
+      corporationName,
+      corporationLogo,
 
-    crCode: r.CRACCOUNTCODE,
-    crParticular: r.CRPARTICULARS,
-    crAmount: formatNumber(r.CRAMOUNT),
-  })),
-};
+      refno: header.REFNO || "-",
+      partyname: header.PARTYNAME || "-",
+      deptname: header.DEPTNAME || "-",
+      narration: header.NARRATION || "-",
+      transdate: formatDate(header.TRANSDATE),
+      grossamount: formatNumber(header.GROSSAMOUNT),
+
+      rows,
+    };
 
     // =======================
     // LOAD TEMPLATE
@@ -74,7 +86,7 @@ const data = {
     const html = template(data);
 
     // =======================
-    // BROWSER SETUP
+    // LAUNCH BROWSER
     // =======================
     const chromePath = path.resolve(
       __dirname,
@@ -112,10 +124,12 @@ const data = {
       },
     });
 
-   
+    // =======================
+    // SAVE FILE
+    // =======================
     const outputDir = path.resolve(
       __dirname,
-      "../../../public/pdf" // ✅ IMPORTANT PATH
+      "../../../public/pdf"
     );
 
     if (!fs.existsSync(outputDir)) {
@@ -136,9 +150,6 @@ const data = {
     console.error("Counter Voucher PDF Error:", err);
     throw err;
   } finally {
-    // =======================
-    // CLEANUP
-    // =======================
     if (page) {
       try { await page.close(); } catch {}
     }
