@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+
+<style>
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  margin: 10px;
+}
+
+/* PAGE */
+@page {
+  size: A4 landscape;
+  margin: 10mm;
+}
+
+/* HEADER */
+.header {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #000;
+  padding-bottom: 5px;
+}
+
+.logo {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
+.main-title {
+  flex: 1;
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* SUB HEADERS */
+.sub-title {
+  text-align: center;
+  font-size: 14px;
+  font-weight: bold;
+  margin-top: 6px;
+}
+
+.sub-heading {
+  text-align: center;
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+/* TABLE */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th, td {
+  border: 1px solid #000;
+  padding: 4px;
+  font-size: 9px;
+}
+
+th {
+  background-color: #f2f2f2;
+}
+
+/* ALIGNMENTS */
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+/* SUMMARY */
+.summary {
+  margin-top: 15px;
+  width: 300px;
+  float: right;
+}
+
+.summary td {
+  border: 1px solid black;
+  padding: 5px;
+  font-size: 10px;
+}
+
+.summary td:first-child {
+  font-weight: bold;
+  text-align: left;
+}
+
+.footer {
+  margin-top: 20px;
+  font-size: 9px;
+  clear: both;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  {{#if logo}}
+    <img class="logo" src="{{logo}}" />
+  {{/if}}
+
+  <div class="main-title">
+    {{corporationName}}
+  </div>
+</div>
+
+<!-- TITLE -->
+<div class="sub-title">
+  General Bank Book / सररससधसरण बबक पपससक
+</div>
+
+<!-- DATE RANGE -->
+<div class="sub-heading">
+  अहवालाचा कालावधी दिनांक : {{fromDate}} पासून {{toDate}} पर्यंत
+</div>
+
+<!-- MAIN TABLE -->
+<table>
+<thead>
+<tr>
+  <th>Transaction No</th>
+  <th>Date</th>
+  <th>Voucher No</th>
+  <th>Cheque No</th>
+  <th>Type</th>
+  <th>A/c Code</th>
+  <th>Particulars</th>
+  <th>Receipt</th>
+  <th>Payment</th>
+  <th>Bank</th>
+</tr>
+</thead>
+
+<tbody>
+{{#each rows}}
+<tr>
+  <td>{{TRANSNO}}</td>
+  <td>{{DATE}}</td>
+  <td>{{DOCNO}}</td>
+  <td>{{CHQNO}}</td>
+  <td>{{TYPE}}</td>
+  <td>{{ACCCODE}}</td>
+  <td class="text-left">{{ACCNAME}}</td>
+  <td class="text-right">{{RECEIPT}}</td>
+  <td class="text-right">{{PAYMENT}}</td>
+  <td>{{BANKNAME}}</td>
+</tr>
+{{/each}}
+</tbody>
+</table>
+
+<!-- SUMMARY -->
+<table class="summary">
+<tr>
+  <td>Opening Balance</td>
+  <td>{{opening}}</td>
+</tr>
+<tr>
+  <td>Receipt</td>
+  <td>{{receipt}}</td>
+</tr>
+<tr>
+  <td>Payment</td>
+  <td>{{payment}}</td>
+</tr>
+<tr>
+  <td>Closing Balance</td>
+  <td>{{closing}}</td>
+</tr>
+</table>
+
+<!-- FOOTER -->
+<div class="footer">
+  Printed On: {{printDate}}
+</div>
+
+</body>
+</html>
