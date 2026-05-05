@@ -81,7 +81,7 @@ import FrmAccIntDataRpt from "./pages/Reports/FrmAccIntDataRpt";
 import FrmSdRefundRpt from "./pages/Reports/FrmSdRefundRpt";
 import FrmOnlineDeposit from "./pages/Transaction/FrmOnlineDeposit";
 import FrmTransferRegisterRpt from "./pages/Reports/FrmTransferRegisterRpt";
-
+import FrmBankDeposit from "./pages/Transaction/FrmBankDeposit";
 
 const Home = () => <Button>Click me</Button>;
 
@@ -102,13 +102,17 @@ export const router = createBrowserRouter([
         path: "/Transactions/FrmReceipt",
         element: <FrmReceipt />,
       },
-       {
+      {
         path: "Transactions/FrmVoucherGeneration",
         element: <FrmVoucherGeneration />,
       },
       {
         path: "/Transactions/FrmPaymentList",
         element: <FrmPaymentList />,
+      },
+      {
+        path: "Transactions/FrmBankDeposit",
+        element: <FrmBankDeposit />
       },
       {
         path: "/Transactions/FrmPayment",
@@ -172,7 +176,7 @@ export const router = createBrowserRouter([
         path: "Masters/FrmNidhiConfig",
         element: <FrmNidhiConfig />,
       },
-       {
+      {
         path: "/Masters/FrmauthorizationconfigList",
         element: <FrmauthorizationconfigList />
       },
@@ -391,31 +395,31 @@ export const router = createBrowserRouter([
         path: "ReportsForm/FrmVoucherPreparreprint",
         element: <FrmVoucherPreparreprint />,
       },
-       {
+      {
         path: "ReportsForm/RptGovtTaxRegisters",
         element: <RptGovtTaxRegisters />,
       },
-       {
+      {
         path: "ReportsForm/FrmChequeBook",
         element: <FrmChequeBook />,
       },
-       {
+      {
         path: "ReportsForm/FrmSecurityDeposit",
         element: <FrmSecurityDeposit />,
       },
-       {
+      {
         path: "ReportsForm/FrmAccIntDataRpt",
         element: <FrmAccIntDataRpt />,
       },
-       {
+      {
         path: "ReportsForm/FrmSdRefundRpt",
         element: <FrmSdRefundRpt />,
       },
-       {
+      {
         path: "ReportsForm/FrmTransferRegisterRpt",
         element: <FrmTransferRegisterRpt />,
       },
-       {
+      {
         path: "Transactions/FrmOnlineDeposit",
         element: <FrmOnlineDeposit />,
       },
