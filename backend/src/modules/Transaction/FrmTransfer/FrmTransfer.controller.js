@@ -80,7 +80,7 @@ const getCounterVoucherPDF = asyncHandler(async (req, res) => {
   const corpInfo = await getCorporationService(filters);
 
   const pdf = await CounterVoucherPDFHelper({
-    reportData: result.rows,
+    details: result.rows,
     corporationName: corpInfo.ABC_MUNICIPAL_TEXT || "",
     corporationLogo: corpInfo.ULBLOGO || "", // ✅ ADD THIS
   });

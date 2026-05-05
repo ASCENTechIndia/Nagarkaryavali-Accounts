@@ -361,7 +361,6 @@ const FrmTransfer = () => {
     fetchData();
   }, [location?.state?.refNo, token, ulbId, zones, transactionTypes]);
 
-  /* ================= SUBMIT ================= */
 const handleSubmit = async (values, { resetForm }) => {
   try {
     /* ================= VALIDATION ================= */
@@ -377,41 +376,71 @@ const handleSubmit = async (values, { resetForm }) => {
     if (Number(values.debitAmount) > Number(values.creditAmount))
       return Swal.fire("Debit > Credit नाही");
 
-    /* ================= PARAM BUILD ================= */
+    /* ================= DATE FORMAT ================= */
+    const formatDate = (d) => {
+      const date = new Date(d);
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = date
+        .toLocaleString("en-US", { month: "short" })
+        .toUpperCase();
+      const year = date.getFullYear();
+      return `${day}-${month}-${year}`;
+    };
+
+    const clean = (v) => (v ? String(v).trim() : "0");
+
+    /* ================= PARAM STR (MATCH .NET EXACTLY) ================= */
     const paramStr = [
       formatDate(values.date),
-      values.voucherNo || "1",
-      values.department,
+
+      "1", // ✅ ALWAYS 1 for new
+
+      values.department || "0",
       "0",
-      values.transactionType,
-      "1",
-      "0",
-      "",
-      "",
-      "",
-      "",
-      values.chequeNo || "0",
+
+      values.transactionType, // ✅ DO NOT CHANGE
+
+      "1", // InMode
+      "0", // RefNo
+
+      " ", // ✅ VERY IMPORTANT (NOT "0")
+      " ", // ✅ VERY IMPORTANT
+
+      values.budgetId || "0",
+      values.nidhiId || "0",
+
+      values.transactionType === "5"
+        ? values.chequeNo || "0"
+        : "0",
+
       formatDate(values.chequeDate),
-      values.chequeRef || "0",
+
+      values.transactionType === "5"
+        ? values.chequeRef || "0" // ✅ correct field
+        : "0",
     ].join("~");
 
+    /* ================= PARAM STR 2 ================= */
     const credit = [
-      values.creditDept,
-      values.creditLedger,
-      values.creditAmount,
-      values.details,
-      values.party || " ",
+      clean(values.creditDept),
+      clean(values.creditLedger),
+      Number(values.creditAmount || 0),
+      clean(values.details),
+      clean(values.party || "0"),
     ].join("#");
 
     const debit = [
-      values.debitDept,
-      values.debitLedger,
-      -Math.abs(values.debitAmount),
-      values.details,
-      values.party || " ",
+      clean(values.debitDept),
+      clean(values.debitLedger),
+      -Math.abs(values.debitAmount || 0), // ✅ MUST NEGATIVE
+      clean(values.details),
+      clean(values.party || "0"),
     ].join("#");
 
     const paramStr2 = `${credit}$${debit}`;
+
+    console.log("FINAL paramStr:", paramStr);
+    console.log("FINAL paramStr2:", paramStr2);
 
     /* ================= SAVE ================= */
     Swal.fire({
@@ -443,22 +472,18 @@ const handleSubmit = async (values, { resetForm }) => {
         icon: "success",
         title: "Success",
         text: response.data.message,
-        confirmButtonText: "OK",
       });
 
-      /* ================= REFNO ================= */
+      /* ================= REF NO ================= */
       const message = response.data.message;
       const refMatch = message.match(/Reference No\. *: *(\d+)/);
       const refNo = refMatch ? refMatch[1] : null;
 
-      console.log("Extracted Reference No:", refNo);
-
-      /* ================= PDF GENERATION ================= */
+      /* ================= PDF ================= */
       if (refNo) {
         try {
           Swal.fire({
             title: "PDF तयार होत आहे...",
-            text: "कृपया थांबा",
             allowOutsideClick: false,
             didOpen: () => Swal.showLoading(),
           });
@@ -478,8 +503,6 @@ const handleSubmit = async (values, { resetForm }) => {
 
           const pdfUrl = pdfRes?.data?.pdfUrl;
 
-          console.log("PDF URL:", pdfUrl);
-
           if (pdfUrl) {
             window.open(pdfUrl, "_blank");
           } else {
@@ -487,28 +510,17 @@ const handleSubmit = async (values, { resetForm }) => {
           }
         } catch (err) {
           Swal.close();
-
-          console.error("PDF error:", err);
-
-          Swal.fire({
-            icon: "error",
-            title: "PDF Error",
-            text: "PDF तयार करण्यात अडचण आली",
-          });
+          console.error(err);
+          Swal.fire("PDF Error");
         }
-      } else {
-        console.warn("Reference No not found in message");
       }
 
-      /* ================= RESET + NAVIGATE ================= */
       resetForm();
 
       setTimeout(() => {
         navigate("/Transactions/FrmTransferList");
       }, 800);
-
     } else {
-      /* ================= FAILURE ================= */
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -518,19 +530,18 @@ const handleSubmit = async (values, { resetForm }) => {
           "Something went wrong",
       });
     }
-
   } catch (err) {
     Swal.close();
-
-    console.error("Submit error:", err);
+    console.error(err);
 
     Swal.fire({
       icon: "error",
       title: "Server Error",
-      text: "Something went wrong while saving",
+      text: "Something went wrong",
     });
   }
 };
+
   /* ================= UI ================= */
   return (
     <Formik

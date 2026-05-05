@@ -64,6 +64,8 @@ const getCounterVoucherService = async (body = {}) => {
 
   const result = await repo.getCounterVoucher(body);
 
+  console.log("Counter Voucher Result:", result); // Debug log
+
   return {
     success: true,
     rows: result.rows,
