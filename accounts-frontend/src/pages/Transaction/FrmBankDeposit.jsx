@@ -502,7 +502,7 @@ const handleSave = async (values) => {
                           value={selectedDept}
                           onValueChange={(val) => {
                             setSelectedDept(val);
-                            setSelectedZone("-1"); // ✅ important fix
+                            setSelectedZone("-1"); 
                           }}
                         >
                           <SelectTrigger className="w-full h-9">
