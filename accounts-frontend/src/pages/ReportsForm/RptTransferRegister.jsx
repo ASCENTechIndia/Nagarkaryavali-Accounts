@@ -4,7 +4,7 @@ import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-
+import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { DatePicker } from "@/components/ui/calendar";
@@ -77,43 +77,142 @@ const RptTransferRegister = () => {
       .catch(console.error);
   }, []);
 
-  /* ================= SEARCH ================= */
+
+
   const handleSearch = async (values) => {
+    if (!values.fromDate || !values.toDate) {
+      Swal.fire({
+        text: "Please select date",
+        icon: "warning",
+      });
+      return;
+    }
+
+    if (!values.trnstypeid) {
+      Swal.fire({
+        text: "Please select transtype",
+      });
+      return;
+    }
+
+    Swal.fire({
+      title: "Generating Report...",
+      text: "Please wait",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
+
+    const formatDate = (date) => {
+      const d = new Date(date);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+        2,
+        "0"
+      )}-${String(d.getDate()).padStart(2, "0")}`;
+    };
+
+    const payload = {
+      ulbId: Number(ulbId),
+      fromDate: formatDate(values.fromDate),
+      toDate: formatDate(values.toDate),
+      trnsType: values.trnstypeid || "",
+    };
+
     try {
-      setLoading(true);
+      const url =
+        values.exportType === "PDF"
+          ? "/api/FrmSecurityDeposit/TransferReportpdf"
+          : "/api/FrmSecurityDeposit/TransferReport";
 
-      const payload = {
-        fromDate: values.fromDate.toISOString().split("T")[0],
-        toDate: values.toDate.toISOString().split("T")[0],
-        trnstypeid: values.trnstypeid ? [Number(values.trnstypeid)] : [],
-        zoneId: values.zoneId || null,
-        ulbId: ulbId,
-      };
+      const res = await axios.post(`${BASE_URL}${url}`, payload, {
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 120000,
+      });
 
-      const res = await axios.post(
-        `${BASE_URL}/api/RptTransferRegister/transfer-register`,
-        payload,
-        {
-          headers: { Authorization: `Bearer ${token}` },
+      Swal.close();
+
+      if (values.exportType === "PDF") {
+        if (res.data?.pdfUrl) {
+          window.open(res.data.pdfUrl, "_blank");
+        } else {
+          Swal.fire("Error", "PDF not generated", "error");
         }
-      );
-
-      const list = res.data?.data?.data || [];
-
-      if (!list.length) {
-        Swal.fire("No Data", "No records found", "warning");
         return;
       }
 
-      console.log("DATA 👉", list);
+      /* ================= EXCEL ================= */
+      const list = res.data?.data?.list || [];
 
-      Swal.fire("Success", `Fetched ${list.length} records`, "success");
+      if (!list.length) {
+        Swal.fire("No Data", "No records found", "info");
+        return;
+      }
+
+      /* 🔹 Format Data */
+      const formattedData = list.map((item) => ({
+        DATE: item.TRNSDATE
+          ? new Date(item.TRNSDATE).toLocaleDateString("en-GB")
+          : "",
+        TRANS_NO: item.TRANSNO,
+        DOC_NO: item.DOCNO,
+        GLCODE: item.GLCODE,
+        GLNAME: item.GLNAME,
+        ACCNO: item.ACCNO,
+        ACCNAME: item.ACCNAME,
+        DEPARTMENT: item.DEPTNAME,
+        CREDIT: item.CREDIT,
+        DEBIT: item.DEBIT,
+        BUDGETCODE: item.BUDGETCODE,
+        FUNCTIONCODE: item.FUNCTIONCODE,
+        OBJECTCODE: item.OBJECTCODE,
+      }));
+
+      /* 🔹 Create Sheet */
+      const worksheet = XLSX.utils.json_to_sheet(formattedData);
+
+      /* 🔹 Column Widths (optional but good UI) */
+      worksheet["!cols"] = [
+        { wch: 12 },
+        { wch: 11 },
+        { wch: 11 },
+        { wch: 10 },
+        { wch: 28 },
+        { wch: 14 },
+        { wch: 28 },
+        { wch: 13 },
+        { wch: 11 },
+        { wch: 11 },
+        { wch: 12 },
+        { wch: 14 },
+        { wch: 15 },
+      ];
+
+      /* 🔹 Workbook */
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        "Transfer Register"
+      );
+
+      /* 🔹 Direct Download (NO file-saver) */
+      XLSX.writeFile(
+        workbook,
+        `Transfer_Register_${Date.now()}.xlsx`
+      );
+
+      Swal.fire("Success", `Exported ${list.length} records`, "success");
 
     } catch (err) {
       console.error(err);
-      Swal.fire("Error", "Something went wrong", "error");
-    } finally {
-      setLoading(false);
+
+      Swal.close();
+
+      Swal.fire({
+        text:
+          err?.response?.data?.message ||
+          "Something went wrong.",
+        icon: "error",
+      });
     }
   };
 
