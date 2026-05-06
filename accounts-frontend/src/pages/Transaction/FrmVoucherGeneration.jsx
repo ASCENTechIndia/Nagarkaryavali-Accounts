@@ -142,7 +142,7 @@ const FrmVoucherGeneration = () => {
       });
 
       const payload = {
-        zone_id: Number(values.department),
+        zone_id: Number(values.department) || null,
         from_date: values.fromDateEnabled
           ? values.fromDate.toLocaleDateString("en-GB")
           : "",
@@ -591,7 +591,7 @@ const FrmVoucherGeneration = () => {
 
                         <SelectContent>
                           {/* ✅ ALL OPTION */}
-                          <SelectItem>-- विकल्प निवडा --</SelectItem>
+                          {/* <SelectItem>-- विकल्प निवडा --</SelectItem> */}
 
                           {/* EXISTING OPTIONS */}
                           {zones.map((z) => (
@@ -649,13 +649,13 @@ const FrmVoucherGeneration = () => {
                         disabled={searchDone} // ✅ ADD THIS
                         onClick={() => {
                           // ✅ ONLY Prabhag required
-                          if (
-                            !values.department ||
-                            values.department === "-1"
-                          ) {
-                            Swal.fire("Please select Prabhag");
-                            return;
-                          }
+                          // if (
+                          //   !values.department ||
+                          //   values.department === "-1"
+                          // ) {
+                          //   Swal.fire("Please select Prabhag");
+                          //   return;
+                          // }
 
                           fetchVouchers(values);
                         }}
@@ -692,7 +692,7 @@ const FrmVoucherGeneration = () => {
                   {voucherList.length > 0 && (
                     <div className="mt-4  border bg-white shadow-sm overflow-hidden">
                       {/* TABLE WRAPPER */}
-                      <div className="border border-gray-300 bg-white shadow-sm overflow-x-auto  max-h-[400px] overflow-y-auto">
+                      <div className="border border-gray-300 bg-white shadow-sm overflow-x-auto  max-h-100 overflow-y-auto">
                         <table className="w-full text-sm">
                           <thead className="bg-[#163e72] text-white">
                             <tr>

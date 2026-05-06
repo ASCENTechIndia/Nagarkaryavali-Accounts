@@ -32,7 +32,8 @@ const getPartyList = async ({ corp_id }) => {
 
 // ✅ 3. Balance Voucher Details
 const getBalanceVoucherDetails = async (params) => {
-  const query = `
+
+  let query = `
     SELECT *
     FROM (
       SELECT 
@@ -65,15 +66,38 @@ const getBalanceVoucherDetails = async (params) => {
     WHERE balamt > 0
       AND zoneid = :zone_id
       AND trnsdate BETWEEN 
-        TO_DATE(:from_date,'DD-MM-YYYY') 
+        TO_DATE(:from_date,'DD/MM/YYYY') 
         AND 
-        TO_DATE(:to_date,'DD-MM-YYYY')
-      AND partycode = :party_id
-      AND budgetid = :budget_id
-      AND nidhiid = :nidhi_id
+        TO_DATE(:to_date,'DD/MM/YYYY')
       AND ulbid = :corp_id
   `;
-  return await executeQuery(query, params);
+
+  const binds = {
+    zone_id: params.zone_id,
+    from_date: params.from_date,
+    to_date: params.to_date,
+    corp_id: params.corp_id,
+  };
+
+  if (params.party_id !== null) {
+    query += ` AND partycode = :party_id `;
+    binds.party_id = params.party_id;
+  }
+
+  if (params.budget_id !== null) {
+    query += ` AND budgetid = :budget_id `;
+    binds.budget_id = params.budget_id;
+  }
+
+  if (params.nidhi_id !== null) {
+    query += ` AND nidhiid = :nidhi_id `;
+    binds.nidhi_id = params.nidhi_id;
+  }
+
+  console.log("query", query);
+  console.log("binds", binds);
+
+  return await executeQuery(query, binds);
 };
 
 // ✅ 4. Voucher Prep List
@@ -370,7 +394,7 @@ const voucherGeneration = (data) =>
       }
     );
 
-        console.log("Repo Result:", result.outBinds);
+        console.log("Repo Result:", result);
 
     return {
       errorCode: result.outBinds.out_ErrorCode,
