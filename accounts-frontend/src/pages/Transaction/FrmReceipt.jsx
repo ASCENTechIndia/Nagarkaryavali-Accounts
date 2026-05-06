@@ -95,6 +95,7 @@ const FrmReceipt = () => {
       headName: selectedHead?.label || "",
       remark: values.remark,
       amount: values.entryAmount,
+      partyId: values.partyId || 0,
     };
 
     setTableData((prev) => [...prev, newRow]);
@@ -108,7 +109,6 @@ const FrmReceipt = () => {
     setFieldValue("entryHead", "");
     setFieldValue("entryAmount", "");
     setFieldValue("remark", "");
-    setFieldValue("partyId", "");
 
 
 
@@ -599,6 +599,10 @@ const FrmReceipt = () => {
     remark: "",
     status: "",
     date: new Date(),
+    partyId: "", 
+    entryDeptCode: "", 
+    entryHead: "", 
+    entryAmount: "" 
   };
 
 
