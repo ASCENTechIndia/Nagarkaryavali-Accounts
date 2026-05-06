@@ -120,7 +120,6 @@ const FrmChequeUpdatereport = () => {
 
             const rows = res.data?.data?.rows || [];
 
-            // 🔥 Map API → table format
             const formatted = rows.map((item) => ({
                 chequeNo: item.CHEQNO?.toString() || "",
                 bookNo: item.CHQBOOK?.toString() || "",
@@ -145,7 +144,6 @@ const FrmChequeUpdatereport = () => {
         }
     };
 
-    // ✅ Table config
     const headers = [
         "धनादेश क्रमांक",
         "धनादेश बुक क्रमांक",
@@ -182,8 +180,6 @@ const FrmChequeUpdatereport = () => {
                 <Form>
                     <motion.div className="mt-4 px-2 sm:px-4">
                         <Card className="border shadow-sm">
-
-                            {/* HEADER */}
                             <CardHeader className="border-b">
                                 <CardTitle className="text-lg font-bold">
                                     Cheque Change Report
@@ -194,7 +190,6 @@ const FrmChequeUpdatereport = () => {
 
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
 
-                                    {/* विभाग संकेतांक */}
                                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
                                         <Label className="sm:w-40 text-left sm:text-right" text="विभाग संकेतांक :" />
                                         <div className="flex-1 w-full">
@@ -204,20 +199,14 @@ const FrmChequeUpdatereport = () => {
                                                 options={glList}
                                                 onChange={(val) => {
                                                     if (!val) return;
-
                                                     setFieldValue("entryDeptCode", val.value);
-
-                                                    // 🔥 call second API
                                                     fetchCreditLeasure(val.value);
-
-                                                    // reset second dropdown
                                                     setFieldValue("entryHead", "");
                                                 }}
                                             />
                                         </div>
                                     </div>
 
-                                    {/* लेखाशिर्ष */}
                                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
                                         <Label className="sm:w-40 text-left sm:text-right" text="लेखाशिर्ष :" />
                                         <div className="flex-1 w-full">
@@ -233,18 +222,16 @@ const FrmChequeUpdatereport = () => {
                                         </div>
                                     </div>
 
-                                    {/* From Cheque */}
                                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
                                         <Label className="sm:w-40 text-left sm:text-right" text="धनादेश पासून :" />
                                         <Input
                                             name="fromCheque"
                                             value={values.fromCheque}
                                             onChange={handleChange}
-                                            className="flex-1 w-full bg-cyan-200"
+                                            className="flex-1 w-full"
                                         />
                                     </div>
 
-                                    {/* To Cheque */}
                                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
                                         <Label className="sm:w-40 text-left sm:text-right" text="धनादेश पर्यंत :" />
                                         <Input
@@ -256,8 +243,6 @@ const FrmChequeUpdatereport = () => {
                                     </div>
                                 </div>
 
-
-                                {/* ✅ BUTTONS */}
                                 <div className="flex flex-wrap justify-center gap-3 mt-4">
                                     <Button type="submit" className="bg-blue-900 text-white px-6">
                                         Search
@@ -284,7 +269,6 @@ const FrmChequeUpdatereport = () => {
                                     </Button>
                                 </div>
 
-                                {/* ✅ TABLE */}
                                 {tableData.length > 0 && (
                                     <div className="mt-4">
                                         <ShadCNTable
