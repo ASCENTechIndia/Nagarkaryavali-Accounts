@@ -62,13 +62,7 @@ exports.getCounterVoucherPDF = asyncHandler(async (req, res) => {
   const result = await service.getCounterVoucherService(filters);
   const corpInfo = await getCorporationService(filters);
 
-
-   // 🔍 DEBUG LOGS
-  console.log("===== HEADER DATA =====");
-  console.log(result.header);
-
-  console.log("===== DETAILS DATA =====");
-  console.log(result.details);
+  console.log(result);
 
   // ✅ FIX: header is OBJECT, not array
   if (!result || !result.header) {

@@ -360,6 +360,44 @@ const FrmVoucherGeneration = () => {
     }
   };
 
+  const handlePrintPDF = async (refNo) => {
+    try {
+      const loader = Swal.fire({
+        title: "Generating PDF...",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => Swal.showLoading(),
+      });
+
+      const res = await axios.post(
+        `${BASE_URL}/api/FrmVoucherGeneration/counter-voucher-generation-pdf`,
+        {
+          ulbId: Number(ulbId),
+          refNo: Number(refNo),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      loader.close();
+
+      if (res?.data?.success && res?.data?.pdfUrl) {
+        window.open(res.data.pdfUrl, "_blank");
+      } else {
+        throw new Error("PDF generation failed");
+      }
+    } catch (error) {
+      console.error("PDF Error:", error);
+      Swal.fire({
+        text: error.response?.data?.message || "PDF तयार करताना त्रुटी आली.",
+        confirmButtonColor: "#1e3a8a",
+      });
+    }
+  };
+
   const handleSubmit = async (values, formikHelpers) => {
     formikHelpers.setSubmitting(true);
     const status = "A";
@@ -529,12 +567,22 @@ const FrmVoucherGeneration = () => {
       Swal.close();
 
       if (res.data?.success) {
+        const message = res.data.errorMsg;
+        const match = message.match(/Vocher No\.\s*:\s*(\d+)/);
+        const savedRefNo = match ? match[1] : null;
+        
         Swal.fire({
           title: "Success",
           text: res.data.errorMsg,
           icon: "success",
           timer: 1200,
           showConfirmButton: false,
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            if (savedRefNo) {
+              await handlePrintPDF(savedRefNo);
+            }
+          }
         });
 
         formikHelpers.resetForm();

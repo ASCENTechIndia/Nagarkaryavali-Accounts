@@ -422,6 +422,7 @@ const voucherGeneration = (data) =>
 };
 
 const getCounterVoucherDetails = async ({ transno, ulbId }) => {
+  console.log("Payload received:", {transno, ulbId});
   const query = `
     SELECT 
        GLCODE, ACCNO, AMOUNT, ACCNAME,

@@ -120,7 +120,7 @@
 
       <div class="section">
         User name : {{username}} <br />
-        पार्टी कोड / पार्टी नाव : {{partyname}}
+        पार्टी कोड / पार्टी नाव : {{partyId}} {{partyname}}
       </div>
 
       <!-- MAIN TABLE EXACT -->
@@ -164,48 +164,17 @@
       <!-- BANK -->
       <div class="section">
         प्रमाणपत्रित बँक : {{bankname}}<br />
-        धनादेश क्रमांक : {{chqno}}
-      </div>
-
-      <!-- SECOND TABLE -->
-      <div class="section">
-        <table>
-          <tr>
-            <th>क्र. नं.</th>
-            <th>लेखाशीर्ष नाव</th>
-            <th>वर्णन</th>
-            <th>रक्कम रुपये</th>
-            <th>कपात रक्कम</th>
-            <th>निव्वळ देय रक्कम</th>
-          </tr>
-
-          {{#each detailRows}}
-          <tr>
-            <td>{{sr}}</td>
-            <td>{{accname}}</td>
-            <td>{{narration}}</td>
-            <td class="right">{{amount}}</td>
-            <td class="right">0.00</td>
-            <td class="right">{{amount}}</td>
-          </tr>
-          {{/each}}
-
-          <tr>
-            <td colspan="3" class="right"><b>एकूण</b></td>
-            <td class="right"><b>{{totalNet}}</b></td>
-            <td class="right"><b>{{totalPaid}}</b></td>
-            <td class="right"><b>{{totalNet}}</b></td>
-          </tr>
-        </table>
+        एकूण देय रक्कम अक्षरी: {{amountWords}}<br />
+        धनादेश क्रमांक : {{chqno}}<br />
+        बँकेचे नाव : {{bankname}}
       </div>
 
       <!-- ================= APPROVAL SECTION 1 ================= -->
       <div class="approval-row">
         <div class="approval-text">
           मी मागणीची तपासणी केली ती अचूक असल्याचे आढळून आले.<br />
-          प्रमाणित करतो की, या देयकपत्रकास संलग्न कागदपत्रे आहेत आणि प्राप्त
-          झालेले साहित्य, वस्तू निर्दिष्टप्रमाणे आहेत आणि चांगल्या दर्जाची व
-          चांगल्या स्थितीत आहेत.
+          प्रमाणित करतो की, या देयकामध्ये दर्शविलेले दर व संख्या अचूक आहेत आणि प्राप्त झालेले साहित्य, वस्तू निर्देशानुसार आहेत आणि चांगल्या दर्जाची व चांगल्या स्थितीत आहेत.
+          रुपये <span style="font-weight: bold">{{totalPaid}}</span> (अक्षरात) <span style="font-weight: bold">{{amountWords}}</span> मात्र या करीता प्रदान संमत केले.
         </div>
         <div class="approval-sign">विभाग प्रमुखांची सही</div>
       </div>
@@ -225,7 +194,7 @@
       <div class="approval-row">
         <div class="approval-text">
           लेखा विभागाकडे पडताळणी करता सादर करण्यात आले.<br />
-          प्राप्त देयक नोंदवहीचा संदर्भ क्रमांक {{transno}} दिनांक {{date}}
+          प्राप्त देयक नोंदवहीचा संदर्भ क्रमांक <span style="font-weight: bold">{{transno}}</span> दिनांक <span style="font-weight: bold">{{date}}</span>
           प्रमाणे दिले.<br />
           पडताळणी केली व अचूक असल्याचे आढळून आले.
         </div>
@@ -236,9 +205,9 @@
       <div class="approval-row">
         <div class="approval-text">
           अंतिम मंजुरी करता सादर करण्यात आले.<br />
-          देयकपत्रात दर्शविल्याप्रमाणे रक्कम रुपये (अक्षरात) {{amountWords}}
+          देयकपत्रात दर्शविल्याप्रमाणे रक्कम रुपये (अक्षरात) <span style="font-weight: bold">{{amountWords}}</span>
           फक्त मंजूर करण्यात येत आहे.<br />
-          र. (अक्षरात) {{amountWords}} र. अंकात {{totalNet}} प्रदान.
+          र. (अक्षरात) <span style="font-weight: bold">{{amountWords}}</span> र. अंकात <span style="font-weight: bold">{{totalPaid}}</span> प्रदान.
         </div>
         <div class="approval-sign">मा. उपआयुक्त यांचे सही</div>
       </div>
@@ -247,67 +216,35 @@
       <div class="approval-row">
         <div class="approval-text">
           रोख प्रभारीकडे सादर करण्यात आले.<br />
-          धनादेश / बँक / FDR / बँक गॅरंटी पैकी धनादेश क्रमांक {{chqno}} द्वारा
-          दिनांक {{date}} रोजी दिले.<br />
+          धनादेश / बँक / FDR / बँक गॅरंटी पैकी धनादेश क्रमांक <span style="font-weight: bold">{{chqno}}</span> द्वारा
+          दिनांक <span style="font-weight: bold">{{date}}</span> रोजी दिले.<br />
           आणि रोकडवही / बँक पुस्तका मध्ये नोंद केली.
         </div>
         <div class="approval-sign">रोखपालाची सही</div>
       </div>
+
+      <div style="text-align:center; margin-top:15px; font-weight:bold;">
+        {{corporationName}}
+      </div>
+
+      <!-- AMOUNT TEXT -->
+      <div style="margin-top:20px;">
+        ₹ <span style="font-weight: bold">{{totalPaid}}</span> चे प्रदान प्राप्त झाले.<br>
+        रक्कम रुपये : <span style="font-weight: bold">{{amountWords}}</span> फक्त.
+      </div>
+
+      <!-- SIGNATURE ROW -->
+      <div style="display:flex; justify-content:space-between; margin-top:80px;">
+        <div style="text-align:center;">
+          मुद्रांक
+        </div>
+
+        <div style="text-align:center;">
+          प्राप्त करणाऱ्याची सही
+        </div>
+      </div>
     </div>
-
-    <div class="page-break"></div>
-
-    <!-- PAGE 2 -->
-    <div class="box">
-
-  <!-- HEADER -->
-  <table class="no-border">
-    <tr>
-      <td width="50%">
-        Zone : {{zone}}<br>
-        Department : {{deptname}}<br>
-        Manual Number : {{manualno}}<br>
-        System Bill No : {{systembillno}}
-      </td>
-
-      <td width="50%">
-        दिनांक : {{date}}<br>
-        वेळ : {{time}}<br>
-        Voucher No : {{refno}}<br>
-        Transaction no : {{transno}}<br>
-        Voucher Date : {{transdate}}
-      </td>
-    </tr>
-  </table>
-
-  <!-- USER + PARTY -->
-  <div style="margin-top: 10px;">
-    <b>User name :</b> {{username}} <br>
-    <b>पार्टी कोड / पार्टी नाव :</b> {{partyname}}
-  </div>
-
-  <!-- CENTER TITLE -->
-  <div style="text-align:center; margin-top:15px; font-weight:bold;">
-    {{corporationName}}
-  </div>
-
-  <!-- AMOUNT TEXT -->
-  <div style="margin-top:20px;">
-    ₹ {{totalNet}} चे भुगतान प्राप्त झाले.<br>
-    रक्कम रुपये : <b>{{amountWords}}</b> फक्त.
-  </div>
-
-  <!-- SIGNATURE ROW -->
-  <div style="display:flex; justify-content:space-between; margin-top:80px;">
-    <div style="text-align:center;">
-      मु.लिपिक
-    </div>
-
-    <div style="text-align:center;">
-      प्राप्त करणाऱ्याची सही
-    </div>
-  </div>
-
+  
 </div>
   </body>
 </html>

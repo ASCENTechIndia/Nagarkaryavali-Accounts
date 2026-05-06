@@ -80,6 +80,8 @@ async function getCounterVoucherService(body = {}) {
     throw new AppError("No voucher found", 404);
   }
 
+  console.log("Header response: ", headerRes);
+
   const header = headerRes.rows[0];
 
   // ⚠️ Critical safety check
