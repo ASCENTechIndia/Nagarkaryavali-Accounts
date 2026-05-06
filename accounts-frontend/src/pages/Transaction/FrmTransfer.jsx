@@ -166,6 +166,7 @@ const FrmTransfer = () => {
 
   const fetchChequeBook = async (values, chequeNo, setFieldValue) => {
     try {
+      console.log("values",values)
       const res = await axios.post(
         `${BASE_URL}/api/FrmVoucherGeneration/cheque-book`,
         {
@@ -179,7 +180,13 @@ const FrmTransfer = () => {
           headers: { Authorization: `Bearer ${token}` },
         },
       );
-
+      console.log("chequeBook Payload", {
+          bank_glcode: values.creditDept,
+          bank_accno: values.creditLedger,
+          cheque_no: chequeNo,
+          corp_id: ulbId,
+          zone_id: values.department,
+        })
       const books = res.data?.rows || [];
       console.log("Fetched cheque books:", books);
 
@@ -706,6 +713,7 @@ const handleSubmit = async (values, { resetForm }) => {
                             <Row label="धनादेश क्रमांक">
                               <Input
                                 className="w-full h-8"
+                                maxLength={6}
                                 value={values.chequeNo}
                                 onChange={(e) => {
                                   const value = e.target.value;

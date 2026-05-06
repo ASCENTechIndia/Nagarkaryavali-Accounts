@@ -117,12 +117,24 @@ const CounterVoucherGeneration = async ({
     });
 
     // ================= PDF =================
-    const browser = await puppeteer.launch({
+    // const browser = await getBrowser();
+    const chromePath = path.resolve(
+      __dirname,
+      "../../../node_modules/puppeteer/.cache/puppeteer/chrome/win64-135.0.7049.84/chrome-win64/chrome.exe"
+    );
+
+    const launchOptions = {
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
+    };
 
-    const page = await browser.newPage();
+    if (fs.existsSync(chromePath)) {
+      launchOptions.executablePath = chromePath;
+    }
+
+    const browser = await puppeteer.launch(launchOptions);
+    
+    page = await browser.newPage();
 
     await page.setContent(html, {
       waitUntil: "domcontentloaded",
