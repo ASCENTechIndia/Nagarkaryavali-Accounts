@@ -94,7 +94,7 @@ async function searchGLRepo({ prefix }) {
         glfunction 
     FROM view_glweb 
     WHERE 
-        (glfunction = :prefix 
+        (TO_CHAR(glfunction) LIKE :prefix
          OR TRIM(UPPER(glsearchname)) LIKE TRIM(UPPER(:search)))
     ORDER BY glcode
   `;

@@ -75,26 +75,38 @@ async function searchBulkReceiptAccountRepo({
   accno,
   ulbid,
 }) {
-  console.log("📤 Repo: Search Bulk Receipt Account", {
-    glcode,
-    accno,
-    ulbid,
-  });
+  console.log(
+    "📤 Repo: Search Bulk Receipt Account",
+    {
+      glcode,
+      accno,
+      ulbid,
+    }
+  );
 
   const conditions = [];
   const binds = {};
 
   conditions.push("ulbid = :ulbid");
+
   binds.ulbid = ulbid;
 
+  // GL CODE PREFIX SEARCH
   if (glcode) {
-    conditions.push("glcode = :glcode");
-    binds.glcode = glcode;
+    conditions.push(
+      "TO_CHAR(glcode) LIKE :glcode"
+    );
+
+    binds.glcode = `${glcode}%`;
   }
 
+  // ACCOUNT NO PREFIX SEARCH
   if (accno) {
-    conditions.push("accno = :accno");
-    binds.accno = accno;
+    conditions.push(
+      "TO_CHAR(accno) LIKE :accno"
+    );
+
+    binds.accno = `${accno}%`;
   }
 
   const sql = `
@@ -108,7 +120,14 @@ async function searchBulkReceiptAccountRepo({
     ORDER BY glcode, accno
   `;
 
-  const result = await executeQuery(sql, binds);
+  console.log("Final SQL =>", sql);
+
+  console.log("Final Binds =>", binds);
+
+  const result = await executeQuery(
+    sql,
+    binds
+  );
 
   if (!result.success) {
     throw new Error(result.error);
