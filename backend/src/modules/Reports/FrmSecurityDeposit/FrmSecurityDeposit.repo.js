@@ -288,10 +288,12 @@ async function getRdoReport147(corpId, zoneId, fromDate, toDate) {
 
 async function getTransactionLedger(filters) {
   let params = {
-    fromDate: new Date(filters.fromDate),
-    toDate: new Date(filters.toDate),
+    fromDate: filters.fromDate,
+    toDate: filters.toDate,
     ulbId: filters.ulbId
   };
+
+  console.log("params", params)
 
   let sql = `
     SELECT 
@@ -328,7 +330,8 @@ async function getTransactionLedger(filters) {
     LEFT JOIN aoac_partymst_def ap 
       ON ap.num_partymst_partyid = a.partycode
 
-    WHERE TRUNC(a.trnsdate) BETWEEN :fromDate AND :toDate
+      WHERE TRUNC(a.trnsdate) BETWEEN TO_DATE(:fromDate, 'YYYY-MM-DD') 
+                            AND TO_DATE(:toDate, 'YYYY-MM-DD')
       AND a.ulbid = :ulbId
   `;
 
