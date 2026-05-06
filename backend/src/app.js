@@ -90,6 +90,7 @@ app.use("/api/BudgetAccMap", require("./modules/Transaction/FrmBudgetAccountMap/
 app.use("/api/FrmVoucherGeneration", require("./modules/Transaction/FrmVoucherGeneration/FrmVoucherGeneration.routes"));
 app.use("/api/Bankdeposit", require("./modules/Transaction/FrmBankDeposit/BankDepositReports.route"))
 app.use("/api/FrmBulkReceipt", require("./modules/Transaction/FrmBulkReceipt/FrmBulkReceipt.route"))
+app.use("/api/FrmCheqCancelchanges", require("./modules/Transaction/FrmCheqCancelchanges/FrmCheqCancelchanges.routes"))
 
 //Reports
 app.use("/api/RptTransferRegister", require("./modules/Reports/RptTransferRegister/transferRegister.route"))
