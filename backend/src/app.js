@@ -119,6 +119,7 @@ app.use("/api/RptGovtTaxRegisters", require("./modules/Reports/RptGovtTaxRegiste
 app.use("/api/FrmSdRefundRpt",require("./modules/Reports/FrmSdRefundRpt/FrmSdRefundRpt.Route"))
 app.use("/api/TranRpt", require("./modules/Reports/FrmTransferRegisterRpt/TransferRegisterRpt.route"))
 app.use("/api/RptChequeDishonour", require("./modules/Reports/RptChequeDishonour/RptChequeDishonour.routes"))
+app.use("/api/FrmChequeUpdateRpt", require("./modules/Reports/FrmChequeUpdateReport/FrmChequeUpdateRpt.route"))
 
 app.use(errorMiddleware);
 

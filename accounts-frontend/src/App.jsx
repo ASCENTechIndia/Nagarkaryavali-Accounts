@@ -83,6 +83,7 @@ import FrmOnlineDeposit from "./pages/Transaction/FrmOnlineDeposit";
 import FrmTransferRegisterRpt from "./pages/Reports/FrmTransferRegisterRpt";
 import FrmBankDeposit from "./pages/Transaction/FrmBankDeposit";
 import RptChequeDishonour from "./pages/Reports/RptChequeDishonour";
+import FrmChequeUpdatereport from "./pages/Reports/FrmChequeUpdatereport";
 
 const Home = () => <Button>Click me</Button>;
 
@@ -428,6 +429,10 @@ export const router = createBrowserRouter([
         path: "ReportsForm/RptChequeDishonour",
         element: <RptChequeDishonour />,
       },
+      {
+        path: "ReportsForm/FrmChequeUpdatereport",
+        element: <FrmChequeUpdatereport />,
+      }
     ],
   },
 ]);
