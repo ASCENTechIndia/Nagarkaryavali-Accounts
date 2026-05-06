@@ -236,6 +236,8 @@ const FrmVoucherGeneration = () => {
         zone_id: String(department),
       };
 
+      console.log("Payload: ", payload)
+
       const res = await axios.post(
         `${BASE_URL}/api/FrmVoucherGeneration/cheque-book`,
         payload,
@@ -252,19 +254,25 @@ const FrmVoucherGeneration = () => {
         const bookNo = String(books[0].NUM_CHEQUEBOOK_BOOKNO);
 
         // ✅ ensure state updated first
-        setTimeout(() => {
-          setFieldValue("chequeBookNo", bookNo);
-        }, 100);
+        // setTimeout(() => {
+        //   setFieldValue("chequeBookNo", bookNo);
+        // }, 100);
+        setFieldValue("chequeBookNo", bookNo);
       }
       // ✅ FORCE AUTO SELECT
       if (books.length > 0) {
         const bookNo = String(books[0].NUM_CHEQUEBOOK_BOOKNO);
 
         // 🔥 important: delay ensures dropdown is ready
-        setTimeout(() => {
-          setFieldValue("chequeBookNo", bookNo);
-        }, 0);
+        // setTimeout(() => {
+        //   setFieldValue("chequeBookNo", bookNo);
+        // }, 0);
+        setFieldValue("chequeBookNo", bookNo);
       } else {
+        Swal.fire({
+          text: "This cheque is either used or does not exist",
+          confirmButtonColor: "#1e3a8a",
+        });
         setFieldValue("chequeBookNo", "");
       }
     } catch (err) {
@@ -993,7 +1001,7 @@ const FrmVoucherGeneration = () => {
                           name="chequeNo"
                           value={values.chequeNo}
                           onChange={(e) => {
-                            const value = e.target.value;
+                            const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 6);
 
                             setFieldValue("chequeNo", value);
 
@@ -1022,6 +1030,7 @@ const FrmVoucherGeneration = () => {
                             !values.ledger ||
                             !values.department
                           } // ✅ IMPORTANT
+                          maxLength={6}
                           className="h-9 w-full"
                         />
                       </FormField>
