@@ -3,12 +3,10 @@ import { Formik, Form } from "formik";
 import { motion } from "framer-motion";
 import axios from "axios";
 import Swal from "sweetalert2";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
 import {
     Select,
     SelectContent,
@@ -16,10 +14,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-
-import SearchableSelect from "@/components/SearchableSelect";
 import ShadCNTable from "@/components/ui/table";
-
 import { useAuth } from "@/context/AuthContext";
 import AsyncSearchableSelect from "@/components/AsyncSearchableSelect";
 
@@ -54,6 +49,7 @@ const FrmBulkReceipt = () => {
     const [loadingAccount, setLoadingAccount] = useState(false);
     const [loadingTable, setLoadingTable] = useState(false);
     const [selectedGL, setSelectedGL] = useState("");
+
     const headers = [
         "Select",
         "GL Code",
@@ -352,7 +348,6 @@ const FrmBulkReceipt = () => {
                 const transformedTableData = tableData.map(
                     (item) => ({
                         ...item,
-
                         select: (
                             <input
                                 type="checkbox"
@@ -383,11 +378,7 @@ const FrmBulkReceipt = () => {
                                 </CardHeader>
 
                                 <CardContent className="p-4 sm:p-6 space-y-8">
-                                    {/* TOP SECTION */}
-
                                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-                                        {/* Department */}
-
                                         <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                                             <div className="w-full sm:w-40 shrink-0 flex justify-between items-center">
                                                 <Label text="Department" />
@@ -417,8 +408,6 @@ const FrmBulkReceipt = () => {
                                             </Select>
                                         </div>
 
-                                        {/* Challan */}
-
                                         <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                                             <div className="w-full sm:w-40 shrink-0 flex justify-between items-center">
                                                 <Label text="Chalan Number" />
@@ -432,8 +421,6 @@ const FrmBulkReceipt = () => {
                                                 className="w-full h-9"
                                             />
                                         </div>
-
-                                        {/* Search Button */}
 
                                         <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
                                             <Button
@@ -467,10 +454,7 @@ const FrmBulkReceipt = () => {
 
                                     <hr />
 
-                                    {/* MAIN FORM */}
-
                                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                                        {/* व्यवहार प्रकार */}
 
                                         <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                                             <div className="w-full sm:w-40 shrink-0 flex justify-between items-center">
@@ -501,8 +485,6 @@ const FrmBulkReceipt = () => {
                                             </Select>
                                         </div>
 
-                                        {/* व्यवहार दिनांक */}
-
                                         <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                                             <div className="w-full sm:w-40 shrink-0 flex justify-between items-center">
                                                 <Label text="व्यवहार दिनांक" />
@@ -518,8 +500,6 @@ const FrmBulkReceipt = () => {
                                             />
                                         </div>
 
-                                        {/* Receipt No */}
-
                                         <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                                             <div className="w-full sm:w-40 shrink-0 flex justify-between items-center">
                                                 <Label text="पावती क्रमांक" />
@@ -533,8 +513,6 @@ const FrmBulkReceipt = () => {
                                                 className="w-full h-9"
                                             />
                                         </div>
-
-                                        {/* विभाग संकेतांक */}
 
                                         <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                                             <div className="w-full sm:w-40 shrink-0 flex justify-between items-center">
@@ -567,8 +545,6 @@ const FrmBulkReceipt = () => {
                                             />
                                         </div>
 
-                                        {/* Amount */}
-
                                         <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                                             <div className="w-full sm:w-40 shrink-0 flex justify-between items-center">
                                                 <Label text="एकूण रक्कम" />
@@ -582,8 +558,6 @@ const FrmBulkReceipt = () => {
                                                 className="w-full h-9 bg-gray-100"
                                             />
                                         </div>
-
-                                        {/* Budget */}
 
                                         <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                                             <div className="w-full sm:w-40 shrink-0 flex justify-between items-center">
@@ -613,8 +587,6 @@ const FrmBulkReceipt = () => {
                                                 </SelectContent>
                                             </Select>
                                         </div>
-
-                                        {/* लेखाशीर्ष */}
 
                                         <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                                             <div className="w-full sm:w-40 shrink-0 flex justify-between items-center">
@@ -650,7 +622,6 @@ const FrmBulkReceipt = () => {
                                         </div>
                                     </div>
 
-                                    {/* TABLE */}
                                     {loadingTable && (
                                         <div className="flex justify-center items-center py-10">
                                             <div className="text-blue-900 font-medium animate-pulse">
@@ -660,9 +631,6 @@ const FrmBulkReceipt = () => {
                                     )}
 
                                     {tableData.length > 0 && (
-                                        <>
-                                            <hr />
-
                                             <ShadCNTable
                                                 headers={headers}
                                                 data={transformedTableData}
@@ -671,10 +639,7 @@ const FrmBulkReceipt = () => {
                                                 rowsPerPage={5}
                                                 className="max-md:min-w-380"
                                             />
-                                        </>
                                     )}
-
-                                    {/* Narration */}
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="flex flex-col sm:flex-row sm:items-start gap-2">
@@ -682,7 +647,6 @@ const FrmBulkReceipt = () => {
                                                 <Label text="तपशील" />
                                                 <span>:</span>
                                             </div>
-
                                             <textarea
                                                 name="narration"
                                                 value={values.narration}
@@ -691,8 +655,6 @@ const FrmBulkReceipt = () => {
                                             />
                                         </div>
                                     </div>
-
-                                    {/* BUTTONS */}
 
                                     <div className="flex justify-center gap-4 pt-4">
                                         <Button
