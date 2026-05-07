@@ -116,16 +116,40 @@ const RptLedgerReport = () => {
     }
   };
 
+  const parseDateString = (dateStr) => {
+      const parts = dateStr.split('-');
+      const day = parseInt(parts[0]);
+      const month = parts[1];
+      const year = parseInt(parts[2]);
+      
+      const monthMap = {
+        'JAN': 0, 'FEB': 1, 'MAR': 2, 'APR': 3, 'MAY': 4, 'JUN': 5,
+        'JUL': 6, 'AUG': 7, 'SEP': 8, 'OCT': 9, 'NOV': 10, 'DEC': 11
+      };
+      
+      return new Date(year, monthMap[month], day);
+  };
+
+  const getPreviousDayFormatted = (dateStr) => {
+      const dateObj = parseDateString(dateStr);
+      const previousDay = new Date(dateObj);
+      previousDay.setDate(previousDay.getDate() - 1);
+      return formatDateForAPI(previousDay);
+  };
+
   const fetchOpeningBalance = async (glcode, accno, ulbid, fromDate, toDate, zoneid) => {
     try {
+      const previousFromDayFormatted = getPreviousDayFormatted(fromDate);
+      const previousToDayFormatted = getPreviousDayFormatted(toDate);
+
       const response = await axios.post(
         `${BASE_URL}/api/RptLedgerReport/ledger/balance`,
         {
           glcode: Number(glcode),
           accno: Number(accno),
           ulbid: Number(ulbid),
-          fromDate: fromDate,
-          toDate: toDate,
+          fromDate: previousFromDayFormatted,
+          toDate: previousToDayFormatted,
           zoneid: zoneid,
         },
         { headers: { Authorization: `Bearer ${token}` } }

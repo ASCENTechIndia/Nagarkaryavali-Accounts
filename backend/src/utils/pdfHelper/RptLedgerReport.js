@@ -49,6 +49,9 @@ const RptLedgerReportPDFHelper = async ({
       const amount = Number(t.AMOUNT || 0);
 
       let row = {
+        DR_ACCOUNT_CODE: "",
+        CR_ACCOUNT_CODE: "",
+
         DR_TRANS_NO: "",
         DR_VOU_NO: "",
         DR_DATE: "",
@@ -66,13 +69,14 @@ const RptLedgerReportPDFHelper = async ({
       };
 
       if (amount >= 0) {
-        // CREDIT
+        row.CR_ACCOUNT_CODE = filters.accountCode || "";
+
         row.CR_TRANS_NO = t.TRANSNO;
         row.CR_VOU_NO = t.DOCNO;
         row.CR_DATE = formatDate(t.TRNSDATE);
         row.CR_PAN = t.PANCARD || "";
-        row.CR_PARTICULARS = t.NARRATION;
-        row.CR_CHEQUE = t.CHQNO;
+        row.CR_PARTICULARS = t.NARRATION || "";
+        row.CR_CHEQUE = t.CHQNO || "";
         row.CR_AMOUNT = formatNumber(amount);
 
         totalCr += amount;
@@ -80,21 +84,26 @@ const RptLedgerReportPDFHelper = async ({
       } else {
         const abs = Math.abs(amount);
 
+        row.DR_ACCOUNT_CODE = filters.accountCode || "";
+
         row.DR_TRANS_NO = t.TRANSNO;
         row.DR_VOU_NO = t.DOCNO;
         row.DR_DATE = formatDate(t.TRNSDATE);
-        row.DR_PARTICULARS = t.NARRATION;
-        row.DR_CHEQUE = t.CHQNO;
+        row.DR_PARTICULARS = t.NARRATION || "";
+        row.DR_CHEQUE = t.CHQNO || "";
         row.DR_AMOUNT = formatNumber(abs);
 
         totalDr += abs;
         drCount++;
       }
-
       return row;
     });
 
-    const closingBalance = openingBalance + totalDr - totalCr;
+    const closingBalance = Math.abs(openingBalance) + totalDr - totalCr;
+
+    console.log("Rows: ", rows);
+    console.log("closingBalance: ", closingBalance);
+    console.log("openingBalance: ", openingBalance);
 
     const html = template({
       logo: ulbInfo.ULBLOGO,
