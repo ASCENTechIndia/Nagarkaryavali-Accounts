@@ -297,7 +297,7 @@ const RptGovtTaxRegisters = () => {
                       <Label className="sm:text-left">कपात संकेतांक</Label>
                       <span className="hidden sm:block">:</span>
                       <SearchableSelect
-                        disabled={isAllSelected}
+                        // disabled={isAllSelected}
                         options={glCodes.map((g) => ({
                           label: g.GLSEARCHNAME,
                           value: String(g.GLCODE),
@@ -319,7 +319,7 @@ const RptGovtTaxRegisters = () => {
                       <Label className="sm:text-left">कपात लेखाशिर्ष</Label>
                       <span className="hidden sm:block">:</span>
                       <SearchableSelect
-                        disabled={isAllSelected}
+                        // disabled={isAllSelected}
                         options={kapatLedgers.map((l) => ({
                           label: l.ACCNAME,
                           value: String(l.OBJECTCODE),
@@ -334,7 +334,7 @@ const RptGovtTaxRegisters = () => {
                       <Label className="sm:text-left">बँक संकेतांक</Label>
                       <span className="hidden sm:block">:</span>
                       <SearchableSelect
-                        disabled={isAllSelected}
+                        // disabled={isAllSelected}
                         options={glCodes.map((g) => ({
                           label: g.GLSEARCHNAME,
                           value: String(g.GLCODE),
@@ -356,7 +356,7 @@ const RptGovtTaxRegisters = () => {
                       <Label className="sm:text-left">बँक लेखाशिर्ष</Label>
                       <span className="hidden sm:block">:</span>
                       <SearchableSelect
-                        disabled={isAllSelected}
+                        // disabled={isAllSelected}
                         options={bankLedgers.map((l) => ({
                           label: l.ACCNAME,
                           value: String(l.OBJECTCODE),
@@ -371,7 +371,7 @@ const RptGovtTaxRegisters = () => {
                       <Label className="sm:text-left">पार्टी</Label>
                       <span className="hidden sm:block">:</span>
                       <SearchableSelect
-                        disabled={isAllSelected}
+                        // disabled={isAllSelected}
                         options={parties.map((p) => ({
                           label: p.VAR_PARTYMST_PARTYNAME,
                           value: String(p.NUM_PARTYMST_PARTYID),
