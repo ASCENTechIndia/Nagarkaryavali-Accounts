@@ -189,39 +189,19 @@ async function getPaymentRegisterReport(params) {
 
   // ── PART 1 ──────────────────────────────────────────────
   let query = `
-    SELECT 
-        NULL AS VchRefNo,
-        a.trnsdate,
-        a.transno,
-        TO_CHAR(a.docno) AS docno,
-        a.glcode,
-        acc.glname,
-        a.accno,
-        acc.accname,
-        v.zoneename AS deptname,
-        var_grampanch_grampanch AS grampanch,
-        a.amount,
-        a.narration,
-        var_partymst_partyname AS partyname,
-        0 AS BudgetCode,
-        acc.functioncode,
-        acc.objectcode
-    FROM transview a
-    INNER JOIN accountview_web acc  
-        ON a.glcode = acc.glcode  
-        AND a.accno = acc.accno 
-        AND acc.ulbid = a.ulbid
-    LEFT JOIN view_zone v 
-        ON v.zoneid = a.zoneid
-    LEFT JOIN aoac_grampanch_def 
-        ON num_grampanch_grampanchid = a.grampanchid
-    LEFT JOIN aoac_partymst_def 
-        ON num_partymst_partyid = a.partycode
+  select null VchRefNo,a.trnsdate, a.transno, TO_CHAR(a.docno) docno, a.glcode, acc.glname, a.accno, acc.accname, v.zoneename deptname,
+        var_grampanch_grampanch grampanch, a.amount ,narration, var_partymst_partyname partyname, 0 BudgetCode,
+        acc.functioncode functioncode,acc.objectcode objectcode
+  from transview a
+  INNER JOIN accountview_web acc  ON     a.glcode = acc.glcode  AND a.accno = acc.accno and acc.ulbid=a.ulbid
+  LEFT OUTER JOIN view_zone v ON v.zoneid =a.zoneid
+  left outer join aoac_grampanch_def on num_grampanch_grampanchid = a.grampanchid
+  left outer join aoac_partymst_def on num_partymst_partyid = a.partycode
     WHERE 
         TRUNC(a.trnsdate) BETWEEN TO_DATE(:fromDate, 'DD-MM-YYYY') AND TO_DATE(:toDate, 'DD-MM-YYYY')
         AND a.amount < 0
         AND a.trnstypeid IN (3,4)
-        AND a.sourceid <> 6
+        AND sourceid<>6
         AND a.ulbid = :ulbid
   `;
 
@@ -244,42 +224,19 @@ async function getPaymentRegisterReport(params) {
 
   // ── PART 2 ──────────────────────────────────────────────
   query += `
+      union all select  distinct num_vchtransbal_vchrefno VchRefNo,a.trnsdate,
+      num_vchtransbal_transno transno, TO_CHAR(num_vchtransbal_vouchno) docno,
+      a.glcode, acc.glname, a.accno, acc.accname,v.zoneename deptname, var_grampanch_grampanch grampanch,num_vchtransbal_payamt,
+      var_vchtransbal_prenarrat, var_partymst_partyname partyname, 0 BudgetCode,acc.functioncode functioncode,acc.objectcode objectcode
+    from aoac_vchtransbal_def
+    inner join transview a  on num_vchtransbal_transno=transno and a.glcode = num_vchtransbal_glcode and a.accno = num_vchtransbal_accno
 
-    UNION ALL
-
-    SELECT DISTINCT
-        num_vchprepmst_refno AS VchRefNo,
-        a.trnsdate,
-        num_vchprepmst_trnsno AS transno,
-        TO_CHAR(num_vchprepmst_vchno) AS docno,
-        a.glcode,
-        acc.glname,
-        a.accno,
-        acc.accname,
-        v.zoneename AS deptname,
-        var_grampanch_grampanch AS grampanch,
-        num_vchprepmst_totalamt AS amount,
-        var_vchpremst_narration AS narration,
-        var_partymst_partyname AS partyname,
-        0 AS BudgetCode,
-        acc.functioncode,
-        acc.objectcode
-    FROM aoac_vchprepmst_def
-    INNER JOIN transview a  
-        ON num_vchprepmst_trnsno = a.transno 
-        AND a.glcode = num_vchprepmst_drgl 
-        AND a.accno = num_vchprepmst_dracc  
-        AND a.amount = (num_vchprepmst_totalamt * -1)
-    INNER JOIN accountview_web acc  
-        ON a.glcode = acc.glcode  
-        AND a.accno = acc.accno 
-        AND acc.ulbid = a.ulbid
-    LEFT JOIN view_zone v 
-        ON v.zoneid = a.zoneid
-    LEFT JOIN aoac_grampanch_def 
-        ON num_grampanch_grampanchid = a.grampanchid
-    LEFT JOIN aoac_partymst_def 
-        ON num_partymst_partyid = num_vchprepmst_partyid
+    INNER JOIN accountview_web acc  ON     a.glcode = acc.glcode  AND a.accno = acc.accno and acc.ulbid=a.ulbid
+    LEFT OUTER JOIN view_zone v ON v.zoneid =a.zoneid	
+    left outer join aoac_grampanch_def on num_grampanch_grampanchid = a.grampanchid
+    left join  aoac_vchtransbaldet_def on num_vchtransbaldet_transno=num_vchtransbal_transno 
+    and num_vchtransbaldet_vchrefno=num_vchtransbal_vchrefno
+    left outer join aoac_partymst_def on num_partymst_partyid =num_vchtransbaldet_partycode
     WHERE 
         TRUNC(a.trnsdate) BETWEEN TO_DATE(:fromDate, 'DD-MM-YYYY') AND TO_DATE(:toDate, 'DD-MM-YYYY')
         AND a.amount < 0

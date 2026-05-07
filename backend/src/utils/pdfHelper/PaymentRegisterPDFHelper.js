@@ -130,22 +130,22 @@ const PaymentRegisterPDFHelper = async ({
       landscape: true, // better for wide table
       printBackground: true,
       displayHeaderFooter: true,
-      headerTemplate: `
-        <div style="font-family: Arial; font-size: 9px; width: 100%; margin: 0 20px;">
-          <div style="display:flex; justify-content:space-between;">
-            <div style="font-size:12px">${corporationName}</div>
-            <div style="font-weight:bold; font-size:14px;">
-              Payment Register / पेमेंट रजिस्टर
-            </div>
-            <div>Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
-          </div>
-          <div style="text-align:right;">${fromDate} To ${toDate}</div>
-        </div>
-      `,
-      footerTemplate: `<div></div>`,
+      // headerTemplate: `
+      //   <div style="font-family: Arial; font-size: 9px; width: 100%; margin: 0 20px;">
+      //     <div style="display:flex; justify-content:space-between;">
+      //       <div style="font-size:12px">${corporationName}</div>
+      //       <div style="font-weight:bold; font-size:14px;">
+      //         Payment Register / पेमेंट रजिस्टर
+      //       </div>
+      //       <div>Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
+      //     </div>
+      //     <div style="text-align:right;">${fromDate} To ${toDate}</div>
+      //   </div>
+      // `,
+      // footerTemplate: `<div></div>`,
       margin: {
-        top: "90px",
-        bottom: "30px",
+        top: "20px",
+        bottom: "20px",
         left: "20px",
         right: "20px",
       },
