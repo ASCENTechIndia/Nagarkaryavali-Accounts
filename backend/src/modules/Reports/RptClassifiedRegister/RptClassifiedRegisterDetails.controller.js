@@ -25,34 +25,40 @@ exports.getMonthlySummaryReport = asyncHandler(async (req, res) => {
 });
 
 
-// exports.getMonthlySummaryPDF = asyncHandler(async (req, res) => {
-//   const filters = req.body;
 
-//   const result = await service.getMonthlySummaryReportService(filters);
-
-//   const pdf = await MonthlySummaryPDFHelper({
-//     reportData: result.list,
-//     filters
-//   });
-
-//   return ok(res, pdf, "PDF generated");
-// });
 
 
 exports.getMonthlySummaryPDF = asyncHandler(async (req, res) => {
+
   const filters = req.body;
 
-  const result = await service.getMonthlySummaryReportService(filters);
+  let result;
 
-  const ulbInfo = await getCorporationService(filters);
+  // 🔥 Dynamic Service Call
+  if (filters.rptType === "EXP") {
 
-  if (!result.list.length) {
+    result = await service.getMonthlyExpenditureBudgetReportService(filters);
+
+  } else {
+
+    result = await service.getMonthlyBudgetReport(filters);
+
+  }
+
+  // 🔥 Corporation Info
+  const ulbInfo = await getCorporationService({
+    ulbId: filters.ulbId
+  });
+
+  if (!result.list || result.list.length === 0) {
+
     return res.status(404).json({
       success: false,
       message: "No records found"
     });
   }
 
+  // 🔥 PDF Generation
   const pdf = await MonthlySummaryPDFHelper({
     reportData: result.list,
     filters,
@@ -60,6 +66,7 @@ exports.getMonthlySummaryPDF = asyncHandler(async (req, res) => {
   });
 
   const baseUrl = `${req.protocol}://${req.get("host")}`;
+
   const pdfUrl = `${baseUrl}/pdf/${path.basename(pdf.filePath)}`;
 
   return res.json({
@@ -68,4 +75,21 @@ exports.getMonthlySummaryPDF = asyncHandler(async (req, res) => {
     fileName: pdf.fileName,
     pdfUrl
   });
+
+});
+
+
+
+exports.getMonthlyBudget = asyncHandler(async (req, res) => {
+
+  const data = await service.getMonthlyBudgetReport(req.body);
+
+  return ok(res, data, "Monthly budget report fetched");
+});
+
+exports.getMonthlyExpenditureBudgetReport = asyncHandler(async (req, res) => {
+
+  const data = await service.getMonthlyExpenditureBudgetReportService(req.body);
+
+  return ok(res, data, "Monthly expenditure budget report fetched");
 });
