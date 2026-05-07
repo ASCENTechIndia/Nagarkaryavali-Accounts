@@ -330,14 +330,242 @@ const FrmBulkReceipt = () => {
         }
     };
 
+    const handleSubmit = async (
+        values,
+        resetForm
+    ) => {
+        try {
+
+            if (!values.trnsType) {
+                Swal.fire({
+                    text: "व्यवहार प्रकार रिक्त असू शकत नाही",
+                    confirmButtonColor: "#1e3a8a",
+                });
+
+                return;
+            }
+
+            if (!values.budgetHead) {
+                Swal.fire({
+                    text: "Please Select Budget",
+                    confirmButtonColor: "#1e3a8a",
+                });
+
+                return;
+            }
+
+            if (!values.trnsDate) {
+                Swal.fire({
+                    text: "तारीख रिक्त असू शकत नाही",
+                    confirmButtonColor: "#1e3a8a",
+                });
+
+                return;
+            }
+
+            if (!values.receiptNo) {
+                Swal.fire({
+                    text: "व्हाउचर क्रमांक रिक्त असू शकत नाही",
+                    confirmButtonColor: "#1e3a8a",
+                });
+
+                return;
+            }
+
+            if (!values.glcode) {
+                Swal.fire({
+                    text: "विभाग संकेतांक रिक्त असू शकत नाही",
+                    confirmButtonColor: "#1e3a8a",
+                });
+
+                return;
+            }
+
+            if (!values.accno) {
+                Swal.fire({
+                    text: "लेखाशीर्ष रिक्त असू शकत नाही",
+                    confirmButtonColor: "#1e3a8a",
+                });
+
+                return;
+            }
+
+            if (!values.amount) {
+                Swal.fire({
+                    text: "एकूण रक्कम रिक्त असू शकत नाही",
+                    confirmButtonColor: "#1e3a8a",
+                });
+
+                return;
+            }
+
+            Swal.fire({
+                title: "Saving Receipt...",
+                text: "Please wait",
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+            });
+
+            const selectedRows = tableData.filter(
+                (x) => x.selected
+            );
+
+            if (selectedRows.length === 0) {
+                Swal.fire({
+                    text: "Select At Least one Tax",
+                    confirmButtonColor: "#1e3a8a",
+                });
+
+                return;
+            }
+
+            if (!values.narration) {
+                Swal.fire({
+                    text: "तपशील रिक्त असू शकत नाही",
+                    confirmButtonColor: "#1e3a8a",
+                });
+
+                return;
+            }
+
+            const formatOracleDate = (dateStr) => {
+                const months = [
+                    "JAN",
+                    "FEB",
+                    "MAR",
+                    "APR",
+                    "MAY",
+                    "JUN",
+                    "JUL",
+                    "AUG",
+                    "SEP",
+                    "OCT",
+                    "NOV",
+                    "DEC",
+                ];
+                const [year, month, day] =
+                    dateStr.split("-");
+                return `${day}-${months[Number(month) - 1]
+                    }-${year}`;
+            };
+
+            const formattedDate =
+                formatOracleDate(values.trnsDate);
+
+            const receiptMst =
+                `${formattedDate}~` +
+                `${values.receiptNo}~` +
+                `${values.trnsType}~` +
+                `0~0~` +
+                `${values.glcode}~` +
+                `${values.accno}~` +
+                `3~0~~~` +
+                `${values.budgetHead}`;
+
+            let receiptDtl = "";
+            selectedRows.forEach((row) => {
+                receiptDtl +=
+                    `${row.GLCODE}#` +
+                    `${row.ACCNO}#` +
+                    `${row.CREDIT}#` +
+                    `${values.narration}#$`;
+            });
+
+            receiptDtl = receiptDtl.slice(0, -1);
+
+            const propBulkRecDet =
+                `##` +
+                `2#2#1#0#0##` +
+                `${values.challanNo}`;
+
+            let bulkReceipt = "";
+            selectedRows.forEach((row) => {
+                bulkReceipt +=
+                    `${row.GLCODE}#` +
+                    `${row.ACCNO}#` +
+                    `${row.CREDIT}#` +
+                    `${values.challanNo}##$`;
+            });
+
+            if (bulkReceipt !== "") {
+                bulkReceipt = bulkReceipt.slice(0, -1);
+            }
+
+            const payload = {
+                In_UserId: user?.userId,
+                In_ParamStr: receiptMst,
+                In_ParamStr2: receiptDtl,
+                In_ParamStr3: "",
+                In_ParamStr4: propBulkRecDet,
+                In_ParamStr5: "1",
+                In_ParamStr6: bulkReceipt,
+            };
+
+            console.log("Final Submit Payload =>", payload);
+
+            const res = await axios.post(
+                `${BASE_URL}/api/Receipt/receiptInsertUpdate`,
+                payload,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            console.log("Submit Response =>", res.data);
+
+            if (
+                res?.data?.data?.errorCode === -100
+            ) {
+                Swal.close();
+                Swal.fire({
+                    icon: "success",
+                    text:
+                        res?.data?.data?.message ||
+                        "Receipt Saved Successfully",
+                    confirmButtonColor: "#1e3a8a",
+                });
+
+                resetForm();
+                setTableData([]);
+                setGlOptions([]);
+                setAccountOptions([]);
+            } else {
+                Swal.close();
+                Swal.fire({
+                    icon: "error",
+                    text:
+                        res?.data?.data?.message ||
+                        "Failed to save receipt",
+                    confirmButtonColor: "#1e3a8a",
+                });
+            }
+        } catch (err) {
+            console.error(err);
+            Swal.close();
+            Swal.fire({
+                icon: "error",
+                text:
+                    err?.response?.data?.message ||
+                    "Error while saving receipt",
+                confirmButtonColor: "#1e3a8a",
+            });
+        }
+    };
+
 
     return (
         <Formik
             initialValues={initialValues}
             enableReinitialize
-            onSubmit={(values) => {
-                console.log(values);
-            }}
+            onSubmit={(values, { resetForm }) =>
+                handleSubmit(values, resetForm)
+            }
         >
             {({
                 values,
@@ -631,14 +859,14 @@ const FrmBulkReceipt = () => {
                                     )}
 
                                     {tableData.length > 0 && (
-                                            <ShadCNTable
-                                                headers={headers}
-                                                data={transformedTableData}
-                                                keyMapping={keyMapping}
-                                                pagination={true}
-                                                rowsPerPage={5}
-                                                className="max-md:min-w-380"
-                                            />
+                                        <ShadCNTable
+                                            headers={headers}
+                                            data={transformedTableData}
+                                            keyMapping={keyMapping}
+                                            pagination={true}
+                                            rowsPerPage={5}
+                                            className="max-md:min-w-380"
+                                        />
                                     )}
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -665,7 +893,7 @@ const FrmBulkReceipt = () => {
                                         </Button>
 
                                         <Button
-                                            type="button"
+                                            path="/HomePage/FrmHomePage"
                                             variant="destructive"
                                         >
                                             परत
