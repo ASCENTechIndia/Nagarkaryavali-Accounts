@@ -219,7 +219,8 @@ const handleSubmit = async (values) => {
       ZONE: item.DEPTNAME || "",
       FUNCTIONCODE: item.FUNCTIONCODE || "",
       OBJECTCODE: item.OBJECTCODE || "",
-      AMOUNT: item.AMOUNT || 0,
+      // AMOUNT: item.AMOUNT || 0,
+      AMOUNT: Math.abs(item.AMOUNT || 0),
       NARRATION: item.NARRATION || "",
     }));
 

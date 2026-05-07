@@ -167,8 +167,8 @@ const getGovtTaxRegisterSummary = async (params) => {
     try {
         // -------- WHERE (INNER QUERY) via conditions array --------
         const conditions = [
-            `TRUNC(date_vchtrans_trnsdate) BETWEEN TO_DATE(:fromDate,'YYYY-MM-DD') AND TO_DATE(:toDate,'YYYY-MM-DD')`,
-            `vm.num_vchpremst_ulbid = :ulbId`
+            `trunc(date_vchtrans_trnsdate) between TO_DATE(:fromDate,'YYYY-MM-DD') AND TO_DATE(:toDate,'YYYY-MM-DD')`,
+            ` num_vchpremst_ulbid = :ulbId`
         ];
 
         const bind = {
@@ -184,27 +184,27 @@ const getGovtTaxRegisterSummary = async (params) => {
         }
 
         if (params.partyId && params.partyId !== "-1" && params.partyId !=="") {
-            conditions.push(`vm.num_vchprepmst_partyid = :partyId`);
+            conditions.push(`num_vchprepmst_partyid = :partyId`);
             bind.partyId = params.partyId;
         }
 
         if (params.majorCode && params.majorCode !=="") {
-            conditions.push(`vd.num_vchprepdet_glcode = :majorCode`);
+            conditions.push(`num_vchprepdet_glcode = :majorCode`);
             bind.majorCode = params.majorCode;
         }
 
         if (params.minorCode && params.minorCode !=="") {
-            conditions.push(`vd.num_vchprepdet_accno = :minorCode`);
+            conditions.push(`num_vchprepdet_accno = :minorCode`);
             bind.minorCode = params.minorCode;
         }
 
         if (params.bankGl && params.bankGl !=="") {
-            conditions.push(`vt.num_vchtrans_glcode = :bankGl`);
+            conditions.push(`num_vchtrans_glcode = :bankGl`);
             bind.bankGl = params.bankGl;
         }
 
         if (params.bankAcc && params.bankAcc !=="") {
-            conditions.push(`vt.num_vchtrans_accno = :bankAcc`);
+            conditions.push(`num_vchtrans_accno = :bankAcc`);
             bind.bankAcc = params.bankAcc;
         }
 
@@ -212,100 +212,50 @@ const getGovtTaxRegisterSummary = async (params) => {
 
         // -------- FULL QUERY --------
         const query = `
-      SELECT 
-          zoneid,
-          zoneename,
-          tdsgl,
-          tdsac,
-          tdsname,
-          num_vchprepmst_partyid,
-          partyname,
-          transdt,
-          bankname,
-          bankac,
-          bankgl,
-          SUM(taxamt) AS taxamt
-      FROM 
-      (
-          SELECT 
-              vz.zoneid,
-              vz.zoneename,
-              vd.num_vchprepdet_glcode AS tdsgl,
-              vd.num_vchprepdet_accno AS tdsac,
-              awp.objectcode || '-' || awp.accname AS tdsname,
-              vm.num_vchprepmst_partyid,
-              pd.var_partymst_partyname AS partyname,
-              vt.date_vchtrans_trnsdate AS transdt,
-              aws.accno || '-' || aws.accname AS bankname,
-              vt.num_vchtrans_accno AS bankac,
-              vt.num_vchtrans_glcode AS bankgl,
-              vd.num_vchprepdet_amt AS taxamt
-          FROM aoac_vchprepdet_def vd
+            select zoneid,zoneename,tdsgl,tdsac,tdsname,num_vchprepmst_partyid, partyname,transdt, 
+            bankname,bankac,bankgl,sum(taxamt) taxamt
+        
+            from  
+            (
+                select zoneid, zoneename, num_vchprepdet_glcode TDSgl, num_vchprepdet_accno tdsac, 
+                awp.objectcode || '-' || AWp.accname tdsname,num_vchprepmst_partyid,var_partymst_partyname partyname, 
+                date_vchtrans_trnsdate Transdt,AWs.accno || '-' || Aws.accname bankname,VT.num_vchtrans_accno bankac, 
+                VT.num_vchtrans_glcode bankgl, num_vchprepdet_amt taxamt
+                
+                from aoac_vchprepdet_def VD
 
-          INNER JOIN aoac_vchtransbaldet_def vbd 
-              ON vbd.num_vchtransbaldet_vchrefno = vd.num_vchprepdet_refno
-              AND vd.num_vchprepdet_glcode = vbd.num_vchtransbaldet_glcode
-              AND vd.num_vchprepdet_accno = vbd.num_vchtransbaldet_accno
-              AND vbd.num_vchtransbaldet_amount > 0
+                Inner Join aoac_vchtransbaldet_def on num_vchtransbaldet_vchrefno = vd.num_vchprepdet_refno 
+                and num_vchprepdet_glcode = num_vchtransbaldet_glcode
+                and num_vchprepdet_accno = num_vchtransbaldet_accno and num_vchtransbaldet_amount> 0
 
-          INNER JOIN aoac_vchprepmst_def vm  
-              ON vm.num_vchprepmst_refno = vd.num_vchprepdet_refno
+                Inner Join  aoac_vchprepmst_def VM  on VM.num_vchprepmst_refno = VD.num_vchprepdet_refno
 
-          INNER JOIN view_zone vz 
-              ON vz.zoneid = vm.num_vchprepmst_zoneid
+                Inner Join view_zone VZ on VZ.zoneid = VM.num_vchprepmst_zoneid
 
-          INNER JOIN aoac_partymst_def pd  
-              ON pd.num_partymst_partyid = vm.num_vchprepmst_partyid
+                Inner Join aoac_partymst_def Pd  on Pd.num_partymst_partyid = VM.num_vchprepmst_partyid
 
-          INNER JOIN aoac_vchtrans_def vt  
-              ON vt.num_vchtrans_vchrefno = vm.num_vchprepmst_refno  
-              AND vt.num_vchtrans_vchtransno = vbd.num_vchtransbaldet_transno
+                inner Join aoac_vchtrans_def VT  on VT.num_vchtrans_vchrefno = VM.num_vchprepmst_refno  
+                and num_vchtrans_vchtransno=num_vchtransbaldet_transno
 
-          INNER JOIN accountview_web aws  
-              ON aws.accno = vt.num_vchtrans_accno  
-              AND aws.glcode = vt.num_vchtrans_glcode 
-              AND vt.num_vchtrans_ulbid = aws.ulbid
+                Inner Join accountview_web AWs  on AWs.accno = VT.num_vchtrans_accno  and AWs.glcode = VT.num_vchtrans_glcode 
+                and VT.num_vchtrans_ulbid = AWs.ulbid
 
-          INNER JOIN aoac_vchtransbal_def vb 
-              ON vb.num_vchtransbal_vchtransbalno = vt.num_vchtrans_vchtransno 
-              AND vb.num_vchtransbal_vchrefno = vm.num_vchprepmst_refno
+                Inner Join aoac_vchtransbal_def VB on VB.num_vchtransbal_vchtransbalno = VT.num_vchtrans_vchtransno 
+                and VB.num_vchtransbal_vchrefno = VM.num_vchprepmst_refno
 
-          INNER JOIN accountview_web awp  
-              ON awp.accno = vd.num_vchprepdet_accno  
-              AND awp.glcode = vd.num_vchprepdet_glcode 
-              AND vt.num_vchtrans_ulbid = awp.ulbid
+                Inner Join accountview_web AWp  on AWp.accno = VD.num_vchprepdet_accno  and AWp.glcode = VD.num_vchprepdet_glcode 
+                and VT.num_vchtrans_ulbid = AWp.ulbid
 
-          WHERE ${whereClause}
+                WHERE ${whereClause}
 
-          GROUP BY 
-              vz.zoneid,
-              vz.zoneename,
-              vd.num_vchprepdet_glcode,
-              vd.num_vchprepdet_accno,
-              awp.objectcode,
-              awp.accname,
-              vm.num_vchprepmst_partyid,
-              pd.var_partymst_partyname,
-              vt.date_vchtrans_trnsdate,
-              aws.accno,
-              aws.accname,
-              vt.num_vchtrans_accno,
-              vt.num_vchtrans_glcode,
-              vd.num_vchprepdet_amt
-      )
-      GROUP BY 
-          zoneid,
-          zoneename,
-          tdsgl,
-          tdsac,
-          tdsname,
-          num_vchprepmst_partyid,
-          partyname,
-          transdt,
-          bankname,
-          bankac,
-          bankgl
-      ORDER BY TRUNC(transdt)
+                group by zoneid, zoneename, num_vchprepdet_glcode , num_vchprepdet_accno , AWp.accno , AWp.accname ,
+                num_vchprepmst_partyid,var_partymst_partyname , date_vchtrans_trnsdate ,
+                AWs.accno , Aws.accname ,VT.num_vchtrans_accno , VT.num_vchtrans_glcode , num_vchprepdet_amt  ,awp.objectcode
+                order by date_vchtrans_trnsdate
+            )
+      
+            group by zoneid,zoneename,tdsgl,tdsac,  tdsname,num_vchprepmst_partyid,  partyname,transdt, bankname,  bankac,bankgl 
+            order by trunc(transdt)
     `;
 
         return await executeQuery(query, bind);
@@ -327,119 +277,60 @@ const getGovtTaxSummary2 = async (params) => {
         let query = "";
 
         if (isZone) {
-
-
-            // 🔹 ZONE QUERY (2.1)
             query = `
-SELECT 
-    zoneid,
-    zoneename,
-    num_vchprepdet_glcode AS tdsgl,
-    num_vchprepdet_accno AS tdsac,
-    awp.objectcode || '-' || awp.accname AS tdsname,
-    SUM(num_vchprepdet_amt) AS taxamt
+            select zoneid, zoneename, num_vchprepdet_glcode tdsgl, num_vchprepdet_accno tdsac, awp.objectcode || '-' || awp.accname tdsname,
+            SUM(num_vchprepdet_amt) taxamt 
+            
+            from aoac_vchprepdet_def vd
 
-FROM aoac_vchprepdet_def vd
+            INNER JOIN aoac_vchprepmst_def vm ON vm.num_vchprepmst_refno = vd.num_vchprepdet_refno
 
-INNER JOIN aoac_vchprepmst_def vm 
-    ON vm.num_vchprepmst_refno = vd.num_vchprepdet_refno
+            Inner Join aoac_vchtransbaldet_def on num_vchtransbaldet_vchrefno = vd.num_vchprepdet_refno 
+            and num_vchprepdet_glcode = num_vchtransbaldet_glcode
+            and num_vchprepdet_accno = num_vchtransbaldet_accno and num_vchtransbaldet_amount> 0
 
-INNER JOIN aoac_vchtransbaldet_def vbd 
-    ON vbd.num_vchtransbaldet_vchrefno = vd.num_vchprepdet_refno 
-    AND vd.num_vchprepdet_glcode = vbd.num_vchtransbaldet_glcode
-    AND vd.num_vchprepdet_accno = vbd.num_vchtransbaldet_accno 
-    AND vbd.num_vchtransbaldet_amount > 0
+            INNER JOIN view_zone vz ON vz.zoneid = vm.num_vchprepmst_zoneid
 
-INNER JOIN view_zone vz 
-    ON vz.zoneid = vm.num_vchprepmst_zoneid
+            INNER JOIN accountview_web awp ON awp.accno = vd.num_vchprepdet_accno 
+            AND awp.glcode = vd.num_vchprepdet_glcode  AND vm.num_vchpremst_ulbid = awp.ulbid
 
-INNER JOIN accountview_web awp 
-    ON awp.accno = vd.num_vchprepdet_accno 
-    AND awp.glcode = vd.num_vchprepdet_glcode  
-    AND vm.num_vchpremst_ulbid = awp.ulbid
+            where num_vchprepmst_refno in
+            (
+                select num_vchtrans_vchrefno from aoac_vchtrans_def where trunc(date_vchtrans_trnsdate) between TO_DATE(:fromDate,'YYYY-MM-DD') 
+                AND TO_DATE(:toDate,'YYYY-MM-DD')
+                and num_vchtrans_ulbid = :ulbId and num_vchtrans_vchtransno=num_vchtransbaldet_transno
+                group by  num_vchtrans_vchrefno 
+            )
 
-WHERE vd.num_vchprepdet_refno IN  
-(
-    SELECT vt.num_vchtrans_vchrefno
-    FROM aoac_vchtrans_def vt
-    INNER JOIN aoac_vchtransbaldet_def vbd2
-        ON vt.num_vchtrans_vchtransno = vbd2.num_vchtransbaldet_transno
-
-    WHERE TRUNC(vt.date_vchtrans_trnsdate) 
-          BETWEEN TO_DATE(:fromDate,'YYYY-MM-DD') 
-          AND TO_DATE(:toDate,'YYYY-MM-DD')
-
-    AND vt.num_vchtrans_ulbid = :ulbId
-
-    GROUP BY vt.num_vchtrans_vchrefno
-)
-
-GROUP BY 
-    zoneid,
-    zoneename,
-    num_vchprepdet_glcode,
-    num_vchprepdet_accno,
-    awp.objectcode,
-    awp.accname
-
-ORDER BY 
-    zoneid,
-    zoneename,
-    awp.objectcode,
-    awp.accname
-`;
-        } else {
-            // 🔹 ALL ZONE QUERY (2.2)
+            GROUP BY zoneid, zoneename, num_vchprepdet_glcode, num_vchprepdet_accno,awp.objectcode, awp.accname
+            order by zoneid,zoneename,awp.objectcode, awp.accname
+             `;
+        } 
+        else 
+        {        
             query = `
-      SELECT  
-          vd.num_vchprepdet_glcode AS tdsgl,
-          vd.num_vchprepdet_accno AS tdsac,
-          awp.objectcode || '-' || awp.accname AS tdsname,
-          SUM(vd.num_vchprepdet_amt) AS taxamt
-
-      FROM aoac_vchprepdet_def vd
-
-      INNER JOIN aoac_vchprepmst_def vm 
-          ON vm.num_vchprepmst_refno = vd.num_vchprepdet_refno
-
-      INNER JOIN aoac_vchtransbaldet_def vbd 
-          ON vbd.num_vchtransbaldet_vchrefno = vd.num_vchprepdet_refno 
-          AND vd.num_vchprepdet_glcode = vbd.num_vchtransbaldet_glcode
-          AND vd.num_vchprepdet_accno = vbd.num_vchtransbaldet_accno 
-          AND vbd.num_vchtransbaldet_amount > 0
-
-      INNER JOIN view_zone vz 
-          ON vz.zoneid = vm.num_vchprepmst_zoneid
-
-      INNER JOIN accountview_web awp 
-          ON awp.accno = vd.num_vchprepdet_accno 
-          AND awp.glcode = vd.num_vchprepdet_glcode  
-          AND vm.num_vchpremst_ulbid = awp.ulbid
-
-      WHERE vd.num_vchprepdet_refno IN  
-      (
-          SELECT vt.num_vchtrans_vchrefno
-          FROM aoac_vchtrans_def vt
-          INNER JOIN aoac_vchtransbaldet_def vbd2
-              ON vt.num_vchtrans_vchtransno = vbd2.num_vchtransbaldet_transno
-          WHERE TRUNC(vt.date_vchtrans_trnsdate) 
-                BETWEEN TO_DATE(:fromDate,'YYYY-MM-DD') AND TO_DATE(:toDate,'YYYY-MM-DD')
-          AND vt.num_vchtrans_ulbid = :ulbId
-          GROUP BY vt.num_vchtrans_vchrefno
-      )
-
-      GROUP BY  
-          vd.num_vchprepdet_glcode,
-          vd.num_vchprepdet_accno,
-          awp.objectcode,
-          awp.accname
-
-      ORDER BY 
-          awp.objectcode,
-          awp.accname
-      `;
+            select  num_vchprepdet_glcode tdsgl, num_vchprepdet_accno tdsac, awp.objectcode || '-' || awp.accname tdsname,
+            SUM(num_vchprepdet_amt) taxamt        
+            from aoac_vchprepdet_def vd
+            INNER JOIN aoac_vchprepmst_def vm ON vm.num_vchprepmst_refno = vd.num_vchprepdet_refno
+            Inner Join aoac_vchtransbaldet_def on num_vchtransbaldet_vchrefno = vd.num_vchprepdet_refno 
+            and num_vchprepdet_glcode = num_vchtransbaldet_glcode
+            and num_vchprepdet_accno = num_vchtransbaldet_accno and num_vchtransbaldet_amount> 0
+            INNER JOIN view_zone vz ON vz.zoneid = vm.num_vchprepmst_zoneid
+            INNER JOIN accountview_web awp ON awp.accno = vd.num_vchprepdet_accno 
+            AND awp.glcode = vd.num_vchprepdet_glcode  AND vm.num_vchpremst_ulbid = awp.ulbid
+            where num_vchprepmst_refno in
+            (
+                select num_vchtrans_vchrefno from aoac_vchtrans_def where trunc(date_vchtrans_trnsdate) between
+                TO_DATE(:fromDate,'YYYY-MM-DD') AND TO_DATE(:toDate,'YYYY-MM-DD')
+                and num_vchtrans_ulbid = :ulbId and num_vchtrans_vchtransno=num_vchtransbaldet_transno
+                group by  num_vchtrans_vchrefno
+            )
+            GROUP BY  num_vchprepdet_glcode, num_vchprepdet_accno,awp.objectcode, awp.accname
+            order by awp.objectcode, awp.accname
+            `;
         }
-
+        console.log("query",query)
         return await executeQuery(query, bind);
 
     } catch (err) {

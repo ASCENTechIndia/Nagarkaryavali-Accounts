@@ -33,7 +33,7 @@ const getGovtTaxRegisterSummaryService = async (body) => {
 
 const getGovtTaxSummary2Service = async (body) => {
   const result = await repo.getGovtTaxSummary2(body);
-    console.log("result",result)
+    console.log("result",result.length)
   return {
     success: true,
     rows: result.rows

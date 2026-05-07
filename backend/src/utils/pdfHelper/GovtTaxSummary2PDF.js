@@ -20,7 +20,7 @@ const GovtTaxSummary2PDF = async ({
   try {
     let total = 0;
 
-    const data = reportData.map((r, i) => {
+    const data = reportData?.map((r, i) => {
       total += Number(r.TAXAMT || 0);
 
       return {
