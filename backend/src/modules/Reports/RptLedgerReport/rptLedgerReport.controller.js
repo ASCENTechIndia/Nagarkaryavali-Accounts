@@ -44,6 +44,45 @@ exports.getLedgerTransactions = asyncHandler(async (req, res) => {
   return ok(res, data, "Ledger transactions fetched successfully");
 });
 
+const adjustDatesForOpeningBalance = (filters) => {
+  const balanceFilters = { ...filters };
+  
+  if (balanceFilters.fromDate && balanceFilters.toDate) {
+    const fromDateParts = balanceFilters.fromDate.split('-');
+    const fromDay = parseInt(fromDateParts[0]);
+    const fromMonth = fromDateParts[1];
+    const fromYear = parseInt(fromDateParts[2]);
+    
+    const toDateParts = balanceFilters.toDate.split('-');
+    const toDay = parseInt(toDateParts[0]);
+    const toMonth = toDateParts[1];
+    const toYear = parseInt(toDateParts[2]);
+    
+    const monthMap = {
+      'JAN': 0, 'FEB': 1, 'MAR': 2, 'APR': 3, 'MAY': 4, 'JUN': 5,
+      'JUL': 6, 'AUG': 7, 'SEP': 8, 'OCT': 9, 'NOV': 10, 'DEC': 11
+    };
+    
+    const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 
+                        'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    
+    const fromDateObj = new Date(fromYear, monthMap[fromMonth], fromDay);
+    const previousDayFrom = new Date(fromDateObj);
+    previousDayFrom.setDate(previousDayFrom.getDate() - 1);
+    const previousDayFromFormatted = `${String(previousDayFrom.getDate()).padStart(2, '0')}-${monthNames[previousDayFrom.getMonth()]}-${previousDayFrom.getFullYear()}`;
+  
+    const toDateObj = new Date(toYear, monthMap[toMonth], toDay);
+    const previousDayTo = new Date(toDateObj);
+    previousDayTo.setDate(previousDayTo.getDate() - 1);
+    const previousDayToFormatted = `${String(previousDayTo.getDate()).padStart(2, '0')}-${monthNames[previousDayTo.getMonth()]}-${previousDayTo.getFullYear()}`;
+    
+    balanceFilters.fromDate = previousDayFromFormatted;
+    balanceFilters.toDate = previousDayToFormatted;
+  }
+  
+  return balanceFilters;
+};
+
 exports.generateLedgerPDF = asyncHandler(async (req, res) => {
   try {
     const filters = req.body;
@@ -53,8 +92,8 @@ exports.generateLedgerPDF = asyncHandler(async (req, res) => {
     const transactionsResult =
       await service.getLedgerTransactionsService(filters);
 
-    const balanceResult =
-      await service.getAccountBalanceService(filters);
+    const balanceFilters = adjustDatesForOpeningBalance(filters);
+    const balanceResult = await service.getAccountBalanceService(balanceFilters);
 
     const ulbInfo = await getCorporationService({ulbId: ulbid});
 
