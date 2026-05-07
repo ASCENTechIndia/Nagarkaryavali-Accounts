@@ -12,4 +12,11 @@ router.post("/monthlysummaryreport", auth(), controller.getMonthlySummaryReport)
 
 router.post("/monthlysummaryreportpdf", auth(), controller.getMonthlySummaryPDF);
 
+router.get("/ReceiptClassified", auth(), controller.getMonthlyBudget);
+router.post(
+  "/PaymentClassified",
+  controller.getMonthlyExpenditureBudgetReport
+);
+
+
 module.exports = router;

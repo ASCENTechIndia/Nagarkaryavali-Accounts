@@ -125,21 +125,50 @@ th{
   <title>Monthly Summary</title>
 
   <style>
+    @page {
+      size: A4 landscape;
+      margin: 8px;
+    }
+
     body {
-      font-family: Arial;
+      font-family: Arial, Helvetica, sans-serif;
       font-size: 8px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .header-section {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    .header-table {
+      width: 100%;
+      border: none;
+    }
+
+    .header-table td {
+      border: none;
+      vertical-align: middle;
+    }
+
+    .logo {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
     }
 
     .header {
       text-align: center;
       font-weight: bold;
-      font-size: 16px;
+      font-size: 18px;
     }
 
     .sub {
       text-align: center;
-      margin: 4px;
+      margin-top: 4px;
       font-size: 11px;
+      font-weight: bold;
     }
 
     table {
@@ -153,94 +182,201 @@ th{
       border: 1px solid #000;
       padding: 3px;
       text-align: center;
-      word-wrap: break-word;
+      word-break: break-word;
     }
 
     th {
       background: #f2f2f2;
       font-weight: bold;
+      font-size: 8px;
+    }
+
+    td {
+      font-size: 7px;
     }
 
     .text-left {
       text-align: left;
     }
 
-    .small {
-      font-size: 7px;
+    .budget-head {
+      width: 180px;
+    }
+
+    .amount-col {
+      width: 60px;
+    }
+
+    .day-col {
+      width: 38px;
+    }
+
+    .footer {
+      margin-top: 8px;
+      text-align: right;
+      font-size: 9px;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="header">{{corporationName}}</div>
-  <div class="sub">{{subtitle}}</div>
-  <div class="sub">
-    अहवालाचा कालावधी : {{fromDate}} ते {{toDate}}
+  <!-- HEADER -->
+  <div class="header-section">
+
+    <table class="header-table">
+
+      <tr>
+
+        <td style="width:70px;">
+          {{#if logo}}
+          <img src="{{logo}}" class="logo" />
+          {{/if}}
+        </td>
+
+        <td>
+
+          <div class="header">
+            {{corporationName}}
+          </div>
+
+          <div class="sub">
+            {{subtitle}}
+          </div>
+
+          <div class="sub">
+            अहवालाचा कालावधी : {{fromDate}} ते {{toDate}}
+          </div>
+
+        </td>
+
+        <td style="width:70px;"></td>
+
+      </tr>
+
+    </table>
+
   </div>
 
+  <!-- MAIN TABLE -->
   <table>
+
     <thead>
-      <tr>
-        <th rowspan="3">Sr.No</th>
-        <th rowspan="3">Budget Head</th>
-        <th rowspan="3">Original<br />Budget<br />Provision</th>
-        <th rowspan="3">Revised<br />Budget<br />Provision</th>
 
-        <th>Day 1</th>
-        <th>Day 2</th>
-        <th>Day 3</th>
-        <th>Day 4</th>
-        <th>Day 5</th>
-        <th>Day 6</th>
-        <th>Day 7</th>
-        <th>Day 8</th>
-        <th>Day 9</th>
-        <th>Day 10</th>
-        <th>Day 11</th>
+      <!-- HEADER ROW 1 -->
+      <tr>
 
-        <th rowspan="3">Total<br />For<br />Month</th>
-        <th rowspan="3">Total<br />End of<br />Month</th>
-        <th rowspan="3">Progressive<br />Total</th>
-        <th rowspan="3">Available<br />Budget<br />Balance</th>
+        <th rowspan="3">Sr.<br>No</th>
+
+        <th rowspan="3" class="budget-head">
+          Budget Head
+        </th>
+
+        <th rowspan="3" class="amount-col">
+          Original<br>Budget<br>Provision
+        </th>
+
+        <th rowspan="3" class="amount-col">
+          Revised<br>Budget<br>Provision
+        </th>
+
+        <th class="day-col">1</th>
+        <th class="day-col">2</th>
+        <th class="day-col">3</th>
+        <th class="day-col">4</th>
+        <th class="day-col">5</th>
+        <th class="day-col">6</th>
+        <th class="day-col">7</th>
+        <th class="day-col">8</th>
+        <th class="day-col">9</th>
+        <th class="day-col">10</th>
+        <th class="day-col">11</th>
+
+        <th rowspan="3" class="amount-col">
+          Total<br>For<br>Month
+        </th>
+
+        <th rowspan="3" class="amount-col">
+          Previous<br>Total
+        </th>
+
+        <th rowspan="3" class="amount-col">
+          Progressive<br>Total
+        </th>
+
+        <th rowspan="3" class="amount-col">
+          Budget<br>Balance
+        </th>
+
       </tr>
+
+      <!-- HEADER ROW 2 -->
       <tr>
-        <th>Day 12</th>
-        <th>Day 13</th>
-        <th>Day 14</th>
-        <th>Day 15</th>
-        <th>Day 16</th>
-        <th>Day 17</th>
-        <th>Day 18</th>
-        <th>Day 19</th>
-        <th>Day 20</th>
-        <th>Day 21</th>
-        <th>Day 22</th>
+
+        <th class="day-col">12</th>
+        <th class="day-col">13</th>
+        <th class="day-col">14</th>
+        <th class="day-col">15</th>
+        <th class="day-col">16</th>
+        <th class="day-col">17</th>
+        <th class="day-col">18</th>
+        <th class="day-col">19</th>
+        <th class="day-col">20</th>
+        <th class="day-col">21</th>
+        <th class="day-col">22</th>
+
       </tr>
+
+      <!-- HEADER ROW 3 -->
       <tr>
-        <th>Day 23</th>
-        <th>Day 24</th>
-        <th>Day 25</th>
-        <th>Day 26</th>
-        <th>Day 27</th>
-        <th>Day 28</th>
-        <th>Day 29</th>
-        <th>Day 30</th>
-        <th>Day 31</th>
-        <th></th>
-        <th></th>
+
+        <th class="day-col">23</th>
+        <th class="day-col">24</th>
+        <th class="day-col">25</th>
+        <th class="day-col">26</th>
+        <th class="day-col">27</th>
+        <th class="day-col">28</th>
+        <th class="day-col">29</th>
+        <th class="day-col">30</th>
+        <th class="day-col">31</th>
+
+        <th class="day-col"></th>
+        <th class="day-col"></th>
+
       </tr>
+
     </thead>
 
     <tbody>
-      {{#each rows}}
-      <tr>
-        <td rowspan="3">{{SRNO}}</td>
-        <td rowspan="3" class="text-left">{{OBJECTCODE}}<br />{{ACCNAME}}</td>
-        <td rowspan="3">{{BUDGAMOUT}}</td>
-        <td rowspan="3">{{BUDGPROV}}</td>
 
-        <!-- Row 1: Day 1–11 -->
+      {{#each rows}}
+
+      <!-- ROW 1 -->
+      <tr>
+
+        <td rowspan="3">
+          {{SRNO}}
+        </td>
+
+        <td rowspan="3" class="text-left">
+
+          <b>{{OBJECTCODE}}</b>
+
+          <br>
+
+          {{ACCNAME}}
+
+        </td>
+
+        <td rowspan="3">
+          {{BUDGAMOUT}}
+        </td>
+
+        <td rowspan="3">
+          {{BUDGPROV}}
+        </td>
+
+        <!-- DAY 1–11 -->
         <td>{{lookup DAYS 0}}</td>
         <td>{{lookup DAYS 1}}</td>
         <td>{{lookup DAYS 2}}</td>
@@ -253,13 +389,28 @@ th{
         <td>{{lookup DAYS 9}}</td>
         <td>{{lookup DAYS 10}}</td>
 
-        <td rowspan="3">{{TOTAL}}</td>
-        <td rowspan="3">{{TOTAL}}</td>
-        <td rowspan="3">{{TOTAL}}</td>
-        <td rowspan="3">{{TOTAL}}</td>
+        <td rowspan="3">
+          {{TOTAL_FOR_MONTH}}
+        </td>
+
+        <td rowspan="3">
+          {{PREVAMT}}
+        </td>
+
+        <td rowspan="3">
+          {{PROGRESSIVE_TOTAL}}
+        </td>
+
+        <td rowspan="3">
+          {{BUDGET_BALANCE}}
+        </td>
+
       </tr>
+
+      <!-- ROW 2 -->
       <tr>
-        <!-- Row 2: Day 12–22 -->
+
+        <!-- DAY 12–22 -->
         <td>{{lookup DAYS 11}}</td>
         <td>{{lookup DAYS 12}}</td>
         <td>{{lookup DAYS 13}}</td>
@@ -271,9 +422,13 @@ th{
         <td>{{lookup DAYS 19}}</td>
         <td>{{lookup DAYS 20}}</td>
         <td>{{lookup DAYS 21}}</td>
+
       </tr>
+
+      <!-- ROW 3 -->
       <tr>
-        <!-- Row 3: Day 23–31 + 2 empty to fill 11 cols -->
+
+        <!-- DAY 23–31 -->
         <td>{{lookup DAYS 22}}</td>
         <td>{{lookup DAYS 23}}</td>
         <td>{{lookup DAYS 24}}</td>
@@ -283,13 +438,22 @@ th{
         <td>{{lookup DAYS 28}}</td>
         <td>{{lookup DAYS 29}}</td>
         <td>{{lookup DAYS 30}}</td>
+
+        <!-- EMPTY -->
         <td></td>
         <td></td>
+
       </tr>
+
       {{/each}}
+
     </tbody>
 
   </table>
+
+  <div class="footer">
+    Generated On : {{currentDate}}
+  </div>
 
 </body>
 
