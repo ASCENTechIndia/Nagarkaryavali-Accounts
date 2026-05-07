@@ -122,7 +122,7 @@ th{
 
 <head>
   <meta charset="UTF-8" />
-  <title>Monthly Summary</title>
+  <title>Classified Register Details</title>
 
   <style>
     @page {
@@ -280,24 +280,24 @@ th{
           Revised<br>Budget<br>Provision
         </th>
 
-        <th class="day-col">1</th>
-        <th class="day-col">2</th>
-        <th class="day-col">3</th>
-        <th class="day-col">4</th>
-        <th class="day-col">5</th>
-        <th class="day-col">6</th>
-        <th class="day-col">7</th>
-        <th class="day-col">8</th>
-        <th class="day-col">9</th>
-        <th class="day-col">10</th>
-        <th class="day-col">11</th>
+        <th class="day-col">Day 1</th>
+        <th class="day-col">Day 2</th>
+        <th class="day-col">Day 3</th>
+        <th class="day-col">Day 4</th>
+        <th class="day-col">Day 5</th>
+        <th class="day-col">Day 6</th>
+        <th class="day-col">Day 7</th>
+        <th class="day-col">Day 8</th>
+        <th class="day-col">Day 9</th>
+        <th class="day-col">Day 10</th>
+        <th class="day-col">Day 11</th>
 
         <th rowspan="3" class="amount-col">
           Total<br>For<br>Month
         </th>
 
         <th rowspan="3" class="amount-col">
-          Previous<br>Total
+          Total<br>End of<br>Month
         </th>
 
         <th rowspan="3" class="amount-col">
@@ -305,7 +305,7 @@ th{
         </th>
 
         <th rowspan="3" class="amount-col">
-          Budget<br>Balance
+          Available<br>Budget<br>Balance
         </th>
 
       </tr>
@@ -313,32 +313,32 @@ th{
       <!-- HEADER ROW 2 -->
       <tr>
 
-        <th class="day-col">12</th>
-        <th class="day-col">13</th>
-        <th class="day-col">14</th>
-        <th class="day-col">15</th>
-        <th class="day-col">16</th>
-        <th class="day-col">17</th>
-        <th class="day-col">18</th>
-        <th class="day-col">19</th>
-        <th class="day-col">20</th>
-        <th class="day-col">21</th>
-        <th class="day-col">22</th>
+        <th class="day-col">Day 12</th>
+        <th class="day-col">Day 13</th>
+        <th class="day-col">Day 14</th>
+        <th class="day-col">Day 15</th>
+        <th class="day-col">Day 16</th>
+        <th class="day-col">Day 17</th>
+        <th class="day-col">Day 18</th>
+        <th class="day-col">Day 19</th>
+        <th class="day-col">Day 20</th>
+        <th class="day-col">Day 21</th>
+        <th class="day-col">Day 22</th>
 
       </tr>
 
       <!-- HEADER ROW 3 -->
       <tr>
 
-        <th class="day-col">23</th>
-        <th class="day-col">24</th>
-        <th class="day-col">25</th>
-        <th class="day-col">26</th>
-        <th class="day-col">27</th>
-        <th class="day-col">28</th>
-        <th class="day-col">29</th>
-        <th class="day-col">30</th>
-        <th class="day-col">31</th>
+        <th class="day-col">Day 23</th>
+        <th class="day-col">Day 24</th>
+        <th class="day-col">Day 25</th>
+        <th class="day-col">Day 26</th>
+        <th class="day-col">Day 27</th>
+        <th class="day-col">Day 28</th>
+        <th class="day-col">Day 29</th>
+        <th class="day-col">Day 30</th>
+        <th class="day-col">Day 31</th>
 
         <th class="day-col"></th>
         <th class="day-col"></th>
@@ -394,7 +394,7 @@ th{
         </td>
 
         <td rowspan="3">
-          {{PREVAMT}}
+          {{TOTAL_END_OF_MONTH}}
         </td>
 
         <td rowspan="3">
@@ -446,6 +446,53 @@ th{
       </tr>
 
       {{/each}}
+
+      <!-- GRAND TOTAL ROW -->
+      <tr style="font-weight:bold; background:#e8e8e8;">
+
+        <td colspan="2">
+          GRAND TOTAL
+        </td>
+
+        <td>
+
+        </td>
+
+        <td>
+
+        </td>
+
+
+
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+
+        <td>
+          {{grandTotal.TOTAL_FOR_MONTH}}
+        </td>
+
+        <td>
+          {{grandTotal.TOTAL_END_OF_MONTH}}
+        </td>
+
+        <td>
+          {{grandTotal.PROGRESSIVE_TOTAL}}
+        </td>
+
+        <td>
+          {{grandTotal.BUDGET_BALANCE}}
+        </td>
+
+      </tr>
 
     </tbody>
 
