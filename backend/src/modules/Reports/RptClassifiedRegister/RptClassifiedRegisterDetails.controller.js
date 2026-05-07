@@ -35,7 +35,7 @@ exports.getMonthlySummaryPDF = asyncHandler(async (req, res) => {
   let result;
 
   // 🔥 Dynamic Service Call
-  if (filters.rptType === "EXP") {
+  if (filters.rptType === "1") {
 
     result = await service.getMonthlyExpenditureBudgetReportService(filters);
 

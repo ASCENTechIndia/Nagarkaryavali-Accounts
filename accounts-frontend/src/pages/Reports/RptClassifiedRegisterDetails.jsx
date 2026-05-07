@@ -65,14 +65,52 @@ const RptClassifiedRegisterDetails = () => {
         fetchZones();
     }, [ulbId]);
 
-    const formatDate = (date) => {
+    const formatOracleDate = (date) => {
         if (!date) return "";
+
         const d = new Date(date);
+
         return d.toLocaleDateString("en-GB", {
             day: "2-digit",
             month: "short",
             year: "numeric",
-        }).replace(/ /g, "-").toUpperCase(); // → "15-APR-2026"
+        })
+            .replace(/ /g, "-")
+            .toUpperCase();
+    };
+
+    const getMonthDates = (selectedDate) => {
+
+        const current = new Date(selectedDate);
+
+        // Current Month
+        const fromDate = new Date(current.getFullYear(), current.getMonth(), 1);
+
+        const toDate = new Date(
+            current.getFullYear(),
+            current.getMonth() + 1,
+            0
+        );
+
+        // Previous Month
+        const prevFromDate = new Date(
+            current.getFullYear(),
+            current.getMonth() - 1,
+            1
+        );
+
+        const prevToDate = new Date(
+            current.getFullYear(),
+            current.getMonth(),
+            0
+        );
+
+        return {
+            fromDate,
+            toDate,
+            prevFromDate,
+            prevToDate,
+        };
     };
 
 
@@ -84,38 +122,73 @@ const RptClassifiedRegisterDetails = () => {
                 didOpen: () => Swal.showLoading(),
             });
 
+            const {
+                fromDate,
+                toDate,
+                prevFromDate,
+                prevToDate,
+            } = getMonthDates(values.fromDate);
+
             const payload = {
                 ulbId: ulbId,
-                fromDate: formatDate(values.fromDate),
-                toDate: formatDate(values.toDate),
+
+                fromDate: formatOracleDate(fromDate),
+                toDate: formatOracleDate(toDate),
+
+                prevFromDate: formatOracleDate(prevFromDate),
+                prevToDate: formatOracleDate(prevToDate),
+
                 zoneId: values.zoneId || "-1",
+
+                rptType: values.transactionType === "receipt" ? "0" : "1",
             };
 
             // ==================== PDF ====================
             if (values.exportType === "pdf") {
+
                 const res = await axios.post(
                     `${BASE_URL}/api/Classified/monthlysummaryreportpdf`,
                     payload,
-                    { headers: { Authorization: `Bearer ${token}` } }
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
                 );
 
                 Swal.close();
 
                 if (res.data?.success && res.data?.pdfUrl) {
+
                     window.open(res.data.pdfUrl, "_blank");
+
                 } else {
-                    Swal.fire({ text: res.data?.message || "Failed to generate PDF" });
+
+                    Swal.fire({
+                        text: res.data?.message || "Failed to generate PDF",
+                    });
                 }
+
                 return;
             }
 
             // ==================== EXCEL ====================
-            const res = await axios.post(
-                `${BASE_URL}/api/Classified/monthlysummaryreport`,
-                payload,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            // ==================== EXCEL ====================
 
+            const excelApi =
+                values.transactionType === "receipt"
+                    ? `${BASE_URL}/api/Classified/ReceiptClassified`
+                    : `${BASE_URL}/api/Classified/PaymentClassified`;
+
+            const res = await axios.post(
+                excelApi,
+                payload,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
             Swal.close();
 
             const list = res.data?.data?.list || [];
@@ -127,25 +200,43 @@ const RptClassifiedRegisterDetails = () => {
 
             // Build Excel rows — ACCNAME + D1 to D31 + Total
             const excelData = list.map((item) => {
+
                 let total = 0;
+
                 const dayCols = {};
+
                 for (let i = 1; i <= 31; i++) {
+
                     const val = Number(item[`D${i}`] || 0);
+
                     dayCols[`D${i}`] = val;
+
                     total += val;
                 }
 
                 return {
+
                     "GL Code": item.GLCODE,
                     "GL Name": item.GLNAME,
-                    "Acc No": item.ACCNO,
-                    "Acc Name": item.ACCNAME,
+
+                    "Account No": item.ACCNO,
+                    "Account Name": item.ACCNAME,
+
                     "Budget Amount": item.BUDGAMOUT,
-                    "Budget Prov": item.BUDGPROV,
+                    "Budget Provision": item.BUDGPROV,
+
                     "Function Code": item.FUNCTIONCODE,
                     "Object Code": item.OBJECTCODE,
+
+                    "Previous Amount": item.PREVAMT,
+
                     ...dayCols,
-                    "Total": total,
+
+                    "Monthly Total": item.TOTAL_FOR_MONTH,
+
+                    "Progressive Total": item.PROGRESSIVE_TOTAL,
+
+                    "Budget Balance": item.BUDGET_BALANCE,
                 };
             });
 
@@ -154,7 +245,12 @@ const RptClassifiedRegisterDetails = () => {
             XLSX.utils.book_append_sheet(workbook, worksheet, "Monthly Summary");
 
             const timestamp = new Date().toISOString().split("T")[0].replace(/-/g, "");
-            XLSX.writeFile(workbook, `Monthly_Summary_${timestamp}.xlsx`);
+            const fileName =
+                values.transactionType === "receipt"
+                    ? `Receipt_Classified_Report_${timestamp}.xlsx`
+                    : `Payment_Classified_Report_${timestamp}.xlsx`;
+
+            XLSX.writeFile(workbook, fileName);
 
         } catch (err) {
             console.error("Submit Error:", err);
