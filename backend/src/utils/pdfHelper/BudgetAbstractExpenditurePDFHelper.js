@@ -25,19 +25,10 @@ const BudgetExpenditurePDFHelper = async ({
       throw new Error("No data found");
     }
 
-    // =========================================================
-    // rptType = 0  => RECEIPT PDF
-    // rptType = 1  => PAYMENT PDF
-    // =========================================================
-
     const isReceipt = filters.rptType === "0";
 
     let templateFile = "";
     let htmlData = {};
-
-    // =========================================================
-    // RECEIPT PDF
-    // =========================================================
 
     if (isReceipt) {
       templateFile = "BudgetAbstractExpenditure.html";
@@ -58,7 +49,6 @@ const BudgetExpenditurePDFHelper = async ({
         let finalBalance = 0;
         let excessAmount = 0;
 
-        // .NET logic
         if (actual > budget) {
           finalBalance = 0;
           excessAmount = rawBalance;
@@ -118,10 +108,6 @@ const BudgetExpenditurePDFHelper = async ({
       };
     }
 
-    // =========================================================
-    // PAYMENT PDF
-    // =========================================================
-
     else {
       templateFile = "BudgetAbstractPayment.html";
 
@@ -134,7 +120,6 @@ const BudgetExpenditurePDFHelper = async ({
 
       const grouped = {};
 
-      // Grouping
       reportData.forEach((row) => {
         const typeNo = row.ACCNO_TYPE_NO || "";
 
@@ -150,7 +135,6 @@ const BudgetExpenditurePDFHelper = async ({
         grouped[typeNo].rows.push(row);
       });
 
-      // Prepare grouped rows
       Object.keys(grouped)
         .sort()
         .forEach((key) => {
@@ -161,7 +145,6 @@ const BudgetExpenditurePDFHelper = async ({
           let subBudget = 0;
           let subBalance = 0;
 
-          // Group Header
           groupedRows.push({
             isGroupHeader: true,
             accountCode: key,
@@ -176,17 +159,16 @@ const BudgetExpenditurePDFHelper = async ({
             const exp =
               row.PROGRESSIVE_TOTAL != null
                 ? Math.abs(
-                    Number(row.PROGRESSIVE_TOTAL || 0)
-                  )
+                  Number(row.PROGRESSIVE_TOTAL || 0)
+                )
                 : Math.abs(
-                    Number(row.EXPENDITURE || 0)
-                  );
+                  Number(row.EXPENDITURE || 0)
+                );
 
             const budget = Math.abs(
               Number(row.BUDGPROV || 0)
             );
 
-            // .NET logic
             const balance = budget - actual;
 
             subActual += actual;
@@ -211,7 +193,6 @@ const BudgetExpenditurePDFHelper = async ({
             });
           });
 
-          // Sub Total
           groupedRows.push({
             isSubTotal: true,
 
@@ -254,10 +235,6 @@ const BudgetExpenditurePDFHelper = async ({
       };
     }
 
-    // =========================================================
-    // LOAD TEMPLATE
-    // =========================================================
-
     const templatePath = path.resolve(
       __dirname,
       `../../templates/${templateFile}`
@@ -271,10 +248,6 @@ const BudgetExpenditurePDFHelper = async ({
     const template = Handlebars.compile(templateHtml);
 
     const html = template(htmlData);
-
-    // =========================================================
-    // PUPPETEER
-    // =========================================================
 
     const chromePath = path.resolve(
       __dirname,
@@ -317,10 +290,6 @@ const BudgetExpenditurePDFHelper = async ({
 
     await browser.close();
 
-    // =========================================================
-    // SAVE PDF
-    // =========================================================
-
     const outputDir = path.resolve(
       __dirname,
       "../../../public/pdf"
@@ -332,9 +301,8 @@ const BudgetExpenditurePDFHelper = async ({
       });
     }
 
-    const fileName = `${
-      isReceipt ? "Receipt" : "Payment"
-    }_${Date.now()}.pdf`;
+    const fileName = `${isReceipt ? "Receipt" : "Payment"
+      }_${Date.now()}.pdf`;
 
     const filePath = path.join(
       outputDir,

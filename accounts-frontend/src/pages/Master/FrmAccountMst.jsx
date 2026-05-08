@@ -29,6 +29,7 @@ const FrmAccountMaster = () => {
   const [glList, setGlList] = useState([]);
   const [objectCodes, setObjectCodes] = useState([]);
   const [nidhiList, setNidhiList] = useState([]);
+  const [dropdownLoaded, setDropdownLoaded] = useState(false);
 
   const [initialValues, setInitialValues] = useState({
     corp: "",
@@ -60,6 +61,13 @@ const FrmAccountMaster = () => {
 
     const loadAll = async () => {
       try {
+
+        Swal.fire({
+          title: "Loading...",
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading(),
+        });
+
         const [corpRes, glRes, objRes, nidhiRes] = await Promise.all([
           api.get("/api/FrmParty/corporation/list"),
           api.get("/api/FrmAccount/gl-master"),
@@ -78,78 +86,122 @@ const FrmAccountMaster = () => {
             corp: String(user.ulbId),
           }));
         }
+
+        setDropdownLoaded(true);
+
+        // ✅ CLOSE ONLY IN MODE 1
+        if (!isEditMode) {
+          Swal.close();
+        }
+
       } catch (err) {
         console.error(err);
+        Swal.close();
       }
     };
 
     loadAll();
   }, [user?.token]);
 
-useEffect(() => {
-  if (!location?.state?.accNo || !location?.state?.functionCode) return;
+  useEffect(() => {
 
-  // 🔥 WAIT until dropdown data is loaded
-  if (!glList.length || !objectCodes.length || !nidhiList.length) return;
+    // ✅ ONLY EDIT MODE
+    if (!isEditMode) return;
 
-  const loadAllDetails = async () => {
-    try {
-      Swal.fire({
-        title: "डेटा लोड होत आहे...",
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading(),
-      });
+    // ✅ wait dropdown completion
+    if (!dropdownLoaded) return;
 
-      const { accNo, functionCode, ulbId } = location.state;
+    if (!location?.state?.accNo || !location?.state?.functionCode) return;
 
-      const mapRes = await api.post(
-        "/api/FrmAccount/account-mapping-details",
-        {
-          glCode: functionCode,
-          accNo,
+    // 🔥 WAIT until dropdown data is loaded
+    if (!glList.length || !objectCodes.length || !nidhiList.length) return;
+
+    const loadAllDetails = async () => {
+      try {
+
+        const { accNo, functionCode, ulbId } = location.state;
+
+        const mapRes = await api.post(
+          "/api/FrmAccount/account-mapping-details",
+          {
+            glCode: functionCode,
+            accNo,
+          }
+        );
+
+        const map = mapRes.data?.data?.data?.[0];
+
+        if (!map) {
+          Swal.close();
+          return;
         }
-      );
 
-      const map = mapRes.data?.data?.data?.[0];
+        // 🔥 SECOND API CALL
+        const fullRes = await api.post(
+          "/api/FrmAccount/account-fullDetails",
+          {
+            functionCode,
+            accNo,
+            ulbId: Number(ulbId || user?.ulbId),
+          }
+        );
 
-      if (!map) {
+        const fullData = fullRes?.data?.data?.data?.[0] || {};
+
+        // 🔥 SET ALL VALUES
+        setInitialValues({
+          corp: String(ulbId || user?.ulbId || ""),
+
+          fund: String(
+            fullData.NIDHIID ||
+            map.NUM_ACCMASTER_NIDHIID ||
+            ""
+          ),
+
+          functionCode,
+
+          objectCode: String(
+            fullData.ACCSUBTYPE ||
+            map.ACCSUBTYPE ||
+            ""
+          ),
+
+          accId: accNo,
+
+          oldAcc: fullData.OLDACCNO || "",
+
+          // ✅ AUTO FILL FIELDS
+          nameMarathi:
+            fullData.ACCNAME ||
+            map.ACCNAME ||
+            "",
+
+          nameEnglish:
+            fullData.VAR_ACCMASTER_ACCNAMEENG ||
+            map.VAR_ACCMASTER_ACCNAMEENG ||
+            map.ACCNAME ||
+            "",
+
+          budgetAmt: String(fullData.BUDGETAMT || 0),
+
+          revisedAmt: String(fullData.REVBUDGETAMT || 0),
+
+          openingBal: String(fullData.OPENBAL || 0),
+
+          limit: String(fullData.MAXLIMIT || 0),
+        });
+        setTimeout(() => {
+          Swal.close();
+        }, 300);
+
+      } catch (err) {
+        console.error(err);
         Swal.close();
-        return;
       }
+    };
 
-      // 🔥 IMPORTANT: all values must be STRING
-     setInitialValues({
-  corp: String(ulbId || user?.ulbId || ""),
-
-  fund: String(map.NUM_ACCMASTER_NIDHIID || ""),
-
-  // 🔥 FIXED GL CODE (PADDED)
-  functionCode: String(map.NUM_ACCMASTER_GLCODE || "").padStart(3, "0"),
-
-  // ✅ OBJECT CODE
-  objectCode: String(map.ACCSUBTYPE || ""),
-
-  accId: String(map.NUM_ACCMASTER_ACCNO || ""),
-  oldAcc: map.OLDACCNO || "",
-
-  nameMarathi: map.ACCNAME || "",
-  nameEnglish: map.VAR_ACCMASTER_ACCNAMEENG || map.ACCNAME || "",
-
-  budgetAmt: "",
-  revisedAmt: "",
-  openingBal: "",
-  limit: "",
-});
-
-      Swal.close();
-    } catch (err) {
-      console.error(err);
-      Swal.close();
-    }
-  };
-
-  loadAllDetails();
-}, [location.state, glList, objectCodes, nidhiList]);
+    loadAllDetails();
+  }, [location.state, glList, objectCodes, nidhiList]);
 
   const handleSubmit = async (values, { resetForm }) => {
     try {
@@ -186,9 +238,7 @@ useEffect(() => {
 
       if (result?.errorCode === -100) {
         await Swal.fire({
-          icon: "success",
-          title: "यशस्वी!",
-          text: result?.message || "डेटा साठवला गेला",
+          text: result?.message,
         });
 
         resetForm();
@@ -197,9 +247,7 @@ useEffect(() => {
         // window.location.reload();
       } else {
         Swal.fire({
-          icon: "warning",
-          title: "सूचना",
-          text: result?.message || "काहीतरी चूक आहे",
+          text: result?.message,
         });
       }
     } catch (err) {
@@ -208,9 +256,7 @@ useEffect(() => {
       Swal.close();
 
       Swal.fire({
-        icon: "error",
-        title: "चूक झाली!",
-        text: "सर्व्हरशी संपर्क होत नाही",
+        text: "something went wrong",
       });
     }
   };
