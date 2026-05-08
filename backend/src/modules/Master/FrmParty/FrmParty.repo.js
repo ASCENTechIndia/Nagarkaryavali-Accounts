@@ -87,13 +87,20 @@ async function getIFSCList(corpId) {
 
 async function getPartyById(partyId) {
   const sql = `
-    SELECT *
-    FROM AOAC_PARTYMST_DEF
-    WHERE num_partymst_partyid = :partyId
+   select num_partymst_partyid partyid,var_partymst_partyname party,var_partymst_partyadd partyadd, var_partymst_propname propname ,var_partymst_city city, 
+num_districtmst_districtid district, num_districtmst_stateid state, num_partymst_pinno pinno,num_partymst_mobno mobno,var_partymst_email email,
+var_partymst_pancard pancard, var_partymst_bstno bstno, var_partymst_mstno mstno,var_partymst_vatno vatno,num_partymst_bankid bankid, 
+var_bankmst_bankname bankname,num_partymst_branchid branchid, var_branchmst_branchname branchname, var_partymst_ifscno ifscno,var_partymst_accno accno,
+var_partymst_propname propname,var_partymst_gstno gstno, var_partybank_status status,num_citymst_cityid ,num_partymst_aadharno aadharno,num_partymst_ulbid ULBID 
+from AOAC_PARTYMST_DEF left join aoac_partybank_dtls on num_partymst_partyid=num_partybank_partyid left join aoac_branchmst_def 
+on num_partymst_branchid=num_branchmst_branchid left join aoac_bankmst_def on num_partymst_bankid=num_bankmst_bankid left join aoac_citymst_def 
+on var_partymst_city = var_citymst_cityname left join aoac_districtmst_def on num_districtmst_districtid = num_citymst_districtid 
+and num_partymst_districtid= num_citymst_districtid  left join aoac_statemst_def on num_statemst_stateid = num_districtmst_stateid  
+where num_partymst_partyid= :partyId
   `;
 
   const result = await executeQuery(sql, { partyId });
-  
+  console.log("party autofill:",result)
   if (!result.success) {
     throw new Error(result.error);
   }
@@ -239,7 +246,7 @@ async function partyMasterProc(data) {
     const result = await withTx(async (conn) => {
       const res = await conn.execute(
         `BEGIN 
-            aoac_party_ins_v1(
+            aoac_party_ins(
               :in_partyid,
               :in_partyname,
               :in_propname,

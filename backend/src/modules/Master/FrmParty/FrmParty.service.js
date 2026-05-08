@@ -40,7 +40,7 @@ async function getPartyByIdService(partyId) {
   return {
     success: true,
     data: {
-      party: party[0],
+      party: party,
     },
   };
 }
