@@ -1013,8 +1013,8 @@ useEffect(() => {
                   </Select>
                 </div>
 
-                <div className="grid grid-cols-3 gap-6">
-                  <div className="flex items-center gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  <div className="flex items-center  gap-3">
                     <Label text="पक्ष आय डी :" />
                     <Input
                       name="partyId"
@@ -1034,7 +1034,7 @@ useEffect(() => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                   <div className="flex items-center gap-3">
                     <Label text="मालक नाव :" />
                     <Input
@@ -1055,7 +1055,7 @@ useEffect(() => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                   <div className="flex items-center gap-3">
                     <Label text="राज्य :" />
                     <Select
@@ -1137,7 +1137,7 @@ useEffect(() => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                   <div className="flex items-center gap-3">
                     <Label text="मोबाइल :" />
                     <Input
@@ -1166,7 +1166,7 @@ useEffect(() => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                   <div className="flex items-center gap-3">
                     <Label text="आधार नं. :" />
                     <Input
@@ -1195,7 +1195,7 @@ useEffect(() => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                   <div className="flex items-center gap-3">
                     <Label text="जी.एस.टी नंबर :" />
                     <Input
@@ -1224,7 +1224,7 @@ useEffect(() => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                   <div className="flex items-center gap-3">
                     <Label text="बैंक :" />
                     <Select
@@ -1305,7 +1305,7 @@ useEffect(() => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                   <div className="flex items-center gap-3">
                     <Label text="आय.एफ.एस.सी :" />
                     <Input
@@ -1434,6 +1434,7 @@ useEffect(() => {
                     "स्थिती",
                   ]}
                   data={values.bankList || []}
+                  className="max-md:min-w-3xl"
                   keyMapping={{
                     "बैंक": "bank",
                     "बैंक शाखा": "branch",

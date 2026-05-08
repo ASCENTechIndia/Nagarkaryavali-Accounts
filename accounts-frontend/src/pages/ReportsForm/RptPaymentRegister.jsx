@@ -148,7 +148,6 @@ const handleSubmit = async (values) => {
 
   return `${year}-${month}-${day}`;
 };
-debugger;
     // ✅ CORRECT PAYLOAD
     const payload = {
       fromDate: formatDate(values.fromDate),
@@ -246,13 +245,22 @@ debugger;
     XLSX.writeFile(workbook, `Payment_Register_${Date.now()}.xlsx`);
 
   } catch (err) {
-    console.error("Error:", err);
 
-    Swal.fire({
-      text: "Something went wrong",
-      confirmButtonColor: "#1e3a8a",
-    });
-  }
+  console.error("Error:", err);
+
+  Swal.close();
+
+  const errorMessage =
+    err?.response?.data?.message ||
+    err?.message ||
+    "Something went wrong";
+
+  Swal.fire({
+    // icon: "error",
+    text: errorMessage,
+    confirmButtonColor: "#1e3a8a",
+  });
+}
 };
 
   return (

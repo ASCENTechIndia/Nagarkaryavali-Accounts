@@ -28,15 +28,15 @@ const getPaymentRegister = asyncHandler(async (req, res) => {
 const getPaymentRegisterPDF = asyncHandler(async (req, res) => {
   const filters = req.body;
 
-
   const result = await service.getPaymentRegisterService(filters);
   console.log("result",result)
-  if (!result.rows) {
-    return res.status(404).json({
-      success: false,
-      message: "No records found",
-    });
-  }
+
+  if (!result.rows || result.rowCount === 0) {
+  return res.status(404).json({
+    success: false,
+    message: "No data found",
+  });
+}
 
   const corpInfo = await getCorporationService(filters);
 

@@ -273,7 +273,6 @@ const FrmPartyList = () => {
 
   const loadCorporations = async () => {
     try {
-      debugger;
       const res = await api.get("/api/FrmParty/corporation/list");
       const corpList = res.data?.data?.list || [];
       console.log("corpList",corpList)
@@ -459,6 +458,7 @@ if (loading) {
                 GST: "gst",
               }}
               pagination={true}
+              className="max-md:min-w-3xl"
             />
           </div>
         </CardContent>
