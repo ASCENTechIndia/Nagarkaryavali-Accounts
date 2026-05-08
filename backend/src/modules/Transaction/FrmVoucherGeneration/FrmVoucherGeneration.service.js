@@ -99,6 +99,7 @@ async function getCounterVoucherService(body = {}) {
 
   return {
     success: true,
+    headerRes: headerRes.rows,
     header,
     details,
     meta: {
