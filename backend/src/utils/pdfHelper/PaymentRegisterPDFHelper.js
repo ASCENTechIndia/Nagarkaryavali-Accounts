@@ -58,7 +58,7 @@ const PaymentRegisterPDFHelper = async ({
     const formattedData = reportData.map((row, index) => {
       const amt = Number(Math.abs(row.AMOUNT) || 0);
       totalAmount += amt;
-
+      console.log("row",row)
       return {
         srNo: index + 1,
         date: formatDate(row.TRNSDATE),
@@ -67,10 +67,9 @@ const PaymentRegisterPDFHelper = async ({
         glName: row.GLNAME,
         accName: row.ACCNAME,
         zone: row.DEPTNAME,
-        // grampanch: row.GRAMPANCH,
-        amount: formatNumber(amt),
+        amount: row.AMOUNT,
         narration: row.NARRATION,
-        party: row.PARTYNAME,
+        party: row.PARTYNAME ?? "-",
       };
     });
 
