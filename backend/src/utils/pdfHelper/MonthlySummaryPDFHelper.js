@@ -185,12 +185,13 @@ const MonthlySummaryPDFHelper = async ({
 
     // 🔥 TITLE
     let subtitle = "क्लासिफाईड रजिस्टर डिटेल्स";
+    let datedetails = "";
 
-    // if (filters.rptType === "EXP") {
-
-    //   subtitle = "Monthly Expenditure Budget Report";
-
-    // }
+    if (filters.rptType === "1") {
+      datedetails = "अहवालाचा कालावधी [पेमेंट] दिनांक";
+    } else {
+      datedetails = "अहवालाचा कालावधी [रेसिट] दिनांक";
+    }
 
     const html = template({
 
@@ -201,7 +202,7 @@ const MonthlySummaryPDFHelper = async ({
         "अहिल्यानगर महानगरपालिका",
 
       subtitle,
-
+      datedetails,
       fromDate: formatDate(filters.fromDate),
 
       toDate: formatDate(filters.toDate),

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            margin: 0;
+            padding: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        td,
+        th {
+            border: 1px solid black;
+            padding: 6px;
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .left {
+            text-align: left;
+        }
+
+        .right {
+            text-align: right;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .header-table td {
+            font-size: 12px;
+        }
+
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .sub-title {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .report-title {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .column-header th {
+            font-size: 12px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .group-row td {
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .subtotal-row td {
+            font-weight: bold;
+        }
+
+        .grandtotal-row td {
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .nowrap {
+            white-space: nowrap;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+
+    <table class="header-table">
+
+        <tr>
+            <td colspan="7" class="center title">
+                {{corporationName}}
+            </td>
+        </tr>
+
+        <tr>
+            <td colspan="7" class="center sub-title">
+                (फॉर्म क्र. ५३ एस ( ९ बी))
+            </td>
+        </tr>
+
+        <tr>
+            <td colspan="7" class="center report-title">
+                Classified Abstract of Payments / देयकाचा वर्गीकृतसारांश
+            </td>
+        </tr>
+
+        <tr>
+            <td colspan="4" class="center bold">
+                (नियम पहा क्र. १९१)
+            </td>
+
+            <td colspan="3" class="right bold">
+                Date : {{currentDate}}
+            </td>
+        </tr>
+
+        <tr>
+            <td colspan="4" class="left bold">
+                For the Period / कालावधीसाठी
+                {{fromDate}} to / ते {{toDate}}
+            </td>
+
+            <td colspan="3" class="right bold">
+                Time : {{currentTime}}
+            </td>
+        </tr>
+
+        <tr>
+            <td colspan="4"></td>
+
+            <td colspan="3" class="right bold">
+                Page : Page 1 of 1
+            </td>
+        </tr>
+
+    </table>
+
+    <!-- DATA TABLE -->
+
+    <table>
+
+        <thead class="column-header">
+
+            <tr>
+                <th style="width:16%">Account Code</th>
+
+                <th style="width:26%">Account Name</th>
+
+                <th style="width:16%">
+                    Actual Payments for the period
+                </th>
+
+                <th style="width:15%">
+                    Expenditure to date for the year
+                </th>
+
+                <th style="width:15%">
+                    Budgetary Provision
+                </th>
+
+                <th style="width:16%">
+                    Balance available for expenditure
+                </th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {{#each rows}}
+
+            <!-- GROUP HEADER -->
+
+            {{#if isGroupHeader}}
+
+            <tr class="group-row">
+
+                <td class="center">
+                    {{accountCode}}
+                </td>
+
+                <td class="left">
+                    {{accountName}}
+                </td>
+
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+
+            </tr>
+
+            {{/if}}
+
+            <!-- DATA ROW -->
+
+            {{#if isData}}
+
+            <tr>
+
+                <td class="left nowrap">
+                    {{ACCOUNTCODE}}
+                </td>
+
+                <td class="left">
+                    {{ACCNAME}}
+                </td>
+
+                <td class="right">
+                    {{ACTUAL}}
+                </td>
+
+                <td class="right">
+                    {{EXPENDITURE}}
+                </td>
+
+                <td class="right">
+                    {{BUDGET}}
+                </td>
+
+                <td class="right">
+                    {{BALANCE}}
+                </td>
+
+            </tr>
+
+            {{/if}}
+
+            <!-- SUB TOTAL -->
+
+            {{#if isSubTotal}}
+
+            <tr class="subtotal-row">
+
+                <td colspan="2" class="right">
+                    SubTotal
+                </td>
+
+                <td class="right">
+                    {{ACTUAL}}
+                </td>
+
+                <td class="right">
+                    {{EXPENDITURE}}
+                </td>
+
+                <td class="right">
+                    {{BUDGET}}
+                </td>
+
+                <td class="right">
+                    {{BALANCE}}
+                </td>
+
+            </tr>
+
+            {{/if}}
+
+            {{/each}}
+
+            <!-- GRAND TOTAL -->
+
+            <tr class="grandtotal-row">
+
+                <td colspan="2" class="right">
+                    Grand Total
+                </td>
+
+                <td class="right">
+                    {{grandActual}}
+                </td>
+
+                <td class="right">
+                    {{grandExp}}
+                </td>
+
+                <td class="right">
+                    {{grandBudget}}
+                </td>
+
+                <td class="right">
+                    {{grandBalance}}
+                </td>
+
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</body>
+
+</html>
