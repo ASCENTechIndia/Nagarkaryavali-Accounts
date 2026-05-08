@@ -587,39 +587,134 @@ function transformToCashBookFormat(data) {
   return mergedData;
 }
 
+// async function getOpeningBalance(filters) {
+//   console.log("Repo: Fetch Opening Balance", filters);
+//   const cashBankSubTypes = [4810, 4820, 4821, 4822, 4823, 4830];
+  
+//   console.log(`Opening Balance As On: ${filters.date}`);
+  
+//   let sql = `
+//     SELECT balance + receiptamt - amount AS opening_balance 
+//     FROM (
+//         SELECT NVL(SUM(openingbal + (
+//             SELECT NVL(SUM(amount), 0) 
+//             FROM transview a 
+//             WHERE a.glcode = c.glcode 
+//               AND a.accno = c.accno 
+//               AND TRUNC(a.trnsdate) <= TO_DATE('${filters.date}', 'DD-MON-YYYY')
+//         )), 0) AS balance 
+//         FROM accountview_web c 
+//         INNER JOIN aoac_budgetaccmap_det bd 
+//             ON bd.num_budgetaccmap_glcode = c.glcode 
+//             AND bd.num_budgetaccmap_accountno = c.accno   
+//         INNER JOIN aoac_budgetconfig_det b 
+//             ON num_budgetconfig_headid = num_budgetaccmap_subgroup 
+//             AND num_budgetconfig_level = 1 
+//         WHERE c.accsubtypeid IN (${cashBankSubTypes.join(',')})  
+//           AND c.ulbid = '${filters.ulbId}'
+//     ) balance, 
+    
+//     (
+//         SELECT NVL(SUM(amount), 0) AS amount 
+//         FROM transview c 
+//         INNER JOIN accountview_web a 
+//             ON a.glcode = c.glcode AND a.accno = c.accno AND c.ulbid = a.ulbid 
+//         WHERE a.accsubtypeid IN (4829) 
+//           AND c.ulbid = '${filters.ulbId}'  
+//           AND TRUNC(c.trnsdate) <= TO_DATE('${filters.date}', 'DD-MON-YYYY')
+//   `;
+  
+//   if (filters.zone && filters.zone !== "-1") {
+//     sql += `\n          AND c.zoneid = '${filters.zone}'`;
+//   }
+  
+//   sql += `
+//     ) amount, 
+    
+//     (
+//         SELECT NVL(SUM(amount), 0) AS receiptamt 
+//         FROM transview a 
+//         INNER JOIN accountview_web c 
+//             ON a.glcode = c.glcode AND a.accno = c.accno 
+//         WHERE TRUNC(a.trnsdate) <= TO_DATE('${filters.date}', 'DD-MON-YYYY')  
+//           AND a.ulbid = '${filters.ulbId}' 
+//   `;
+  
+//   if (filters.zone && filters.zone !== "-1") {
+//     sql += `\n          AND a.zoneid = '${filters.zone}'`;
+//   }
+  
+//   sql += `
+//           AND a.transno IN (
+//               SELECT a.transno 
+//               FROM transview a 
+//               INNER JOIN accountview_web c 
+//                   ON a.glcode = c.glcode AND a.accno = c.accno 
+//               WHERE TRUNC(a.trnsdate) <= TO_DATE('${filters.date}', 'DD-MON-YYYY') 
+//                 AND c.accsubtypeid IN (${cashBankSubTypes.join(',')})  
+//                 AND c.ulbid = '${filters.ulbId}'
+//   `;
+  
+//   if (filters.zone && filters.zone !== "-1") {
+//     sql += `\n                AND a.zoneid = '${filters.zone}'`;
+//   }
+  
+//   sql += `
+//               ) 
+//               AND a.amount > 0
+//     ) receiptamt
+//   `;
+  
+//   console.log(sql);
+  
+//   try {
+//     const result = await executeQuery(sql, {});
+    
+//     console.log("Query Result:", result);
+    
+//     if (!result.success) {
+//       console.error("SQL Error:", result.error);
+//       throw new Error(result.error);
+//     }
+    
+//     const openingBalance = result.rows[0]?.OPENING_BALANCE || 0;
+//     console.log(`Calculated Opening Balance: ${openingBalance}`);
+    
+//     return openingBalance;
+    
+//   } catch (error) {
+//     console.error("Error in getOpeningBalance:", error);
+//     throw error;
+//   }
+// }
+
 async function getOpeningBalance(filters) {
   console.log("Repo: Fetch Opening Balance", filters);
-  const cashBankSubTypes = [4810, 4820, 4821, 4822, 4823, 4830];
+  
+  const cashBankSubTypes = [4820, 4810, 4821, 4822, 4823, 4830];
+  const transferSubType = 4829;
   
   console.log(`Opening Balance As On: ${filters.date}`);
   
   let sql = `
     SELECT balance + receiptamt - amount AS opening_balance 
     FROM (
-        SELECT NVL(SUM(openingbal + (
-            SELECT NVL(SUM(amount), 0) 
-            FROM transview a 
-            WHERE a.glcode = c.glcode 
-              AND a.accno = c.accno 
-              AND TRUNC(a.trnsdate) <= TO_DATE('${filters.date}', 'DD-MON-YYYY')
-        )), 0) AS balance 
+        -- Opening Balance Subquery (multiplied by -1 as per logic)
+        SELECT NVL(SUM(openingbal) * -1, 0) AS balance 
         FROM accountview_web c 
-        INNER JOIN aoac_budgetaccmap_det bd 
-            ON bd.num_budgetaccmap_glcode = c.glcode 
-            AND bd.num_budgetaccmap_accountno = c.accno   
-        INNER JOIN aoac_budgetconfig_det b 
-            ON num_budgetconfig_headid = num_budgetaccmap_subgroup 
-            AND num_budgetconfig_level = 1 
         WHERE c.accsubtypeid IN (${cashBankSubTypes.join(',')})  
           AND c.ulbid = '${filters.ulbId}'
-    ) balance, 
+    ) balance,
     
     (
+        -- Amount Subquery (Transfer amounts)
         SELECT NVL(SUM(amount), 0) AS amount 
         FROM transview c 
         INNER JOIN accountview_web a 
-            ON a.glcode = c.glcode AND a.accno = c.accno AND c.ulbid = a.ulbid 
-        WHERE a.accsubtypeid IN (4829) 
+            ON a.glcode = c.glcode 
+            AND a.accno = c.accno 
+            AND c.ulbid = a.ulbid 
+        WHERE a.accsubtypeid IN (${transferSubType}) 
           AND c.ulbid = '${filters.ulbId}'  
           AND TRUNC(c.trnsdate) <= TO_DATE('${filters.date}', 'DD-MON-YYYY')
   `;
@@ -629,15 +724,18 @@ async function getOpeningBalance(filters) {
   }
   
   sql += `
-    ) amount, 
+    ) amount,
     
     (
+        -- Receipt Amount Subquery
         SELECT NVL(SUM(amount), 0) AS receiptamt 
         FROM transview a 
         INNER JOIN accountview_web c 
-            ON a.glcode = c.glcode AND a.accno = c.accno 
+            ON a.glcode = c.glcode 
+            AND a.accno = c.accno 
+            AND c.ulbid = a.ulbid 
         WHERE TRUNC(a.trnsdate) <= TO_DATE('${filters.date}', 'DD-MON-YYYY')  
-          AND a.ulbid = '${filters.ulbId}' 
+          AND a.ulbid = '${filters.ulbId}'
   `;
   
   if (filters.zone && filters.zone !== "-1") {
@@ -646,15 +744,19 @@ async function getOpeningBalance(filters) {
   
   sql += `
           AND a.transno IN (
+              -- Subquery to filter cash/bank transactions
               SELECT a.transno 
               FROM transview a 
               INNER JOIN accountview_web c 
-                  ON a.glcode = c.glcode AND a.accno = c.accno 
+                  ON a.glcode = c.glcode 
+                  AND a.accno = c.accno 
+                  AND c.ulbid = a.ulbid 
               WHERE TRUNC(a.trnsdate) <= TO_DATE('${filters.date}', 'DD-MON-YYYY') 
                 AND c.accsubtypeid IN (${cashBankSubTypes.join(',')})  
                 AND c.ulbid = '${filters.ulbId}'
   `;
   
+  // Add zone filter in subquery if provided and not "-1"
   if (filters.zone && filters.zone !== "-1") {
     sql += `\n                AND a.zoneid = '${filters.zone}'`;
   }
@@ -665,7 +767,7 @@ async function getOpeningBalance(filters) {
     ) receiptamt
   `;
   
-  console.log(sql);
+  console.log("Generated SQL Query:", sql);
   
   try {
     const result = await executeQuery(sql, {});

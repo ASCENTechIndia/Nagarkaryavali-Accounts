@@ -162,38 +162,58 @@ async function getLedgerTransactions(payload) {
   console.log("📤 Repo → Ledger Payload:", payload);
 
   const sql = `
-    SELECT *
-    FROM (
-        SELECT DISTINCT 
-            TRUNC(a.trnsdate) AS trnsdate,
-            a.transno,
-            a.docno,
-            a.accno,
-            acc.accname,
-            var_partymst_pancard AS pancard,
-            var_partymst_partyname || ' ' || a.narration AS narration,
-            TO_CHAR(a.chqno, 'FM000000') AS chqno,
-            a.amount,
-            acc.functioncode,
-            acc.objectcode,
-            acc.glcode,
-            a.ulbid, 
-            a.zoneid
-        FROM transview a
-        LEFT JOIN accountview_web acc 
-            ON acc.glcode = a.glcode
-           AND acc.accno = a.accno
-           AND acc.ulbid = a.ulbid
-        LEFT JOIN aoac_partymst_def 
-            ON num_partymst_partyid = partycode
+    SELECT * FROM (
+      SELECT 
+          TO_CHAR(TRUNC(a.trnsdate), 'DD/MM/YYYY') AS trnsdate,
+          a.transno,
+          CASE 
+              WHEN a.sourceid = 6 THEN (
+                  SELECT TO_CHAR(num_vchtransbal_vchtransbalno) 
+                  FROM aoac_vchtransbal_def 
+                  WHERE num_vchtransbal_transno = a.transno 
+                    AND a.ulbid = num_vchtransbal_ulbid 
+                    AND ROWNUM = 1
+              ) 
+              ELSE a.docno 
+          END AS docno,
+          a.accno,
+          acc.accname,
+          var_partymst_pancard AS pancard,
+          acc.objectcode || '-' || acc.accname || '-' || a.narration AS narration,
+          TO_CHAR(a.chqno, 'FM000000') AS chqno,
+          SUM(a.amount) AS amount,
+          acc.functioncode AS functioncode,
+          acc.objectcode AS objectcode 
+      FROM transview a
+      LEFT JOIN accountview_web acc 
+          ON acc.glcode = a.glcode 
+          AND acc.accno = a.accno 
+          AND acc.ulbid = a.ulbid
+      LEFT JOIN aoac_partymst_def 
+          ON num_partymst_partyid = a.partycode
         WHERE acc.glcode = :glcode
           AND acc.accno = :accno
           AND TRUNC(a.trnsdate) >= TO_DATE(:fromDate, 'DD-MM-YYYY')
           AND TRUNC(a.trnsdate) <= TO_DATE(:toDate, 'DD-MM-YYYY')
-          AND a.ulbid = :ulbid
+          AND a.ulbid = :ulbid 
+          AND a.amount <> 0
           AND (:zoneid = '-1' OR a.zoneid = :zoneid)
+          GROUP BY 
+            a.trnsdate, 
+            a.accno, 
+            acc.accname,
+            var_partymst_pancard,
+            a.transno, 
+            a.sourceid, 
+            a.docno, 
+            a.ulbid, 
+            acc.objectcode,
+            acc.accname, 
+            a.narration, 
+            a.chqno, 
+            acc.functioncode
     )
-    ORDER BY trnsdate ASC
+    ORDER BY TO_DATE(trnsdate, 'DD/MM/YYYY') ASC
   `;
 
   const binds = {
@@ -213,6 +233,7 @@ async function getLedgerTransactions(payload) {
 
   return result.rows;
 }
+
 module.exports = {
   getTransactionDetails,
   getAccountBalance,
