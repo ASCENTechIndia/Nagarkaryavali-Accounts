@@ -72,11 +72,14 @@ exports.getCounterVoucherPDF = asyncHandler(async (req, res) => {
     });
   }
 
+  const headerRes = result.headerRes;
   const header = result.header;
+  const details = result.details || [];
 
   const pdf = await CounterVoucherGeneration({
+    headerRes,
     header,
-    details: result.details || [],
+    details,
     corporationName: corpInfo?.ABC_MUNICIPAL_TEXT || "",
     corporationLogo: corpInfo?.ULBLOGO || "",
   });

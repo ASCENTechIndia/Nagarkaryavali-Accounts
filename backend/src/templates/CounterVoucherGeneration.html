@@ -16,7 +16,7 @@
 
       body {
         font-family: "Noto Sans Devanagari";
-        font-size: 10px;
+        font-size: 12px;
       }
 
       .box {
@@ -35,17 +35,25 @@
       table {
         width: 100%;
         border-collapse: collapse;
+        font-size: 10px;
       }
 
       td,
       th {
         border: 1px solid #000;
-        padding: 3px;
+        padding: 2px;
       }
 
       .no-border td {
         border: none;
         padding: 2px;
+      }
+      
+      .topHeading {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
       }
 
       .title {
@@ -99,24 +107,22 @@
       <div class="subtitle">Payment Voucher</div>
 
       <!-- HEADER -->
-      <table class="no-border">
-        <tr>
-          <td width="50%">
-            Zone : {{zone}}<br />
-            Department : {{deptname}}<br />
-            Manual Number : {{manualno}}<br />
-            System Bill No : {{systembillno}}
-          </td>
-
-          <td width="50%">
-            दिनांक : {{date}}<br />
-            वेळ : {{time}}<br />
-            Voucher No : {{refno}}<br />
-            Transaction no : {{transno}}<br />
-            Voucher Date : {{transdate}}
-          </td>
-        </tr>
-      </table>
+      <div class="topHeading">
+        <div>
+          Zone : {{zone}}<br />
+          Department : {{deptname}}<br />
+          Manual Number : {{manualno}}<br />
+          System Bill No : {{systembillno}}
+        </div>
+      
+        <div style="text-align:right;">
+          दिनांक : {{date}}<br />
+          वेळ : {{time}}<br />
+          Voucher No : {{refno}}<br />
+          Transaction no : {{transno}}<br />
+          Voucher Date : {{transdate}}
+        </div>
+      </div>
 
       <div class="section">
         User name : {{username}} <br />

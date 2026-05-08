@@ -150,6 +150,7 @@ const numberToMarathiWords = (num) => {
 
 // ================= MAIN =================
 const CounterVoucherGeneration = async ({
+  headerRes,
   header,
   details,
   corporationName,
@@ -169,37 +170,73 @@ const CounterVoucherGeneration = async ({
 
     const now = new Date();
 
-    // ================= MAIN TABLE =================
-    const totalNet = Number(header.AMT || 0);
-    const totalPaid = Number(header.CRAMT || 0);
-    const totalBalance = Number(header.BALAMT || 0);
-    const rows = [
-      {
-        sr: 1,
-        glcode: header.DRGLCODE || "",
-        accname: header.DRACCNO || "",
-        narration: header.CRACNAME || "Testing",
+    // const rows = [
+    //   {
+    //     sr: 1,
+    //     glcode: header.DRGLCODE || "",
+    //     accname: header.DRACCNO || "",
+    //     narration: header.CRACNAME || "Testing",
 
-        total: formatAmount(header.GROSSAMOUNT),
-        deduction: formatAmount(header.AMT),
+    //     total: formatAmount(header.GROSSAMOUNT),
+    //     deduction: formatAmount(header.AMT),
 
-        paid: formatAmount(header.CRAMT),
-        balance: formatAmount(header.BALAMT || 0),
-      },
-    ];
+    //     paid: formatAmount(header.CRAMT),
+    //     balance: formatAmount(header.BALAMT || 0),
+    //   },
+    // ];
+
+    const rows = headerRes.map((item, index) => ({
+      sr: index + 1,
+
+      glcode: item.DRGLCODE || "",
+      accname: item.DRACCNO || "",
+      narration: item.CRACNAME || "",
+
+      total: formatAmount(item.GROSSAMOUNT || 0),
+      deduction: formatAmount(item.AMT || 0),
+
+      paid: formatAmount(item.CRAMT || 0),
+      balance: formatAmount(item.BALAMT || 0),
+    }));
 
     // ================= SECOND TABLE =================
-    const detailRows = [
-      {
-        sr: 1,
-        glcode: header.DRGLCODE || "",
-        accname: header.DRACCNO || "",
-        narration: header.CRACNAME || "",
+    // const detailRows = [
+    //   {
+    //     sr: 1,
+    //     glcode: header.DRGLCODE || "",
+    //     accname: header.DRACCNO || "",
+    //     narration: header.CRACNAME || "",
 
-        amount: formatAmount(header.CRAMT || header.AMT),
-        total: formatAmount(header.GROSSAMOUNT || header.AMT),
-      },
-    ];
+    //     amount: formatAmount(header.CRAMT || header.AMT),
+    //     total: formatAmount(header.GROSSAMOUNT || header.AMT),
+    //   },
+    // ];
+
+    const detailRows = details.map((item, index) => ({
+      sr: index + 1,
+
+      glcode: item.DRGLCODE || "",
+      accname: item.DRACCNO || "",
+      narration: item.CRACNAME || "",
+
+      amount: formatAmount(item.CRAMT || item.AMT || 0),
+      total: formatAmount(item.GROSSAMOUNT || item.AMT || 0),
+    }));
+
+    const totalNet = headerRes.reduce(
+      (sum, item) => sum + Number(item.AMT || 0),
+      0
+    );
+
+    const totalPaid = headerRes.reduce(
+      (sum, item) => sum + Number(item.CRAMT || 0),
+      0
+    );
+
+    const totalBalance = headerRes.reduce(
+      (sum, item) => sum + Number(item.BALAMT || 0),
+      0
+    );
 
     // ================= TEMPLATE DATA =================
     const html = template({

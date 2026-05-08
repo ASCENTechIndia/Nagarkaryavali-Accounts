@@ -1162,7 +1162,7 @@ import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 
 import SearchableSelect from "@/components/SearchableSelect";
-
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Button } from "@/Components/ui/button";
@@ -2333,6 +2333,10 @@ const handleSubmit = async (
         // }
 
          if (result.isConfirmed) {
+          await new Promise((resolve) =>
+            setTimeout(resolve, 1500)
+          );
+
           if (savedRefNo) {
             await handlePrintPDF(savedRefNo);
           }
@@ -2382,9 +2386,10 @@ const handleSubmit = async (
 
   if (pageLoading) {
     return (
-      <div className="flex items-center justify-center h-[60vh]">
-        <div className="text-lg font-medium">
-          Loading...
+      <div className="flex justify-center items-center h-64">
+        <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
     );
@@ -2415,17 +2420,16 @@ const handleSubmit = async (
             animate={{
               opacity: 1,
             }}
-            className="min-h-screen bg-gray-100 p-4 sm:p-6"
           >
-            <div className="bg-white border rounded-xl shadow-sm overflow-hidden">
-              {/* HEADER */}
+            <Card className="border shadow-sm">
 
-              <div className="border-b px-4 sm:px-6 py-4 text-lg font-semibold bg-[#163e72] text-white">
-                प्रमाणक निर्मिती
-              </div>
+              <CardHeader className="border-b">
+                <CardTitle className="text-lg font-semibold">
+                  प्रमाणक निर्मिती
+                </CardTitle>
+              </CardHeader>
 
-              <div className="p-4 sm:p-6 space-y-6">
-                {/* FILTER */}
+              <CardContent className="p-4 sm:p-6 space-y-6">
 
                 <section className="border rounded-xl p-4 sm:p-5 space-y-4 bg-white">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -2599,9 +2603,7 @@ const handleSubmit = async (
                   </div>
                 </section>
 
-                {/* TABLE */}
-
-                <section className="border rounded-xl p-4 sm:p-5 bg-white">
+                <section>
                   {tableLoading && (
                     <div className="flex justify-center py-10 text-gray-600">
                       Loading
@@ -3314,11 +3316,11 @@ const handleSubmit = async (
                     </div>
                   </div>
                 </section>
-              </div>
+              </CardContent>
 
               {/* FOOTER */}
 
-              <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 border-t p-4 bg-gray-50">
+              <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 border-t p-4">
                 <Button
                   type="submit"
                   disabled={
@@ -3352,7 +3354,7 @@ const handleSubmit = async (
                   बाहेर जा
                 </Button>
               </div>
-            </div>
+            </Card>
           </motion.div>
         </Form>
       )}
