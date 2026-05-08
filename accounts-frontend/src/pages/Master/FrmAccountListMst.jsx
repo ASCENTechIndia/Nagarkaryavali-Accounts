@@ -18,6 +18,7 @@ import {
 
 import SearchableSelect from "@/components/SearchableSelect";
 import ShadCNTable from "@/components/ui/table";
+import Swal from "sweetalert2";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -129,6 +130,15 @@ const FrmAccountList = () => {
   // ================= SEARCH =================
   const handleSearch = async () => {
     try {
+       Swal.fire({
+      title: "Loading...",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+
       setLoading(true);
 
       const payload = {
@@ -198,6 +208,7 @@ const FrmAccountList = () => {
       console.error("Search Error:", err);
     } finally {
       setLoading(false);
+      Swal.close();
     }
   };
 
