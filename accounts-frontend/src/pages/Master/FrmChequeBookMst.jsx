@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Formik, Form } from "formik";
 import { motion } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -45,6 +45,8 @@ const FrmChequeBookMst = () => {
   const [employeeOptions, setEmployeeOptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedBankGL, setSelectedBankGL] = useState("");
+
+  const formikRef = useRef();
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -101,10 +103,11 @@ const FrmChequeBookMst = () => {
     }
   };
 
-  const fetchEmployees = async () => {
+  const fetchEmployees = async (setFieldValue) => {
     try {
-      const res = await axios.post(`${BASE_URL}/api/FrmChequeBook/GetUserDetails`,
-        { ulbId: Number(ulbId), userId: userId},
+      const res = await axios.post(
+        `${BASE_URL}/api/FrmChequeBook/GetUserDetails`,
+        { ulbId: Number(ulbId), userId: userId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -115,7 +118,13 @@ const FrmChequeBookMst = () => {
           label: emp.VAR_USER_USERNAME,
           value: emp.NUM_USER_USERID.toString(),
         }));
+
+        console.log("Formatted User: ", formatted);
+
         setEmployeeOptions(formatted);
+        if (formatted.length > 0) {
+          setFieldValue("employeeName", formatted[0].value);
+        }
       }
     } catch (err) {
       console.error("Error fetching employees:", err);
@@ -240,8 +249,15 @@ const FrmChequeBookMst = () => {
   };
 
   return (
-    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+    <Formik innerRef={formikRef} initialValues={initialValues} onSubmit={handleSubmit}>
       {({ values, handleChange, setFieldValue, resetForm  }) => {
+
+        useEffect(() => {
+          if (employeeOptions.length > 0 && !values.employeeName) {
+            setFieldValue("employeeName", employeeOptions[0].value);
+          }
+        }, [employeeOptions, setFieldValue, values.employeeName]);
+
         useEffect(() => {
           const from = parseInt(values?.chequeFrom);
           const to = parseInt(values?.chequeTo);

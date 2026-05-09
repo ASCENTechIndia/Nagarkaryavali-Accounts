@@ -1146,7 +1146,7 @@
 
 // export default FrmVoucherGeneration;
 import {
-  useState,
+useState,
   useEffect,
   useMemo,
   useCallback,
@@ -1178,8 +1178,6 @@ import {
   SelectValue,
 } from "@/Components/ui/select";
 
-/* ================= INITIAL VALUES ================= */
-
 const initialValues = {
   department: "",
   fromDate: new Date(),
@@ -1199,8 +1197,6 @@ const initialValues = {
   bankBalance: "",
 };
 
-/* ================= FORM FIELD ================= */
-
 const FormField = ({ label, children }) => (
   <div className="flex flex-col sm:grid sm:grid-cols-[140px_10px_1fr] items-start sm:items-center gap-2">
     <Label className="sm:text-right w-full font-medium">
@@ -1216,8 +1212,6 @@ const FormField = ({ label, children }) => (
     </div>
   </div>
 );
-
-/* ================= DATE UTILS ================= */
 
 const formatDate = (date) =>
   new Date(date)
@@ -1236,38 +1230,21 @@ const formatDate2 = (date) =>
 const formatDisplayDate = (date) =>
   new Date(date).toLocaleDateString("en-GB");
 
-/* ================= COMPONENT ================= */
-
 const FrmVoucherGeneration = () => {
   const navigate = useNavigate();
-
   const { user } = useAuth();
-
   const token = user?.token;
   const ulbId = user?.ulbId;
 
-  const BASE_URL =
-    import.meta.env.VITE_BASE_URL;
-
-  /* ================= STATES ================= */
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
 
   const [zones, setZones] = useState([]);
-  const [glCodes, setGlCodes] =
-    useState([]);
-  const [ledgers, setLedgers] =
-    useState([]);
-  const [parties, setParties] =
-    useState([]);
-
-  const [voucherList, setVoucherList] =
-    useState([]);
-
-  const [voucherDetails, setVoucherDetails] =
-    useState([]);
-
-  const [chequeBooks, setChequeBooks] =
-    useState([]);
-
+  const [glCodes, setGlCodes] = useState([]);
+  const [ledgers, setLedgers] = useState([]);
+  const [parties, setParties] = useState([]);
+  const [voucherList, setVoucherList] = useState([]);
+  const [voucherDetails, setVoucherDetails] = useState([]);
+  const [chequeBooks, setChequeBooks] = useState([]);
   const [searchDone, setSearchDone] =
     useState(false);
 
@@ -1681,8 +1658,7 @@ const FrmVoucherGeneration = () => {
 
   /* ================= FETCH CHEQUE BOOK ================= */
 
-  const fetchChequeBook =
-    async ({
+  const fetchChequeBook = async ({
       chequeNo,
       deptCode,
       ledger,
@@ -1691,47 +1667,25 @@ const FrmVoucherGeneration = () => {
     }) => {
       try {
         const payload = {
-          bank_glcode:
-            String(deptCode),
-
-          bank_accno:
-            String(ledger),
-
-          cheque_no:
-            String(chequeNo),
-
-          corp_id:
-            String(ulbId),
-
-          zone_id:
-            String(department),
+          bank_glcode: String(deptCode),
+          bank_accno: String(ledger),
+          cheque_no: String(chequeNo),
+          corp_id: String(ulbId),
+          zone_id: String(department),
         };
 
-        const res =
-          await axios.post(
+        const res = await axios.post(
             `${BASE_URL}/api/FrmVoucherGeneration/cheque-book`,
             payload,
             { headers }
-          );
+        );
 
-        const books =
-          res.data?.rows || [];
-
+        const books = res.data?.rows || [];
         setChequeBooks(books);
 
-        if (
-          books.length > 0
-        ) {
-          const bookNo =
-            String(
-              books[0]
-                .NUM_CHEQUEBOOK_BOOKNO
-            );
-
-          setFieldValue(
-            "chequeBookNo",
-            bookNo
-          );
+        if (books.length > 0) {
+          const bookNo = String(books[0].NUM_CHEQUEBOOK_BOOKNO);
+          setFieldValue("chequeBookNo", bookNo);
         } else {
           Swal.fire({
             text:
@@ -1749,7 +1703,7 @@ const FrmVoucherGeneration = () => {
       } catch (err) {
         console.error(err);
       }
-    };
+  };
 
   /* ================= FETCH DETAILS ================= */
 
@@ -1824,8 +1778,6 @@ const FrmVoucherGeneration = () => {
       }
     };
 
-  /* ================= FETCH FULL DATA ================= */
-
   const fetchVoucherFullData =
     async (voucherNo) => {
       try {
@@ -1869,8 +1821,6 @@ const FrmVoucherGeneration = () => {
         console.error(err);
       }
     };
-
-  /* ================= PRINT PDF ================= */
 
   const handlePrintPDF =
     async (refNo) => {
@@ -1928,8 +1878,6 @@ const FrmVoucherGeneration = () => {
       }
     };
 
-  /* ================= SUBMIT ================= */
-
 const formatOracleDate = (
   date
 ) => {
@@ -1964,10 +1912,6 @@ const formatOracleDate = (
 
   return `${day}-${month}-${year}`;
 };
-
-/* =========================================
-   HANDLE SUBMIT
-   ========================================= */
 
 const handleSubmit = async (
   values,
@@ -2382,7 +2326,6 @@ const handleSubmit = async (
     setSubmitLoading(false);
   }
 };
-  /* ================= LOADER ================= */
 
   if (pageLoading) {
     return (
@@ -2395,23 +2338,9 @@ const handleSubmit = async (
     );
   }
 
-  /* ================= RETURN ================= */
-
   return (
-    <Formik
-      initialValues={
-        initialValues
-      }
-      onSubmit={
-        handleSubmit
-      }
-    >
-      {({
-        values,
-        handleChange,
-        setFieldValue,
-        resetForm,
-      }) => (
+    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+      {({values, handleChange, setFieldValue, resetForm,}) => (
         <Form>
           <motion.div
             initial={{
@@ -2445,9 +2374,6 @@ const handleSubmit = async (
                             "department",
                             v
                           )
-                        }
-                        disabled={
-                          searchDone
                         }
                       >
                         <SelectTrigger className="h-9 w-full">
@@ -2548,9 +2474,6 @@ const handleSubmit = async (
                     <div className="flex items-end gap-2">
                       <Button
                         type="button"
-                        disabled={
-                          searchDone
-                        }
                         className="bg-blue-900 text-white"
                         onClick={() =>
                           fetchVouchers(
@@ -2612,7 +2535,7 @@ const handleSubmit = async (
                   )}
 
                   {voucherList.length >
-                    0 && (
+                    0 && !tableLoading && (
                     <div className="border border-gray-300 bg-white shadow-sm overflow-auto max-h-[600px] rounded-md">
                       <table className="w-full text-sm">
                         <thead className="sticky top-0 z-10 bg-[#163e72] text-white">
@@ -3152,7 +3075,7 @@ const handleSubmit = async (
                       values.paymentType ===
                         "3") && (
                       <>
-                        <FormField label="धनादेश पुस्तिका क्रमांक">
+                        {/* <FormField label="धनादेश पुस्तिका क्रमांक">
                           <Select
                             value={
                               values.chequeBookNo ||
@@ -3172,37 +3095,59 @@ const handleSubmit = async (
                             </SelectTrigger>
 
                             <SelectContent>
-                              {chequeBooks.length >
-                              0 ? (
-                                chequeBooks.map(
-                                  (
-                                    b
-                                  ) => (
-                                    <SelectItem
-                                      key={
-                                        b.NUM_CHEQUEBOOK_BOOKNO
-                                      }
-                                      value={String(
-                                        b.NUM_CHEQUEBOOK_BOOKNO
-                                      )}
-                                    >
-                                      {
-                                        b.BOOKNO
-                                      }
-                                    </SelectItem>
-                                  )
-                                )
+                              {chequeBooks.length > 0 ? (
+                                chequeBooks.map((b) => (
+                                  <SelectItem
+                                    key={b.NUM_CHEQUEBOOK_BOOKNO}
+                                    value={String(b.NUM_CHEQUEBOOK_BOOKNO)}
+                                  >
+                                    {b.BOOKNO || b.NUM_CHEQUEBOOK_BOOKNO}
+                                  </SelectItem>
+                                ))
                               ) : (
-                                <SelectItem value="0">
-                                  No
-                                  cheque
-                                  book
-                                  found
+                                <SelectItem value="0" disabled>
+                                  No cheque book found
                                 </SelectItem>
                               )}
                             </SelectContent>
                           </Select>
-                        </FormField>
+                        </FormField> */}
+
+                          <FormField label="धनादेश पुस्तिका क्रमांक">
+                            {chequeBooks.length === 1 ? (
+                              <Input
+                                value={String(chequeBooks[0].NUM_CHEQUEBOOK_BOOKNO)}
+                                readOnly
+                                className="h-9 w-full bg-gray-100 cursor-not-allowed"
+                              />
+                            ) : chequeBooks.length > 1 ? (
+                              <Select
+                                value={values.chequeBookNo || ""}
+                                onValueChange={(v) => setFieldValue("chequeBookNo", v)}
+                              >
+                                <SelectTrigger className="h-9 w-full">
+                                  <SelectValue placeholder="निवडा" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {chequeBooks.map((b) => (
+                                    <SelectItem
+                                      key={b.NUM_CHEQUEBOOK_BOOKNO}
+                                      value={String(b.NUM_CHEQUEBOOK_BOOKNO)}
+                                    >
+                                      {b.BOOKNO || b.NUM_CHEQUEBOOK_BOOKNO}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            ) : (
+                              <Input
+                                value=""
+                                readOnly
+                                placeholder="धनादेश क्रमांक टाका..."
+                                className="h-9 w-full bg-gray-100 cursor-not-allowed"
+                              />
+                            )}
+                          </FormField>
 
                         <FormField label="धनादेश क्रमांक">
                           <Input

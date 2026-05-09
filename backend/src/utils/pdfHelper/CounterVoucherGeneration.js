@@ -170,21 +170,6 @@ const CounterVoucherGeneration = async ({
 
     const now = new Date();
 
-    // const rows = [
-    //   {
-    //     sr: 1,
-    //     glcode: header.DRGLCODE || "",
-    //     accname: header.DRACCNO || "",
-    //     narration: header.CRACNAME || "Testing",
-
-    //     total: formatAmount(header.GROSSAMOUNT),
-    //     deduction: formatAmount(header.AMT),
-
-    //     paid: formatAmount(header.CRAMT),
-    //     balance: formatAmount(header.BALAMT || 0),
-    //   },
-    // ];
-
     const rows = headerRes.map((item, index) => ({
       sr: index + 1,
 
@@ -199,28 +184,15 @@ const CounterVoucherGeneration = async ({
       balance: formatAmount(item.BALAMT || 0),
     }));
 
-    // ================= SECOND TABLE =================
-    // const detailRows = [
-    //   {
-    //     sr: 1,
-    //     glcode: header.DRGLCODE || "",
-    //     accname: header.DRACCNO || "",
-    //     narration: header.CRACNAME || "",
-
-    //     amount: formatAmount(header.CRAMT || header.AMT),
-    //     total: formatAmount(header.GROSSAMOUNT || header.AMT),
-    //   },
-    // ];
-
     const detailRows = details.map((item, index) => ({
       sr: index + 1,
 
-      glcode: item.DRGLCODE || "",
-      accname: item.DRACCNO || "",
-      narration: item.CRACNAME || "",
+      glcode: item.GLCODE || "",
+      accname: item.ACCNO || "",
+      narration: item.ACCNAME || "",
 
-      amount: formatAmount(item.CRAMT || item.AMT || 0),
-      total: formatAmount(item.GROSSAMOUNT || item.AMT || 0),
+      payAmount: formatAmount(item.PAYAMT || item.AMT || 0),
+      amount: formatAmount(item.AMOUNT || item.AMT || 0),
     }));
 
     const totalNet = headerRes.reduce(
@@ -238,18 +210,33 @@ const CounterVoucherGeneration = async ({
       0
     );
 
+    const totalDeductionAmount = details.reduce(
+      (sum, item) =>
+        sum + Number(item.AMOUNT || item.AMT || 0),
+      0
+    );
+
+    const totalNetWithDeduction = totalDeductionAmount + totalPaid;
+
     // ================= TEMPLATE DATA =================
     const html = template({
       corporationName,
       logo: corporationLogo,
 
-      // LEFT SIDE
       zone: header.ZONEENAME || "",
       deptname: header.DEPTNAME || "",
-      manualno: header.MANUALNO || "",
-      systembillno: header.SYSTEMBILLNO || "",
+      manualno: [...new Set(
+        headerRes
+          .map((x) => x.MANUALNO)
+          .filter(Boolean)
+      )].join(","),
 
-      // RIGHT SIDE
+      systembillno: [...new Set(
+        headerRes
+          .map((x) => x.SYSTEMBILLNO)
+          .filter(Boolean)
+      )].join(","),
+
       date: now.toLocaleDateString("en-GB"),
       time: now.toLocaleTimeString(),
 
@@ -278,6 +265,12 @@ const CounterVoucherGeneration = async ({
       totalNet: formatAmount(totalNet),
       totalPaid: formatAmount(totalPaid),
       totalBalance: formatAmount(totalBalance),
+
+      totalDeductionAmount: formatAmount(totalDeductionAmount),
+
+      totalNetWithDeduction: formatAmount(
+        totalNetWithDeduction
+      ),
 
       // OPTIONAL
       grossamount: formatAmount(header.GROSSAMOUNT),

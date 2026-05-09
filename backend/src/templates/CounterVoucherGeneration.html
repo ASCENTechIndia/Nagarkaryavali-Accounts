@@ -175,6 +175,45 @@
         बँकेचे नाव : {{bankname}}
       </div>
 
+      <table>
+        <tr>
+          <th style="width:5%">अ.क्र. नं.</th>
+          <th style="width:20%">लेखाशीर्ष संकेतांक नाव</th>
+          <th style="width:22%">तपशील</th>
+          <th style="width:12%">रक्कम रुपये</th>
+          <th style="width:12%">निव्वळ देय रक्कम</th>
+          <th style="width:12%">निव्वळ देय रक्कम कपाती सहित</th>
+        </tr>
+
+        {{#each detailRows}}
+        <tr>
+          <td class="center">{{sr}}</td>
+          <td>{{accname}}</td>
+          <td class="center">{{narration}}</td>
+          <td class="right">{{amount}}</td>
+          <td class="right"></td>
+          <td class="right"></td>
+        </tr>
+        {{/each}}
+
+        <!-- TOTAL ROW EXACT -->
+        <tr>
+          <td colspan="3">एकूण वजाती व वसुली रक्कम रु.</td>
+          <td class="right">
+            <b>{{totalDeductionAmount}}</b>
+          </td>
+
+          <td class="right">
+            <b>{{totalPaid}}</b>
+          </td>
+
+          <td class="right">
+            <b>{{totalNetWithDeduction}}</b>
+          </td>
+          
+        </tr>
+      </table>
+
       <!-- ================= APPROVAL SECTION 1 ================= -->
       <div class="approval-row">
         <div class="approval-text">

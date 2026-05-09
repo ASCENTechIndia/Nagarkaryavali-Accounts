@@ -66,11 +66,9 @@ async function voucherGenerationService(data) {
 async function getCounterVoucherService(body = {}) {
   const { refno, ulbId } = body;
 
-  // ✅ Proper validation
   if (!refno) throw new AppError("Ref No required", 400);
   if (!ulbId) throw new AppError("ULB ID required", 400);
 
-  // ✅ Fetch header
   const headerRes = await repo.getCounterVoucherHeader({
     refno,
     ulbId,
@@ -84,14 +82,12 @@ async function getCounterVoucherService(body = {}) {
 
   const header = headerRes.rows[0];
 
-  // ⚠️ Critical safety check
   if (!header.TRANSNO) {
     throw new AppError("Invalid voucher data (missing TRANSNO)", 500);
   }
 
-  // ✅ Fetch details
   const detailsRes = await repo.getCounterVoucherDetails({
-    transno: header.TRANSNO,
+    transno: refno,
     ulbId,
   });
 
