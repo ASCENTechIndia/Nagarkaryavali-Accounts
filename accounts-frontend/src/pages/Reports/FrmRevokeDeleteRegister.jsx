@@ -103,6 +103,10 @@ const FrmRevokeDeleteRegister = () => {
                         },
                     }
                 );
+
+                Swal.close();
+
+                // Check if PDF generated successfully
                 if (
                     pdfRes.data?.success &&
                     pdfRes.data?.pdfUrl
@@ -110,11 +114,11 @@ const FrmRevokeDeleteRegister = () => {
                     window.open(pdfRes.data.pdfUrl, "_blank");
                 } else {
                     Swal.fire({
-                        text:
-                            pdfRes.data?.message ||
-                            "Failed to generate PDF",
+                        icon: "info",
+                        text: "No data found",
                     });
                 }
+
                 return;
             }
 
@@ -189,10 +193,12 @@ const FrmRevokeDeleteRegister = () => {
             Swal.close();
 
             Swal.fire({
+                icon: "info",
                 text:
                     err.response?.data?.message ||
-                    "No Records Found",
+                    "No data found",
             });
+
         } finally {
             Swal.close();
         }
