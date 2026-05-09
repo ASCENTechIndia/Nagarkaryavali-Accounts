@@ -1,64 +1,100 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>कर प्राप्त सारांश</title>
-<style>
-body { font-family: Arial; font-size: 11px; }
-.section { border:1px solid #000; margin-bottom:20px; padding:10px; }
-.header { display:flex; justify-content:space-between; }
-.title { text-align:center; font-weight:bold; }
 
-table { width:100%; border-collapse: collapse; margin-top:10px; }
-th, td { border:1px solid #000; padding:5px; }
-th { background:#eee; }
-.right { text-align:right; }
-</style>
+<head>
+  <title>कर प्राप्त सारांश</title>
+  <style>
+    body {
+      font-family: Arial;
+      font-size: 11px;
+    }
+
+    .section {
+      border: 1px solid #000;
+      margin-bottom: 20px;
+      padding: 10px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .title {
+      text-align: center;
+      font-weight: bold;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th,
+    td {
+      border: 1px solid #000;
+      padding: 5px;
+    }
+
+    th {
+      background: #eee;
+    }
+
+    .right {
+      text-align: right;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="title">
-  <img src="{{corporationLogo}}" width="60"/><br/>
-  {{corporationName}} <br/>
-  List Of Payment & Surcharge Deduction Made
-</div>
-
-{{#each groups}}
-<div class="section">
-
-<div class="header">
-<div>
-  Deduction Head : {{../filters.deductionHead}} <br/>
-  Bank A/C No & Name : {{../filters.bank}} <br/>
-  Vendor : {{../filters.vendor}} <br/>
-  Voucher Date : {{../filters.fromDate}} To {{../filters.toDate}}
-</div>
-
-  <div>
-    Date : {{../currentDate}} <br/>
-    Time : {{../currentTime}}
+  <div class="title">
+    <img src="{{corporationLogo}}" width="60" /><br />
+    {{corporationName}} <br />
+    List Of Payment & Surcharge Deduction Made
   </div>
-</div>
 
-<table>
-<tr>
-<th>Voucher Date</th>
-<th>Deduction Name</th>
-<th>Amount</th>
-</tr>
+  {{#each groups}}
+  <div class="section">
 
-{{#each rows}}
-<tr>
-<td>{{date}}</td>
-<td>{{name}}</td>
-<td class="right">{{amount}}</td>
-</tr>
-{{/each}}
+    <div class="header">
+      <div>
+        Deduction Head : {{../filters.deductionHead}} <br />
+        Bank A/C No & Name : {{../filters.bank}} <br />
+        Vendor : {{../filters.vendor}} <br />
+        Voucher Date : {{../filters.fromDate}} To {{../filters.toDate}}
+      </div>
 
-</table>
+      <div>
+        Date : {{../currentDate}} <br />
+        Time : {{../currentTime}}
+      </div>
+    </div>
 
-</div>
-{{/each}}
+    <table>
+      <tr>
+        <th>Voucher Date</th>
+        <th>Deduction Name</th>
+        <th>Amount</th>
+      </tr>
+
+      {{#each rows}}
+      <tr>
+        <td>{{date}}</td>
+        <td>{{name}}</td>
+        <td class="right">{{amount}}</td>
+      </tr>
+      {{/each}}
+
+      <tr>
+        <td colspan="2" class="right"><strong>Total</strong></td>
+        <td class="right"><strong>{{total}}</strong></td>
+      </tr>
+    </table>
+  </div>
+  {{/each}}
 
 </body>
+
 </html>

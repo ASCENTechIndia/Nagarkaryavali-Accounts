@@ -162,7 +162,7 @@ const RptClassifiedAbstractSummary = () => {
         } catch (err) {
             console.error("Submit Error:", err);
             Swal.close();
-            Swal.fire({ text: err.response?.data?.message || "Something went wrong" });
+            Swal.fire({ text: err.response?.data?.message || "No Records Found" });
         }
     };
 
