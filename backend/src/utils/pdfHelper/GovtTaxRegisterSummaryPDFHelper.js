@@ -76,14 +76,23 @@ const GovtTaxRegisterSummaryPDFHelper = async ({
     // =======================
     const groups = groupByParty(reportData);
 
-    const formattedGroups = groups.map((g) => ({
-      party: g.party,
-      rows: g.records.map((r) => ({
+    const formattedGroups = groups.map((g) => {
+      const rows = g.records.map((r) => ({
         date: formatDate(r.TRANSDT),
         name: r.TDSNAME,
         amount: formatNumber(r.TAXAMT),
-      })),
-    }));
+        rawAmount: Number(r.TAXAMT || 0), // keep raw for summation
+      }));
+
+      const total = rows.reduce((sum, r) => sum + r.rawAmount, 0);
+
+      return {
+        party: g.party,
+        rows,
+        total: formatNumber(total),
+      };
+    });
+
 
     // =======================
     // LOAD TEMPLATE

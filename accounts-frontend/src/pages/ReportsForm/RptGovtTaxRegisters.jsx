@@ -29,6 +29,7 @@ const initialValues = {
   bankCode: "",
   bankLedger: "",
   party: "",
+  partyName: "",
   exportType: "PDF",
 };
 
@@ -136,6 +137,7 @@ const RptGovtTaxRegisters = () => {
         ...basePayload,
         zoneId: Number(values.prabhag) || "",
         partyId: Number(values.party) || "",
+        partyName: values.partyName || "",
         majorCode: Number(values.kapatCode) || "",
         minorCode: Number(values.kapatLedger) || "",
         bankGl: Number(values.bankCode) || "",
@@ -181,8 +183,7 @@ const RptGovtTaxRegisters = () => {
       Swal.close();
 
       Swal.fire({
-        icon: "error",
-        title: "Something went wrong",
+        title: "No Records Found",
         text: error.message || "API Error",
       });
 
@@ -377,7 +378,10 @@ const RptGovtTaxRegisters = () => {
                           value: String(p.NUM_PARTYMST_PARTYID),
                         }))}
                         value={values.party}
-                        onChange={(v) => setFieldValue("party", v?.value)}
+                        onChange={(v) => {
+                          setFieldValue("party", v?.value);
+                          setFieldValue("partyName", v?.label);
+                        }}
                       />
                     </div>
 
@@ -403,7 +407,7 @@ const RptGovtTaxRegisters = () => {
                       प्रक्रिया
                     </Button>
 
-                  
+
                     <Button
                       type="button"
                       variant="destructive"
@@ -412,7 +416,7 @@ const RptGovtTaxRegisters = () => {
                       रद्द
                     </Button>
 
-                    
+
                     <Button
                       type="button"
                       variant="outline"
