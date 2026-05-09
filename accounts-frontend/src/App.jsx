@@ -89,6 +89,7 @@ import FrmCheqCancelchanges from "./pages/Transaction/FrmCheqCancelchanges";
 import FrmSDRefund from "./pages/Transaction/FrmSDRefund";
 import FrmSDVchPrepMst from "./pages/Transaction/FrmSDVchPrepMst";
 import FrmRevokeDeleteRegister from "./pages/Reports/FrmRevokeDeleteRegister";
+import FrmTransactionUpdate from "./pages/Transaction/FrmTransactionUpdate";
 
 const Home = () => <Button>Click me</Button>;
 
@@ -457,6 +458,10 @@ export const router = createBrowserRouter([
       {
         path: "ReportsForm/FrmRevokeDeleteRegister",
         element: <FrmRevokeDeleteRegister />,
+      },
+      {
+        path: "Transactions/FrmTransactionUpdate",
+        element: <FrmTransactionUpdate />,
       },
     ],
   },

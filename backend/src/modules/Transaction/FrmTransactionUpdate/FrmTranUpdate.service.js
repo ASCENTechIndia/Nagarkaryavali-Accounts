@@ -40,8 +40,8 @@ const deleteTransaction = async (payload) => {
   const response = await repo.deleteTransaction(payload);
 
   return {
-    errorCode: response.outBinds.out_ErrorCode,
-    errorMsg: response.outBinds.out_ErrorMsg,
+    errorCode: response.out_ErrorCode,  
+    errorMsg: response.out_ErrorMsg,
   };
 };
 

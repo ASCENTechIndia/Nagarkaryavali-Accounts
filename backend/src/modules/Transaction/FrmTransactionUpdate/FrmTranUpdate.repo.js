@@ -138,8 +138,7 @@ async function deleteTransaction(payload) {
     throw new Error(result.error);
   }
 
-  // IMPORTANT FIX
-  return result.data.outBinds;
+  return result.outBinds;
 }
 async function getRevokeListRepo(payload) {
   console.log("📤 Repo: Get Revoke List", payload);
