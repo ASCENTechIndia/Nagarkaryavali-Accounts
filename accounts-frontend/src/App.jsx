@@ -86,6 +86,9 @@ import RptChequeDishonour from "./pages/Reports/RptChequeDishonour";
 import FrmChequeUpdatereport from "./pages/Reports/FrmChequeUpdatereport";
 import FrmBulkReceipt from "./pages/Transaction/FrmBulkReceipt";
 import FrmCheqCancelchanges from "./pages/Transaction/FrmCheqCancelchanges";
+import FrmSDRefund from "./pages/Transaction/FrmSDRefund";
+import FrmSDVchPrepMst from "./pages/Transaction/FrmSDVchPrepMst";
+import FrmRevokeDeleteRegister from "./pages/Reports/FrmRevokeDeleteRegister";
 
 const Home = () => <Button>Click me</Button>;
 
@@ -442,7 +445,19 @@ export const router = createBrowserRouter([
       {
         path: "ReportsForm/FrmChequeUpdatereport",
         element: <FrmChequeUpdatereport />,
-      }
+      },
+      {
+        path: "Transactions/FrmSDRefund",
+        element: <FrmSDRefund />,
+      },
+      {
+        path: "Transactions/FrmSDVchPrepMst",
+        element: <FrmSDVchPrepMst />,
+      },
+      {
+        path: "ReportsForm/FrmRevokeDeleteRegister",
+        element: <FrmRevokeDeleteRegister />,
+      },
     ],
   },
 ]);
