@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+
+  <style>
+    body {
+      font-family: Arial;
+      font-size: 10px;
+    }
+
+    .title {
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 14px;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    .filters {
+      margin-bottom: 10px;
+      font-size: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9px;
+    }
+
+    th,
+    td {
+      border: 1px solid black;
+      padding: 4px;
+    }
+
+    th {
+      background: #eaeaea;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .right {
+      text-align: right;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="title">
+    {{corporationName}}
+  </div>
+
+  <div class="subtitle">
+    REVOKE REPORT - {{filters.type}}
+  </div>
+
+  <div class="filters">
+    <b>From Date :</b>
+    {{filters.fromDate}}
+
+    &nbsp;&nbsp;&nbsp;
+
+    <b>To Date :</b>
+    {{filters.toDate}}
+  </div>
+
+  <table>
+
+    <thead>
+      <tr>
+        <th>Sr</th>
+        <th>Revoke Date</th>
+        <th>Type</th>
+        <th>Trans No</th>
+        <th>Rec No</th>
+        <th>Trans Date</th>
+        <th>Major</th>
+        <th>Minor</th>
+        <th>Minor Name</th>
+        <th>Zone</th>
+        <th>Cheque No</th>
+        <th>Cheque Date</th>
+        <th>Tapshil</th>
+        <th>Party Name</th>
+        <th>Arth Sankalp</th>
+        <th>Inserted By</th>
+        <th>Amount</th>
+        <th>Remark</th>
+        <th>Revoke By</th>
+      </tr>
+    </thead>
+
+    <tbody>
+
+      {{#each data}}
+
+      <tr>
+
+        <td class="center">
+          {{srNo}}
+        </td>
+
+        <td>
+          {{revokeDate}}
+        </td>
+
+        <td>
+          {{transType}}
+        </td>
+
+        <td>
+          {{transNo}}
+        </td>
+
+        <td>
+          {{recNo}}
+        </td>
+
+        <td>
+          {{transDate}}
+        </td>
+
+        <td>
+          {{majorCode}}
+        </td>
+
+        <td>
+          {{minorCode}}
+        </td>
+
+        <td>
+          {{minorCodeName}}
+        </td>
+
+        <td>
+          {{zoneName}}
+        </td>
+
+        <td>
+          {{chequeNo}}
+        </td>
+
+        <td>
+          {{chequeDate}}
+        </td>
+
+        <td>
+          {{tapshil}}
+        </td>
+
+        <td>
+          {{partyName}}
+        </td>
+
+        <td>
+          {{arthSankalp}}
+        </td>
+
+        <td>
+          {{insby}}
+        </td>
+
+        <td class="right">
+          {{amount}}
+        </td>
+
+        <td>
+          {{revokeRemark}}
+        </td>
+
+        <td>
+          {{revokeBy}}
+        </td>
+
+      </tr>
+
+      {{/each}}
+
+    </tbody>
+
+  </table>
+
+</body>
+
+</html>

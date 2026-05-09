@@ -13,4 +13,10 @@ router.post("/deletetransaction",auth(),controller.deleteTransaction);
 
 router.get("/getrevokelist",auth(),controller.getRevokeList);
 
+router.post(
+  "/getrevokelistpdf",
+  auth(),
+  controller.getRevokeListPDF
+);
+
 module.exports = router;
