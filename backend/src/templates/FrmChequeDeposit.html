@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8" />
+
+<title>
+Cheque/DD/PO Pay-In-Slip
+</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:Arial, Helvetica, sans-serif;
+    color:#000;
+}
+
+@page{
+    size:A4;
+    margin:10mm;
+}
+
+.page{
+    width:100%;
+    min-height:100%;
+}
+
+.border-box{
+    border:1.5px solid #000;
+}
+
+/* ================= HEADER ================= */
+
+.header-wrapper{
+    position:relative;
+    padding:8px 10px 0px 10px;
+    min-height:95px;
+}
+
+.header{
+    display:flex;
+    align-items:flex-start;
+}
+
+.logo{
+    width:55px;
+    height:55px;
+    object-fit:contain;
+}
+
+.main-title-wrapper{
+    flex:1;
+    text-align:center;
+}
+
+.main-title{
+    font-size:16px;
+    font-weight:bold;
+}
+
+.sub-title{
+    font-size:16px;
+    font-weight:bold;
+    margin-top:8px;
+}
+
+.sub-title-marathi{
+    font-size:14px;
+    font-weight:bold;
+    margin-top:5px;
+}
+
+.right-info{
+    position:absolute;
+    right:15px;
+    top:18px;
+    font-size:12px;
+    line-height:24px;
+}
+
+/* ================= TABLE ================= */
+
+.main-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:12px;
+}
+
+.main-table th,
+.main-table td{
+    border:1px solid #000;
+    padding:4px;
+    vertical-align:top;
+}
+
+.text-right{
+    text-align:right;
+}
+
+.text-center{
+    text-align:center;
+}
+
+.bold{
+    font-weight:bold;
+}
+
+/* ================= SIGN ================= */
+
+.signature-box{
+    width:220px;
+    margin-left:auto;
+    margin-top:40px;
+    text-align:center;
+    font-size:12px;
+}
+
+.signature-line{
+    border-top:1px solid #000;
+    padding-top:4px;
+}
+
+/* ================= COUNTER FOIL ================= */
+
+.counter-box{
+    border:1.5px solid #000;
+    border-radius:18px;
+    min-height:360px;
+    position:relative;
+    padding:28px 35px;
+    margin-top:40px;
+}
+
+.counter-title{
+    text-align:center;
+    font-size:13px;
+    font-weight:bold;
+}
+
+.counter-bank{
+    text-align:center;
+    font-size:16px;
+    font-weight:bold;
+    margin-top:18px;
+}
+
+.counter-city{
+    text-align:center;
+    font-size:13px;
+    margin-top:8px;
+    margin-bottom:35px;
+}
+
+.seal-box{
+    position:absolute;
+    top:20px;
+    right:28px;
+    width:110px;
+    height:55px;
+    border:1.5px solid #000;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:12px;
+}
+
+.counter-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+}
+
+.counter-table td{
+    padding:10px 0;
+    vertical-align:top;
+}
+
+.label{
+    width:22%;
+    font-weight:bold;
+}
+
+.colon{
+    width:3%;
+}
+
+.value{
+    width:25%;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="page">
+
+<!-- ================= MAIN BOX ================= -->
+
+<div class="border-box">
+
+<!-- HEADER -->
+<div class="header-wrapper">
+
+<div class="header">
+
+<div>
+<img class="logo" src="{{logo}}" />
+</div>
+
+<div class="main-title-wrapper">
+
+<div class="main-title">
+{{corporationName}}
+</div>
+
+<div class="sub-title">
+Cheque/DD/PO Pay-In-Slip
+</div>
+
+<div class="sub-title-marathi">
+चेक/डीडी/पीओ भरणा पावती
+</div>
+
+</div>
+
+</div>
+
+<div class="right-info">
+
+<div>
+<b>Date / दिनांक :</b>
+{{slipDate}}
+</div>
+
+<div>
+<b>Time / वेळ :</b>
+{{printTime}}
+</div>
+
+<div>
+<b>Page/ पान :</b>
+Page 1 of 1
+</div>
+
+</div>
+
+</div>
+
+<!-- BANK DETAILS -->
+
+<div style="
+padding:15px 10px;
+font-size:12px;
+min-height:70px;
+">
+
+<table style="
+width:100%;
+border-collapse:collapse;
+">
+
+<tr>
+
+<td style="
+width:60%;
+font-weight:bold;
+">
+
+Bank Name / बँकेचे नाव :
+&nbsp;&nbsp;&nbsp;&nbsp;
+
+{{bankName}}
+
+</td>
+
+<td style="
+width:40%;
+font-weight:bold;
+">
+
+Branch / शाखा :
+
+{{branchName}}
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="
+padding-top:30px;
+font-weight:bold;
+">
+
+Pan No / पॅन क्रमांक :
+
+{{panNo}}
+
+</td>
+
+<td></td>
+
+</tr>
+
+</table>
+
+</div>
+
+<!-- SLIP TABLE -->
+
+<table class="main-table">
+
+<thead>
+
+<tr>
+
+<th style="width:16%;">
+Slip No / पावती क्र.
+</th>
+
+<th style="width:20%;">
+Slip Date / पावती दिनांक
+</th>
+
+<th style="width:32%;">
+Account Type / खाते प्रकार
+</th>
+
+<th style="width:32%;">
+Account No / खाते क्र.
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+{{slipNo}}
+</td>
+
+<td>
+{{slipDate}}
+</td>
+
+<td>
+{{accountType}}
+</td>
+
+<td class="text-right">
+{{accountNo}}
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+<!-- CHEQUE TABLE -->
+
+<table class="main-table" style="margin-top:2px;">
+
+<thead>
+
+<tr>
+
+<th style="width:8%;">
+Sr.No /
+<br>
+अनु क्रमांक
+</th>
+
+<th style="width:28%;">
+Drawee Bank's Name
+& Place /
+आहरित बँकेचे
+नाव व स्थान
+</th>
+
+<th style="width:20%;">
+Cheque/DD/PO.No./
+<br>
+धनादेश / डीडी / पी. ओ. क्र.
+</th>
+
+<th style="width:20%;">
+Cheque/DD/PO.Date./
+<br>
+धनादेश / डीडी / पी. ओ. दिनांक
+</th>
+
+<th style="width:24%;">
+Amount / रक्कम
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{{#each rows}}
+
+<tr>
+
+<td class="text-center">
+{{inc @index}}
+</td>
+
+<td>
+{{CHEQBANKNAME}}
+</td>
+
+<td class="text-right">
+{{CHEQNO}}
+</td>
+
+<td>
+{{CHEQDT}}
+</td>
+
+<td class="text-right">
+{{AMOUNT}}
+</td>
+
+</tr>
+
+{{/each}}
+
+<tr>
+
+<td colspan="4"
+class="text-right bold"
+style="padding:10px;">
+
+Total Amount/ एकूण रक्कम :
+
+</td>
+
+<td class="text-right bold">
+
+{{totalAmount}}
+
+</td>
+
+</tr>
+
+<tr>
+
+<td colspan="2"
+class="bold"
+style="padding:20px 5px;">
+
+Amount in words / रक्कम शब्दात
+
+</td>
+
+<td colspan="3">
+
+{{amountInWords}}
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+<!-- SIGN -->
+
+<div class="signature-box">
+
+<div class="signature-line">
+
+Depositor's Signature
+<br>
+/जमाकर्त्याची सही
+
+</div>
+
+</div>
+
+<!-- ================= COUNTER FOIL ================= -->
+
+<div class="counter-box">
+
+<div class="counter-title">
+Counter Foil /प्रतिपत्र
+</div>
+
+<div class="seal-box">
+seal
+</div>
+
+<div class="counter-bank">
+{{bankName}}
+</div>
+
+<div class="counter-city">
+अहमदनगर
+</div>
+
+<table class="counter-table">
+
+<tr>
+
+<td class="label">
+Ward/ वॉर्ड
+</td>
+
+<td class="colon">
+:
+</td>
+
+<td class="value">
+{{ward}}
+</td>
+
+<td class="label">
+Account type / खाते प्रकार
+</td>
+
+<td class="colon">
+:
+</td>
+
+<td class="value">
+{{accountType}}
+</td>
+
+</tr>
+
+<tr>
+
+<td class="label">
+Slip No. /पावती क्र
+</td>
+
+<td class="colon">
+:
+</td>
+
+<td class="value">
+{{slipNo}}
+</td>
+
+<td class="label">
+Account no /खाते क्र
+</td>
+
+<td class="colon">
+:
+</td>
+
+<td class="value">
+{{accountNo}}
+</td>
+
+</tr>
+
+<tr>
+
+<td class="label">
+Slip Date / पावती दिनांक
+</td>
+
+<td class="colon">
+:
+</td>
+
+<td class="value">
+{{slipDate}}
+</td>
+
+<td></td>
+<td></td>
+<td></td>
+
+</tr>
+
+<tr>
+
+<td class="label">
+Total Amount/ एकूण रक्कम
+</td>
+
+<td class="colon">
+:
+</td>
+
+<td class="value">
+{{totalAmount}}
+</td>
+
+<td></td>
+<td></td>
+<td></td>
+
+</tr>
+
+<tr>
+
+<td class="label">
+Amount in Words रक्कम शब्दात
+</td>
+
+<td class="colon">
+:
+</td>
+
+<td colspan="4">
+{{amountInWords}}
+</td>
+
+</tr>
+
+<tr>
+
+<td class="label">
+By/ कोणाचे
+</td>
+
+<td class="colon">
+:
+</td>
+
+<td colspan="4">
+{{corporationName}}
+</td>
+
+</tr>
+
+<tr>
+
+<td class="label">
+PAN No/ पॅन क्रमांक
+</td>
+
+<td class="colon">
+:
+</td>
+
+<td colspan="4">
+{{panNo}}
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+</div>
+
+</body>
+
+</html>
