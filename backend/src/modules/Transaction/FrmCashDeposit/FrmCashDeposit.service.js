@@ -10,6 +10,35 @@ function isValidDate(dateStr) {
   return !isNaN(parsedDate.getTime());
 }
 
+async function getZonesByDepartmentService(deptId, ulbId) {
+  if (!deptId) {
+    throw new AppError("Department ID (deptId) is required", 400);
+  }
+
+  if ((deptId === "21" || deptId === "9") && !ulbId) {
+    throw new AppError("Corporation ID (ulbId) is required for this department", 400);
+  }
+
+  const data = await repo.getZonesByDepartment(deptId, ulbId);
+
+  let message = "Zones fetched successfully";
+  if (data.length === 0) {
+    const validDeptIds = ["7", "21", "24", "9"];
+    if (!validDeptIds.includes(deptId)) {
+      message = "No data found for this department";
+    } else {
+      message = "No zones found for the selected department";
+    }
+  }
+
+  return {
+    success: true,
+    count: data.length,
+    list: data,
+    message: message
+  };
+}
+
 async function getCashDepositTransactionsService(filters) {
   if (!filters.ulbId) {
     throw new AppError("ULB ID is required", 400);
@@ -250,6 +279,7 @@ async function saveCashDenominationService(denomData) {
 }
 
 module.exports = {
+  getZonesByDepartmentService,
   getCashDepositTransactionsService,
   getCashDenominationsService,
   getTapshilReceiptsService,

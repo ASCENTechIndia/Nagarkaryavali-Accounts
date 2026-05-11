@@ -5,6 +5,14 @@ const { getCorporationService } = require("../../MenuAccess/MenuAccess.service")
 const path = require("path");
 const { FrmCashDepositPDFHelper } = require("../../../utils/pdfHelper/FrmCashDeposit");
 
+exports.getZonesByDepartment = asyncHandler(async (req, res) => {
+  const { deptId, ulbId } = req.body;
+
+  const data = await service.getZonesByDepartmentService(deptId, ulbId);
+
+  return ok(res, data, data.message);
+});
+
 exports.getCashDepositTransactions = asyncHandler(async (req, res) => {
   const filters = req.body;
 
