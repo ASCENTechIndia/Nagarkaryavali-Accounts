@@ -1,6 +1,8 @@
 const asyncHandler = require("../../../libs/asyncHandler");
 const service = require("./FrmConsolidatedReceipt.service");
 const path = require("path");
+const { ok } = require("../../../libs/response");
+
 
 const { AppError } = require("../../../libs/errors");
 
@@ -53,3 +55,17 @@ exports.getConsolidatedReceiptPDF = asyncHandler(async (req, res) => {
     pdfUrl: `${baseUrl}/pdf/${path.basename(pdf.filePath)}`,
   });
 });
+
+
+exports.getPaymentTypes = asyncHandler(
+  async (req, res) => {
+    const data =
+      await service.getPaymentTypesService();
+
+    return ok(
+      res,
+      data,
+      "Payment types fetched successfully"
+    );
+  }
+);

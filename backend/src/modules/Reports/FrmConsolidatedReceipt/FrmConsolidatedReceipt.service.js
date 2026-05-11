@@ -12,6 +12,19 @@ async function getConsolidatedReceiptService(payload) {
   };
 }
 
+async function getPaymentTypesService() {
+  console.log("📥 Service: Fetch Payment Types");
+
+  const data = await repo.getPaymentTypes();
+
+  return {
+    success: true,
+    count: data.length,
+    data,
+  };
+}
+
 module.exports = {
   getConsolidatedReceiptService,
+  getPaymentTypesService
 };
