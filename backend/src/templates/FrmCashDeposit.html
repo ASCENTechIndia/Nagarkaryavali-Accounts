@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Cash Pay-In-Slip</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:Arial, Helvetica, sans-serif;
+    color:#000;
+}
+
+@page{
+    size:A4;
+    margin:10mm;
+}
+
+.page{
+    width:100%;
+    min-height:100%;
+    page-break-after:always;
+}
+
+.border-box{
+    border:1.5px solid #000;
+}
+
+/* HEADER */
+
+.header-wrapper{
+    position:relative;
+    padding:8px 10px 0px 10px;
+    min-height:95px;
+}
+
+.header{
+    display:flex;
+    align-items:flex-start;
+}
+
+.logo{
+    width:55px;
+    height:55px;
+    object-fit:contain;
+}
+
+.main-title-wrapper{
+    flex:1;
+    text-align:center;
+}
+
+.main-title{
+    font-size:16px;
+    font-weight:bold;
+    margin-top:2px;
+}
+
+.sub-title{
+    font-size:16px;
+    font-weight:bold;
+    margin-top:6px;
+}
+
+.sub-title-marathi{
+    font-size:14px;
+    font-weight:bold;
+    margin-top:2px;
+}
+
+.right-info{
+    position:absolute;
+    right:15px;
+    top:18px;
+    font-size:12px;
+    line-height:22px;
+}
+
+/* TABLES */
+
+.main-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:12px;
+}
+
+.main-table th,
+.main-table td{
+    border:1px solid #000;
+    padding:4px;
+}
+
+.text-right{
+    text-align:right;
+}
+
+.text-center{
+    text-align:center;
+}
+
+.bold{
+    font-weight:bold;
+}
+
+/* SIGN */
+
+.signature-box{
+    width:220px;
+    margin-left:auto;
+    margin-top:20px;
+    text-align:center;
+    font-size:12px;
+}
+
+.signature-line{
+    border-top:1px solid #000;
+    padding-top:4px;
+}
+
+/* PAGE 2 */
+
+.counter-box{
+    border:1.5px solid #000;
+    border-radius:18px;
+    min-height:390px;
+    position:relative;
+    padding:28px 35px;
+}
+
+.seal-box{
+    position:absolute;
+    top:22px;
+    right:35px;
+    width:125px;
+    height:60px;
+    border:1.5px solid #000;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:12px;
+    font-weight:bold;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- PAGE 1 -->
+<div class="page">
+
+<div class="border-box">
+
+    <!-- HEADER -->
+    <div class="header-wrapper">
+
+        <div class="header">
+
+            <!-- LOGO -->
+            <div>
+                <img class="logo" src="{{logo}}" />
+            </div>
+
+            <!-- CENTER TITLE -->
+            <div class="main-title-wrapper">
+
+                <div class="main-title">
+                    {{corporationName}}
+                </div>
+
+                <div class="sub-title">
+                    Cash Pay-In-Slip
+                </div>
+
+                <div class="sub-title-marathi">
+                    भरणा पावती
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT INFO -->
+        <div class="right-info">
+
+            <div>
+                <b>Date / दिनांक :</b>
+                {{slipDate}}
+            </div>
+
+            <div>
+                <b>Time / वेळ :</b>
+                {{printTime}}
+            </div>
+
+            <div>
+                <b>Page / पान :</b>
+                Page 1 of 2
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- BANK DETAILS -->
+    <div style="padding:0px 5px; font-size:12px; min-height:60px;">
+
+        <table style="width:100%; border-collapse:collapse;">
+
+            <tr>
+
+                <td style="width:65%; padding:12px 0; font-weight:bold;">
+                    Bank Name / बँकेचे नाव :
+                    {{bankName}}
+                </td>
+
+                <td style="width:35%; padding:12px 0; font-weight:bold;">
+                    Branch / शाखा :
+                    {{branchName}}
+                </td>
+
+            </tr>
+
+            <tr>
+
+                <td style="padding-top:20px; font-weight:bold;">
+                    Pan No / पॅन क्रमांक :
+                    {{panNo}}
+                </td>
+
+                <td></td>
+
+            </tr>
+
+        </table>
+
+    </div>
+
+    <!-- SLIP TABLE -->
+    <table class="main-table">
+
+        <thead>
+
+            <tr>
+
+                <th style="width:16%; text-align:left;">
+                    Slip No / पावती क्र.
+                </th>
+
+                <th style="width:20%; text-align:left;">
+                    Slip Date / पावती दिनांक
+                </th>
+
+                <th style="width:32%; text-align:left;">
+                    Account Type / खाते प्रकार
+                </th>
+
+                <th style="width:32%; text-align:left;">
+                    Account No / खाते क्र.
+                </th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            <tr>
+
+                <td>{{slipNo}}</td>
+
+                <td>{{slipDate}}</td>
+
+                <td>{{accountType}}</td>
+
+                <td class="text-right">
+                    {{accountNo}}
+                </td>
+
+            </tr>
+
+        </tbody>
+
+    </table>
+
+    <!-- DENOMINATION TABLE -->
+    <table class="main-table">
+
+        <thead>
+
+            <tr>
+
+                <th style="width:16%; text-align:left;">
+                    Sr.No / अनु क्रमांक
+                </th>
+
+                <th style="width:20%; text-align:left;">
+                    Denomination / नोट
+                </th>
+
+                <th style="width:6%;">
+                    X
+                </th>
+
+                <th style="width:26%; text-align:left;">
+                    Numbers / संख्या
+                </th>
+
+                <th style="width:32%; text-align:left;">
+                    Amount / रक्कम
+                </th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {{#each rows}}
+
+            <tr>
+
+                <td class="text-right">
+                    {{inc @index}}
+                </td>
+
+                <td class="text-right">
+                    {{AMT}}
+                </td>
+
+                <td class="text-center">
+                    X
+                </td>
+
+                <td class="text-right">
+                    {{QTY}}
+                </td>
+
+                <td class="text-right">
+                    {{DEAMT}}
+                </td>
+
+            </tr>
+
+            {{/each}}
+
+            <!-- COINS -->
+            <tr>
+
+                <td colspan="4"
+                    class="text-right bold">
+
+                    Amounts in coins / नाण्यांमधील रक्कम :
+
+                </td>
+
+                <td></td>
+
+            </tr>
+
+            <!-- TOTAL -->
+            <tr>
+
+                <td colspan="4"
+                    class="text-right bold"
+                    style="padding:8px;">
+
+                    Total / एकूण :
+
+                </td>
+
+                <td class="text-right bold"
+                    style="padding:8px;">
+
+                    {{totalAmount}}
+
+                </td>
+
+            </tr>
+
+            <!-- AMOUNT WORDS -->
+            <tr>
+
+                <td colspan="2"
+                    style="
+                        padding:8px 4px;
+                        font-weight:bold;
+                        vertical-align:top;
+                    ">
+
+                    Amount in words / रक्कम शब्दात :
+
+                </td>
+
+                <td colspan="3"
+                    style="padding:8px 4px;">
+
+                    {{amountInWords}}
+
+                </td>
+
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<!-- SIGN -->
+<div class="signature-box">
+
+    <div class="signature-line">
+
+        Depositor's Signature
+        <br>
+        /जमाकरत्याची सही
+
+    </div>
+
+</div>
+
+</div>
+
+<!-- PAGE 2 -->
+<div class="page">
+
+<div class="counter-box">
+
+    <!-- TITLE -->
+    <div style="
+        text-align:center;
+        font-size:12px;
+        font-weight:bold;
+        margin-bottom:20px;
+    ">
+        Counter Foil /प्रतिपत्र
+    </div>
+
+    <!-- SEAL -->
+    <div class="seal-box">
+        seal
+    </div>
+
+    <!-- CORPORATION -->
+    <div style="
+        text-align:center;
+        font-size:14px;
+        font-weight:bold;
+        margin-top:35px;
+        margin-bottom:30px;
+    ">
+        {{corporationName}}
+    </div>
+
+    <!-- CONTENT -->
+    <table style="
+        width:100%;
+        border-collapse:collapse;
+        font-size:12px;
+    ">
+
+        <tr>
+
+            <td style="width:28%; padding:8px 0;">
+                <b>Ward / वॉर्ड</b>
+            </td>
+
+            <td style="width:3%;">:</td>
+
+            <td style="width:22%;">
+                {{ward}}
+            </td>
+
+            <td style="width:22%;"></td>
+
+            <td style="width:3%;"></td>
+
+            <td style="width:22%;"></td>
+
+        </tr>
+
+        <tr>
+
+            <td style="padding:8px 0;">
+                <b>Slip No. / पावती क्र</b>
+            </td>
+
+            <td>:</td>
+
+            <td>{{slipNo}}</td>
+
+            <td>
+                <b>Account type / खाते प्रकार</b>
+            </td>
+
+            <td>:</td>
+
+            <td>{{accountType}}</td>
+
+        </tr>
+
+        <tr>
+
+            <td style="padding:8px 0;">
+                <b>Slip Date / पावती दिनांक</b>
+            </td>
+
+            <td>:</td>
+
+            <td>{{slipDate}}</td>
+
+            <td>
+                <b>Account no / खाते क्र</b>
+            </td>
+
+            <td>:</td>
+
+            <td>{{accountNo}}</td>
+
+        </tr>
+
+        <tr>
+
+            <td style="padding:12px 0;">
+                <b>Total Amount / एकूण रक्कम</b>
+            </td>
+
+            <td>:</td>
+
+            <td>{{totalAmount}}</td>
+
+            <td></td>
+            <td></td>
+            <td></td>
+
+        </tr>
+
+        <tr>
+
+            <td style="
+                padding:12px 0;
+                vertical-align:top;
+            ">
+                <b>
+                    Amount in Words / रक्कम शब्दात
+                </b>
+            </td>
+
+            <td style="vertical-align:top;">:</td>
+
+            <td colspan="4"
+                style="padding-top:12px;">
+
+                {{amountInWords}}
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td style="padding:12px 0;">
+                <b>By / कोणाचे</b>
+            </td>
+
+            <td>:</td>
+
+            <td colspan="4">
+                {{corporationName}}
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td style="padding:12px 0;">
+                <b>PAN No / पॅन क्रमांक</b>
+            </td>
+
+            <td>:</td>
+
+            <td colspan="4">
+                {{panNo}}
+            </td>
+
+        </tr>
+
+    </table>
+
+</div>
+
+</div>
+
+</body>
+</html>

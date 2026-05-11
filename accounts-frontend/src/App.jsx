@@ -90,6 +90,7 @@ import FrmSDRefund from "./pages/Transaction/FrmSDRefund";
 import FrmSDVchPrepMst from "./pages/Transaction/FrmSDVchPrepMst";
 import FrmRevokeDeleteRegister from "./pages/Reports/FrmRevokeDeleteRegister";
 import FrmTransactionUpdate from "./pages/Transaction/FrmTransactionUpdate";
+import FrmCashDeposit from "./pages/Transaction/FrmCashDeposit";
 
 const Home = () => <Button>Click me</Button>;
 
@@ -462,6 +463,10 @@ export const router = createBrowserRouter([
       {
         path: "Transactions/FrmTransactionUpdate",
         element: <FrmTransactionUpdate />,
+      },
+      {
+        path: "Transactions/FrmCashDeposit",
+        element: <FrmCashDeposit />,
       },
     ],
   },
