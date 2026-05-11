@@ -126,6 +126,7 @@ app.use("/api/TranRpt", require("./modules/Reports/FrmTransferRegisterRpt/Transf
 app.use("/api/RptChequeDishonour", require("./modules/Reports/RptChequeDishonour/RptChequeDishonour.routes"))
 app.use("/api/FrmChequeUpdateRpt", require("./modules/Reports/FrmChequeUpdateReport/FrmChequeUpdateRpt.route"))
 app.use("/api/BankBalRpt", require("./modules/Reports/FrmBankBalanceRpt/FrmBankBalRpt.route"))
+app.use("/api/FrmConsolidatedReceipt", require("./modules/Reports/FrmConsolidatedReceipt/FrmConsolidatedReceipt.routes"))
 app.use(errorMiddleware);
 
 module.exports = app;
