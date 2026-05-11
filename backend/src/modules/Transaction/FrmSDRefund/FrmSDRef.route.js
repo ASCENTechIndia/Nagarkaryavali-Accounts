@@ -8,6 +8,7 @@ router.post("/party-search", auth(), controller.searchPartiesConcatenated);
 router.post("/party-search-standard", auth(), controller.searchPartiesStandard);
 
 router.post("/refund-list", auth(), controller.getSdRefundList);
+router.post("/refund-pdf", auth(), controller.getSdRefundPDF);
 
 router.get("/credit-gl-master", auth(), controller.getCreditGLMaster);
 router.get("/debit-gl-master", auth(), controller.getDebitGLMaster);

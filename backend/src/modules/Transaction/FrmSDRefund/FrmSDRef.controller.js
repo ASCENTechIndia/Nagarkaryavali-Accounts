@@ -2,6 +2,9 @@ const asyncHandler = require("../../../libs/asyncHandler");
 const { ok } = require("../../../libs/response");
 const { AppError } = require("../../../libs/errors");
 const service = require("./frmSDRef.service");
+const path = require("path");
+const { getCorporationService } = require("../../MenuAccess/MenuAccess.service");
+const { generateSDRefundPDF } = require("../../../utils/pdfHelper/sdRefundPDF");
 
 function validate(fields, body) {
   for (const field of fields) {
@@ -28,6 +31,50 @@ exports.getSdRefundList = asyncHandler(async (req, res) => {
   const data = await service.getSdRefundListService(req.body);
   return ok(res, data, "SD Refund list fetched successfully");
 });
+
+exports.getSdRefundPDF = asyncHandler(async (req, res) => {
+  const { ulbId } = req.body;
+
+  if (!ulbId) {
+    throw new AppError("ulbId is required", 400);
+  }
+
+  // Get filtered refund data
+  const result = await service.getSdRefundListService(req.body);
+
+  if (!result.data.length) {
+    throw new AppError("No data found", 404);
+  }
+
+  // Get corporation information
+  const corpInfo = await getCorporationService({
+    ulbId,
+  });
+
+  // Generate PDF
+  const pdf = await generateSDRefundPDF({
+    data: result.data,
+    filters: req.body,
+    corporationName: corpInfo.ABC_MUNICIPAL_TEXT || "",
+    corporationLogo: corpInfo.ULBLOGO || "",
+  });
+
+  const baseUrl = `${req.protocol}://${req.get("host")}`;
+
+  return res.json({
+    success: true,
+    fileName: pdf.fileName,
+    pdfUrl: `${baseUrl}/pdf/${path.basename(pdf.filePath)}`,
+    // data: result.data,
+  });
+});
+
+
+
+
+
+
+
 
 exports.getCreditGLMaster = asyncHandler(async (req, res) => {
   const data = await service.getCreditGLMasterService();

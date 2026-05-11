@@ -78,11 +78,14 @@ async function searchPartiesConcatenated(filters) {
       num_partymst_partyid AS partyid 
     FROM aoac_partymst_def 
     WHERE (
-      UPPER(var_partymst_partyname) LIKE UPPER(:pattern) 
+    
+       UPPER(
+            num_partymst_partyid || '-' || var_partymst_partyname)
+             LIKE UPPER(:pattern) 
       OR TO_CHAR(num_partymst_partyid) LIKE :pattern
     )
     AND num_partymst_ulbid = :ulbId
-    FETCH FIRST 50 ROWS ONLY
+    
   `;
 
   const params = {
