@@ -12,12 +12,12 @@ import {
 import Swal from "sweetalert2";
 import { Formik, Form } from "formik";
 import { useState, useEffect } from "react";
-
+import * as XLSX from "xlsx";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import ShadCNTable from "@/components/ui/table";
-import SearchableSelect from "@/components/SearchableSelect";
 import { DatePicker } from "@/components/ui/calendar";
+import AsyncSearchableSelect from "@/components/AsyncSearchableSelect";
 
 const FrmSDRefund = () => {
     const navigate = useNavigate();
@@ -28,152 +28,340 @@ const FrmSDRefund = () => {
     const BASE_URL = import.meta.env.VITE_BASE_URL;
 
     const [tableData, setTableData] = useState([]);
-    const [glList, setGlList] = useState([]);
-    const [entryHeadList, setEntryHeadList] = useState([]);
+    const [partyOptions, setPartyOptions] = useState([]);
+    const [contractorOptions, setContractorOptions] = useState([]);
+
+    const [loadingParty, setLoadingParty] = useState(false);
+    const [loadingContractor, setLoadingContractor] = useState(false);
+
+    const headers = [
+        "Select",
+        "Party Code",
+        "Party Name",
+        "Receipt No",
+        "Date",
+        "Amount",
+        "Details",
+        "Refund Status",
+    ];
+
+    const keyMapping = {
+        "Select": "select",
+        "Party Code": "partyCode",
+        "Party Name": "partyName",
+        "Receipt No": "receiptNo",
+        "Date": "transDate",
+        "Amount": "amount",
+        "Details": "details",
+        "Refund Status": "status",
+    };
+
 
     const formatDate = (date) => {
         if (!date) return "";
 
         const d = new Date(date);
         const day = String(d.getDate()).padStart(2, "0");
-        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+            "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+        const month = monthNames[d.getMonth()];
         const year = d.getFullYear();
 
         return `${day}-${month}-${year}`;
     };
 
-    useEffect(() => {
-        const fetchGLList = async () => {
-            try {
-                const res = await axios.get(
-                    `${BASE_URL}/api/Receipt/searchGLALL`,
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
 
-                const data = res.data?.data || [];
-
-                const formatted = data.map((item) => ({
-                    label: item.GLSEARCHNAME || "",
-                    value: item.GLFUNCTION?.toString() || "",
-                }));
-
-                setGlList(formatted);
-            } catch (err) {
-                console.error("GL List API Error:", err);
-            }
-        };
-
-        if (token) fetchGLList();
-    }, [token]);
-
-
-
-    const fetchCreditLeasure = async (glcode) => {
-        if (!glcode) return;
+    const searchParty = async (value) => {
+        if (!value || value.trim().length < 1) {
+            setPartyOptions([]);
+            return;
+        }
 
         try {
+            setLoadingParty(true);
+
             const res = await axios.post(
-                `${BASE_URL}/api/FrmTransfer/credit-leasure`,
+                `${BASE_URL}/api/frmSDRef/party-search`,
                 {
-                    corp_id: ulbId,
-                    glcode: glcode,
+                    prefix: value,
+                    ulbId: ulbId,
                 },
-                { headers: { Authorization: `Bearer ${token}` } }
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
             );
 
-            const data = res.data?.data?.rows || [];
+            const data = res.data?.data?.data || [];
 
             const formatted = data.map((item) => ({
-                label: item.ACCNAME || "",
-                value: item.OBJECTCODE?.toString() || "",
+                label: item.PARTYNAME,
+                value: item.PARTYID?.toString(),
             }));
 
-            setEntryHeadList(formatted);
+            setPartyOptions(formatted);
         } catch (err) {
-            console.error("Credit Leasure API Error:", err);
+            console.error("Party Search Error:", err);
+        } finally {
+            setLoadingParty(false);
         }
     };
 
-    const handleSubmit = async (values) => {
-        try {
 
+    const searchContractor = async (value) => {
+        if (!value || value.trim().length < 1) {
+            setContractorOptions([]);
+            return;
+        }
+
+        try {
+            setLoadingContractor(true);
+
+            const res = await axios.post(
+                `${BASE_URL}/api/frmSDRef/party-search-standard`,
+                {
+                    prefix: value,
+                    ulbId: ulbId,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            const data = res.data?.data?.data || [];
+
+            const formatted = data.map((item) => ({
+                label: item.PARTYNAME,
+                value: item.PARTYID?.toString(),
+            }));
+
+            setContractorOptions(formatted);
+        } catch (err) {
+            console.error("Contractor Search Error:", err);
+        } finally {
+            setLoadingContractor(false);
+        }
+    };
+
+    const handlePrint = async (values) => {
+        try {
             Swal.fire({
                 title: "Processing...",
                 allowOutsideClick: false,
                 didOpen: () => Swal.showLoading(),
             });
+
             const payload = {
                 ulbId: ulbId,
-                chequeFrom: values.fromCheque,
-                chequeTo: values.toCheque,
-                bankGl: values.entryDeptCode,
-                bankAccNo: values.entryHead,
+
+                receiptNo: values.fromCheque || "",
+                voucherNo: values.toCheque || "",
+                contrName: values.contractorName || "",
+                collectionDate: values.depositDate
+                    ? formatDate(values.depositDate).toUpperCase()
+                    : "",
+                partyId: values.entryDeptCode || "",
             };
 
-
-            const res = await axios.post(
-                `${BASE_URL}/api/FrmChequeUpdateRpt/cheque-update-report`,
+            // 🔥 FETCH DATA FIRST
+            const listRes = await axios.post(
+                `${BASE_URL}/api/frmSDRef/refund-list`,
                 payload,
                 {
-                    headers: { Authorization: `Bearer ${token}` },
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
                 }
             );
 
-            const rows = res.data?.data?.rows || [];
+            const list = listRes.data?.data?.data || [];
+
+            if (list.length === 0) {
+                Swal.close();
+
+                Swal.fire({
+                    icon: "info",
+                    text: "No data found",
+                });
+
+                return;
+            }
+
+            if (values.exportType === "pdf") {
+                const pdfRes = await axios.post(
+                    `${BASE_URL}/api/frmSDRef/refund-pdf`,
+                    payload,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+
+                Swal.close();
+
+                if (pdfRes.data?.success && pdfRes.data?.pdfUrl) {
+                    window.open(pdfRes.data.pdfUrl, "_blank");
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        text: "PDF URL not found",
+                    });
+                }
+
+                return;
+            }
+
+            const excelData = list.map((item, index) => ({
+                "अ.क्र": index + 1,
+                "पार्टी कोड": item.PARTYCODE || "",
+                "पार्टी नाव": item.PARTYNAME || "",
+                "पावती क्रमांक": item.RECEIPTNO || "",
+                "दिनांक": item.TRANSDT || "",
+                "रक्कम": item.TRANSAMNT || "",
+                "तपशील": item.DETAILS || "",
+                "रिफंड स्थिती": item.STATUS || "",
+                "व्हाउचर क्रमांक": item.TRANSNO || "",
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+            worksheet["!cols"] = [
+                { wch: 8 },
+                { wch: 15 },
+                { wch: 35 },
+                { wch: 18 },
+                { wch: 18 },
+                { wch: 15 },
+                { wch: 40 },
+                { wch: 20 },
+                { wch: 20 },
+            ];
+
+            const workbook = XLSX.utils.book_new();
+
+            XLSX.utils.book_append_sheet(
+                workbook,
+                worksheet,
+                "SD Refund List"
+            );
+
+            const timestamp = new Date()
+                .toISOString()
+                .split("T")[0]
+                .replace(/-/g, "");
+
+            XLSX.writeFile(
+                workbook,
+                `SD_Refund_List_${timestamp}.xlsx`
+            );
+
+            Swal.close();
+        } catch (err) {
+            console.error("Export Error:", err);
+
+            Swal.close();
+
+            Swal.fire({
+                icon: "error",
+                text:
+                    err.response?.data?.message ||
+                    "Failed to export data",
+            });
+        }
+    };
+
+    const handleSubmit = async (values) => {
+        try {
+            Swal.fire({
+                title: "Processing...",
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading(),
+            });
+
+            const payload = {
+                ulbId: ulbId,
+
+                receiptNo: values.fromCheque || "",
+                voucherNo: values.toCheque || "",
+                contrName: values.contractorName || "",
+                collectionDate: values.depositDate
+                    ? formatDate(values.depositDate).toUpperCase()
+                    : "",
+                partyId: values.entryDeptCode || "",
+            };
+
+            const res = await axios.post(
+                `${BASE_URL}/api/frmSDRef/refund-list`,
+                payload,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            const rows = res.data?.data?.data || [];
 
             const formatted = rows.map((item) => ({
-                chequeNo: item.CHEQNO?.toString() || "",
-                bookNo: item.CHQBOOK?.toString() || "",
-                status: item.CURNTTSITUATION || "",
-                date: formatDate(item.CHEQDATE),
-                amount: item.CHEQAMT?.toString() || "",
-                voucherNo: item.VCHNO || "",
-                voucherDate: formatDate(item.VCHODATE),
-                remark: item.BANKNAME || item.REMARK || "",
+                select: (
+                    <Button
+                        variant="link"
+                        className="text-blue-700 px-0 h-auto"
+                        onClick={() =>
+                            navigate("/Transactions/FrmSDVchPrepMst", {
+                                state: {
+                                    mode: 3,
+                                    receiptNo: item.RECEIPTNO,
+                                    sdid: item.SDID,
+                                    RefNo: item.TRANSNO,
+                                    partyId: item.PARTYCODE,
+                                },
+                            })
+                        }
+                    >
+                        Select
+                    </Button>
+                ),
+
+                partyCode: item.PARTYCODE || "",
+                partyName: item.PARTYNAME || "",
+                receiptNo: item.RECEIPTNO || "",
+                transDate: item.TRANSDT || "",
+                amount: item.TRANSAMNT || "",
+                details: item.DETAILS || "",
+                status: item.STATUS || "",
+                voucherNo: item.TRANSNO || "",
+                sdid: item.SDID || "",
             }));
 
             setTableData(formatted);
 
             Swal.close();
-
         } catch (err) {
-            console.error("Report API Error:", err);
+            console.error("Refund List API Error:", err);
 
             Swal.fire({
-                text: "Failed to fetch report",
+                icon: "error",
+                text: "Failed to fetch refund list",
             });
         }
     };
 
-    const headers = [
-        "धनादेश क्रमांक",
-        "धनादेश बुक क्रमांक",
-        "सदयस्थिती",
-        "धनादेश दिनांक",
-        "धनादेश रक्कम",
-        "प्रमाणक क्रमांक",
-        "प्रमाणक दिनांक",
-        "शेरा",
-    ];
 
-    const keyMapping = {
-        "धनादेश क्रमांक": "chequeNo",
-        "धनादेश बुक क्रमांक": "bookNo",
-        "सदयस्थिती": "status",
-        "धनादेश दिनांक": "date",
-        "धनादेश रक्कम": "amount",
-        "प्रमाणक क्रमांक": "voucherNo",
-        "प्रमाणक दिनांक": "voucherDate",
-        "शेरा": "remark",
-    };
 
     return (
         <Formik
             initialValues={{
                 entryDeptCode: "",
-                entryHead: "",
+                contractorName: "",
+                depositDate: "",
                 fromCheque: "",
                 toCheque: "",
+                exportType: "pdf",
             }}
             onSubmit={handleSubmit}
         >
@@ -189,12 +377,8 @@ const FrmSDRefund = () => {
 
                             <CardContent className="p-3 sm:p-5 space-y-6">
 
-                                {/* Form Section */}
                                 <div className="border border-gray-300 rounded-sm p-4 sm:p-5 bg-white">
-
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-
-                                        {/* सु.अ.क्र.शोध */}
                                         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
                                             <Label
                                                 className="sm:w-40 text-left sm:text-right font-semibold"
@@ -209,7 +393,6 @@ const FrmSDRefund = () => {
                                             />
                                         </div>
 
-                                        {/* पार्टी कोड */}
                                         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
                                             <Label
                                                 className="sm:w-40 text-left sm:text-right font-semibold"
@@ -217,24 +400,29 @@ const FrmSDRefund = () => {
                                             />
 
                                             <div className="flex-1 w-full">
-                                                <SearchableSelect
-                                                    name="entryDeptCode"
+                                                <AsyncSearchableSelect
+                                                    options={partyOptions}
                                                     value={values.entryDeptCode}
-                                                    options={glList}
-                                                    onChange={(val) => {
-                                                        if (!val) return;
-
-                                                        setFieldValue("entryDeptCode", val.value);
-
-                                                        fetchCreditLeasure(val.value);
-
-                                                        setFieldValue("entryHead", "");
+                                                    onSearch={(value) => {
+                                                        searchParty(value);
                                                     }}
+                                                    isLoading={loadingParty}
+                                                    loadingMessage="Searching Party..."
+                                                    noOptionsMessage="No Data Found"
+                                                    onChange={(option) => {
+                                                        const value = option?.value || "";
+
+                                                        setFieldValue("entryDeptCode", value);
+
+                                                        fetchCreditLeasure(value);
+
+                                                        setFieldValue("contractorName", "");
+                                                    }}
+                                                    placeholder="पार्टी कोड निवडा"
                                                 />
                                             </div>
                                         </div>
 
-                                        {/* कंत्राटदार नाव */}
                                         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
                                             <Label
                                                 className="sm:w-40 text-left sm:text-right font-semibold"
@@ -242,23 +430,26 @@ const FrmSDRefund = () => {
                                             />
 
                                             <div className="flex-1 w-full">
-                                                <SearchableSelect
-                                                    name="contractorName"
+                                                <AsyncSearchableSelect
+                                                    options={contractorOptions}
                                                     value={values.contractorName}
-                                                    options={entryHeadList}
-                                                    onChange={(val) => {
-                                                        if (!val) return;
-
+                                                    onSearch={(value) => {
+                                                        searchContractor(value);
+                                                    }}
+                                                    isLoading={loadingContractor}
+                                                    loadingMessage="Searching Contractor..."
+                                                    noOptionsMessage="No Data Found"
+                                                    onChange={(option) => {
                                                         setFieldValue(
                                                             "contractorName",
-                                                            val.value
+                                                            option?.label || ""
                                                         );
                                                     }}
+                                                    placeholder="कंत्राटदार नाव निवडा"
                                                 />
                                             </div>
                                         </div>
 
-                                        {/* जमा दिनांक */}
                                         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
                                             <Label
                                                 className="sm:w-40 text-left sm:text-right font-semibold"
@@ -272,7 +463,6 @@ const FrmSDRefund = () => {
                                         </div>
                                     </div>
 
-                                    {/* Buttons */}
                                     <div className="flex flex-wrap justify-center gap-3 mt-6">
 
                                         <Button
@@ -305,54 +495,63 @@ const FrmSDRefund = () => {
                                         </Button>
                                     </div>
 
-                                    {/* Export + Print */}
-                                    <div className="flex flex-wrap items-center gap-6 mt-8">
-
-                                        <div className="flex items-center gap-4">
-
-                                            <Label
-                                                className="font-semibold text-[15px]"
-                                                text="Export To"
-                                            />
-
-                                            <span className="font-semibold">:</span>
-
-                                            <div className="flex items-center gap-4">
-
-                                                <label className="flex items-center gap-2 text-sm">
-                                                    <input
-                                                        type="radio"
-                                                        name="export"
-                                                        defaultChecked
-                                                    />
-                                                    Pdf
-                                                </label>
-
-                                                <label className="flex items-center gap-2 text-sm">
-                                                    <input
-                                                        type="radio"
-                                                        name="export"
-                                                    />
-                                                    Excel
-                                                </label>
-                                            </div>
-                                        </div>
-
-                                        <Button className="bg-blue-900 hover:bg-blue-950 text-white px-8">
-                                            Print
-                                        </Button>
-                                    </div>
-
-                                    {/* Table */}
                                     {tableData.length > 0 && (
-                                        <div className="mt-6 border-t pt-4">
-                                            <ShadCNTable
-                                                headers={headers}
-                                                data={tableData}
-                                                keyMapping={keyMapping}
-                                                pagination={true}
-                                                rowsPerPage={5}
-                                            />
+                                        <div>
+                                            <div className="flex flex-wrap items-center gap-6 mt-8">
+
+                                                <div className="flex items-center gap-4">
+
+                                                    <Label
+                                                        className="font-semibold text-[15px]"
+                                                        text="Export To"
+                                                    />
+
+                                                    <span className="font-semibold">:</span>
+
+                                                    <div className="flex items-center gap-4">
+
+                                                        <label className="flex items-center gap-2 text-sm">
+                                                            <input
+                                                                type="radio"
+                                                                name="exportType"
+                                                                value="pdf"
+                                                                checked={values.exportType === "pdf"}
+                                                                onChange={handleChange}
+                                                            />
+                                                            Pdf
+                                                        </label>
+
+                                                        <label className="flex items-center gap-2 text-sm">
+                                                            <input
+                                                                type="radio"
+                                                                name="exportType"
+                                                                value="excel"
+                                                                checked={values.exportType === "excel"}
+                                                                onChange={handleChange}
+                                                            />
+                                                            Excel
+                                                        </label>
+                                                    </div>
+                                                </div>
+
+                                                <Button
+                                                    type="button"
+                                                    className="bg-blue-900 hover:bg-blue-950 text-white px-8"
+                                                    onClick={() => handlePrint(values)}
+                                                >
+                                                    Print
+                                                </Button>
+                                            </div>
+
+                                            <div className="mt-6 border-t pt-4">
+                                                <ShadCNTable
+                                                    headers={headers}
+                                                    data={tableData}
+                                                    keyMapping={keyMapping}
+                                                    pagination={true}
+                                                    rowsPerPage={5}
+                                                />
+                                            </div>
                                         </div>
                                     )}
                                 </div>
