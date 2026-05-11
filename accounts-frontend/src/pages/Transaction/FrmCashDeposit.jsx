@@ -123,7 +123,7 @@ const FrmCashDeposit = () => {
       }
       
       const res = await axios.post(
-        `${BASE_URL}/api/RptChequeDishonour/zones-by-department`,
+        `${BASE_URL}/api/FrmCashDeposit/zones-by-department`,
         { deptId: deptId, ulbId: Number(ulbId) },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -1001,28 +1001,26 @@ const FrmCashDeposit = () => {
                     </div>
 
                     {values.vibhag === "7" && values.prabhag !== "-1" && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                          <div className="sm:w-28 shrink-0 flex justify-start sm:justify-between items-center">
-                            <Label text="Collection" />
-                            <span>:</span>
-                          </div>
-                          <Select
-                            value={values.colCen}
-                            onValueChange={(v) => setFieldValue("colCen", v)}
-                          >
-                            <SelectTrigger className="w-full h-9">
-                              <SelectValue placeholder="-- विकल्प निवडा --" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {collCenOptions.map((option) => (
-                                <SelectItem key={option.value} value={option.value}>
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <div className="sm:w-28 shrink-0 flex justify-start sm:justify-between items-center">
+                          <Label text="Collection" />
+                          <span>:</span>
                         </div>
+                        <Select
+                          value={values.colCen}
+                          onValueChange={(v) => setFieldValue("colCen", v)}
+                        >
+                          <SelectTrigger className="w-full h-9">
+                            <SelectValue placeholder="-- विकल्प निवडा --" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {collCenOptions.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     )}
                   </div>

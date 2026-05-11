@@ -3,6 +3,7 @@ const router = express.Router();
 const auth = require("../../../middlewares/auth.middleware");
 const controller = require("./FrmCashDeposit.controller");
 
+router.post("/zones-by-department", auth(), controller.getZonesByDepartment);
 router.post("/transactions", auth(), controller.getCashDepositTransactions);
 router.post("/denominations", auth(), controller.getCashDenominations);
 router.post("/tapshil-receipts", auth(), controller.getTapshilReceipts);

@@ -1,0 +1,301 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+
+    <style>
+      @page {
+        size: A4 landscape;
+        margin: 10px;
+      }
+
+      body {
+        font-family: Arial;
+        margin: 0;
+        padding: 0;
+        font-size: 11px;
+      }
+
+      .wrapper {
+        padding: 4px;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      .main-table {
+        border: 1px solid #000;
+        table-layout: fixed;
+      }
+
+      .main-table td,
+      .main-table th {
+        border: 1px solid #000;
+        padding: 4px;
+        vertical-align: middle;
+      }
+
+      .center {
+        text-align: center;
+      }
+
+      .right {
+        text-align: right;
+      }
+
+      .bold {
+        font-weight: bold;
+      }
+
+      .header-title {
+        font-size: 16px;
+        font-weight: bold;
+      }
+
+      .report-title {
+        font-size: 14px;
+        font-weight: bold;
+        margin-top: 6px;
+      }
+
+      .sub-title {
+        font-size: 14px;
+        font-weight: bold;
+        margin-top: 6px;
+      }
+
+      .header-title,
+      .report-title {
+        width: 100%;
+        display: block;
+        box-sizing: border-box;
+        border-bottom: 1px solid #000;
+        padding-bottom: 4px;
+      }
+      .grid {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+
+      .grid th,
+      .grid td {
+        border: 1px solid #000;
+        padding: 6px;
+      }
+
+      .grid th {
+        text-align: center;
+        font-size: 12px;
+        font-weight: bold;
+      }
+
+      .grid td {
+        font-size: 11px;
+      }
+
+      .meta-table {
+        width: 100%;
+        height: 100%;
+      }
+
+      .meta-table td {
+        border: 1px solid #000;
+        padding: 8px;
+        font-size: 12px;
+      }
+
+      .no-padding {
+        padding: 0 !important;
+      }
+
+      .date-range {
+        font-size: 14px;
+        font-weight: bold;
+        padding: 10px !important;
+      }
+
+      .group-row td {
+        background: #efefef;
+        font-weight: bold;
+        font-size: 14px;
+        text-align: left;
+        padding: 8px;
+      }
+
+      .total-row td {
+        font-weight: bold;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrapper">
+      <table class="main-table">
+        <!-- HEADER -->
+
+        <tr>
+          <td class="center">
+            <div class="header-title">{{corporationName}}</div>
+
+            <div class="report-title">Consolidated Receipt</div>
+
+            <div class="sub-title">संघटित पावती अहवाल</div>
+          </td>
+
+          <td style="width: 220px" class="no-padding">
+            <table class="meta-table">
+              <tr>
+                <td class="bold">Date / दिनांक</td>
+
+                <td>{{printDate}}</td>
+              </tr>
+
+              <tr>
+                <td class="bold">Time / वेळ</td>
+
+                <td>{{printTime}}</td>
+              </tr>
+
+              <tr>
+                <td class="bold">Page / पान</td>
+
+                <td>{{pageText}}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- DATE RANGE -->
+
+        <tr>
+          <td colspan="2" class="center date-range">FromDate/दिनांक पासून: {{fromDate}} &nbsp;&nbsp;&nbsp;&nbsp; ToDate/दिनांक पर्यंत : {{toDate}}</td>
+        </tr>
+
+        <!-- WARD -->
+
+        <tr>
+          <td></td>
+
+          <td>Ward / वॉर्ड : प्रभाग स. क्र. {{ward}}</td>
+        </tr>
+
+        <!-- DEPARTMENT -->
+
+        <tr>
+          <td></td>
+
+          <td>Department / विभाग : {{department}}</td>
+        </tr>
+
+        <!-- GRID -->
+
+        <tr>
+          <td colspan="2" class="no-padding">
+            <table class="grid">
+              <thead>
+                <tr>
+                  {{#if showDateColumn}}
+                  <th style="width: 90px">
+                    Date/<br />
+                    दिनांक
+                  </th>
+                  {{else}}
+                  <th style="width: 55px">Sr. No.</th>
+                  {{/if}}
+
+                  <th style="width: 90px">
+                    Department<br />
+                    /विभाग
+                  </th>
+
+                  <th style="width: 100px">
+                    Account Head/<br />
+                    लेखा संकेतांक
+                  </th>
+
+                  <th style="width: 100px">
+                    Account Description/<br />
+                    लेखा वर्णन
+                  </th>
+
+                  <th style="width: 100px">
+                    No. of Transaction/<br />
+                    व्यवहार संख्या
+                  </th>
+
+                  <th style="width: 90px">
+                    Cash/<br />
+                    रोख(₹)
+                  </th>
+
+                  <th style="width: 110px">Cheque/PO/DD/<br />धनादेश/पीओ/डीडी</th>
+
+                  <th style="width: 90px">Bank बँक (₹)</th>
+
+                  <th style="width: 80px">Online</th>
+
+                  <th style="width: 110px">
+                    Total<br />
+                    /एकूण (₹)
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {{#each rows}}
+
+                <tr>
+                  {{#if ../showDateColumn}}
+                  <td class="center">{{recDate}}</td>
+                  {{else}}
+                  <td class="center">{{srNo}}</td>
+                  {{/if}}
+
+                  <td>{{department}}</td>
+
+                  <td>{{accountHead}}</td>
+
+                  <td>{{accountDescription}}</td>
+
+                  <td class="center">{{transactionCount}}</td>
+
+                  <td class="right">{{cashAmt}}</td>
+
+                  <td class="right">{{chequeAmt}}</td>
+
+                  <td class="right">{{bankAmt}}</td>
+
+                  <td class="right">{{onlineAmt}}</td>
+
+                  <td class="right">{{total}}</td>
+                </tr>
+
+                {{/each}}
+
+                <tr class="total-row">
+                  <td colspan="4" class="center">Total / एकूण (₹)</td>
+
+                  <td class="center">{{totalTransaction}}</td>
+
+                  <td class="right">{{totalCash}}</td>
+
+                  <td class="right">{{totalCheque}}</td>
+
+                  <td class="right">{{totalBank}}</td>
+
+                  <td class="right">{{totalOnline}}</td>
+
+                  <td class="right">{{grandTotal}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>

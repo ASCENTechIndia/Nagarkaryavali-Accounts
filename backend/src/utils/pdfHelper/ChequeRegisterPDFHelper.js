@@ -178,6 +178,10 @@ const ChequeRegisterPDFHelper = async ({ reportData, ulbInfo, filters }) => {
     let totalNet = 0;
     let totalCheque = 0;
 
+    const formatChequeNo = (num) => {
+      return String(num || "").padStart(6, "0");
+    };
+
     const rows = reportData.map((r) => {
       totalGross += Number(r.GROSSAMT || 0);
       totalDeduction += Number(r.TDS || 0);
@@ -186,6 +190,7 @@ const ChequeRegisterPDFHelper = async ({ reportData, ulbInfo, filters }) => {
 
       return {
         ...r,
+        CHEQNO: formatChequeNo(r.CHEQNO),
         CHEQDATE: formatDate(r.CHEQDATE),
         VCHODATE: formatDate(r.VCHODATE),
         SYSTEMBILLDATE: formatDate(r.SYSTEMBILLDATE),
@@ -240,7 +245,9 @@ const ChequeRegisterPDFHelper = async ({ reportData, ulbInfo, filters }) => {
       currentTime: now.toLocaleTimeString(),
       pages: pages,
       accountNumber: filters.minorCode || "ALL",
-      bankName:filters.majorCode ?? "ALL"
+      // bankName:filters.majorCode ?? "ALL"
+      // accountNumber: filters.minorCodeName || "ALL",
+      bankName: filters.minorCodeName || "ALL",
     });
     
     // const browser = await getBrowser();

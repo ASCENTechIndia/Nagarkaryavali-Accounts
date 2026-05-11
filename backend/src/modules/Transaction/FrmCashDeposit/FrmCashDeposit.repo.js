@@ -2,6 +2,78 @@ const oracledb = require("oracledb");
 const { executeQuery } = require("../../../db/queryExecutor");
 const { withTx } = require("../../../db/tx");
 
+async function getZonesByDepartment(deptId, ulbId) {
+  let sql = "";
+  const params = {};
+
+  switch (deptId) {
+    case "7":
+      sql = `
+        SELECT 
+          var_prabhag_name AS name, 
+          num_prabhag_newid AS id
+        FROM aoms_prabhag_mas 
+        WHERE num_prabhag_id <> '99' 
+        ORDER BY var_prabhag_prabhagcode
+      `;
+      break;
+
+    case "21":
+      if (!ulbId) {
+        throw new Error("UlbId ID is required for department 21");
+      }
+      sql = `
+        SELECT 
+          prabhag_name AS name, 
+          prabhagid AS id
+        FROM cfc.vw_zone 
+        WHERE ulbid = :ulbId 
+        GROUP BY prabhagid, prabhag_name  
+        ORDER BY prabhagid
+      `;
+      params.ulbId = ulbId;
+      break;
+
+    case "24":
+      sql = `
+        SELECT 
+          var_CollCenter_Name AS name, 
+          num_CollCenter_id AS id
+        FROM aowt_CollCenter_mas  
+        GROUP BY var_CollCenter_Name, num_CollCenter_id 
+        ORDER BY num_CollCenter_id
+      `;
+      break;
+
+    case "9":
+      if (!ulbId) {
+        throw new Error("UlbId ID is required for department 9");
+      }
+      sql = `
+        SELECT 
+          wardname AS name, 
+          wardid AS id
+        FROM prop.vw_ward_mas 
+        WHERE ulbid = :ulbId  
+        GROUP BY wardid, wardname  
+        ORDER BY wardid
+      `;
+      params.ulbId = ulbId;
+      break;
+
+    default:
+      return [];
+  }
+
+  const result = await executeQuery(sql, params);
+  
+  if (!result.success) {
+    throw new Error(result.error);
+  }
+
+  return result.rows;
+}
+
 async function getCashDepositTransactions(params) {
   let sql = `
     SELECT 
@@ -359,6 +431,7 @@ async function insertCashDenominationCashier(data) {
 }
 
 module.exports = {
+  getZonesByDepartment,
   getCashDepositTransactions,
   getCashDenominations,
   getTapshilReceipts,

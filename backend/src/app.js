@@ -93,7 +93,7 @@ app.use("/api/FrmBulkReceipt", require("./modules/Transaction/FrmBulkReceipt/Frm
 app.use("/api/FrmCheqCancelchanges", require("./modules/Transaction/FrmCheqCancelchanges/FrmCheqCancelchanges.routes"))
 app.use("/api/Tranrevoke", require("./modules/Transaction/FrmTransactionUpdate/FrmTranUpdate.route"))
 app.use("/api/FrmCashDeposit", require("./modules/Transaction/FrmCashDeposit/FrmCashDeposit.routes"))
-app.use("/api/ChequeDepo", require("./modules/Transaction/FrmChequeDeposit/ChequeDeposit.route"))
+app.use("/api/frmSDRef" , require("./modules/Transaction/FrmSDRefund/FrmSDRef.route"))
 
 //Reports
 app.use("/api/RptTransferRegister", require("./modules/Reports/RptTransferRegister/transferRegister.route"))
@@ -126,6 +126,7 @@ app.use("/api/TranRpt", require("./modules/Reports/FrmTransferRegisterRpt/Transf
 app.use("/api/RptChequeDishonour", require("./modules/Reports/RptChequeDishonour/RptChequeDishonour.routes"))
 app.use("/api/FrmChequeUpdateRpt", require("./modules/Reports/FrmChequeUpdateReport/FrmChequeUpdateRpt.route"))
 app.use("/api/BankBalRpt", require("./modules/Reports/FrmBankBalanceRpt/FrmBankBalRpt.route"))
+app.use("/api/FrmConsolidatedReceipt", require("./modules/Reports/FrmConsolidatedReceipt/FrmConsolidatedReceipt.routes"))
 app.use(errorMiddleware);
 
 module.exports = app;
