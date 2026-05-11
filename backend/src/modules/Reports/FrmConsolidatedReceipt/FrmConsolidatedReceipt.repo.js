@@ -225,6 +225,29 @@ async function getConsolidatedReceiptRepo(payload) {
   return result.rows;
 }
 
+
+async function getPaymentTypes() {
+  console.log("📤 Repo: Fetch Payment Types");
+
+  const sql = `
+    SELECT 
+      recmodname,
+      recmodeid
+    FROM Prop.vw_recmodeconfig
+    WHERE recmodeid IS NOT NULL
+    GROUP BY recmodname, recmodeid
+    ORDER BY recmodname
+  `;
+
+  const result = await executeQuery(sql);
+
+  if (!result.success) {
+    throw new Error(result.error);
+  }
+
+  return result.rows;
+}
 module.exports = {
   getConsolidatedReceiptRepo,
+  getPaymentTypes
 };
