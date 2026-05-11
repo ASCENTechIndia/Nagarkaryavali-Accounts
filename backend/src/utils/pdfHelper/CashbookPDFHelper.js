@@ -71,7 +71,8 @@ const CashbookPDFHelper = async ({ reportData, openingBalanceData, filters, ulbI
       if (hasPayment) {
         const paymentAmount = row.PBankAmount || 0;
         const paymentTransfer = row.PTransferAmount || 0;
-        const paymentTotal = paymentAmount + paymentTransfer;
+        // const paymentTotal = paymentAmount + paymentTransfer;
+        const paymentTotal = row.PaymentTotal || 0;
         
         totalPaymentAmount += paymentAmount;
         totalPaymentTransfer += paymentTransfer;
@@ -100,9 +101,9 @@ const CashbookPDFHelper = async ({ reportData, openingBalanceData, filters, ulbI
     let closingBalance;
     if (openingDrCr === "Dr.") {
       // If opening is debit, treat as negative
-      closingBalance = -openingBalance + totalReceiptOverall - totalPaymentOverall;
+      closingBalance = Math.abs(openingBalance) + totalReceiptOverall - totalPaymentOverall;
     } else {
-      closingBalance = openingBalance + totalReceiptOverall - totalPaymentOverall;
+      closingBalance = Math.abs(openingBalance) + totalReceiptOverall - totalPaymentOverall;
     }
     
     const absClosingBalance = Math.abs(closingBalance);
@@ -149,12 +150,23 @@ const CashbookPDFHelper = async ({ reportData, openingBalanceData, filters, ulbI
     
     // Format date for display
     const formattedDate = filters.date;
+
+    const batchSize = 15;
+
+    const batches = [];
+
+    for (let i = 0; i < combinedRows.length; i += batchSize) {
+      batches.push(
+        combinedRows.slice(i, i + batchSize)
+      );
+    }
     
     const html = template({
       logo: ulbInfo.ULBLOGO,
       corporationName: ulbInfo.ABC_MUNICIPAL_TEXT,
       fromDate: formattedDate,
-      rows: combinedRows,
+      // rows: combinedRows,
+      batches,
       opening: formatNumber(openingBalance),
       // Receipt totals - column wise
       totalReceiptCash: formatNumber(totalReceiptCash),

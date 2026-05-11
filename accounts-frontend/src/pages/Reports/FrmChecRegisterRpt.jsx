@@ -151,14 +151,24 @@ const FrmChecRegisterRpt = () => {
         didOpen: () => Swal.showLoading(),
         });
 
+        const selectedGL = glCodes.find(
+          (g) => g.value === values.deptCode
+        );
+
+        const selectedLedger = ledgerOptions.find(
+          (l) => l.value === values.ledger
+        );
+
         const payload = {
-        ulbId: Number(ulbId),
-        fromDate: formatDateForAPI(values.fromDate),
-        toDate: formatDateForAPI(values.toDate),
-        chkGLCode: values.useGL ? 1 : 0,
-        majorCode: values.useGL ? Number(values.deptCode) : null,
-        minorCode: values.useGL ? Number(values.ledger) : null,
-        partyId: values.party || "",
+          ulbId: Number(ulbId),
+          fromDate: formatDateForAPI(values.fromDate),
+          toDate: formatDateForAPI(values.toDate),
+          chkGLCode: values.useGL ? 1 : 0,
+          majorCode: values.useGL ? Number(values.deptCode) : null,
+          minorCode: values.useGL ? Number(values.ledger) : null,
+          partyId: values.party || "",
+          majorCodeName: selectedGL?.label?.split("-").slice(1).join("-") || "ALL",
+          minorCodeName: selectedLedger?.label?.split("-").slice(1).join("-") || "ALL",
         };
 
         setLoading(true);
