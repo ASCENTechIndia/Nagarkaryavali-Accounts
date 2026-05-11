@@ -125,6 +125,8 @@ async function searchPartiesStandard(filters) {
   return result.rows;
 }
 
+
+
 async function getCreditGLMaster() {
   const sql = `
     SELECT DISTINCT 
@@ -248,7 +250,7 @@ async function getVoucherPrepMaster(refNo, ulbId) {
       a.num_vchpremst_budget_id,
       p.var_partymst_partyname AS PartyName,
       a.num_vchpremst_nidhi_id AS nidhi_id,
-      sd.dat_recsecdepodet_certino AS certino,
+      sd.var_recsecdepodet_certino AS certino,
       sd.dat_recsecdepodet_sddt AS sddt,
       NVL(a.num_vchpremst_totdeduamt, 0) AS totdeduamt,
       (NVL(a.num_vchprepmst_totalamt, 0) - NVL(a.num_vchpremst_totdeduamt, 0)) AS payamt
@@ -414,7 +416,8 @@ async function getSDVoucherPrepReceiptDetails(voucherNo, ulbId) {
   `;
 
   const result = await executeQuery(sql, { 
-    voucherNo: voucherNo.trim(), 
+    voucherNo: voucherNo, //removed .trim() why need trim for number?
+    // voucherNo: voucherNo.trim(), 
     ulbId: ulbId 
   });
   
@@ -476,7 +479,7 @@ async function saveSdRefundVoucherRepo(payload) {
   };
 
   const result = await executeProcedure({ sql, binds });
-
+  console.log("result:",result)
   if (!result.success) {
     throw new Error(result.error);
   }

@@ -14,11 +14,11 @@ router.get("/credit-gl-master", auth(), controller.getCreditGLMaster);
 router.get("/debit-gl-master", auth(), controller.getDebitGLMaster);
 
 router.post("/check-refund-status", auth(), controller.checkRefundStatus);
-router.post("/voucher-by-sdid", auth(), controller.getVoucherBySDID);
+router.post("/voucher-by-sdid", auth(), controller.getVoucherBySDID); //no need
 
 router.post("/voucher-master", auth(), controller.getSDVoucherMaster);
 router.post("/voucher-details", auth(), controller.getSDVoucherDetails);
-router.post("/voucher-prep-master", auth(), controller.getVoucherPrepMaster);
+router.post("/voucher-prep-master", auth(), controller.getVoucherPrepMaster);// column name changed dat to var
 router.post("/voucher-receipt-details", auth(), controller.getSDVoucherPrepReceiptDetails);
 
 router.post("/party-bank-details", auth(), controller.getPartyBankDetails);
