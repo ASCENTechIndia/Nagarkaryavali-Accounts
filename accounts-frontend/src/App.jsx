@@ -92,6 +92,7 @@ import FrmRevokeDeleteRegister from "./pages/Reports/FrmRevokeDeleteRegister";
 import FrmTransactionUpdate from "./pages/Transaction/FrmTransactionUpdate";
 import FrmCashDeposit from "./pages/Transaction/FrmCashDeposit";
 import ChequeDeposit from "./pages/Transaction/ChequeDeposit";
+import FrmContraRecReprint from "./pages/ReportsForm/FrmContraRecReprint";
 
 const Home = () => <Button>Click me</Button>;
 
@@ -104,6 +105,10 @@ export const router = createBrowserRouter([
     path: "/",
     element: <Layout />,
     children: [
+      {
+        path: "/HomePage/FrmHomePage",
+        element: <FrmHomePage />,
+      },
       {
         path: "/Transactions/FrmReceiptList",
         element: <FrmReceiptList />,
@@ -181,7 +186,14 @@ export const router = createBrowserRouter([
         path: "/Transactions/FrmTransAuthMst",
         element: <FrmTransAuthMst />,
       },
-
+       {
+        path: "/Transactions/FrmSearchOption",
+        element: <FrmSearchOption />,
+      },
+      {
+        path: "/Transactions/FrmBulkReceipt",
+        element: <FrmBulkReceipt />,
+      },
       {
         path: "/Masters/FrmAccountListMst",
         element: <FrmAccountListMst />,
@@ -349,14 +361,7 @@ export const router = createBrowserRouter([
         path: "/ReportsForm/RptClassifiedAbstractSummary",
         element: <RptClassifiedAbstractSummary />,
       },
-      {
-        path: "/Transactions/FrmSearchOption",
-        element: <FrmSearchOption />,
-      },
-      {
-        path: "/Transactions/FrmBulkReceipt",
-        element: <FrmBulkReceipt />,
-      },
+     
       {
         path: "/ReportsForm/RptReceiptRegister",
         element: <RptReceiptRegister />,
@@ -380,11 +385,7 @@ export const router = createBrowserRouter([
       {
         path: "/ReportsForm/RptCashBook",
         element: <RptCashBook />
-      },
-      {
-        path: "/HomePage/FrmHomePage",
-        element: <FrmHomePage />,
-      },
+      },      
       {
         path: "ReportsForm/RptCashBook",
         element: <RptCashBook />,
@@ -428,6 +429,10 @@ export const router = createBrowserRouter([
       {
         path: "ReportsForm/FrmSecurityDeposit",
         element: <FrmSecurityDeposit />,
+      },
+      {
+        path: "ReportsForm/FrmContraRecReprint",
+        element: <FrmContraRecReprint />,
       },
       {
         path: "ReportsForm/FrmAccIntDataRpt",
