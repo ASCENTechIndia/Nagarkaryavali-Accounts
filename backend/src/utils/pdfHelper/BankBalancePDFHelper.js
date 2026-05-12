@@ -7,6 +7,7 @@ const Handlebars = require("handlebars");
 
 const imageToBase64 = (imgPath) => {
   try {
+
     if (!imgPath) return "";
 
     if (imgPath.startsWith("data:image")) {
@@ -15,11 +16,13 @@ const imageToBase64 = (imgPath) => {
 
     const file = fs.readFileSync(imgPath);
 
-    const ext = path.extname(imgPath).replace(".", "");
+    const ext = path.extname(imgPath)
+      .replace(".", "");
 
     return `data:image/${ext};base64,${file.toString("base64")}`;
 
   } catch {
+
     return "";
   }
 };
@@ -27,9 +30,11 @@ const imageToBase64 = (imgPath) => {
 // ================= FORMAT =================
 
 const formatDate = (date) => {
+
   if (!date) return "";
 
-  return new Date(date).toLocaleDateString("en-GB");
+  return new Date(date)
+    .toLocaleDateString("en-GB");
 };
 
 const formatNumber = (num) => {
@@ -39,27 +44,6 @@ const formatNumber = (num) => {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
-};
-
-const normalizeBalance = (row) => {
-
-  const amount =
-    Number(row.BALANCE || 0);
-
-  const crdr =
-    String(row.CRDR || "")
-      .toUpperCase();
-
-  return crdr.includes("DR")
-    ? -Math.abs(amount)
-    : Math.abs(amount);
-};
-
-const getDrCr = (amount) => {
-
-  return amount < 0
-    ? "Dr."
-    : "Cr.";
 };
 
 // ================= MAIN =================
@@ -78,10 +62,15 @@ const BankBalancePDFHelper = async ({
     );
 
     const htmlTemplate =
-      fs.readFileSync(templatePath, "utf8");
+      fs.readFileSync(
+        templatePath,
+        "utf8"
+      );
 
     const template =
-      Handlebars.compile(htmlTemplate);
+      Handlebars.compile(
+        htmlTemplate
+      );
 
     // ================= LOGO =================
 
@@ -90,7 +79,7 @@ const BankBalancePDFHelper = async ({
         ulbInfo?.ULBLOGO
       );
 
-    // ================= GROUPING =================
+    // ================= GROUP DATA =================
 
     const groupedData = {
       "Cash Account": [],
@@ -98,49 +87,102 @@ const BankBalancePDFHelper = async ({
       "Investment": [],
     };
 
+    let cashTotal = 0;
+    let bankTotal = 0;
+    let investmentTotal = 0;
+
+    // ================= GROUPING =================
+
     rows.forEach((row) => {
 
-      let groupName = "Investment";
+      const balance =
+        Number(row.BALANCE || 0);
 
-      if (row.BALSCODE == 4810) {
-        groupName = "Cash Account";
+      // ================= CASH =================
+
+      if (row.BALSCODE == "4810") {
+
+        groupedData["Cash Account"]
+          .push({
+
+            objectCode:
+              row.OBJECTCODE || "",
+
+            accName:
+              row.ACCNAME || "",
+
+            balance:
+              formatNumber(balance),
+
+            crdr:
+              row.CRDR || "",
+          });
+
+        cashTotal =
+          cashTotal + balance;
       }
 
-      if (
-        row.BALSCODE == 4820 ||
-        row.BALSCODE == 4821
+      // ================= BANK =================
+
+      else if (
+
+        row.BALSCODE == "4820" ||
+        row.BALSCODE == "4821" ||
+        row.BALSCODE == "4822" ||
+        row.BALSCODE == "4823"
+
       ) {
-        groupName = "Bank Account";
+
+        groupedData["Bank Account"]
+          .push({
+
+            objectCode:
+              row.OBJECTCODE || "",
+
+            accName:
+              row.ACCNAME || "",
+
+            balance:
+              formatNumber(balance),
+
+            crdr:
+              row.CRDR || "",
+          });
+
+        bankTotal =
+          bankTotal + balance;
       }
 
-      groupedData[groupName].push({
+      // ================= INVESTMENT =================
 
-        objectCode:
-          row.OBJECTCODE || "",
+      else if (
+        row.BALSCODE == "9"
+      ) {
 
-        accName:
-          row.ACCNAME || "",
+        groupedData["Investment"]
+          .push({
 
-        balance:
-          formatNumber(
-            row.BALANCE
-          ),
+            objectCode:
+              row.OBJECTCODE || "",
 
-        crdr:
-          row.CRDR || "Cr.",
+            accName:
+              row.ACCNAME || "",
 
-        numericBalance:
-          normalizeBalance(row),
-      });
+            balance:
+              formatNumber(balance),
+
+            crdr:
+              row.CRDR || "",
+          });
+
+        investmentTotal =
+          investmentTotal + balance;
+      }
     });
 
     // ================= GROUPS =================
 
     const groups = [];
-
-    let cashTotal = 0;
-    let bankTotal = 0;
-    let investmentTotal = 0;
 
     Object.keys(groupedData)
       .forEach((groupName) => {
@@ -152,23 +194,18 @@ const BankBalancePDFHelper = async ({
           return;
         }
 
-        const total =
-          rowsData.reduce(
-            (sum, row) =>
-              sum + row.numericBalance,
-            0
-          );
+        let total = 0;
 
         if (groupName === "Cash Account") {
-          cashTotal = total;
+          total = cashTotal;
         }
 
         if (groupName === "Bank Account") {
-          bankTotal = total;
+          total = bankTotal;
         }
 
         if (groupName === "Investment") {
-          investmentTotal = total;
+          total = investmentTotal;
         }
 
         groups.push({
@@ -181,7 +218,9 @@ const BankBalancePDFHelper = async ({
             formatNumber(total),
 
           totalCrDr:
-            getDrCr(total),
+            total < 0
+              ? "Dr."
+              : "Cr.",
         });
       });
 
@@ -223,17 +262,34 @@ const BankBalancePDFHelper = async ({
       cashTotal:
         formatNumber(cashTotal),
 
+      cashCrDr:
+        cashTotal < 0
+          ? "Dr."
+          : "Cr.",
+
       bankTotal:
         formatNumber(bankTotal),
 
+      bankCrDr:
+        bankTotal < 0
+          ? "Dr."
+          : "Cr.",
+
       investmentTotal:
         formatNumber(investmentTotal),
+
+      investmentCrDr:
+        investmentTotal < 0
+          ? "Dr."
+          : "Cr.",
 
       grandTotal:
         formatNumber(grandTotal),
 
       grandCrDr:
-        getDrCr(grandTotal),
+        grandTotal < 0
+          ? "Dr."
+          : "Cr.",
     });
 
     // ================= CHROME PATH =================
