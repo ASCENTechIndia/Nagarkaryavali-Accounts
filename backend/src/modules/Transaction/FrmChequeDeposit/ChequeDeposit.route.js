@@ -18,5 +18,6 @@ router.get("/zonelist/:zoneId",auth(),controller.getZoneList);
 router.get("/collectioncenter/:prabhagId",auth(),controller.getCollectionCenterList);
 
 router.post("/savecashierreceipt",auth(),controller.saveCashierReceipt);
+router.post("/generatechequedepositpdf",auth(),controller.generateChequeDepositPDF);
 
 module.exports = router;

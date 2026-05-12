@@ -13,4 +13,10 @@ router.post("/transaction-details",auth(), controller.getTransactionDetails);
 
 router.post("/single-balance",auth(), controller.getSingleAccountBalance);
 
+router.post(
+  "/accountbalancepdf",
+  auth(),
+  controller.generateAccountBalancePDF
+);
+
 module.exports = router;
