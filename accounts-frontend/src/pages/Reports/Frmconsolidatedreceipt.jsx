@@ -18,6 +18,7 @@ import { DatePicker } from "@/components/ui/calendar";
 import Swal from "sweetalert2";
 import { Formik, Form } from "formik";
 import * as XLSX from "xlsx";
+import { FrmconsolidatedreceiptValidationSchema } from "../validations/global.validation";
 
 const container = {
   hidden: { opacity: 0, y: 20 },
@@ -32,15 +33,13 @@ const Frmconsolidatedreceipt = () => {
 
   const [loading, setLoading] = useState(false);
   const [exportFormat, setExportFormat] = useState("pdf");
-  const [exportType, setExportType] = useState("summary");
+  const [exportType, setExportType] = useState("1");
   
-  // Dropdown states
   const [departmentOptions, setDepartmentOptions] = useState([]);
   const [zoneOptions, setZoneOptions] = useState([]);
   const [collectionCenterOptions, setCollectionCenterOptions] = useState([]);
   const [paymentModeOptions, setPaymentModeOptions] = useState([]);
   
-  // Loading states for dropdowns
   const [loadingDepartment, setLoadingDepartment] = useState(false);
   const [loadingZone, setLoadingZone] = useState(false);
   const [loadingCollectionCenter, setLoadingCollectionCenter] = useState(false);
@@ -60,85 +59,128 @@ const Frmconsolidatedreceipt = () => {
   const fetchDepartment = async () => {
     try {
       setLoadingDepartment(true);
-      const response = await axios.get(`${BASE_URL}/api/Receipt/departments`, {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { ulbid: Number(ulbId) }
-      });
-      
-      if (response?.data?.data) {
-        const formatted = [
+
+      const res = await axios.post(
+        `${BASE_URL}/api/Receipt/departments`,
+        {
+          ulbid: Number(ulbId),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (res?.data?.ok) {
+        const formatted = res.data.data.map((dept) => ({
+          value: String(dept.DEPTID),
+          label: dept.DEPTNAME,
+        }));
+
+        setDepartmentOptions([
           { value: "-1", label: "-- ALL --" },
-          ...response.data.data.map((dept) => ({
-            value: dept.DEPTID?.toString(),
-            label: dept.DEPTNAME,
-          }))
-        ];
-        setDepartmentOptions(formatted);
+          ...formatted,
+        ]);
       }
     } catch (err) {
       console.error("Error fetching departments:", err);
-      setDepartmentOptions([{ value: "-1", label: "-- ALL --" }]);
+
+      setDepartmentOptions([
+        { value: "-1", label: "-- ALL --" },
+      ]);
     } finally {
       setLoadingDepartment(false);
     }
   };
 
-  const fetchZones = async () => {
+  const fetchZones = async (values) => {
     try {
       setLoadingZone(true);
-      const response = await axios.post(
-        `${BASE_URL}/api/Receipt/zones`,
-        { corp_id: ulbId },
-        { headers: { Authorization: `Bearer ${token}` } }
+
+      const res = await axios.post(
+        `${BASE_URL}/api/RptChequeDishonour/zones-by-department`,
+        {
+          deptId: values.department,
+          ulbId: Number(ulbId),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
-      
-      if (response?.data?.data) {
-        const formatted = [
+
+      if (
+        res?.data?.ok &&
+        res?.data?.data?.success &&
+        res?.data?.data?.list?.length > 0
+      ) {
+        const formatted = res.data.data.list.map((zone) => ({
+          value: String(zone.ID),
+          label: zone.NAME,
+        }));
+
+        setZoneOptions([
           { value: "-1", label: "-- ALL --" },
-          ...response.data.data.map((zone) => ({
-            value: zone.ZONEID?.toString(),
-            label: zone.ZONEENAME,
-          }))
-        ];
-        setZoneOptions(formatted);
+          ...formatted,
+        ]);
+      } else {
+        setZoneOptions([
+          { value: "-1", label: "-- ALL --" },
+        ]);
       }
     } catch (err) {
       console.error("Error fetching zones:", err);
-      setZoneOptions([{ value: "-1", label: "-- ALL --" }]);
+
+      setZoneOptions([
+        { value: "-1", label: "-- ALL --" },
+      ]);
     } finally {
       setLoadingZone(false);
     }
   };
-
-  const fetchCollectionCenter = async () => {
+  
+  const fetchCollectionCenter = async (values) => {
     try {
       setLoadingCollectionCenter(true);
-      const response = await axios.get(`${BASE_URL}/api/utils/collCenterList`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      if (response?.data?.data) {
-        const formatted = [
+
+      const res = await axios.post(
+        `${BASE_URL}/api/RptChequeDishonour/collection-centers`,
+        {
+          zoneId:
+            values.prabhag !== "-1"
+              ? values.prabhag
+              : null,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (
+        res?.data?.ok &&
+        res?.data?.data?.success &&
+        res?.data?.data?.list?.length > 0
+      ) {
+        const formatted = res.data.data.list.map((center) => ({
+          value: String(center.ID),
+          label: center.NAME,
+        }));
+
+        setCollectionCenterOptions([
           { value: "-1", label: "-- ALL --" },
-          ...response.data.data.map((center) => ({
-            value: center.zoneid?.toString(),
-            label: center.zonename,
-          }))
-        ];
-        setCollectionCenterOptions(formatted);
-      } else if (response?.data?.ok && response?.data?.data) {
-        const formatted = [
-          { value: "-1", label: "-- ALL --" },
-          ...response.data.data.map((center) => ({
-            value: center.zoneid?.toString(),
-            label: center.zonename,
-          }))
-        ];
-        setCollectionCenterOptions(formatted);
+          ...formatted,
+        ]);
       }
     } catch (err) {
       console.error("Error fetching collection centers:", err);
-      setCollectionCenterOptions([{ value: "-1", label: "-- ALL --" }]);
+
+      setCollectionCenterOptions([
+        { value: "-1", label: "-- ALL --" },
+      ]);
     } finally {
       setLoadingCollectionCenter(false);
     }
@@ -147,149 +189,354 @@ const Frmconsolidatedreceipt = () => {
   const fetchPaymentMode = async () => {
     try {
       setLoadingPaymentMode(true);
-      
-      const response = await axios.get(`${BASE_URL}/api/Receipt/payment-modes`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (response?.data?.data) {
-        const formatted = [{ value: "-1", label: "-- ALL --" }, ...response.data.data];
-        setPaymentModeOptions(formatted);
-      } else {
-        setPaymentModeOptions(paymentModes);
+
+      const res = await axios.get(
+        `${BASE_URL}/api/FrmConsolidatedReceipt/payment-types`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (res?.data?.data?.success) {
+        const formatted = res.data.data.data.map((mode) => ({
+          value: String(mode.RECMODEID),
+          label: mode.RECMODNAME,
+        }));
+
+        setPaymentModeOptions([
+          { value: "-1", label: "-- ALL --" },
+          ...formatted,
+        ]);
       }
     } catch (err) {
       console.error("Error fetching payment modes:", err);
-      setPaymentModeOptions([{ value: "-1", label: "-- ALL --" }]);
+
+      setPaymentModeOptions([
+        { value: "-1", label: "-- ALL --" },
+      ]);
     } finally {
       setLoadingPaymentMode(false);
     }
   };
 
-  const validateForm = async (values) => {
-    if (!values.fromDate) {
-      await Swal.fire({
-        text: "तारखे पासून रिक्त असू शकत नाही",
-        confirmButtonColor: '#1e3a8a'
-      });
-      return false;
-    }
-    if (!values.toDate) {
-      await Swal.fire({
-        text: "तारीख पर्यंत रिक्त असू शकत नाही",
-        confirmButtonColor: '#1e3a8a'
-      });
-      return false;
-    }
-    if (values.fromDate > values.toDate) {
-      await Swal.fire({
-        text: "तारीख पर्यंत पेक्षा तारखे पासून मोठे असू शकत नाही",
-        confirmButtonColor: '#1e3a8a'
-      });
-      return false;
-    }
-    return true;
-  };
-
   const formatDateForAPI = (date) => {
     if (!date) return null;
+
     const d = new Date(date);
+
     const day = String(d.getDate()).padStart(2, "0");
     const month = String(d.getMonth() + 1).padStart(2, "0");
     const year = d.getFullYear();
-    return `${year}-${month}-${day}`;
+
+    return `${day}-${month}-${year}`;
   };
 
-  const generateReport = async (values) => {
+  const handleExportExcel = async (values) => {
     setLoading(true);
 
+    let loaderSwal;
+
     try {
+      loaderSwal = Swal.fire({
+        title: "Exporting Excel...",
+        text: "Please wait...",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
       const payload = {
         fromDate: formatDateForAPI(values.fromDate),
         toDate: formatDateForAPI(values.toDate),
-        departmentId: values.department !== "-1" ? values.department : null,
-        zoneId: values.prabhag !== "-1" ? values.prabhag : null,
-        collectionCenterId: values.collCenter !== "-1" ? values.collCenter : null,
-        paymentMode: values.payMode !== "-1" ? values.payMode : null,
-        reportType: exportType, // "summary" or "details"
-        ulbId: Number(ulbId)
+
+        deptId:
+          values.department !== "-1"
+            ? Number(values.department)
+            : null,
+
+        zoneId:
+          values.prabhag !== "-1"
+            ? Number(values.prabhag)
+            : null,
+
+        collectionCenterId:
+          values.collCenter !== "-1"
+            ? Number(values.collCenter)
+            : null,
+
+        paymentTypeId:
+          values.payMode !== "-1"
+            ? Number(values.payMode)
+            : null,
+
+        reportType: exportType,
+
+        ulbId: Number(ulbId),
       };
 
-      console.log("Report Payload:", payload);
+      console.log("Excel Payload:", payload);
 
-      if (exportFormat === "excel") {
-        // Download Excel from backend
-        const response = await axios.post(
-          `${BASE_URL}/api/Report/consolidated-receipt-excel`,
-          payload,
-          {
-            headers: { 
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            },
-            responseType: 'blob' // Important for file download
-          }
-        );
+      const res = await axios.post(
+        `${BASE_URL}/api/FrmConsolidatedReceipt/receipt-data`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-        // Create download link
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `Consolidated_Receipt_Report_${exportType}_${Date.now()}.xlsx`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.URL.revokeObjectURL(url);
+      loaderSwal.close();
 
-        await Swal.fire({
-          text: "Excel report downloaded successfully!",
-          confirmButtonColor: '#1e3a8a',
-          timer: 2000
-        });
-      } 
-      else if (exportFormat === "pdf") {
-        // Open PDF in new tab from backend
-        const response = await axios.post(
-          `${BASE_URL}/api/Report/consolidated-receipt-pdf`,
-          payload,
-          {
-            headers: { 
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            },
-            responseType: 'blob'
-          }
-        );
-
-        // Create blob URL and open in new tab
-        const blob = new Blob([response.data], { type: 'application/pdf' });
-        const url = window.URL.createObjectURL(blob);
-        window.open(url, '_blank');
-        window.URL.revokeObjectURL(url);
-
-        await Swal.fire({
-          text: "PDF report opened in new tab!",
-          confirmButtonColor: '#1e3a8a',
-          timer: 2000
-        });
+      if (!res?.data?.success) {
+        throw new Error("No data found");
       }
+
+      const apiData = res.data.data || [];
+
+      if (apiData.length === 0) {
+        Swal.fire({
+          text: "No records found",
+          confirmButtonColor: "#1e3a8a",
+        });
+        return;
+      }
+
+      const excelData = apiData.map((item, index) => {
+        const rowData = {
+          "Sr No": index + 1,
+
+          Department: item.DEPARTMENT || "",
+
+          "Account Description":
+            item.ACCDESCRIPTION || "",
+
+          "Account Head":
+            item.ACCOUNTHEAD || "",
+
+          "No Of Transaction":
+            item.NOOFTRANSACTION || 0,
+
+          "Cash Amount":
+            item.CASHAMT || 0,
+
+          "Cheque Amount":
+            item.CHEQUEAMT || 0,
+
+          "Bank Amount":
+            item.BANKAMT || 0,
+
+          "Online Amount":
+            item.ONLINEAMT || 0,
+
+          Total: item.TOTAL || 0,
+        };
+
+        if (exportType === "1") {
+          rowData["Receipt Date"] = item.RECDATE
+            ? new Date(item.RECDATE).toLocaleDateString("en-GB")
+            : "";
+        }
+
+        return rowData;
+      });
+
+      const worksheet =
+        XLSX.utils.json_to_sheet(excelData);
+
+      const columnWidths =
+        exportType === "1"
+        ? [
+            { wch: 8 },
+            { wch: 15 }, 
+            { wch: 25 },
+            { wch: 40 },
+            { wch: 20 },
+            { wch: 18 },
+            { wch: 15 },
+            { wch: 18 },
+            { wch: 15 },
+            { wch: 18 },
+            { wch: 15 },
+          ]
+      : [
+          { wch: 8 },
+          { wch: 25 },
+          { wch: 40 },
+          { wch: 20 },
+          { wch: 18 },
+          { wch: 15 },
+          { wch: 18 },
+          { wch: 15 },
+          { wch: 18 },
+          { wch: 15 },
+        ];
+
+      worksheet["!cols"] = columnWidths;
+
+      const workbook = XLSX.utils.book_new();
+
+      XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        "Consolidated Receipt"
+      );
+
+      const fileName = `Consolidated_Receipt_${formatDateForAPI(
+        values.fromDate
+      )}_to_${formatDateForAPI(values.toDate)}.xlsx`;
+
+      XLSX.writeFile(workbook, fileName);
+
+      Swal.fire({
+        text: "Excel exported successfully!",
+        confirmButtonColor: "#1e3a8a",
+        timer: 2000,
+      });
+
     } catch (error) {
-      console.error("Error generating report:", error);
-      await Swal.fire({
-        text: error.response?.data?.message || "Failed to generate report. Please try again.",
-        confirmButtonColor: '#1e3a8a'
+      console.log("Excel Export Error:", error);
+
+      Swal.fire({
+        text:
+          error?.response?.data?.message ||
+          error?.message ||
+          "Failed to export excel",
+        confirmButtonColor: "#1e3a8a",
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleFormSubmit = async (values, { setSubmitting }) => {
-    const isValid = await validateForm(values);
-    if (!isValid) {
-      setSubmitting(false);
-      return;
+  const generateReport = async (values) => {
+    setLoading(true);
+
+    let loaderSwal;
+
+    try {
+      loaderSwal = Swal.fire({
+        title: "Generating...",
+        text: "Please wait...",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      const selectedDepartment =
+        departmentOptions.find(
+          (d) => d.value === values.department
+        );
+
+    const selectedZone =
+      zoneOptions.find(
+        (z) => z.value === values.prabhag
+      );
+
+      const payload = {
+        fromDate: formatDateForAPI(values.fromDate),
+        toDate: formatDateForAPI(values.toDate),
+
+        deptId:
+          values.department !== "-1"
+            ? Number(values.department)
+            : null,
+
+        zoneId:
+          values.prabhag !== "-1"
+            ? Number(values.prabhag)
+            : null,
+
+        collectionCenterId:
+          values.collCenter !== "-1"
+            ? Number(values.collCenter)
+            : null,
+
+        paymentTypeId:
+          values.payMode !== "-1"
+            ? Number(values.payMode)
+            : null,
+
+        reportType: exportType,
+
+        ulbId: Number(ulbId),
+
+        departmentName:
+          selectedDepartment?.label || "ALL",
+
+        wardName:
+          selectedZone?.label || "ALL",
+      };
+
+      console.log("Payload:", payload);
+
+      const res = await axios.post(
+        `${BASE_URL}/api/FrmConsolidatedReceipt/receipt`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      loaderSwal.close();
+
+      if (res?.data?.success) {
+        window.open(res.data.pdfUrl, "_blank");
+
+        Swal.fire({
+          text: "Report generated successfully!",
+          confirmButtonColor: "#1e3a8a",
+          timer: 2000,
+        });
+      } else {
+        throw new Error("Report generation failed");
+      }
+    } catch (error) {
+      console.error("Error generating report:", error);
+
+      Swal.fire({
+        text:
+          error?.response?.data?.message ||
+          error?.message ||
+          "Failed to generate report",
+        confirmButtonColor: "#1e3a8a",
+      });
+    } finally {
+      setLoading(false);
     }
-    await generateReport(values);
+  };
+
+  const handleFormSubmit = async (
+    values,
+    { setSubmitting }
+  ) => {
+    const validationResult = FrmconsolidatedreceiptValidationSchema.safeParse(values);
+    if (!validationResult.success) {
+        const firstError = validationResult.error.issues[0];
+        console.log("Validation error:", firstError);
+        await Swal.fire({
+            text: firstError.message,
+            confirmButtonColor: '#1e3a8a'
+        });
+        setSubmitting(false);
+        setLoading(false);
+        return;
+    }
+
+    if (exportFormat === "pdf") {
+      await generateReport(values);
+    } else {
+      await handleExportExcel(values);
+    }
+
     setSubmitting(false);
   };
 
@@ -317,8 +564,6 @@ const Frmconsolidatedreceipt = () => {
   useEffect(() => {
     if (ulbId && token) {
       fetchDepartment();
-      fetchZones();
-      fetchCollectionCenter();
       fetchPaymentMode();
     }
   }, [ulbId, token]);
@@ -330,6 +575,27 @@ const Frmconsolidatedreceipt = () => {
       onSubmit={handleFormSubmit}
     >
       {({ values, setFieldValue, isSubmitting, handleSubmit, resetForm }) => {
+        
+          useEffect(() => {
+            if (values.department && values.department !== "-1") {
+              fetchZones(values);
+            } else {
+              setZoneOptions([
+                { value: "-1", label: "-- ALL --" },
+              ]);
+            }
+          }, [values.department]);
+
+          useEffect(() => {
+            if (values.prabhag && values.prabhag !== "-1") {
+              fetchCollectionCenter(values);
+            } else {
+              setCollectionCenterOptions([
+                { value: "-1", label: "-- ALL --" },
+              ]);
+            }
+          }, [values.prabhag]);
+
         return (
           <Form onSubmit={handleSubmit}>
             <motion.div variants={container} initial="hidden" animate="show">
@@ -374,7 +640,7 @@ const Frmconsolidatedreceipt = () => {
                       <Select
                         value={values.prabhag}
                         onValueChange={(v) => setFieldValue("prabhag", v)}
-                        disabled={loadingZone}
+                        disabled={loadingZone || !values.department}
                       >
                         <SelectTrigger className="w-full h-9">
                           <SelectValue placeholder={loadingZone ? "Loading..." : "-- विकल्प निवडा --"} />
@@ -397,7 +663,7 @@ const Frmconsolidatedreceipt = () => {
                       <Select
                         value={values.collCenter}
                         onValueChange={(v) => setFieldValue("collCenter", v)}
-                        disabled={loadingCollectionCenter}
+                        disabled={loadingCollectionCenter || !values.collCenter}
                       >
                         <SelectTrigger className="w-full h-9">
                           <SelectValue placeholder={loadingCollectionCenter ? "Loading..." : "-- विकल्प निवडा --"} />
@@ -511,9 +777,9 @@ const Frmconsolidatedreceipt = () => {
                             type="radio"
                             id="summary"
                             name="exportType"
-                            value="summary"
-                            checked={exportType === "summary"}
-                            onChange={(e) => setExportType(e.target.value)}  
+                            value="1"
+                            checked={exportType === "1"}
+                            onChange={(e) => setExportType(e.target.value)}
                             className="h-4 w-4"
                           />
                           <Label htmlFor="summary" className="font-medium text-gray-700 cursor-pointer">
@@ -525,9 +791,9 @@ const Frmconsolidatedreceipt = () => {
                             type="radio"
                             id="details"
                             name="exportType"
-                            value="details"
-                            checked={exportType === "details"}
-                            onChange={(e) => setExportType(e.target.value)} 
+                            value="2"
+                            checked={exportType === "2"}
+                            onChange={(e) => setExportType(e.target.value)}
                             className="h-4 w-4"
                           />
                           <Label htmlFor="details" className="font-medium text-gray-700 cursor-pointer">
