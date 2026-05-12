@@ -14,7 +14,7 @@ const formatNumber = (num) => {
   });
 };
 
-const generateConsolidatedReceiptPDF = async ({ data, fromDate, toDate, reportType }) => {
+const generateConsolidatedReceiptPDF = async ({ data, fromDate, toDate, reportType, departmentName, wardName }) => {
   try {
     const templatePath = path.resolve(__dirname, "../../templates/FrmConsolidatedReceipt.html");
 
@@ -105,9 +105,8 @@ const generateConsolidatedReceiptPDF = async ({ data, fromDate, toDate, reportTy
       fromDate,
       toDate,
 
-      ward: "1",
-
-      department: data?.length > 0 ? data[0].DEPARTMENT : "",
+      ward: wardName || "ALL",
+      department: departmentName || "ALL",
 
       rows,
 
@@ -128,10 +127,21 @@ const generateConsolidatedReceiptPDF = async ({ data, fromDate, toDate, reportTy
       grandTotal: formatNumber(grandTotal),
     });
 
-    const browser = await puppeteer.launch({
-      headless: true,
-    });
+    const chromePath = path.resolve(
+        __dirname,
+        "../../../node_modules/puppeteer/.cache/puppeteer/chrome/win64-135.0.7049.84/chrome-win64/chrome.exe"
+    );
+    
+    const launchOptions = {
+        headless: true,
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    };
 
+    if (fs.existsSync(chromePath)) {
+        launchOptions.executablePath = chromePath;
+    }
+
+    const browser = await puppeteer.launch(launchOptions);
     const page = await browser.newPage();
 
     await page.setViewport({
@@ -141,6 +151,7 @@ const generateConsolidatedReceiptPDF = async ({ data, fromDate, toDate, reportTy
 
     await page.setContent(html, {
       waitUntil: "networkidle0",
+      timeout: 0,
     });
 
     const fileName = `ConsolidatedReceipt_${Date.now()}.pdf`;
