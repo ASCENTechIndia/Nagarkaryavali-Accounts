@@ -32,5 +32,12 @@ router.post("/party-tax-details", auth(), controller.getPartyTaxDetails);
 router.post("/reference-info", auth(), controller.getSDReferenceInfo);
 router.get("/next-certificate-no/:ulbId", auth(),controller.getNextCertificateNo);
 router.post("/save", auth(), controller.saveSdRefundVoucher);
+// ================= ROUTE =================
+
+router.post(
+  "/voucherreceiptpdf",
+  auth(),
+  controller.generateSDVoucherReceiptPDF
+);
 
 module.exports = router;

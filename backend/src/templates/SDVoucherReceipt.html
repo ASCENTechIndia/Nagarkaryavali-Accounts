@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>
+Security Deposit Voucher
+</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial, Helvetica, sans-serif;
+    font-size:12px;
+    color:#000;
+}
+
+.page{
+    border:1px solid #000;
+    padding:15px;
+    min-height:100vh;
+}
+
+.header{
+    text-align:center;
+    position:relative;
+}
+
+.logo{
+    position:absolute;
+    left:0;
+    top:0;
+    width:60px;
+    height:60px;
+    object-fit:contain;
+}
+
+.title{
+    font-size:20px;
+    font-weight:bold;
+}
+
+.sub-title{
+    margin-top:5px;
+    font-size:16px;
+    font-weight:bold;
+}
+
+.top-section{
+    margin-top:15px;
+    display:flex;
+    justify-content:space-between;
+}
+
+.left-info,
+.right-info{
+    width:48%;
+    line-height:28px;
+}
+
+.bold{
+    font-weight:bold;
+}
+
+.middle-section{
+    margin-top:25px;
+    display:flex;
+    justify-content:space-between;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+
+th,
+td{
+    border:1px solid #000;
+    padding:6px;
+    vertical-align:top;
+}
+
+.text-right{
+    text-align:right;
+}
+
+.text-center{
+    text-align:center;
+}
+
+.summary{
+    margin-top:20px;
+    width:350px;
+}
+
+.summary-table{
+    width:100%;
+}
+
+.footer{
+    margin-top:70px;
+    display:flex;
+    justify-content:space-between;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="page">
+
+<div class="header">
+
+<img
+src="{{logo}}"
+class="logo"
+/>
+
+<div class="title">
+{{corporationName}}
+</div>
+
+<div class="sub-title">
+Security Deposit Payment Voucher Acknowledgement
+</div>
+
+</div>
+
+<div class="top-section">
+
+<div class="left-info">
+
+<div>
+<span class="bold">
+Party Code
+</span>
+:
+{{partyCode}}
+</div>
+
+<div>
+<span class="bold">
+Party Name
+</span>
+:
+{{partyName}}
+</div>
+
+<br>
+
+<div>
+<span class="bold">
+Party PAN
+</span>
+:
+{{partyPan}}
+</div>
+
+<div>
+<span class="bold">
+बिल तपशील
+</span>
+:
+{{narration}}
+</div>
+
+</div>
+
+<div class="right-info">
+
+<div>
+<span class="bold">
+दिनांक
+</span>
+:
+{{currentDate}}
+</div>
+
+<div>
+<span class="bold">
+वेळ
+</span>
+:
+{{currentTime}}
+</div>
+
+<br>
+
+<div>
+<span class="bold">
+Voucher No.
+</span>
+:
+{{voucherNo}}
+</div>
+
+<div>
+<span class="bold">
+Voucher Date
+</span>
+:
+{{voucherDate}}
+</div>
+
+</div>
+
+</div>
+
+<div class="middle-section">
+
+<div>
+<span class="bold">
+पावती क्रमांक / व्हाउचर क्र
+</span>
+:
+{{receiptNo}}
+</div>
+
+<div>
+<span class="bold">
+Zone
+</span>
+:
+{{zone}}
+</div>
+
+<div>
+<span class="bold">
+Department
+</span>
+:
+{{department}}
+</div>
+
+<div>
+<span class="bold">
+User name
+</span>
+:
+{{username}}
+</div>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th rowspan="2">
+अ.क्र.
+</th>
+
+<th rowspan="2">
+शीर्ष संकेतांक
+</th>
+
+<th rowspan="2">
+लेखाशीर्ष नाव
+</th>
+
+<th rowspan="2">
+एकूण देय रक्कम
+</th>
+
+<th colspan="2">
+बजाती व वजाबाकी
+</th>
+
+<th rowspan="2">
+निव्वळ देय रक्कम
+</th>
+
+</tr>
+
+<tr>
+
+<th>
+तपशील
+</th>
+
+<th>
+रक्कम
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{{#each rows}}
+
+<tr>
+
+<td class="text-center">
+{{srNo}}
+</td>
+
+<td>
+{{drAccNo}}
+</td>
+
+<td>
+{{drAccName}}
+</td>
+
+<td class="text-right">
+{{amount}}
+</td>
+
+<td></td>
+
+<td class="text-right">
+{{crAmount}}
+</td>
+
+<td class="text-right">
+{{netAmount}}
+</td>
+
+</tr>
+
+{{/each}}
+
+<tr>
+
+<td colspan="3"
+class="text-center bold">
+
+Grand Total
+
+</td>
+
+<td class="text-right bold">
+{{totalDebit}}
+</td>
+
+<td></td>
+
+<td class="text-right bold">
+{{totalCredit}}
+</td>
+
+<td class="text-right bold">
+{{netAmount}}
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+<div style="
+margin-top:15px;
+font-weight:bold;
+">
+
+निव्वळ देय रक्कम ( अक्षरात ) :
+
+</div>
+
+<div class="summary">
+
+<table class="summary-table">
+
+<tr>
+
+<td>
+देय एकूण रक्कम
+</td>
+
+<td class="text-right">
+{{totalDebit}}
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+एकूण वजाबाकी व वजाबाकी
+</td>
+
+<td class="text-right">
+{{totalCredit}}
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+निव्वळ देय रक्कम
+</td>
+
+<td class="text-right">
+{{netAmount}}
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<div class="footer">
+
+<div>
+तयार केले
+</div>
+
+<div>
+मान्यता दिली
+</div>
+
+</div>
+
+</div>
+
+</body>
+
+</html>
