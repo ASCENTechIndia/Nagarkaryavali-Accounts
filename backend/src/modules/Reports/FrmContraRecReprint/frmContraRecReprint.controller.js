@@ -30,3 +30,27 @@ exports.getContraReceiptList = asyncHandler(async (req, res) => {
 
   return ok(res, data, "Contra Receipt Reprint fetched successfully");
 });
+
+exports.getPaymentReprintList = asyncHandler(async (req, res) => {
+  const { fromDate, toDate, ulbid } = req.body;
+
+  if (!fromDate) {
+    throw new AppError("fromDate is required", 400);
+  }
+
+  if (!toDate) {
+    throw new AppError("toDate is required", 400);
+  }
+
+  if (!ulbid) {
+    throw new AppError("ulbid is required", 400);
+  }
+
+  const data = await service.getPaymentReprintListService({
+    fromDate,
+    toDate,
+    ulbid,
+  });
+
+  return ok(res, data, "Payment Reprint fetched successfully");
+});

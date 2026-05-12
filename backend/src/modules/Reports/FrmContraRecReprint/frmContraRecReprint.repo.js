@@ -40,6 +40,49 @@ async function getContraReceiptListRepo({ fromDate, toDate, ulbId }) {
   return result.rows;
 }
 
+async function getPaymentReprintListRepo({ fromDate, toDate, ulbid }) {
+  const sql = `
+    SELECT
+      REFNO,
+      VOUCHERNO,
+      TRANSDATE,
+      ZONEENAME,
+      CHQNO,
+      CHQBOOKNO,
+      PAYMENTTYPE,
+      ACCNO,
+      ACCNAME,
+      AMT,
+      PARTYNAME,
+      PARTYCODE,
+      NARRATION,
+      ULBID,
+      PACNO,
+      PCACCNAME,
+      DEYAKDHARAK,
+      TRANSNO
+    FROM VW_Paymentdetails
+    WHERE TRUNC(TRANSDATE)
+      BETWEEN TO_DATE(:fromDate, 'DD-MON-YYYY')
+          AND TO_DATE(:toDate, 'DD-MON-YYYY')
+      AND ULBID = :ulbid
+    ORDER BY REFNO
+  `;
+
+  const result = await executeQuery(sql, {
+    fromDate,
+    toDate,
+    ulbid,
+  });
+
+  if (!result.success) {
+    throw new Error(result.error);
+  }
+
+  return result.rows;
+}
+
 module.exports = {
   getContraReceiptListRepo,
+  getPaymentReprintListRepo
 };

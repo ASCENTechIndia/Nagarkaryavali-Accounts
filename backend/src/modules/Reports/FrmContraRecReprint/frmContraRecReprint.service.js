@@ -12,6 +12,17 @@ async function getContraReceiptListService(payload) {
   };
 }
 
+async function getPaymentReprintListService(payload) {
+  const data = await repo.getPaymentReprintListRepo(payload);
+
+  return {
+    success: true,
+    count: data.length,
+    data,
+  };
+}
+
 module.exports = {
   getContraReceiptListService,
+  getPaymentReprintListService
 };
