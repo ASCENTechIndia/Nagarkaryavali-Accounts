@@ -1,0 +1,309 @@
+import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/calendar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import ShadCNTable from "@/components/ui/table";
+import { useAuth } from "@/context/AuthContext";
+
+import axios from "axios";
+import { Form, Formik } from "formik";
+import { motion } from "framer-motion";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+
+const container = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+        opacity: 1,
+        y: 0,
+        transition: { staggerChildren: 0.08 },
+    },
+};
+
+const initialFormValues = {
+    search: "",
+    fromDate: new Date(),
+    toDate: new Date(),
+};
+
+const FrmVouchergenerationReprint = () => {
+    const { user } = useAuth();
+    const token = user?.token;
+    const ulbId = user?.ulbId;
+    const navigate = useNavigate();
+    const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+    const [loading, setLoading] = useState(false);
+    const [tableData, setTableData] = useState([]);
+
+    const headers = [
+        "पार्टीचे नाव",
+        "प्रभाग",
+        "व्हाउचर क्रमांक",
+        "व्हाउचर दिनांक",
+        "रक्कम",
+        "चेक क्रमांक",
+        "प्रिंट",
+    ];
+
+    const keyMapping = {
+        "पार्टीचे नाव": "PARTYNAME",
+        "प्रभाग": "ZONEENAME",
+        "व्हाउचर क्रमांक": "PREVCHNO",
+        "व्हाउचर दिनांक": "TRANSDATE",
+        "रक्कम": "CRAMT",
+        "चेक क्रमांक": "REFNO",
+        "प्रिंट": "PRINT",
+    };
+
+    const columnStyles = {
+        "पार्टीचे नाव": { width: "34%" },
+        "प्रभाग": { width: "8%" },
+        "व्हाउचर क्रमांक": { width: "15%" },
+        "व्हाउचर दिनांक": { width: "16%" },
+        "रक्कम": { width: "9%" },
+        "चेक क्रमांक": { width: "10%" },
+        "प्रिंट": { width: "8%" },
+    };
+
+    const formatDateForAPI = (date) => {
+        const d = new Date(date);
+        const day = String(d.getDate()).padStart(2, "0");
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const year = d.getFullYear();
+
+        return `${day}-${month}-${year}`;
+    };
+
+    const formatTableDate = (date) => {
+        if (!date) return "-";
+        return new Date(date).toLocaleDateString("en-GB");
+    };
+
+    const handlePrint = async (row) => {
+        try {
+            Swal.fire({
+                title: "Generating...",
+                text: "Please wait",
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => Swal.showLoading(),
+            });
+
+            const payload = {
+                refNo: row.REFNO,
+                ulbId: String(ulbId),
+            };
+
+            const res = await axios.post(
+                `${BASE_URL}/api/FrmVouchergenerationReprint/voucher-generation-print`,
+                payload,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            Swal.close();
+
+            if (res?.data?.success && res?.data?.pdfUrl) {
+                window.open(res.data.pdfUrl, "_blank");
+            } else {
+                throw new Error("PDF generation failed");
+            }
+        } catch (error) {
+            console.error(error);
+            Swal.fire({
+                text: error.response?.data?.message || "PDF तयार करताना त्रुटी",
+                confirmButtonColor: "#1e3a8a",
+            });
+        }
+    };
+
+
+    const handleSubmit = async (values) => {
+        try {
+            Swal.fire({
+                title: "Processing...",
+                text: "Please wait",
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => Swal.showLoading(),
+            });
+
+            setLoading(true);
+
+            const payload = {
+                fromDate: formatDateForAPI(values.fromDate),
+                toDate: formatDateForAPI(values.toDate),
+                ulbId: String(ulbId),
+            };
+
+            const res = await axios.post(
+                `${BASE_URL}/api/FrmVouchergenerationReprint/reprint`,
+                payload,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            Swal.close();
+
+            if (res?.data?.ok && res?.data?.data?.success) {
+                const apiData = res.data.data.data || [];
+
+                const formattedRows = apiData.map((item) => ({
+                    ...item,
+                    TRANSDATE: formatTableDate(item.TRANSDATE),
+                }));
+
+                setTableData(formattedRows);
+
+                if (formattedRows.length === 0) {
+                    Swal.fire({
+                        text: "No Records found",
+                        confirmButtonColor: "#1e3a8a",
+                    });
+                }
+            } else {
+                setTableData([]);
+
+                Swal.fire({
+                    text: res.data?.message || "No Records found",
+                    confirmButtonColor: "#1e3a8a",
+                });
+            }
+        } catch (error) {
+            console.error(error);
+
+            Swal.fire({
+                text: error.response?.data?.message || "डेटा मिळवताना त्रुटी",
+                confirmButtonColor: "#1e3a8a",
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const formattedData = tableData.map((item) => ({
+        ...item,
+        PRINT: (
+            <button
+                type="button"
+                className="text-blue-700 hover:underline"
+                onClick={() => handlePrint(item)}
+            >
+                Print
+            </button>
+        ),
+    }));
+
+    return (
+        <Formik initialValues={initialFormValues} onSubmit={handleSubmit}>
+            {({ values, setFieldValue, handleSubmit, isSubmitting }) => (
+                <Form onSubmit={handleSubmit}>
+                    <motion.div
+                        variants={container}
+                        initial="hidden"
+                        animate="show"
+                    >
+                        <Card className="shadow-sm border">
+                            <CardHeader className="border-b flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                                <CardTitle className="text-lg font-semibold">
+                                    प्रमाणक निर्मिती रीप्रिंट
+                                </CardTitle>
+                            </CardHeader>
+
+                            <CardContent className="p-4 space-y-5">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                        <div className="sm:w-40 flex justify-between">
+                                            <Label text="दिनांक पासून" />
+                                            <span>:</span>
+                                        </div>
+
+                                        <DatePicker
+                                            value={values.fromDate}
+                                            onChange={(date) =>
+                                                setFieldValue("fromDate", date)
+                                            }
+                                            className="w-full h-9"
+                                        />
+                                    </div>
+
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                        <div className="sm:w-40 flex justify-between">
+                                            <Label text="दिनांक पर्यंत" />
+                                            <span>:</span>
+                                        </div>
+
+                                        <DatePicker
+                                            value={values.toDate}
+                                            onChange={(date) =>
+                                                setFieldValue("toDate", date)
+                                            }
+                                            className="w-full h-9"
+                                        />
+                                    </div>
+
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                        <div className="sm:w-24 flex justify-between">
+                                            <Label text="शोध" />
+                                            <span>:</span>
+                                        </div>
+
+                                        <Input
+                                            value={values.search}
+                                            onChange={(e) =>
+                                                setFieldValue(
+                                                    "search",
+                                                    e.target.value
+                                                )
+                                            }
+                                            className="w-full h-9"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-center gap-4">
+                                    <Button
+                                        type="submit"
+                                        disabled={isSubmitting || loading}
+                                    >
+                                        प्रक्रिया
+                                    </Button>
+
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => navigate(-1)}
+                                    >
+                                        बाहेर
+                                    </Button>
+                                </div>
+
+                                {formattedData.length > 0 && (
+                                    <ShadCNTable
+                                        headers={headers}
+                                        data={formattedData}
+                                        keyMapping={keyMapping}
+                                        columnStyles={columnStyles}
+                                        pagination={false}
+                                        className="border border-gray-300 max-sm:min-w-95"
+                                    />
+                                )}
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                </Form>
+            )}
+        </Formik>
+    );
+};
+
+export default FrmVouchergenerationReprint;
