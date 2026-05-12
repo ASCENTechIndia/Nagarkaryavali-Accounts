@@ -93,6 +93,7 @@ import FrmTransactionUpdate from "./pages/Transaction/FrmTransactionUpdate";
 import FrmCashDeposit from "./pages/Transaction/FrmCashDeposit";
 import ChequeDeposit from "./pages/Transaction/ChequeDeposit";
 import FrmContraRecReprint from "./pages/ReportsForm/FrmContraRecReprint";
+import FrmVouchergenerationReprint from "./pages/Reports/FrmVouchergenerationReprint";
 
 const Home = () => <Button>Click me</Button>;
 
@@ -477,6 +478,10 @@ export const router = createBrowserRouter([
       {
         path: "Transactions/FrmCashDeposit",
         element: <FrmCashDeposit />,
+      },
+       {
+        path: "ReportsForm/FrmVouchergenerationReprint",
+        element: <FrmVouchergenerationReprint />,
       },
     ],
   },
