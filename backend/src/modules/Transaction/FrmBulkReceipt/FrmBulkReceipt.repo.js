@@ -101,11 +101,10 @@ async function searchBulkReceiptAccountRepo({
   }
 
   // ACCOUNT NO PREFIX SEARCH
-  if (accno) {
+   if (accno) {
     conditions.push(
       "TO_CHAR(accno) LIKE :accno"
     );
-
     binds.accno = `${accno}%`;
   }
 
