@@ -95,6 +95,7 @@ import ChequeDeposit from "./pages/Transaction/ChequeDeposit";
 import FrmContraRecReprint from "./pages/ReportsForm/FrmContraRecReprint";
 import FrmPaymentReprint from "./pages/ReportsForm/FrmPaymentReprint";
 import FrmVouchergenerationReprint from "./pages/Reports/FrmVouchergenerationReprint";
+import FrmLedgerDetailRpt from "./pages/ReportsForm/FrmLedgerDetailRpt";
 
 const Home = () => <Button>Click me</Button>;
 
@@ -445,6 +446,10 @@ export const router = createBrowserRouter([
         element: <FrmVoucherPreparreprint />,
       },
       {
+        path: "ReportsForm/FrmLedgerDetailRpt",
+        element: <FrmLedgerDetailRpt />,
+      },
+      {
         path: "ReportsForm/RptGovtTaxRegisters",
         element: <RptGovtTaxRegisters />,
       },
@@ -484,7 +489,7 @@ export const router = createBrowserRouter([
         path: "ReportsForm/FrmRevokeDeleteRegister",
         element: <FrmRevokeDeleteRegister />,
       },
-       {
+      {
         path: "ReportsForm/FrmVouchergenerationReprint",
         element: <FrmVouchergenerationReprint />,
       },
