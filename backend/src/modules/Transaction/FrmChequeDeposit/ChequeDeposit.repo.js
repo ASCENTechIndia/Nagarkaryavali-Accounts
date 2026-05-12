@@ -47,6 +47,7 @@ async function getBankDepositSummary(filters) {
 }
 
 async function getBankDepositDetails(filters) {
+
   let conditions = `
         TRUNC(Recdate) BETWEEN TO_DATE(:fromDate, 'DD-MON-YYYY')
         AND TO_DATE(:toDate, 'DD-MON-YYYY')
@@ -60,7 +61,12 @@ async function getBankDepositDetails(filters) {
     ulbId: filters.ulbId,
   };
 
-  if (filters.bankNames && filters.bankNames.length > 0) {
+  if (filters.bankNames) {
+
+    if (!Array.isArray(filters.bankNames)) {
+      filters.bankNames = [filters.bankNames];
+    }
+
     const bankPlaceholders = filters.bankNames
       .map((_, index) => `:bank${index}`)
       .join(",");
@@ -129,7 +135,6 @@ async function getBankDepositDetails(filters) {
 
   return executeQuery(sql, binds);
 }
-
 async function getChequeDepositDetails(filters) {
   const sql = `
         SELECT 
