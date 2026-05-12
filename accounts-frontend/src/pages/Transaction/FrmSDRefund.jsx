@@ -149,7 +149,7 @@ const FrmSDRefund = () => {
     const handlePrint = async (values) => {
         try {
             Swal.fire({
-                title: "Processing...",
+                title: "Loading...",
                 allowOutsideClick: false,
                 didOpen: () => Swal.showLoading(),
             });
@@ -277,7 +277,7 @@ const FrmSDRefund = () => {
     const handleSubmit = async (values) => {
         try {
             Swal.fire({
-                title: "Processing...",
+                title: "Loading...",
                 allowOutsideClick: false,
                 didOpen: () => Swal.showLoading(),
             });
