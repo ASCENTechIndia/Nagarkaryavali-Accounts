@@ -94,6 +94,7 @@ import FrmCashDeposit from "./pages/Transaction/FrmCashDeposit";
 import ChequeDeposit from "./pages/Transaction/ChequeDeposit";
 import FrmContraRecReprint from "./pages/ReportsForm/FrmContraRecReprint";
 import FrmPaymentReprint from "./pages/ReportsForm/FrmPaymentReprint";
+import FrmVouchergenerationReprint from "./pages/Reports/FrmVouchergenerationReprint";
 
 const Home = () => <Button>Click me</Button>;
 
@@ -187,13 +188,33 @@ export const router = createBrowserRouter([
         path: "/Transactions/FrmTransAuthMst",
         element: <FrmTransAuthMst />,
       },
-       {
+      {
         path: "/Transactions/FrmSearchOption",
         element: <FrmSearchOption />,
       },
       {
         path: "/Transactions/FrmBulkReceipt",
         element: <FrmBulkReceipt />,
+      },
+      {
+        path: "Transactions/FrmSDRefund",
+        element: <FrmSDRefund />,
+      },
+      {
+        path: "Transactions/FrmSDVchPrepMst",
+        element: <FrmSDVchPrepMst />,
+      },
+      {
+        path: "Transactions/FrmOnlineDeposit",
+        element: <FrmOnlineDeposit />,
+      },
+      {
+        path: "Transactions/FrmTransactionUpdate",
+        element: <FrmTransactionUpdate />,
+      },
+      {
+        path: "Transactions/FrmCashDeposit",
+        element: <FrmCashDeposit />,
       },
       {
         path: "/Masters/FrmAccountListMst",
@@ -362,7 +383,7 @@ export const router = createBrowserRouter([
         path: "/ReportsForm/RptClassifiedAbstractSummary",
         element: <RptClassifiedAbstractSummary />,
       },
-     
+
       {
         path: "/ReportsForm/RptReceiptRegister",
         element: <RptReceiptRegister />,
@@ -390,7 +411,7 @@ export const router = createBrowserRouter([
       {
         path: "/ReportsForm/RptCashBook",
         element: <RptCashBook />
-      },      
+      },
       {
         path: "ReportsForm/RptCashBook",
         element: <RptCashBook />,
@@ -452,10 +473,6 @@ export const router = createBrowserRouter([
         element: <FrmTransferRegisterRpt />,
       },
       {
-        path: "Transactions/FrmOnlineDeposit",
-        element: <FrmOnlineDeposit />,
-      },
-      {
         path: "ReportsForm/RptChequeDishonour",
         element: <RptChequeDishonour />,
       },
@@ -464,25 +481,14 @@ export const router = createBrowserRouter([
         element: <FrmChequeUpdatereport />,
       },
       {
-        path: "Transactions/FrmSDRefund",
-        element: <FrmSDRefund />,
-      },
-      {
-        path: "Transactions/FrmSDVchPrepMst",
-        element: <FrmSDVchPrepMst />,
-      },
-      {
         path: "ReportsForm/FrmRevokeDeleteRegister",
         element: <FrmRevokeDeleteRegister />,
       },
-      {
-        path: "Transactions/FrmTransactionUpdate",
-        element: <FrmTransactionUpdate />,
+       {
+        path: "ReportsForm/FrmVouchergenerationReprint",
+        element: <FrmVouchergenerationReprint />,
       },
-      {
-        path: "Transactions/FrmCashDeposit",
-        element: <FrmCashDeposit />,
-      },
+
     ],
   },
 ]);
