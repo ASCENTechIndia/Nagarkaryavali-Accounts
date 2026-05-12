@@ -5,6 +5,12 @@ const service = require("./frmSDRef.service");
 const path = require("path");
 const { getCorporationService } = require("../../MenuAccess/MenuAccess.service");
 const { generateSDRefundPDF } = require("../../../utils/pdfHelper/sdRefundPDF");
+const {
+  SDVoucherReceiptPDFHelper,
+} = require("../../../utils/pdfHelper/SDVoucherReceiptPDFHelper");
+
+
+
 
 function validate(fields, body) {
   for (const field of fields) {
@@ -175,3 +181,122 @@ exports.saveSdRefundVoucher = asyncHandler(async (req, res) => {
   const data = await service.saveSdRefundVoucherService(req.body);
   return ok(res, data, "SD Refund voucher saved successfully");
 });
+
+exports.generateSDVoucherReceiptPDF =
+  asyncHandler(async (req, res) => {
+
+    try {
+
+      const {
+        voucherNo,
+        ulbId,
+        sdid,
+      } = req.body;
+
+      if (!voucherNo) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Voucher No is required",
+        });
+      }
+
+      if (!ulbId) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "ULB ID is required",
+        });
+      }
+
+      // ================= RECEIPT DETAILS =================
+
+      const receiptResult =
+        await service.getSDVoucherPrepReceiptDetailsService({
+          voucherNo,
+          ulbId,
+        });
+
+      const receiptRows =
+        receiptResult.data || [];
+
+      if (!receiptRows.length) {
+        return res.status(404).json({
+          success: false,
+          message:
+            "Receipt details not found",
+        });
+      }
+
+      // ================= REFERENCE INFO =================
+
+      let referenceInfo = null;
+
+      if (sdid) {
+
+        const referenceResult =
+          await service.getSDReferenceInfoService({
+            sdid,
+            ulbId,
+          });
+
+        referenceInfo =
+          referenceResult.data?.[0] || null;
+      }
+
+      // ================= ULB INFO =================
+
+      const ulbInfo =
+        await getCorporationService({
+          ulbId,
+        });
+
+      // ================= PDF =================
+
+      const pdf =
+        await SDVoucherReceiptPDFHelper({
+
+          rows: receiptRows,
+
+          referenceInfo,
+
+          ulbInfo,
+        });
+
+      const baseUrl =
+        `${req.protocol}://${req.get("host")}`;
+
+      const pdfUrl =
+        `${baseUrl}/pdf/${path.basename(
+          pdf.filePath
+        )}`;
+
+      return res.json({
+
+        success: true,
+
+        message:
+          "Voucher receipt PDF generated successfully",
+
+        fileName:
+          pdf.fileName,
+
+        pdfUrl,
+      });
+
+    } catch (error) {
+
+      console.error(error);
+
+      return res.status(500).json({
+
+        success: false,
+
+        message:
+          "PDF generation failed",
+
+        error:
+          error.message,
+      });
+    }
+  });
