@@ -128,6 +128,7 @@ app.use("/api/RptChequeDishonour", require("./modules/Reports/RptChequeDishonour
 app.use("/api/FrmChequeUpdateRpt", require("./modules/Reports/FrmChequeUpdateReport/FrmChequeUpdateRpt.route"))
 app.use("/api/BankBalRpt", require("./modules/Reports/FrmBankBalanceRpt/FrmBankBalRpt.route"))
 app.use("/api/FrmConsolidatedReceipt", require("./modules/Reports/FrmConsolidatedReceipt/FrmConsolidatedReceipt.routes"))
+app.use("/api/FrmVouchergenerationReprint",require("./modules/Reports/FrmVouchergenerationReprint/FrmVouchergenerationReprint.routes"))
 app.use(errorMiddleware);
 
 module.exports = app;

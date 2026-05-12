@@ -1,0 +1,495 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+
+    <style>
+      @page {
+        size: A4;
+        margin: 10px;
+        border: 1px solid black;
+      }
+
+      body {
+        font-family: Arial;
+        font-size: 11px;
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        padding: 8px;
+      }
+
+      .report-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .report-header {
+        display: table-header-group;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      td,
+      th {
+        border: 1px solid #000;
+        padding: 4px;
+        vertical-align: top;
+      }
+
+      th {
+        text-align: center;
+        font-weight: bold;
+      }
+
+      tr {
+        page-break-inside: avoid;
+      }
+
+      .no-border {
+        border: none !important;
+      }
+
+      .center {
+        text-align: center;
+      }
+
+      .right {
+        text-align: right;
+      }
+
+      .bold {
+        font-weight: bold;
+      }
+
+      .title {
+        font-size: 22px;
+        font-weight: bold;
+      }
+
+      .titlesmall {
+        font-size: 15px;
+        font-weight: bold;
+      }
+      .subtitle {
+        font-size: 16px;
+        font-weight: bold;
+        margin-top: 5px;
+      }
+
+      .mt {
+        margin-top: 5px;
+      }
+
+      .sign-box {
+        height: 55px;
+        vertical-align: bottom;
+        font-weight: bold;
+      }
+
+      .section-table {
+        width: 100%;
+        margin-top: 18px;
+      }
+
+      .text-section {
+        width: 78%;
+        font-size: 12px;
+        vertical-align: top;
+      }
+
+      .signature-section {
+        width: 22%;
+        text-align: center;
+        vertical-align: bottom;
+        font-weight: bold;
+        font-size: 12px;
+        padding-top: 70px;
+      }
+
+      .received-text {
+        font-size: 12px;
+        padding-top: 10px;
+      }
+
+      .main-grid th,
+      .main-grid td,
+      .deduction-grid th,
+      .deduction-grid td {
+        border: 1px solid #000;
+        padding: 5px;
+      }
+
+      .main-grid,
+      .deduction-grid {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <table class="report-table">
+        <!-- REPEATING HEADER -->
+        <thead class="report-header">
+          <tr>
+            <td colspan="2" class="center no-border">
+              <div class="title">{{corporationName}}</div>
+
+              <div class="subtitle">{{header}}</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td width="55%" class="no-border">
+              <b>Zone :</b>
+              {{zone}}
+            </td>
+
+            <td class="no-border">
+              <b>दिनांक :</b>
+              {{printDate}}
+            </td>
+          </tr>
+
+          <tr>
+            <td class="no-border">
+              <b>Department :</b>
+              {{department}}
+            </td>
+
+            <td class="no-border">
+              <b>वेळ :</b>
+              {{printTime}}
+            </td>
+          </tr>
+
+          <tr>
+            <td class="no-border">
+              <b>Manual Number :</b>
+              {{manualNo}}
+            </td>
+
+            <td class="no-border">
+              <b>Voucher No. :</b>
+              {{voucherNo}}
+            </td>
+          </tr>
+
+          <tr>
+            <td class="no-border">
+              <b>System Bill No :</b>
+              {{systemBillNo}}
+            </td>
+
+            <td class="no-border">
+              <b>Transaction no :</b>
+              {{transNo}}
+            </td>
+          </tr>
+
+          <tr>
+            <td class="no-border">
+              <b>User name :</b>
+              {{username}}
+            </td>
+
+            <td class="no-border">
+              <b>Voucher Date :</b>
+              {{voucherDate}}
+            </td>
+          </tr>
+
+          <tr>
+            <td class="no-border">
+              <b>पार्टी कोड / पार्टी नाव :</b>
+              {{party}}
+            </td>
+
+            <td class="no-border"></td>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td colspan="2" class="no-border">
+              <!-- MAIN TABLE -->
+
+              <table class="main-grid">
+                <thead>
+                  <tr>
+                    <th>अ.क्र.</th>
+
+                    <th>लेखाशीर्ष सांकेतांक</th>
+
+                    <th>लेखाशीर्ष सांकेतांक नाव</th>
+
+                    <th>एकूण बिल रक्कम</th>
+
+                    <th>पार्टी निव्वळ देय रक्कम</th>
+
+                    <th>तपशील</th>
+
+                    <th>देय रक्कम</th>
+
+                    <th>शिल्लक रक्कम</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {{#each rows}}
+
+                  <tr>
+                    <td class="center">{{srNo}}</td>
+
+                    <td>{{glcode}}</td>
+
+                    <td>{{accname}}</td>
+
+                    <td class="right">{{grossAmount}}</td>
+
+                    <td class="right">{{partyNetPayable}}</td>
+
+                    <td>{{narration}}</td>
+
+                    <td class="right">{{payableAmount}}</td>
+
+                    <td class="right">{{balanceAmount}}</td>
+                  </tr>
+
+                  {{/each}}
+
+                  <tr class="bold">
+                    <td colspan="4" class="right">&nbsp;</td>
+
+                    <td class="right">{{totalPartyNetPayable}}</td>
+
+                    <td class="right">एकूण देय रक्कम</td>
+
+                    <td class="right">{{totalPayAmount}}</td>
+
+                    <td class="right">{{totalBalanceAmount}}</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <!-- NARRATION -->
+
+              <table>
+                <tr>
+                  <td class="no-border">
+                    <b>प्रमाणक निर्मिती तपशील :</b>
+
+                    {{narration}}
+                  </td>
+                </tr>
+
+                <tr>
+                  <td class="no-border">
+                    <b>एकूण देय रक्कम अक्षरी :</b>
+
+                    {{amountWords}}
+                  </td>
+                </tr>
+
+                <tr>
+                  <td class="no-border">
+                    <b>धनादेश क्रमांक :</b>
+
+                    {{chequeNo}} &nbsp;&nbsp;&nbsp;&nbsp;
+
+                    <b>बँकेचे नाव :</b>
+
+                    {{bankName}}
+                  </td>
+                </tr>
+              </table>
+
+              <!-- DEDUCTION TABLE -->
+
+              <table class="deduction-grid">
+                <thead>
+                  <tr>
+                    <th>अ.क्र.</th>
+
+                    <th>लेखाशीर्ष संकेतांक नाव</th>
+
+                    <th>तपशिल</th>
+
+                    <th>रक्कम रुपये</th>
+
+                    <th>निव्वळ देय रक्कम</th>
+
+                    <th>निव्वळ देय रक्कम कपाती सहित</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {{#each deductionRows}}
+
+                  <tr>
+                    <td class="center">{{srNo}}</td>
+
+                    <td>{{accno}}</td>
+
+                    <td>{{accname}}</td>
+
+                    <td class="right">{{amount}}</td>
+
+                    <td class="right"></td>
+
+                    <td class="right"></td>
+                  </tr>
+
+                  {{/each}}
+
+                  <tr class="bold">
+                    <td colspan="3" class="center">एकूण वजाती व वसुली रक्कम रु.</td>
+
+                    <td class="right">{{totalDeduction}}</td>
+
+                    <td class="right">{{totalPayAmount}}</td>
+
+                    <td class="right">{{totalPayAmountWithDeduction}}</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <!-- SECTION 1 -->
+
+              <table class="section-table">
+                <tr>
+                  <td class="text-section no-border">
+                    मी मागणीची तपासणी केली ती अचूक असल्याचे आढळून आले.<br /><br />
+
+                    प्रमाणित करतो की, या देयकामध्ये दर्शविलेले दर व संख्या अचूक आहेत आणि प्राप्त झालेले साहित्य, वस्तू निर्देशानुसार आहेत आणि चांगल्या दर्जाची व चांगल्या स्थितीत आहेत.<br /><br />
+
+                    रुपये <b>{{finalPayable}}</b> (अक्षरात) <b>{{amountWords}}</b> मात्र या करीता प्रदान संमत केले.
+                  </td>
+
+                  <td class="signature-section no-border">विभाग प्रमुखाची सही</td>
+                </tr>
+              </table>
+
+              <!-- SECTION 2 -->
+
+              <table class="section-table">
+                <tr>
+                  <td class="text-section no-border">
+                    अंतर्गत लेखापरीक्षकाकडे सादर करण्यात आले.<br /><br />
+
+                    मी याद्वारे प्रमाणित करतो की, या प्रमाणकामध्ये नोंद केलेले सर्व तपशील अचूक आहेत. पडताळणी केली व अचूक असल्याचे आढळून आले.
+                  </td>
+
+                  <td class="signature-section no-border">अंतर्गत लेखापरीक्षकाची सही</td>
+                </tr>
+              </table>
+
+              <!-- SECTION 3 -->
+
+              <table class="section-table">
+                <tr>
+                  <td class="text-section no-border">
+                    लेखा विभागाकडे पडताळणी करीता सादर करण्यात आले प्राप्त देयक नोंदवहीचा संदर्भ क्रमांक
+                    <b>{{transNo}}</b>
+                    दिनांक
+                    <b>{{printDate}}</b>
+                    <b>{{paymode}}</b>
+                    द्वारे दिले.<br /><br />
+                    पडताळणी केली व अचूक असल्याचे आढळून आले.
+                  </td>
+
+                  <td class="signature-section no-border">लेखा प्रमुखाची सही</td>
+                </tr>
+              </table>
+
+              <!-- SECTION 4 -->
+
+              <table class="section-table">
+                <tr>
+                  <td class="text-section no-border">
+                    अंतिम मंजूरी करीता सादर करण्यात आले.<br /><br />
+
+                    देयकामध्ये दर्शविल्याप्रमाणे रक्कम रुपये (अक्षरात)
+                    <b>{{amountWords}}</b>
+                    फक्त मंजूर करण्यात येत आहेत.<br /><br />
+
+                    रु. (अक्षरात)
+                    <b>{{amountWords}}</b>
+
+                    रु. अंकात
+                    <b>{{finalPayable}}</b>
+                    प्रदान.
+                  </td>
+
+                  <td class="signature-section no-border">मा. उपआयुक्त यांचे नाव सही</td>
+                </tr>
+              </table>
+
+              <!-- SECTION 5 -->
+
+              <table class="section-table">
+                <tr>
+                  <td class="text-section no-border">
+                    रोख प्रमुखाकडे सादर करण्यात आले.<br /><br />
+                    धनादेश / बँक / FDR / बँक गॅरंटी पैकी धनादेश क्रमांक
+                    <b>{{chequeNo}}</b>
+                    द्वारे दिनांक
+                    <b>{{chequeDate}}</b>
+                    रोजी दिले.<br /><br />
+                    आणि रोकडवही / बँक पुस्तक या मध्ये नोंद केली.
+                  </td>
+
+                  <td class="signature-section no-border">रोखपालाची सही</td>
+                </tr>
+              </table>
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <!-- FINAL RECEIVED -->
+              <div class="titlesmall center">{{corporationName}}</div>
+
+              <table class="mt">
+                <tr>
+                  <td class="no-border received-text">
+                    र.
+                    <b>{{finalPayable}}</b>
+                    चे प्रदान प्राप्त झाले.
+                  </td>
+                </tr>
+
+                <tr>
+                  <td class="mt no-border received-text">
+                    रक्कम रुपये :
+                    <b>{{amountWords}}</b>
+                    फक्त.
+                  </td>
+                </tr>
+
+                <tr>
+                  <td class="center sign-box no-border mb-5">मुद्रांक</td>
+
+                  <td class="right sign-box no-border mb-5">प्राप्त करणाऱ्याची सही</td>
+                  <span class="mb-5 pb-5"></span>
+                </tr>
+
+                <tr>
+                  <td colspan="2" class="no-border" style="height: 40px"></td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>
