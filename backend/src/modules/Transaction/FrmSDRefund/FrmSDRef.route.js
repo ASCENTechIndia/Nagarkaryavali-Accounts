@@ -30,7 +30,7 @@ router.post("/account-subtype", auth(), controller.getSDAccountSubtype);
 router.post("/budget-balance", auth(), controller.getBudgetBalance);
 router.post("/party-tax-details", auth(), controller.getPartyTaxDetails);
 router.post("/reference-info", auth(), controller.getSDReferenceInfo);
-router.get("/next-certificate-no/:ulbId",controller.getNextCertificateNo);
+router.get("/next-certificate-no/:ulbId", auth(),controller.getNextCertificateNo);
 router.post("/save", auth(), controller.saveSdRefundVoucher);
 
 module.exports = router;
