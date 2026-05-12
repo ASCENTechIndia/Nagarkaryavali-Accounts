@@ -20,35 +20,35 @@ async function getConsolidatedReceiptRepo(payload) {
           t.num_depttrns_ulbid AS ulbid,
 
           SUM(CASE 
-              WHEN t.num_depttrns_paymodeid IN (188,0)
+              WHEN t.num_depttrns_paymodeid IN (188,0,1)
               THEN x.amount ELSE 0 END) AS cashamt,
 
           SUM(CASE 
-              WHEN t.num_depttrns_paymodeid IN (189,253,191)
+              WHEN t.num_depttrns_paymodeid IN (189,253,191,2,3)
               THEN x.amount ELSE 0 END) AS chequeamt,
 
           SUM(CASE 
-              WHEN t.num_depttrns_paymodeid IN (21,187)
+              WHEN t.num_depttrns_paymodeid IN (21,187,41)
               THEN x.amount ELSE 0 END) AS bankamt,
 
           SUM(CASE 
-              WHEN t.num_depttrns_paymodeid = 207
+              WHEN t.num_depttrns_paymodeid IN (207, 4)
               THEN x.amount ELSE 0 END) AS onlineamt,
 
           SUM(
-              CASE WHEN t.num_depttrns_paymodeid IN (188,0)
+              CASE WHEN t.num_depttrns_paymodeid IN (188,0,1)
               THEN x.amount ELSE 0 END
           ) +
           SUM(
-              CASE WHEN t.num_depttrns_paymodeid IN (189,253,191)
+              CASE WHEN t.num_depttrns_paymodeid IN (189,253,191,2,3)
               THEN x.amount ELSE 0 END
           ) +
           SUM(
-              CASE WHEN t.num_depttrns_paymodeid IN (21,187)
+              CASE WHEN t.num_depttrns_paymodeid IN (21,187,41)
               THEN x.amount ELSE 0 END
           ) +
           SUM(
-              CASE WHEN t.num_depttrns_paymodeid = 207
+              CASE WHEN t.num_depttrns_paymodeid IN (207, 4)
               THEN x.amount ELSE 0 END
           ) AS total
 
@@ -98,35 +98,35 @@ async function getConsolidatedReceiptRepo(payload) {
           t.num_depttrns_ulbid AS ulbid,
 
           SUM(CASE 
-              WHEN t.num_depttrns_paymodeid IN (188,0)
+              WHEN t.num_depttrns_paymodeid IN (188,0,1)
               THEN x.amount ELSE 0 END) AS cashamt,
 
           SUM(CASE 
-              WHEN t.num_depttrns_paymodeid IN (189,253,191)
+              WHEN t.num_depttrns_paymodeid IN (189,253,191,2,3)
               THEN x.amount ELSE 0 END) AS chequeamt,
 
           SUM(CASE 
-              WHEN t.num_depttrns_paymodeid IN (21,187)
+              WHEN t.num_depttrns_paymodeid IN (21,187,41)
               THEN x.amount ELSE 0 END) AS bankamt,
 
           SUM(CASE 
-              WHEN t.num_depttrns_paymodeid = 207
+              WHEN t.num_depttrns_paymodeid  IN (207, 4)
               THEN x.amount ELSE 0 END) AS onlineamt,
 
           SUM(
-              CASE WHEN t.num_depttrns_paymodeid IN (188,0)
+              CASE WHEN t.num_depttrns_paymodeid IN (188,0,1)
               THEN x.amount ELSE 0 END
           ) +
           SUM(
-              CASE WHEN t.num_depttrns_paymodeid IN (189,253,191)
+              CASE WHEN t.num_depttrns_paymodeid IN (189,253,191,2,3) 
               THEN x.amount ELSE 0 END
           ) +
           SUM(
-              CASE WHEN t.num_depttrns_paymodeid IN (21,187)
+              CASE WHEN t.num_depttrns_paymodeid IN (21,187,41)
               THEN x.amount ELSE 0 END
           ) +
           SUM(
-              CASE WHEN t.num_depttrns_paymodeid = 207
+              CASE WHEN t.num_depttrns_paymodeid IN (207, 4)
               THEN x.amount ELSE 0 END
           ) AS total
 
