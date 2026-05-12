@@ -103,7 +103,7 @@ const FrmContraRecReprint = () => {
                     print: (
                         <button
                             type="button"
-                            className="text-blue-600 hover:underline"
+                            className="text-blue-600 hover:underline hover:cursor-pointer"
                             onClick={() => handlePrint(row.REFNO)}
                         >
                             Print
