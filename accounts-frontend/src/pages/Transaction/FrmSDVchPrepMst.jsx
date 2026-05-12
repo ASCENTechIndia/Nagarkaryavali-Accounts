@@ -1356,7 +1356,6 @@ const FrmSDVchPrepMst = () => {
 
     const handleSubmit = async (values) => {
         try {
-            // ---------------- VALIDATIONS ----------------
             if (!values.prabhag) {
                 return Swal.fire({ icon: "warning", text: "प्रभाग निवडा" });
             }
@@ -1388,7 +1387,6 @@ const FrmSDVchPrepMst = () => {
                 return Swal.fire({ icon: "warning", text: "कृपया पार्टी बँक निवडा" });
             }
 
-            // ---------------- DATE FORMAT ----------------
             const voucherDate = formatDate(values.voucherDate)
                 .toUpperCase()
                 .replace(/-/g, "-");
@@ -1471,7 +1469,6 @@ const FrmSDVchPrepMst = () => {
                 paramStr4: paramStr4,
             };
 
-            // Show saving alert
             Swal.fire({
                 title: "Saving...",
                 allowOutsideClick: false,
@@ -1485,7 +1482,6 @@ const FrmSDVchPrepMst = () => {
             if (res.data?.ok) {
                 const voucherNo = res.data?.data?.refno;
 
-                // Close save alert and show PDF generation alert
                 Swal.close();
                 Swal.fire({
                     title: "Generating PDF...",
@@ -1509,7 +1505,6 @@ const FrmSDVchPrepMst = () => {
                     if (pdfRes.data?.success && pdfRes.data?.pdfUrl) {
 
                         window.open(pdfRes.data.pdfUrl, "_blank");
-                        // Show success message
                         await Swal.fire({
                             icon: "success",
                             title: "Success",
@@ -1517,9 +1512,6 @@ const FrmSDVchPrepMst = () => {
                             confirmButtonColor: "#1e3a8a",
                         });
 
-
-
-                        // Navigate back
                         navigate("/Transactions/FrmSDRefund");
                     } else {
                         Swal.fire({
