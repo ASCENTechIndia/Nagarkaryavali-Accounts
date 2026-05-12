@@ -171,7 +171,7 @@ const BankDeposit = () => {
       setLoading(true);
 
       const res = await axios.post(
-        `${BASE_URL}/api/Bankdeposit/summary`,
+        `${BASE_URL}/api/Bankdeposit/summary-bankDeposit`,
         {
           ulbId: Number(ulbId),
           fromDate: values.fromDate,

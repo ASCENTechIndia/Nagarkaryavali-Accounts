@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.get("/department",auth(), controller.getDepartments);
 
-router.post("/summary",auth(), controller.getSummary);
+router.post("/summary-bankDeposit",auth(), controller.getSummary);
 
 router.post("/account-wise",auth(), controller.getAccountWise);
 router.post("/challan",auth(), controller.getChallan);
