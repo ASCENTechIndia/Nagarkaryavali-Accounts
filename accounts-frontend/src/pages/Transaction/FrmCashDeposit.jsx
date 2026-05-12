@@ -702,46 +702,95 @@ const FrmCashDeposit = () => {
       let receiptDtl = "";
       let selectedRows = [];
       
-      transactionData.forEach((row, index) => {
-        if (selectedTransactions.has(index)) {
-          selectedRows.push(row);
-          const recNo = "";
-          const recDate = "";
-          const mode = "1";
-          const department = String(row.DEPTID ?? "");
-          const amount = String(row.AMOUNT ?? "0");
-          const zoneId = String(
-            values.prabhag !== "-1"
-              ? values.prabhag
-              : "-1"
-          );
-          const cashierType = "Cash";
-          const cheqNo = "";
-          const cheqDt = "";
-          const bankName = "";
-          const glcode = row.GLCODE ?? "";
-          const accno = row.ACCNO ?? "";
-          const glcodeS = String(row.GLCODEG ?? "");
-          const accnoS = String(row.ACCNOG ?? "");
-          
-          receiptDtl += [
-            String(recNo ?? ""),
-            String(recDate ?? ""),
-            String(mode ?? ""),
-            String(department ?? ""),
-            String(amount ?? ""),
-            String(zoneId ?? ""),
-            String(cashierType ?? ""),
-            String(cheqNo ?? ""),
-            String(cheqDt ?? ""),
-            String(bankName ?? ""),
-            String(glcode ?? ""),
-            String(accno ?? ""),
-            String(glcodeS ?? ""),
-            String(accnoS ?? "")
-          ].join("#") + "$";
-        }
-      });
+transactionData.forEach((row, index) => {
+
+  if (selectedTransactions.has(index)) {
+
+    selectedRows.push(row);
+
+    const recNo = "";
+
+    const recDate = "";
+
+    const mode = "1";
+
+    // IMPORTANT FIX
+    const partyId =
+      String(
+        row.PARTYID ??
+        row.PARTYNO ??
+        "0"
+      );
+
+    const amount =
+      String(
+        row.AMOUNT ?? "0"
+      );
+
+    const zoneId = String(
+      values.prabhag !== "-1"
+        ? values.prabhag
+        : "0"
+    );
+
+    const cashierType = "Cash";
+
+    const cheqNo = "";
+
+    const cheqDt = "";
+
+    const bankName = "";
+
+    const glcode =
+      row.GLCODE ?? "";
+
+    const accno =
+      row.ACCNO ?? "";
+
+    const glcodeS =
+      String(
+        row.GLCODEG ?? ""
+      );
+
+    const accnoS =
+      String(
+        row.ACCNOG ?? ""
+      );
+
+    receiptDtl += [
+
+      String(recNo ?? ""),
+
+      String(recDate ?? ""),
+
+      String(mode ?? ""),
+
+      // PARTY ID HERE
+      String(partyId ?? ""),
+
+      String(amount ?? ""),
+
+      String(zoneId ?? ""),
+
+      String(cashierType ?? ""),
+
+      String(cheqNo ?? ""),
+
+      String(cheqDt ?? ""),
+
+      String(bankName ?? ""),
+
+      String(glcode ?? ""),
+
+      String(accno ?? ""),
+
+      String(glcodeS ?? ""),
+
+      String(accnoS ?? "")
+
+    ].join("#") + "$";
+  }
+});
       
       receiptDtl = receiptDtl.replace(/\$$/, "");
       
