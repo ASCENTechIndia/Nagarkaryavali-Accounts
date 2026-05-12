@@ -219,6 +219,28 @@ async function saveSdRefundVoucherService(payload) {
   };
 }
 
+
+async function getNextCertificateNo(
+  ulbId
+) {
+  if (!ulbId) {
+    throw new Error(
+      "ULB ID is required"
+    );
+  }
+
+  const maxcertino =
+    await repo.getNextCertificateNoRepo(
+      ulbId
+    );
+
+  return {
+    success: true,
+    maxcertino,
+  };
+}
+
+
 module.exports = {
   searchPartiesConcatenatedService,
   searchPartiesStandardService,
@@ -240,4 +262,5 @@ module.exports = {
   getSDVoucherPrepReceiptDetailsService,
   getSDReferenceInfoService,
   saveSdRefundVoucherService,
+  getNextCertificateNo
 };

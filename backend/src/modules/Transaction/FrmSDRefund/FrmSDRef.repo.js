@@ -445,6 +445,40 @@ async function getSDReferenceInfo(sdid, ulbId) {
   return result.rows;
 }
 
+async function getNextCertificateNoRepo(
+  ulbId
+) {
+  console.log(
+    "📤 Repo: Get Next Certificate No",
+    { ulbId }
+  );
+
+  const sql = `
+    SELECT
+      NVL(
+        MAX(var_recsecdepodet_certino),
+        0
+      ) + 1 AS maxcertino
+    FROM aoac_recsecdepodet_def
+    WHERE num_secdepodet_ulbid = :ulbId
+  `;
+
+  const result = await executeQuery(
+    sql,
+    {
+      ulbId: Number(ulbId),
+    }
+  );
+
+  if (!result.success) {
+    throw new Error(result.error);
+  }
+
+  return (
+    result.rows?.[0]?.MAXCERTINO || 1
+  );
+}
+
 
 async function saveSdRefundVoucherRepo(payload) {
   console.log("📤 Repo: Execute SD Refund Voucher Procedure", payload);
@@ -507,4 +541,5 @@ module.exports = {
   getSDVoucherPrepReceiptDetails,
   getSDReferenceInfo,
   saveSdRefundVoucherRepo,
+  getNextCertificateNoRepo
 };

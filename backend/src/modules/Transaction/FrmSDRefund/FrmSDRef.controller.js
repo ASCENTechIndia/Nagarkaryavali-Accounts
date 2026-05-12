@@ -170,6 +170,25 @@ exports.getSDReferenceInfo = asyncHandler(async (req, res) => {
   return ok(res, data, "Reference info fetched successfully");
 });
 
+exports.getNextCertificateNo = asyncHandler(
+  async (req, res) => {
+    // Validate route params
+    validate(["ulbId"], req.params);
+
+    // Pass ulbId to service
+    const data =
+      await service.getNextCertificateNo(
+        req.params.ulbId
+      );
+
+    return ok(
+      res,
+      data,
+      "Next certificate number fetched successfully"
+    );
+  }
+);
+
 exports.saveSdRefundVoucher = asyncHandler(async (req, res) => {
   validate(["userId", "paramStr"], req.body);
   const data = await service.saveSdRefundVoucherService(req.body);
