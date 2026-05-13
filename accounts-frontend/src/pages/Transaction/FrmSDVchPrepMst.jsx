@@ -28,6 +28,7 @@ const FrmSDVchPrepMst = () => {
     const location = useLocation();
 
     const receiptNo = location.state?.receiptNo;
+    const RefNo = location.state?.RefNo;
     const partyId = location.state?.partyId;
     const sdid = location.state?.sdid;
 
@@ -166,7 +167,7 @@ const FrmSDVchPrepMst = () => {
             const res = await axios.post(
                 `${BASE_URL}/api/frmSDRef/voucher-details`,
                 {
-                    refNo: Number(refNo),
+                    refNo: Number(RefNo),
                     partyId: Number(partyId),
                     sdid: Number(sdid),
                     ulbId: ulbId,
@@ -211,7 +212,7 @@ const FrmSDVchPrepMst = () => {
         try {
             const res = await axios.post(
                 `${BASE_URL}/api/frmSDRef/voucher-prep-master`,
-                { refNo: Number(refNo), ulbId: ulbId },
+                { refNo: Number(RefNo), ulbId: ulbId },
                 { headers: { Authorization: `Bearer ${token}` } },
             );
             const data = res.data?.data?.data?.[0];
@@ -303,7 +304,7 @@ const FrmSDVchPrepMst = () => {
             const res = await axios.post(
                 `${BASE_URL}/api/frmSDRef/voucher-master`,
                 {
-                    refNo: Number(refNo),
+                    refNo: Number(RefNo),
                     partyId: Number(partyId),
                     ulbId: ulbId,
                     sdid: Number(sdid),
@@ -400,7 +401,7 @@ const FrmSDVchPrepMst = () => {
             const res = await axios.post(
                 `${BASE_URL}/api/frmSDRef/check-refund-status`,
                 {
-                    refNo: Number(refNo),
+                    refNo: Number(RefNo),
                     partyId: Number(partyId),
                     recNo: Number(recNo),
                     ulbId: ulbId,
