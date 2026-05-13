@@ -130,6 +130,7 @@ app.use("/api/BankBalRpt", require("./modules/Reports/FrmBankBalanceRpt/FrmBankB
 app.use("/api/FrmConsolidatedReceipt", require("./modules/Reports/FrmConsolidatedReceipt/FrmConsolidatedReceipt.routes"))
 app.use("/api/FrmVouchergenerationReprint",require("./modules/Reports/FrmVouchergenerationReprint/FrmVouchergenerationReprint.routes"))
 app.use("/api/FrmContraRecReprint",require("./modules/Reports/frmContraRecReprint/frmContraRecReprint.route"))
+app.use("/api/FrmCashDepositReprint",require("./modules/Reports/FrmCashDepositReprint/FrmCashDepositReprint.route"))
 app.use(errorMiddleware);
 
 module.exports = app;

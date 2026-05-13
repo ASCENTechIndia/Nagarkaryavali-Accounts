@@ -493,7 +493,10 @@ export const router = createBrowserRouter([
         path: "ReportsForm/FrmVouchergenerationReprint",
         element: <FrmVouchergenerationReprint />,
       },
-
+       {
+        path: "ReportsForm/FrmCashDepositReprint",
+        element: <FrmCashDepositReprint />,
+      },
     ],
   },
 ]);
