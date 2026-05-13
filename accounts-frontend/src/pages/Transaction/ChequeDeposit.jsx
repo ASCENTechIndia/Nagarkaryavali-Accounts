@@ -583,7 +583,7 @@ const ChequeDeposit = () => {
             }
 
             const paramStr = paramStrParts.join("~");
-
+            
             const paramStr2 = selectedRows
                 .map((row) => {
                     let modeCode = "4";
@@ -812,7 +812,7 @@ const ChequeDeposit = () => {
 
                                 <CardContent className="p-4 md:p-6 space-y-6">
                                     <div className="border rounded-md p-4 md:p-6 space-y-4">
-                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                        <div className={`grid grid-cols-1 gap-4 ${values.department === "7" ? "lg:grid-cols-3" : "lg:grid-cols-2"}`}>
                                             <FieldRow label="विभाग">
                                                 <Select
                                                     value={values.department}
