@@ -310,6 +310,7 @@ const FrmSDRefund = () => {
                 select: (
                     <Button
                         variant="link"
+                        type="button"
                         className="text-blue-700 px-0 h-auto"
                         onClick={() =>
                             navigate("/Transactions/FrmSDVchPrepMst", {
@@ -358,7 +359,7 @@ const FrmSDRefund = () => {
             initialValues={{
                 entryDeptCode: "",
                 contractorName: "",
-                depositDate: "",
+                depositDate: new Date(),
                 fromCheque: "",
                 toCheque: "",
                 exportType: "pdf",
