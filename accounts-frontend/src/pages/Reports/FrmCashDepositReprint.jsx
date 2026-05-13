@@ -76,11 +76,14 @@ const FrmCashDepositReprint = () => {
         const d = new Date(date);
 
         const day = String(d.getDate()).padStart(2, "0");
-        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const month = monthNames[d.getMonth()];
         const year = d.getFullYear();
 
         return `${day}-${month}-${year}`;
     };
+
 
     const formatTableDate = (date) => {
         if (!date) return "-";
@@ -129,15 +132,17 @@ const FrmCashDepositReprint = () => {
                 ulbId: String(ulbId),
             };
 
-            const res = await axios.post(
-                `${BASE_URL}/api/FrmCashDeposit/generate-cash-deposit-pdf`,
-                payload,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
+            // 🔥 Dynamic API Based On Paymode
+            const apiUrl =
+                row.PAYMODENAME?.toLowerCase() === "cheque"
+                    ? `${BASE_URL}/api/ChequeDepo/generatechequedepositpdf`
+                    : `${BASE_URL}/api/FrmCashDeposit/generate-cash-deposit-pdf`;
+
+            const res = await axios.post(apiUrl, payload, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
 
             Swal.close();
 
@@ -175,7 +180,7 @@ const FrmCashDepositReprint = () => {
                 fromDate: formatDateForAPI(values.fromDate),
                 toDate: formatDateForAPI(values.toDate),
                 ulbId: String(ulbId),
-                paymode: values.paymode,
+                paymode: values.paymode || "-1",
             };
 
             const res = await axios.post(

@@ -11,7 +11,6 @@ exports.getReceiptReport = asyncHandler(async (req, res) => {
   if (!fromDate) throw new AppError("fromDate is required", 400);
   if (!toDate) throw new AppError("toDate is required", 400);
   if (!ulbId) throw new AppError("ulbId is required", 400);
-  if (!paymode) throw new AppError("paymode is required", 400);
 
   const payload = { fromDate, toDate, ulbId, paymode };
 
