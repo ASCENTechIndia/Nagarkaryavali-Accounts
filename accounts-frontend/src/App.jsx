@@ -96,6 +96,7 @@ import FrmContraRecReprint from "./pages/ReportsForm/FrmContraRecReprint";
 import FrmPaymentReprint from "./pages/ReportsForm/FrmPaymentReprint";
 import FrmVouchergenerationReprint from "./pages/Reports/FrmVouchergenerationReprint";
 import FrmLedgerDetailRpt from "./pages/ReportsForm/FrmLedgerDetailRpt";
+import FrmCashDepositReprint from "./pages/Reports/FrmCashDepositReprint";
 
 const Home = () => <Button>Click me</Button>;
 
