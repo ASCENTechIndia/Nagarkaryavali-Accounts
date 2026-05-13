@@ -79,6 +79,8 @@ const FrmVoucherPreparation = () => {
   const [loadingVoucher, setLoadingVoucher] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedBankId, setSelectedBankId] = useState("");
+  const [taxRows, setTaxRows] = useState([]);
+  const [secDepositRows, setSecDepositRows] = useState([]);
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -415,6 +417,52 @@ const FrmVoucherPreparation = () => {
     }
   };
 
+  const fetchGovtTaxAcc = async (accSubtype) => {
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/api/FrmVoucher/govt-tax-acc`,
+        {
+          accsubtype: Number(accSubtype),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("Tax Acc data: ", res)
+      console.log("Tax Acc data: ", res?.data?.data?.data);
+      return res?.data?.data?.data || [];
+    } catch (err) {
+      console.error("Error fetching govt tax acc:", err);
+      return [];
+    }
+  };
+
+  const fetchSecDepositCode = async (glcode, accno) => {
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/api/FrmVoucher/secdeposit-code`,
+        {
+          glcode: Number(glcode),
+          accno: Number(accno),
+          ulbid: Number(ulbId),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("Sec deposite data: ", res)
+      console.log("Sec deposite data: ", res?.data?.data?.data);
+      return res?.data?.data?.data || [];
+    } catch (err) {
+      console.error("Error fetching sec deposit:", err);
+      return [];
+    }
+  };
+
   const fetchVoucherDetails = async (refno, zoneid, setFieldValue) => {
     try {
       const res = await axios.post(`${BASE_URL}/api/FrmVoucher/voucher-details`, 
@@ -492,6 +540,9 @@ const FrmVoucherPreparation = () => {
 
   const fetchVoucherLines = async (refno) => {
     try {
+      const taxRowsData = [];
+      const secDepositData = [];
+
       const res = await axios.post(`${BASE_URL}/api/FrmVoucher/voucher-detail-lines`, 
         {
           refno: Number(refno),
@@ -505,7 +556,33 @@ const FrmVoucherPreparation = () => {
       );
 
       if (res?.data?.data.success) {
-        const rows = res.data.data.data.map((item) => ({
+       const rows = res.data.data.data.map((item) => {
+
+        if (
+          item.RATE != null ||
+          item.SECTIONID != null
+        ) {
+          taxRowsData.push({
+            glcode: item.GLCODE,
+            accno: item.ACCNO,
+            amount: item.AMT,
+            rate: item.RATE,
+            sectionid: item.SECTIONID,
+          });
+        }
+
+        if (item.DEPOTYPEID) {
+          secDepositData.push({
+            partyid: item.PARTYID,
+            deptid: item.DEPTID,
+            depotypeid: item.DEPOTYPEID,
+            depono: item.DEPONO,
+            bankaccno: item.BANKACCNO,
+            depodetail: item.DEPODTAIL,
+          });
+        }
+
+        return {
           id: Date.now() + Math.random(),
           delete: "",
           activityCode: item.GLCODE,
@@ -514,9 +591,12 @@ const FrmVoucherPreparation = () => {
           ledgerName: item.ACCNAME,
           amount: item.AMT,
           remark: item.NARRATN,
-        }));
+        };
+        });
 
         setTableData(rows);
+        setTaxRows(taxRowsData);
+        setSecDepositRows(secDepositData);
       }
     } catch (err) {
       console.error("Error fetching voucher lines:", err);
@@ -531,21 +611,103 @@ const FrmVoucherPreparation = () => {
     fetchEntryGLCodes();
   }, []);
 
-  const handleAddToList = (values, setFieldValue, entries) => {
+  const handleAddToList = async (values, setFieldValue, entries) => {
     if (entries && entries.length > 0) {
       const lastEntry = entries[entries.length - 1];
       if (lastEntry.activityCode && lastEntry.ledger && lastEntry.amount) {
+        const activityObj = entryGlCodes.find(
+          (g) => g.value === lastEntry.activityCode
+        );
+
+        const ledgerObj = (entryLedgerOptions[entries.length - 1] || []).find(
+          (l) => l.value === lastEntry.ledger
+        );
+
+        // const newEntry = {
+        //   id: Date.now(),
+        //   delete: "",
+        //   activityCode: lastEntry.activityCode,
+        //   deptName: activityObj?.label || "",
+        //   ledgerName: ledgerObj?.label || "",
+        //   ledgerName: lastEntry.ledgerName,
+        //   amount: lastEntry.amount,
+        //   remark: lastEntry.remark || "",
+        // };
         const newEntry = {
           id: Date.now(),
           delete: "",
           activityCode: lastEntry.activityCode,
-          deptName: lastEntry.deptName,
+          deptName: activityObj?.label || "",
           ledger: lastEntry.ledger,
-          ledgerName: lastEntry.ledgerName,
+          ledgerName: ledgerObj?.label || "",
           amount: lastEntry.amount,
           remark: lastEntry.remark || "",
         };
-        setTableData([...tableData, newEntry]);
+
+        // setTableData([...tableData, newEntry]);
+        setTableData((prev) => [...prev, newEntry]);
+
+        try {
+          const subtypeRes = await axios.post(
+            `${BASE_URL}/api/FrmVoucher/accountby-glcode`,
+            {
+              glcode: Number(lastEntry.activityCode),
+              accno: Number(lastEntry.ledger),
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+          const subtypeData = subtypeRes?.data?.data?.data?.[0];
+
+          if (subtypeData?.ACCSUBTYPEID) {
+
+            const govtTax = await fetchGovtTaxAcc(
+              subtypeData.ACCSUBTYPEID
+            );
+
+            if (govtTax.length > 0) {
+
+              const taxRow = {
+                glcode: lastEntry.activityCode,
+                accno: lastEntry.ledger,
+                amount: lastEntry.amount,
+                rate: 0,
+                sectionid: 0,
+              };
+
+              setTaxRows((prev) => [...prev, taxRow]);
+            }
+
+            const secDeposit = await fetchSecDepositCode(
+              lastEntry.activityCode,
+              lastEntry.ledger
+            );
+
+            if (secDeposit.length > 0) {
+
+              const secRow = {
+                partyid: values.party,
+                glcode: lastEntry.activityCode,
+                accno: lastEntry.ledger,
+                amount: lastEntry.amount,
+                deptid: values.vibhag || 0,
+                depotypeid:
+                  secDeposit[0].NUM_SECDEPOSITCODE_ACCSUBTYPE,
+                depono: "",
+                bankaccno: "",
+                depodetail: lastEntry.remark || "",
+              };
+
+              setSecDepositRows((prev) => [...prev, secRow]);
+            }
+          }
+        } catch (err) {
+          console.error(err);
+        }
         
         const updatedEntries = [...entries];
         updatedEntries[updatedEntries.length - 1] = {
@@ -561,7 +723,28 @@ const FrmVoucherPreparation = () => {
   };
 
   const handleDeleteRow = (id) => {
-    setTableData(tableData.filter(item => item.id !== id));
+    const row = tableData.find((item) => item.id === id);
+    if (!row) return;
+    setTableData((prev) =>
+      prev.filter((item) => item.id !== id)
+    );
+    setTaxRows((prev) =>
+      prev.filter(
+        (t) =>
+          !(
+            t.glcode === row.activityCode &&
+            t.accno === row.ledger
+          )
+      )
+    );
+    setSecDepositRows((prev) =>
+      prev.filter(
+        (s) =>
+          !(
+            s.depodetail === row.remark
+          )
+      )
+    );
   };
 
   const calculateTotal = () => {
@@ -793,10 +976,10 @@ const FrmVoucherPreparation = () => {
       values.contract || "0",          // ContractId
       values.contractYear || "0",      // ContractYear
       values.remark || "",             // Narration
-      null,                              // BudgetId
-      null,                              // NidhiId
+      "",                              // BudgetId
+      "",                              // NidhiId
       values.vibhag || "0",            // DeptId
-      null,                              // EFileNo
+      "",                              // EFileNo
       formattedDate                    // ApprovalDate
     ].join('~');
 
@@ -807,8 +990,33 @@ const FrmVoucherPreparation = () => {
       );
       paramStr2 = details.join('$');
     }
-    const paramStr3 = null;
-    const paramStr4 = null;
+    
+    let paramStr3 = "";
+
+    if (taxRows.length > 0) {
+      paramStr3 = taxRows
+        .map(
+          (t) =>
+            `${values.party}#${t.glcode}#${t.accno}#${parseFloat(
+              t.amount || 0
+            ).toFixed(2)}#${t.rate || 0}#${t.sectionid || 0}`
+        )
+        .join("$");
+    }
+
+    let paramStr4 = "";
+
+    if (secDepositRows.length > 0) {
+      paramStr4 = secDepositRows
+        .map(
+          (s) =>
+            `${s.partyid}#${s.glcode}#${s.accno}#${parseFloat(
+              s.amount
+            ).toFixed(2)}#${s.deptid}#${s.depotypeid}#${s.depono || ""}#${s.bankaccno || ""}#${s.depodetail || ""}`
+        )
+        .join("$");
+    }
+
     const partyBankId = "";
     const payload = {
       userId: user?.userId,
@@ -861,6 +1069,11 @@ const FrmVoucherPreparation = () => {
     setSubmitting(false);
   }
   }
+
+  useEffect(() => {
+    console.log("TaxRows:", taxRows)
+    console.log("SecDepositeRows:", secDepositRows)
+  })
 
   const handleReset = (resetForm) => {
     Swal.fire({
@@ -1603,7 +1816,7 @@ const FrmVoucherPreparation = () => {
                                     <Button
                                       type="button"
                                       className="bg-blue-900 hover:bg-blue-800 text-white"
-                                      onClick={() => {
+                                      onClick={ async () => {
 
                                         if (!values.party) {
                                           Swal.fire({
@@ -1653,32 +1866,38 @@ const FrmVoucherPreparation = () => {
                                           return;
                                         }
 
-                                        if (entry.activityCode && entry.ledger && entry.amount) {
-                                          const activityObj = entryGlCodes.find(
-                                            (g) => g.value === entry.activityCode
-                                          );
-                                          const ledgerObj = (entryLedgerOptions[index] || []).find(
-                                            (l) => l.value === entry.ledger
-                                          );
-                                          const newRow = {
-                                            id: Date.now(),
-                                            delete: "",
-                                            activityCode: entry.activityCode,
-                                            deptName: activityObj?.label || "",
-                                            ledger: entry.ledger,
-                                            ledgerName: ledgerObj?.label || "",
-                                            amount: entry.amount,
-                                            remark: entry.remark || "",
-                                          };
-                                          setTableData((prev) => [...prev, newRow]);
-                                          setFieldValue(`entries.${index}`, {
-                                            activityCode: "",
-                                            deptName: "",
-                                            ledger: "",
-                                            amount: "",
-                                            remark: "",
-                                          });
-                                        }
+                                        // if (entry.activityCode && entry.ledger && entry.amount) {
+                                        //   const activityObj = entryGlCodes.find(
+                                        //     (g) => g.value === entry.activityCode
+                                        //   );
+                                        //   const ledgerObj = (entryLedgerOptions[index] || []).find(
+                                        //     (l) => l.value === entry.ledger
+                                        //   );
+                                        //   const newRow = {
+                                        //     id: Date.now(),
+                                        //     delete: "",
+                                        //     activityCode: entry.activityCode,
+                                        //     deptName: activityObj?.label || "",
+                                        //     ledger: entry.ledger,
+                                        //     ledgerName: ledgerObj?.label || "",
+                                        //     amount: entry.amount,
+                                        //     remark: entry.remark || "",
+                                        //   };
+                                        //   setTableData((prev) => [...prev, newRow]);
+                                        //   setFieldValue(`entries.${index}`, {
+                                        //     activityCode: "",
+                                        //     deptName: "",
+                                        //     ledger: "",
+                                        //     amount: "",
+                                        //     remark: "",
+                                        //   });
+                                        // }
+                                        
+                                        await handleAddToList(
+                                            values,
+                                            setFieldValue,
+                                            values.entries
+                                        );
                                       }}
                                     >
                                       यादीत जोडा
