@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/calendar";
 import {
   Select,
   SelectTrigger,
@@ -19,10 +20,9 @@ import SearchableSelect from "@/components/SearchableSelect";
 import ShadCNTable from "@/components/ui/table";
 import { useAuth } from "@/context/AuthContext";
 
-const ModalWrapper = ({ title, onClose, children }) => (
+const ModalWrapper = ({ title, onClose, onConfirm, children }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
     <div className="bg-[#e8e1d8] rounded-lg shadow-xl w-[95%] max-w-5xl">
-      {/* HEADER */}
       <div className="flex justify-between items-center px-4 py-3 border-b">
         <h2 className="text-lg font-semibold">{title}</h2>
         <button onClick={onClose} className="text-red-500 text-lg">
@@ -30,13 +30,13 @@ const ModalWrapper = ({ title, onClose, children }) => (
         </button>
       </div>
 
-      {/* BODY */}
       <div className="max-h-[400px] overflow-auto p-3">{children}</div>
 
-      {/* FOOTER */}
       <div className="flex justify-center gap-3 p-3 border-t">
-        <Button className="bg-green-600 hover:bg-green-700">OK</Button>
-       
+        <Button className="bg-green-600 hover:bg-green-700" onClick={onConfirm}>
+          Add Selected
+        </Button>
+
         <Button variant="destructive" onClick={onClose}>
           Close
         </Button>
@@ -75,7 +75,11 @@ const BankDeposit = () => {
   const [deptList, setDeptList] = useState([]);
   const [selectedDept, setSelectedDept] = useState("-1");
 
+  const [collectionList, setCollectionList] = useState([]);
+  const [selectedCollection, setSelectedCollection] = useState("-1");
+
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(false);
 
   /* ================= API ================= */
 
@@ -135,20 +139,81 @@ const BankDeposit = () => {
     }
   };
 
+  // Update fetchDepartments() to use SweetAlert loader
+
   const fetchDepartments = async () => {
     try {
+      Swal.fire({
+        title: "Loading...",
+        text: "Please wait...",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
       const res = await axios.get(
         `${BASE_URL}/api/Bankdeposit/department?ulbId=${ulbId}`,
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
       );
 
       if (res.data?.ok) {
         setDeptList(res.data?.data?.list || []);
+      } else {
+        setDeptList([]);
       }
     } catch (err) {
       console.error("Department API Error:", err);
+      setDeptList([]);
+
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to load विभाग list",
+      });
+
+      return;
+    } finally {
+      Swal.close(); 
+    }
+  };
+
+  const fetchCollectionCenters = async (prabhagId) => {
+    try {
+      
+      if (!prabhagId || prabhagId === "-1") {
+        setCollectionList([]);
+        setSelectedCollection("-1");
+        return;
+      }
+
+      const res = await axios.get(
+        `${BASE_URL}/api/ChequeDepo/collectioncenter/${prabhagId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (res.data?.ok && res.data?.data?.success) {
+        setCollectionList(res.data?.data?.rows || []);
+        console.log("Collection Centers:", res.data?.data?.rows); 
+      } else {
+        setCollectionList([]);
+      }
+
+      setSelectedCollection("-1");
+    } catch (err) {
+      console.error("Collection Center API Error:", err);
+      setCollectionList([]);
+      setSelectedCollection("-1");
     }
   };
 
@@ -156,70 +221,215 @@ const BankDeposit = () => {
     if (ulbId) {
       fetchGL();
       fetchDepartments();
-      fetchZone(selectedDept); // ✅ pass dept
+      fetchZone(selectedDept);
     }
   }, [ulbId, selectedDept]);
 
   const handleSearch = async (values) => {
-    debugger;
-    if (!values.fromDate || !values.toDate) {
-      alert("Please select From Date and To Date");
+    const formatDate = (date) => {
+      if (!date) return "";
+
+      const d = new Date(date);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+
+      return `${yyyy}-${mm}-${dd}`;
+    };
+
+    const fromDate = values?.fromDate ? formatDate(values.fromDate) : "";
+    const toDate = values?.toDate ? formatDate(values.toDate) : "";
+
+    if (!fromDate || !toDate) {
+      Swal.fire({
+        icon: "warning",
+        title: "Warning",
+        text: "Please select From Date and To Date",
+      });
       return;
     }
+
+    const payload = {
+      ulbId: Number(ulbId),
+      fromDate,
+      toDate,
+      deptId: selectedDept !== "-1" ? Number(selectedDept) : "",
+      zoneId: selectedZone !== "-1" ? Number(selectedZone) : "",
+      collectionId:
+        selectedCollection !== "-1" ? Number(selectedCollection) : "",
+      receiptNos: [],
+      accountNos: [],
+      challanNos: [],
+      rmode: [],
+    };
 
     try {
       setLoading(true);
 
       const res = await axios.post(
         `${BASE_URL}/api/Bankdeposit/summary-bankDeposit`,
+        payload,
         {
-          ulbId: Number(ulbId),
-          fromDate: values.fromDate,
-          toDate: values.toDate,
-
-          zoneId: "",
-          deptId: "",
-          collectionId: "",
-
-          receiptNos: [],
-          accountNos: [],
-          challanNos: [],
-
-          rmode: [],
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
       );
 
-      if (res.data?.ok && res.data?.data?.success) {
-        const list = res.data?.data?.list || [];
+      // If API response is not successful
+      if (!res.data?.ok || !res.data?.data?.success) {
+        const message =
+          res.data?.data?.message ||
+          res.data?.message ||
+          "No records available for the selected criteria.";
 
-        const mapped = list.map((item, index) => ({
-          id: index + 1,
-          checked: false,
-          department: item.DEPARTMENT || "",
-          departmentId: item.DEPTID || "",
-          accountCode: item.ACCNO || "",
-          accountHead: item.ACCOUNTNAME || "",
-          amount: Math.abs(Number(item.AMOUNT || 0)),
-          glcodeg: item.GLCODEG || "",
-          accnog: item.ACCNOG || "",
-        }));
-
-        setTableData(mapped);
-        setShowTable(true);
-      } else {
         setTableData([]);
-        setShowTable(true);
+        setShowTable(false); // ✅ Hide table
+
+        Swal.fire({
+          icon: "warning",
+          title: "No Data Found",
+          text: message,
+        });
+
+        return;
       }
+
+      const list = res.data?.data?.list || [];
+
+      // If list is empty
+      if (list.length === 0) {
+        setTableData([]);
+        setShowTable(false); // ✅ Hide table
+
+        Swal.fire({
+          icon: "warning",
+          title: "No Data Found",
+          text: "No records available for the selected criteria.",
+        });
+
+        return;
+      }
+
+      // Map data
+      const mapped = list.map((item, index) => ({
+        id: index + 1,
+        checked: false,
+        department: item.DEPARTMENT || "",
+        departmentId: item.DEPTID || "",
+        accountCode: item.ACCNO || "",
+        accountHead: item.ACCOUNTNAME || "",
+        amount: Math.abs(Number(item.AMOUNT || 0)),
+        glcodeg: item.GLCODEG || "",
+        accnog: item.ACCNOG || "",
+      }));
+
+      setTableData(mapped);
+      setShowTable(true); // ✅ Show table only when data exists
     } catch (err) {
       console.error("Search API Error:", err);
+
       setTableData([]);
-      setShowTable(true);
+      setShowTable(false); // ✅ Hide table on error
+
+      const message =
+        err?.response?.data?.data?.message ||
+        err?.response?.data?.message ||
+        "Failed to fetch data";
+
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: message,
+      });
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAddPavati = () => {
+    const selected = pavatiData.filter((r) => r.checked);
+
+    if (selected.length === 0) {
+      Swal.fire("Warning", "Please select at least one row", "warning");
+      return;
+    }
+
+    const mapped = selected.map((r) => ({
+      id: `P-${r.id}`,
+      department: "Pavati",
+      departmentId: "",
+      accountCode: r.receiptNo,
+      accountHead: r.challanNo,
+      amount: r.amount,
+      glcodeg: "",
+      accnog: "",
+      checked: false,
+    }));
+
+    setTableData((prev) => {
+      // Keep only rows that were added from modals
+      const previousModalRows = prev.filter(
+        (row) =>
+          String(row.id).startsWith("P-") || String(row.id).startsWith("L-"),
+      );
+
+      // Prevent duplicate modal rows
+      const existingIds = new Set(previousModalRows.map((row) => row.id));
+
+      const newRows = mapped.filter((row) => !existingIds.has(row.id));
+
+      // Show only old modal rows + new modal rows
+      return [...previousModalRows, ...newRows];
+    });
+
+    setShowTable(true);
+    setShowPavatiModal(false);
+
+    // Clear modal selection
+    setPavatiData((prev) => prev.map((row) => ({ ...row, checked: false })));
+  };
+
+  const handleAddLekha = () => {
+    const selected = lekhaData.filter((r) => r.checked);
+
+    if (selected.length === 0) {
+      Swal.fire("Warning", "Please select at least one row", "warning");
+      return;
+    }
+
+    const mapped = selected.map((r) => ({
+      id: `L-${r.id}`,
+      department: r.giName,
+      departmentId: "",
+      accountCode: r.accountCode,
+      accountHead: r.accountName,
+      amount: r.amount,
+
+      // ✅ Copy actual values from modal row
+      glcodeg: r.glcodeg || "",
+      accnog: r.accnog || "",
+
+      checked: false,
+    }));
+
+    setTableData((prev) => {
+      const previousModalRows = prev.filter(
+        (row) =>
+          String(row.id).startsWith("P-") || String(row.id).startsWith("L-"),
+      );
+
+      const existingIds = new Set(previousModalRows.map((row) => row.id));
+
+      const newRows = mapped.filter((row) => !existingIds.has(row.id));
+
+      return [...previousModalRows, ...newRows];
+    });
+
+    setShowTable(true);
+    setShowLekhaModal(false);
+
+    setLekhaData((prev) => prev.map((row) => ({ ...row, checked: false })));
   };
 
   const fetchAccountWise = async (values) => {
@@ -235,7 +445,8 @@ const BankDeposit = () => {
 
           zoneId: selectedZone === "-1" ? "" : selectedZone,
           deptId: selectedDept === "-1" ? "" : selectedDept,
-          collectionId: "",
+          collectionId:
+            selectedCollection !== "-1" ? Number(selectedCollection) : "",
 
           rmode: [],
         },
@@ -250,13 +461,15 @@ const BankDeposit = () => {
         const mapped = list.map((item, index) => ({
           id: index + 1,
           checked: false,
-          accountCode: item.ACCNO,
-          giName: item.GLNAME,
-          accountName: item.ACCOUNTNAME,
-          challanNo: item.CHALLANO,
-          date: item.RECDATE?.split("T")[0],
-          paymode: item.RMODE,
+          accountCode: item.ACCNO || "",
+          giName: item.GLNAME || "",
+          accountName: item.ACCOUNTNAME || "",
+          challanNo: item.CHALLANO || "",
+          date: item.RECDATE?.split("T")[0] || "",
+          paymode: item.RMODE || "",
           amount: Math.abs(Number(item.AMOUNT || 0)),
+          glcodeg: item.GLCODE || "", // ✅ correct field
+          accnog: item.ACCNO || "", // ✅ correct field
         }));
 
         setLekhaData(mapped);
@@ -275,21 +488,36 @@ const BankDeposit = () => {
     try {
       setPavatiLoading(true);
 
+      const formatDateForChallan = (date) => {
+        if (!date) return "";
+
+        const d = new Date(date);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+
+        return `${yyyy}-${mm}-${dd}`;
+      };
+
       const res = await axios.post(
         `${BASE_URL}/api/Bankdeposit/challan`,
         {
           ulbId: Number(ulbId),
-          fromDate: values.fromDate,
-          toDate: values.toDate,
 
-          zoneId: selectedZone === "-1" ? "" : selectedZone,
-          deptId: selectedDept === "-1" ? "" : selectedDept,
-          collectionId: "",
+          fromDate: formatDateForChallan(values.fromDate),
+          toDate: formatDateForChallan(values.toDate),
+
+          deptId: selectedDept !== "-1" ? Number(selectedDept) : "",
+          zoneId: selectedZone !== "-1" ? Number(selectedZone) : "",
+          collectionId:
+            selectedCollection !== "-1" ? Number(selectedCollection) : "",
 
           rmode: [],
         },
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
       );
 
@@ -299,10 +527,10 @@ const BankDeposit = () => {
         const mapped = list.map((item, index) => ({
           id: index + 1,
           checked: false,
-          receiptNo: item.RECNO,
-          challanNo: item.CHALLANO,
-          date: item.RECDATE?.split("T")[0],
-          paymode: item.RMODE,
+          receiptNo: item.RECNO || "",
+          challanNo: item.CHALLANO || "",
+          date: item.RECDATE?.split("T")[0] || "",
+          paymode: item.RMODE || "",
           amount: Math.abs(Number(item.AMOUNT || 0)),
         }));
 
@@ -313,6 +541,12 @@ const BankDeposit = () => {
     } catch (err) {
       console.error("Challan API Error:", err);
       setPavatiData([]);
+
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err?.response?.data?.message || "Failed to fetch challan details",
+      });
     } finally {
       setPavatiLoading(false);
     }
@@ -333,125 +567,124 @@ const BankDeposit = () => {
       .toUpperCase();
   };
 
-const handleSave = async (values) => {
-  const selectedRows = tableData.filter((r) => r.checked);
+  const handleSave = async (values) => {
+    const selectedRows = tableData.filter((r) => r.checked);
 
-  if (selectedRows.length === 0) {
-    Swal.fire({
-      icon: "warning",
-      title: "No rows selected",
-      text: "Please select at least one record",
-    });
-    return;
-  }
-
-  if (!values.fromDate || !values.toDate) {
-    Swal.fire({
-      icon: "warning",
-      title: "Missing Dates",
-      text: "Please select From Date and To Date",
-    });
-    return;
-  }
-
-  if (!selectedGL?.value || !selectedLedger?.value) {
-    Swal.fire({
-      icon: "warning",
-      title: "Missing GL / Ledger",
-      text: "Please select GL Code and Ledger",
-    });
-    return;
-  }
-
-  try {
-    setLoading(true);
-
-    const formattedDate = formatDate(values.fromDate);
-
-    // ================= HEADER (paramStr) =================
-    const paramStr = [
-      formattedDate,                      // TransDate
-      Date.now(),                         // VoucherNo (dynamic)
-      2,                                  // TransType (same as .NET)
-      selectedZone === "-1" ? 0 : selectedZone,
-      0,
-      selectedGL.value,                   // Debit GL
-      selectedLedger.value,               // Debit Account
-      5,
-      0,
-      "",
-      "",
-      0,
-    ].join("~");
-
-    // ================= DETAILS (paramStr2) =================
-    const paramStr2 = selectedRows
-      .map((row) => {
-        return [
-          row.id,                         // RECNO (use id if not available)
-          formattedDate,                  // RECDATE
-          8,                              // MODE (BANK = 8)
-          row.departmentId || 0,          // DEPARTMENT
-          Math.abs(row.amount || 0),      // AMOUNT
-          selectedZone === "-1" ? 0 : selectedZone,
-          "Bank",
-          "",
-          "",
-          "",
-          row.glcodeg || 0,
-          row.accnog || 0,
-          row.glcodeg || 0,
-          row.accnog || 0,
-        ].join("#");
-      })
-      .join("$");
-
-    // ================= API CALL =================
-    const res = await axios.post(
-      `${BASE_URL}/api/Bankdeposit/insert-cashier-receipt`,
-      {
-        userId: user?.userId || user?.username,
-        ulbId: Number(ulbId),
-        paramStr,
-        paramStr2,
-        paramStr3: "",
-        fromDate: formattedDate,
-        toDate: formatDate(values.toDate),
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      },
-    );
-
-    // ================= RESPONSE =================
-    if (res.data?.ok) {
+    if (selectedRows.length === 0) {
       Swal.fire({
-        icon: "success",
-        title: "Success",
-        text: res.data?.data?.message,
+        icon: "warning",
+        title: "No rows selected",
+        text: "Please select at least one record",
       });
+      return;
+    }
 
-      setTableData([]);
-      setShowTable(false);
-    } else {
+    if (!values.fromDate || !values.toDate) {
+      Swal.fire({
+        icon: "warning",
+        title: "Missing Dates",
+        text: "Please select From Date and To Date",
+      });
+      return;
+    }
+
+    if (!selectedGL?.value || !selectedLedger?.value) {
+      Swal.fire({
+        icon: "warning",
+        title: "Missing GL / Ledger",
+        text: "Please select GL Code and Ledger",
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const formattedDate = formatDate(values.fromDate);
+
+      const paramStr = [
+        formattedDate,
+        Date.now(),
+        2,
+        selectedZone === "-1" ? 0 : selectedZone,
+        0,
+        selectedGL.value,
+        selectedLedger.value,
+        5,
+        0,
+        "",
+        "",
+        0,
+      ].join("~");
+
+      // ================= DETAILS (paramStr2) =================
+      const paramStr2 = selectedRows
+        .map((row) => {
+          return [
+            row.id, // RECNO (use id if not available)
+            formattedDate, // RECDATE
+            8, // MODE (BANK = 8)
+            row.departmentId || 0, // DEPARTMENT
+            Math.abs(row.amount || 0), // AMOUNT
+            selectedZone === "-1" ? 0 : selectedZone,
+            "Bank",
+            "",
+            "",
+            "",
+            row.glcodeg || 0,
+            row.accnog || 0,
+            row.glcodeg || 0,
+            row.accnog || 0,
+          ].join("#");
+        })
+        .join("$");
+
+      // ================= API CALL =================
+      const res = await axios.post(
+        `${BASE_URL}/api/Bankdeposit/insert-cashier-receipt`,
+        {
+          userId: user?.userId || user?.username,
+          ulbId: Number(ulbId),
+          paramStr,
+          paramStr2,
+          paramStr3: "",
+          fromDate: formattedDate,
+          toDate: formatDate(values.toDate),
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      // ================= RESPONSE =================
+      if (res.data?.ok) {
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: res.data?.data?.message,
+        });
+
+        setTableData([]);
+        setShowTable(false);
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: res.data?.message || "Insert failed",
+        });
+      }
+    } catch (err) {
+      console.error("SAVE ERROR:", err);
+
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: res.data?.message || "Insert failed",
+        text: err?.response?.data?.message || "Insert failed",
       });
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error("SAVE ERROR:", err);
-
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: err?.response?.data?.message || "Insert failed",
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const totalAmount = tableData
     .filter((r) => r.checked)
@@ -470,13 +703,25 @@ const handleSave = async (values) => {
   return (
     <Formik
       initialValues={{
-        fromDate: "",
-        toDate: "",
+        fromDate: new Date(),
+        toDate: new Date(),
+        depositDate: new Date(),
       }}
       onSubmit={handleSearch}
     >
-      {({ values, handleChange }) => (
+      {({ values, setFieldValue }) => (
         <Form>
+          {pageLoading && (
+            <div className="fixed inset-0 z-[99999] bg-black/50 flex items-center justify-center">
+              <div className="bg-white rounded-xl shadow-xl px-8 py-6 flex flex-col items-center gap-4">
+                <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-lg font-semibold text-gray-700">
+                  Loading...
+                </p>
+              </div>
+            </div>
+          )}
+
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -502,7 +747,9 @@ const handleSave = async (values) => {
                           value={selectedDept}
                           onValueChange={(val) => {
                             setSelectedDept(val);
-                            setSelectedZone("-1"); 
+                            setSelectedZone("-1");
+                            setCollectionList([]);
+                            setSelectedCollection("-1");
                           }}
                         >
                           <SelectTrigger className="w-full h-9">
@@ -537,11 +784,9 @@ const handleSave = async (values) => {
                         </Label>
                         <span>:</span>
                       </div>
-                      <Input
-                        type="date"
-                        name="fromDate"
-                        onChange={handleChange}
+                      <DatePicker
                         value={values.fromDate}
+                        onChange={(date) => setFieldValue("fromDate", date)}
                       />
                     </div>
 
@@ -552,12 +797,25 @@ const handleSave = async (values) => {
                         <span>:</span>
                       </div>
                       <div className="flex-1 min-w-[200px]">
-                        <Select>
+                        <Select
+                          value={selectedCollection}
+                          onValueChange={(val) => setSelectedCollection(val)}
+                        >
                           <SelectTrigger className="w-full h-9">
                             <SelectValue placeholder="-- निवडा --" />
                           </SelectTrigger>
+
                           <SelectContent>
-                            <SelectItem value="nagpur">Nagapur</SelectItem>
+                            <SelectItem value="-1">All</SelectItem>
+
+                            {collectionList.map((item) => (
+                              <SelectItem
+                                key={item.VAR_COLLCEN_COLLCENID}
+                                value={item.VAR_COLLCEN_COLLCENID.toString()}
+                              >
+                                {item.VAR_COLLCEN_COLLCENNAME}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -575,7 +833,10 @@ const handleSave = async (values) => {
                       <div className="flex-1 min-w-[200px]">
                         <Select
                           value={selectedZone}
-                          onValueChange={(val) => setSelectedZone(val)}
+                          onValueChange={(val) => {
+                            setSelectedZone(val);
+                            fetchCollectionCenters(val); // ✅ Use प्रभाग ID
+                          }}
                         >
                           <SelectTrigger className="w-full h-9">
                             <SelectValue placeholder="-- निवडा --" />
@@ -605,11 +866,9 @@ const handleSave = async (values) => {
                         </Label>
                         <span>:</span>
                       </div>
-                      <Input
-                        type="date"
-                        name="toDate"
-                        onChange={handleChange}
+                      <DatePicker
                         value={values.toDate}
+                        onChange={(date) => setFieldValue("toDate", date)}
                       />
                     </div>
                   </div>
@@ -638,12 +897,14 @@ const handleSave = async (values) => {
                   </Button>
 
                   <Button
+                    type="button"
                     onClick={() => {
                       if (!values.fromDate || !values.toDate) {
                         alert("Select dates first");
                         return;
                       }
-                      fetchChallan(values); // 🔥 call API
+
+                      fetchChallan(values);
                       setShowPavatiModal(true);
                     }}
                   >
@@ -651,12 +912,14 @@ const handleSave = async (values) => {
                   </Button>
 
                   <Button
+                    type="button"
                     onClick={() => {
                       if (!values.fromDate || !values.toDate) {
                         alert("Select dates first");
                         return;
                       }
-                      fetchAccountWise(values); // 🔥 call API
+
+                      fetchAccountWise(values);
                       setShowLekhaModal(true);
                     }}
                   >
@@ -670,6 +933,7 @@ const handleSave = async (values) => {
               <ModalWrapper
                 title="पावती तपशील"
                 onClose={() => setShowPavatiModal(false)}
+                onConfirm={handleAddPavati}
               >
                 <div className="w-full overflow-x-auto">
                   <div className="min-w-[800px]">
@@ -684,6 +948,8 @@ const handleSave = async (values) => {
                           "Date",
                           "Paymode",
                           "Amount",
+                          "Gl Codeg",
+                          "Acc No g",
                         ]}
                         data={pavatiData}
                         keyMapping={{
@@ -693,6 +959,8 @@ const handleSave = async (values) => {
                           Date: "date",
                           Paymode: "paymode",
                           Amount: "amount",
+                          "Gl Codeg": "glcodeg",
+                          "Acc No g": "accnog",
                         }}
                         onRowCheckChange={(row, checked) => {
                           setPavatiData((prev) =>
@@ -717,6 +985,7 @@ const handleSave = async (values) => {
               <ModalWrapper
                 title="लेखाशीर्ष तपशील"
                 onClose={() => setShowLekhaModal(false)}
+                onConfirm={handleAddLekha}
               >
                 <div className="w-full overflow-x-auto">
                   <div className="min-w-[1000px]">
@@ -824,7 +1093,10 @@ const handleSave = async (values) => {
                         <span>:</span>
                       </div>
 
-                      <Input type="date" className="flex-1 min-w-[180px]" />
+                      <DatePicker
+                        value={values.depositDate}
+                        onChange={(date) => setFieldValue("depositDate", date)}
+                      />
                     </div>
                   </div>
 
