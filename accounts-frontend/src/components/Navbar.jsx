@@ -213,7 +213,7 @@ const Navbar = () => {
 
         {/* LOGO + TITLE */}
         <div className="flex items-center justify-between w-[60%] gap-4">
-          <img src={corpInfo.logo} className="sm:h-14 sm:w-14 h-10 w-10 rounded" />
+          <img src={corpInfo.logo || null} className="sm:h-14 sm:w-14 h-10 w-10 rounded" />
           <h1 className="text-white font-bold text-lg sm:text-2xl">
             {corpInfo.name}
           </h1>
@@ -272,16 +272,7 @@ const Navbar = () => {
                     align="start"
                     // className="z-50 bg-white text-black border shadow-lg rounded-md min-w-50 p-1"
                     sideOffset={4}
-                    className="
-                      z-50
-                      bg-white text-black
-                      border shadow-lg rounded-md
-                      min-w-[240px]
-                      max-h-[70vh]
-                      overflow-y-auto
-                      overflow-x-hidden
-                      p-1
-                      scrollbar-thin
+                    className=" z-50 bg-white text-black border shadow-lg rounded-md min-w-60 max-h-[70vh] overflow-y-auto overflow-x-hidden p-1 scrollbar-thin
                     "
                   >
                     {children.map((child) => (
@@ -305,7 +296,7 @@ const Navbar = () => {
 
       {/* 🔷 MOBILE MENU */}
       {mobileOpen && (
-        <div className="sm:hidden bg-white border-t shadow p-3">
+        <div className="sm:hidden bg-white border-t shadow p-3 max-h-[calc(100vh-72px)] overflow-y-auto overflow-x-hidden scrollbar-thin">
 
           {/* 🔷 USER INFO */}
           <div className="text-center text-sm mb-3">

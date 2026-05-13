@@ -190,7 +190,7 @@ const Login = () => {
                     </div>
                   )}
                   {/* BUTTON */}
-                  <Button className="w-full" disabled={loading}>
+                  <Button className="w-full" disabled={loading} type="submit">
                     {loading ? "Logging in..." : "Login"}
                   </Button>
 
