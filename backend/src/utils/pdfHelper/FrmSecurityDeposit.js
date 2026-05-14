@@ -75,6 +75,55 @@ const batchDataIntoPages = (data, batchSize) => {
 const formatReportData = (data, reportType) => {
   if (!data || !Array.isArray(data)) return [];
   
+  if (reportType === "report147") {
+    return data.map((row, index) => {
+      const depositAmount = Number(row.AMOUNT || 0);
+      const totalRefund = Number(row.TOTAL || 0);
+
+      return {
+        srNo: index + 1,
+
+        receiptDate: row.RECTRANSDATE ?? "",
+
+        receiptNo: row.PARTYID ?? "",
+
+        partyName: row.PARTYNAME ?? "",
+
+        headDetail: row.DEPODETAIL ?? "",
+
+        voucherNo: row.RECNO ?? "",
+
+        transactionNo: row.TRANSNO ?? "",
+
+        depositAmount,
+
+        april: row.APR ?? 0,
+        may: row.MAY ?? 0,
+        june: row.JUN ?? 0,
+        july: row.JUL ?? 0,
+        august: row.AUG ?? 0,
+        september: row.SEP ?? 0,
+
+        oct: row.OCT ?? 0,
+        nov: row.NOV ?? 0,
+        dec: row.DECM ?? 0,
+        jan: row.JAN ?? 0,
+        feb: row.FEB ?? 0,
+        mar: row.MAR ?? 0,
+
+        yearTotal: totalRefund,
+
+        adjustmentAmount: depositAmount - totalRefund,
+
+        refundNo: row.CERTINO ?? "",
+
+        refundDate: row.SDDT ?? "",
+
+        remark: row.NARRATION ?? ""
+      };
+    });
+  }
+
   return data.map((row, index) => ({
     slNo: index + 1,
     partyId: row.PARTYID || "",
@@ -95,35 +144,6 @@ const formatReportData = (data, reportType) => {
     partyTransDate: row.PAYTRANSDATE || "",
     depositType: row.DEPOSITTYPE || "",
     functionCode: row.FUNCTIONCODE || "",
-
-    // For Report 147 specific fields
-    apr: row.APR || 0,
-    may: row.MAY || 0,
-    jun: row.JUN || 0,
-    jul: row.JUL || 0,
-    aug: row.AUG || 0,
-    sep: row.SEP || 0,
-    oct: row.OCT || 0,
-    nov: row.NOV || 0,
-    dec: row.DECM || 0,
-    jan: row.JAN || 0,
-    feb: row.FEB || 0,
-    mar: row.MAR || 0,
-    total: row.TOTAL || 0,
-    trnsApr: row.TRNSAPR || "",
-    trnsMay: row.TRNSMAY || "",
-    trnsJun: row.TRNSJUN || "",
-    trnsJul: row.TRNSJUL || "",
-    trnsAug: row.TRNSAUG || "",
-    trnsSep: row.TRNSSEP || "",
-    trnsOct: row.TRNSOCT || "",
-    trnsNov: row.TRNSNOV || "",
-    trnsDec: row.TRNSDECM || "",
-    trnsJan: row.TRNSJAN || "",
-    trnsFeb: row.TRNSFEB || "",
-    trnsMar: row.TRNSMAR || "",
-    certino: row.CERTINO || "",
-    sddt: row.SDDT || ""
   }));
 };
 
@@ -162,7 +182,16 @@ const getReportSubtitle = (reportType, filters) => {
 
 const generateSecurityDepositPDF = async ({ data, filters, reportType, corporationName, corporationLogo }) => {
   try {
-    const templatePath = path.resolve(__dirname, "../../templates/FrmSecurityDeposit.html");
+    // const templatePath = path.resolve(__dirname, "../../templates/FrmSecurityDeposit.html");
+    const templateFile =
+      reportType === "report147"
+        ? "FrmSecurityDeposit147.html"
+        : "FrmSecurityDeposit.html";
+
+    const templatePath = path.resolve(
+      __dirname,
+      `../../templates/${templateFile}`
+    );
 
     if (!fs.existsSync(templatePath)) {
       throw new Error(`Template not found at: ${templatePath}`);
@@ -185,8 +214,47 @@ const generateSecurityDepositPDF = async ({ data, filters, reportType, corporati
     const currentDate = now.toLocaleDateString("en-GB", { day: '2-digit', month: '2-digit', year: 'numeric' });
     const currentTime = now.toLocaleTimeString("en-IN", { hour: '2-digit', minute: '2-digit' });
 
-    const totalAmount = formattedRows.reduce((sum, row) => sum + (parseFloat(row.amount) || 0), 0);
+    const totalAmount = formattedRows.reduce(
+      (sum, row) => sum + (parseFloat(row.amount || row.depositAmount) || 0),
+      0
+    );
+
     const totalRecords = formattedRows.length;
+
+    let grandTotal = null;
+
+    if (reportType === "report147") {
+      grandTotal = {
+        depositAmount: formattedRows.reduce((s, r) => s + (Number(r.depositAmount) || 0), 0),
+
+        april: formattedRows.reduce((s, r) => s + (Number(r.april) || 0), 0),
+        oct: formattedRows.reduce((s, r) => s + (Number(r.oct) || 0), 0),
+
+        may: formattedRows.reduce((s, r) => s + (Number(r.may) || 0), 0),
+        nov: formattedRows.reduce((s, r) => s + (Number(r.nov) || 0), 0),
+
+        june: formattedRows.reduce((s, r) => s + (Number(r.june) || 0), 0),
+        dec: formattedRows.reduce((s, r) => s + (Number(r.dec) || 0), 0),
+
+        july: formattedRows.reduce((s, r) => s + (Number(r.july) || 0), 0),
+        jan: formattedRows.reduce((s, r) => s + (Number(r.jan) || 0), 0),
+
+        august: formattedRows.reduce((s, r) => s + (Number(r.august) || 0), 0),
+        feb: formattedRows.reduce((s, r) => s + (Number(r.feb) || 0), 0),
+
+        september: formattedRows.reduce((s, r) => s + (Number(r.september) || 0), 0),
+        mar: formattedRows.reduce((s, r) => s + (Number(r.mar) || 0), 0),
+
+        yearTotal: formattedRows.reduce((s, r) => s + (Number(r.yearTotal) || 0), 0),
+
+        yearTotal2: "",
+
+        adjustmentAmount: formattedRows.reduce(
+          (s, r) => s + (Number(r.adjustmentAmount) || 0),
+          0
+        ),
+      };
+    }
 
     const html = template({
       pages,
@@ -199,7 +267,8 @@ const generateSecurityDepositPDF = async ({ data, filters, reportType, corporati
       currentTime,
       totalAmount,
       totalRecords,
-      reportType
+      reportType,
+      grandTotal
     });
 
     const chromePath = path.resolve(
