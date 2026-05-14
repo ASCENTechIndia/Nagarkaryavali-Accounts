@@ -29,7 +29,6 @@ const getPaymentRegisterPDF = asyncHandler(async (req, res) => {
   const filters = req.body;
 
   const result = await service.getPaymentRegisterService(filters);
-  console.log("result",result)
 
   if (!result.rows || result.rowCount === 0) {
   return res.status(404).json({
@@ -47,6 +46,8 @@ const getPaymentRegisterPDF = asyncHandler(async (req, res) => {
   corporationName: corpInfo.ABC_MUNICIPAL_TEXT || "",
   logo: corpInfo.ULBLOGO || "",   // ✅ FIXED
   zone: filters.zone || "",
+  rptType:filters.rptType,
+  zoneName:filters.zoneName || "-"
 });
 
   const baseUrl = `${req.protocol}://${req.get("host")}`;

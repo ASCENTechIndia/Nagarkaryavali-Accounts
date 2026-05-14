@@ -17,7 +17,9 @@ const generatePaymentRegisterPDF = async ({
   corporationName = "",
   majorCode = "",
   zone = "",
-  logo = "" // ✅ dynamic logo
+  logo = "", // ✅ dynamic logo
+  rptType,
+  zoneName = "-"
 }) => {
   let browser;
 
@@ -92,6 +94,8 @@ const generatePaymentRegisterPDF = async ({
         minimumFractionDigits: 2,
       }),
       currentDate: new Date().toLocaleDateString("en-GB"),
+      rptType: rptType === "0" ? "सारांश" : "तपशील",
+      zoneName 
     });
 
     /* ================= GENERATE PDF ================= */

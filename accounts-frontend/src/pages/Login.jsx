@@ -117,7 +117,7 @@ const Login = () => {
                   }
                 } catch (err) {
                   setError(
-                    err.response?.data?.message || "Server error"
+                     err.response?.data?.error ?? "Server error"
                   );
                   refreshCaptcha();
                 } finally {
@@ -190,7 +190,7 @@ const Login = () => {
                     </div>
                   )}
                   {/* BUTTON */}
-                  <Button className="w-full" disabled={loading}>
+                  <Button className="w-full" disabled={loading} type="submit">
                     {loading ? "Logging in..." : "Login"}
                   </Button>
 
