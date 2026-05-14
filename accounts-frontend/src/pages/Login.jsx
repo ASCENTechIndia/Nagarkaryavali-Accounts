@@ -117,7 +117,7 @@ const Login = () => {
                   }
                 } catch (err) {
                   setError(
-                    err.response?.data?.message || "Server error"
+                     err.response?.data?.error ?? "Server error"
                   );
                   refreshCaptcha();
                 } finally {
