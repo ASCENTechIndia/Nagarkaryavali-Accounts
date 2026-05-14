@@ -7,6 +7,7 @@
       body {
         font-family: Arial;
         font-size: 11px;
+        margin: 20px;
       }
 
       table {
@@ -99,36 +100,63 @@
       </thead>
 
       <tbody>
-        {{#each rows}}
+          {{#each rowBatches}}
 
-        <tr>
-          <!-- दिनांक -->
-          <td>{{trnsdate}}</td>
+          <tbody>
+          {{#each this}}
 
-          <!-- प्रमाणक क्रमांक -->
-          <td>{{docno}}</td>
+            <tr>
+              <!-- दिनांक -->
+              <td>{{trnsdate}}</td>
 
-          <!-- व्यवहार क्रमांक -->
-          <td>{{transno}}</td>
+              <!-- प्रमाणक क्रमांक -->
+              <td>{{docno}}</td>
 
-          <!-- प्रदाता/अदाता -->
-          <td>{{adataaccname}}</td>
+              <!-- व्यवहार क्रमांक -->
+              <td>{{transno}}</td>
 
-          <!-- तपशील -->
-          <td>{{narration}}</td>
+              <!-- प्रदाता/अदाता -->
+              <td>{{adataaccname}}</td>
 
-          <!-- लेखा सांकेतांक -->
-          <td>{{accname}}</td>
+              <!-- तपशील -->
+              <td>{{narration}}</td>
 
-          <!-- प्राप्त रक्कम -->
-          <td class="right">{{receiptamt}}</td>
+              <!-- लेखा सांकेतांक -->
+              <td>{{accname}}</td>
 
-          <!-- खर्च -->
-          <td class="right">{{paymentamt}}</td>
+              <!-- प्राप्त रक्कम -->
+              <td class="right">{{receiptamt}}</td>
 
-          <!-- सही -->
-          <td></td>
-        </tr>
+              <!-- खर्च -->
+              <td class="right">{{paymentamt}}</td>
+
+              <!-- सही -->
+              <td></td>
+            </tr>
+
+            {{/each}}
+          </tbody>
+
+        {{#unless @last}}
+        </table>
+
+        <div style="page-break-after: always;"></div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>दिनांक</th>
+              <th>प्रमाणक क्रमांक</th>
+              <th>व्यवहार क्रमांक</th>
+              <th>प्रदाता/अदाता</th>
+              <th>तपशील</th>
+              <th>लेखा सांकेतांक</th>
+              <th>प्राप्त रक्कम (जमा)</th>
+              <th>देण्यात आलेली रक्कम (खर्च)</th>
+              <th>प्राधिकृत अधिकाऱ्‍याचा शेरा व सही</th>
+            </tr>
+          </thead>
+        {{/unless}}
 
         {{/each}}
       </tbody>
