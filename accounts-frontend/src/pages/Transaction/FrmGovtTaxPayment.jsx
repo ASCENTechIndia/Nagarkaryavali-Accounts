@@ -79,8 +79,7 @@ const FrmGovtTaxPayment = () => {
   }, []);
 
   /* 🔥 DATE FORMAT */
-  const formatDate = (date) =>
-    date ? date.toISOString().split("T")[0] : "";
+  const formatDate = (date) => (date ? date.toISOString().split("T")[0] : "");
 
   /* 🔥 SEARCH */
   const handleSubmit = async (values) => {
@@ -97,7 +96,7 @@ const FrmGovtTaxPayment = () => {
 
       const res = await api.post(
         "/api/FrmGovtTaxPayment/govt-tax-payment",
-        payload
+        payload,
       );
 
       const rows =
@@ -143,9 +142,9 @@ const FrmGovtTaxPayment = () => {
               </CardHeader>
 
               {/* CONTENT */}
-              <CardContent className="p-6 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
+              <CardContent className="p-4 sm:p-6 space-y-6">
+                {/* FILTER SECTION */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                   {/* प्रभाग */}
                   <Field label="प्रभाग">
                     <Select
@@ -186,7 +185,7 @@ const FrmGovtTaxPayment = () => {
                             key={g.GLCODE}
                             value={g.GLCODE.toString()}
                           >
-                            {g.GLSEARCHNAME} {/* ✅ FIXED */}
+                            {g.GLSEARCHNAME}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -204,7 +203,10 @@ const FrmGovtTaxPayment = () => {
                       </SelectTrigger>
                       <SelectContent>
                         {creditList.map((c) => (
-                          <SelectItem key={c.OBJECTCODE} value={c.OBJECTCODE}>
+                          <SelectItem
+                            key={c.OBJECTCODE}
+                            value={String(c.OBJECTCODE)}
+                          >
                             {c.ACCNAME}
                           </SelectItem>
                         ))}
@@ -212,7 +214,7 @@ const FrmGovtTaxPayment = () => {
                     </Select>
                   </Field>
 
-                  {/* FROM DATE */}
+                  {/* दिनांक पासून */}
                   <Field label="दिनांक पासून">
                     <DatePicker
                       value={values.fromDate}
@@ -220,7 +222,7 @@ const FrmGovtTaxPayment = () => {
                     />
                   </Field>
 
-                  {/* TO DATE */}
+                  {/* दिनांक पर्यंत */}
                   <Field label="दिनांक पर्यंत">
                     <DatePicker
                       value={values.toDate}
@@ -229,47 +231,52 @@ const FrmGovtTaxPayment = () => {
                   </Field>
 
                   {/* BUTTON */}
-                  <div className="flex items-center">
+                  <div className="flex items-end">
                     <Button
                       type="submit"
-                      className="bg-blue-900 text-white px-6"
+                      className="w-full md:w-auto bg-blue-900 text-white px-6"
                     >
                       हाऊचर शोध
                     </Button>
                   </div>
                 </div>
 
-                {/* TABLE */}
+                {/* TABLE SECTION */}
                 {showTable && (
-                  <ShadCNTable
-                    headers={[
-                      "GLCODE",
-                      "ACCNO",
-                      "ACCNAME",
-                      "PARTYNAME",
-                      "TRNSNO",
-                      "TRNSDATE",
-                      "BILLAMT",
-                      "TAXAMT",
-                      "BALAMT",
-                    ]}
-                    data={tableData || []}
-                    keyMapping={{
-                      GLCODE: "GLCODE",
-                      ACCNO: "ACCNO",
-                      ACCNAME: "ACCNAME",
-                      PARTYNAME: "PARTYNAME",
-                      TRNSNO: "TRNSNO",
-                      TRNSDATE: "TRNSDATE",
-                      BILLAMT: "BILLAMT",
-                      TAXAMT: "TAXAMT",
-                      BALAMT: "BALAMT",
-                    }}
-                    pagination={true}
-                    rowsPerPage={5}
-                  />
+                  <div className="overflow-x-auto rounded-md border">
+                    <div className="min-w-[900px]">
+                      <ShadCNTable
+                        headers={[
+                          "GLCODE",
+                          "ACCNO",
+                          "ACCNAME",
+                          "PARTYNAME",
+                          "TRNSNO",
+                          "TRNSDATE",
+                          "BILLAMT",
+                          "TAXAMT",
+                          "BALAMT",
+                        ]}
+                        data={tableData || []}
+                        keyMapping={{
+                          GLCODE: "GLCODE",
+                          ACCNO: "ACCNO",
+                          ACCNAME: "ACCNAME",
+                          PARTYNAME: "PARTYNAME",
+                          TRNSNO: "TRNSNO",
+                          TRNSDATE: "TRNSDATE",
+                          BILLAMT: "BILLAMT",
+                          TAXAMT: "TAXAMT",
+                          BALAMT: "BALAMT",
+                        }}
+                        pagination={true}
+                        rowsPerPage={5}
+                      />
+                    </div>
+                  </div>
                 )}
 
+                {/* NO DATA MESSAGE */}
                 {showTable && tableData.length === 0 && (
                   <div className="text-center text-red-500 mt-4">
                     No records found

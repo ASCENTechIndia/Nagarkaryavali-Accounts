@@ -43,9 +43,11 @@ const initialValues = {
 };
 
 const Row = ({ label, children }) => (
-  <div className="grid grid-cols-[160px_1fr] items-center gap-3">
-    <Label className="text-right">{label} :</Label>
-    {children}
+  <div className="grid grid-cols-1 sm:grid-cols-[160px_1fr] items-start sm:items-center gap-2 sm:gap-3">
+    <Label className="sm:text-right text-left whitespace-nowrap">
+      {label} :
+    </Label>
+    <div className="w-full">{children}</div>
   </div>
 );
 
@@ -166,7 +168,7 @@ const FrmTransfer = () => {
 
   const fetchChequeBook = async (values, chequeNo, setFieldValue) => {
     try {
-      console.log("values",values)
+      console.log("values", values);
       const res = await axios.post(
         `${BASE_URL}/api/FrmVoucherGeneration/cheque-book`,
         {
@@ -181,12 +183,12 @@ const FrmTransfer = () => {
         },
       );
       console.log("chequeBook Payload", {
-          bank_glcode: values.creditDept,
-          bank_accno: values.creditLedger,
-          cheque_no: chequeNo,
-          corp_id: ulbId,
-          zone_id: values.department,
-        })
+        bank_glcode: values.creditDept,
+        bank_accno: values.creditLedger,
+        cheque_no: chequeNo,
+        corp_id: ulbId,
+        zone_id: values.department,
+      });
       const books = res.data?.rows || [];
       console.log("Fetched cheque books:", books);
 
@@ -368,186 +370,180 @@ const FrmTransfer = () => {
     fetchData();
   }, [location?.state?.refNo, token, ulbId, zones, transactionTypes]);
 
-const handleSubmit = async (values, { resetForm }) => {
-  try {
-    /* ================= VALIDATION ================= */
-    if (!values.department) return Swal.fire("प्रभाग निवडा");
-    if (!values.transactionType) return Swal.fire("व्यवहार प्रकार निवडा");
+  const handleSubmit = async (values, { resetForm }) => {
+    try {
+      if (!values.department) return Swal.fire("प्रभाग निवडा");
+      if (!values.transactionType) return Swal.fire("व्यवहार प्रकार निवडा");
 
-    if (!values.creditDept || !values.creditLedger)
-      return Swal.fire("Credit खाते निवडा");
+      if (!values.creditDept || !values.creditLedger)
+        return Swal.fire("Credit खाते निवडा");
 
-    if (!values.debitDept || !values.debitLedger)
-      return Swal.fire("Debit खाते निवडा");
+      if (!values.debitDept || !values.debitLedger)
+        return Swal.fire("Debit खाते निवडा");
 
-    if (Number(values.debitAmount) > Number(values.creditAmount))
-      return Swal.fire("Debit > Credit नाही");
+      if (Number(values.debitAmount) > Number(values.creditAmount))
+        return Swal.fire("Debit > Credit नाही");
+      const formatDate = (d) => {
+        const date = new Date(d);
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = date
+          .toLocaleString("en-US", { month: "short" })
+          .toUpperCase();
+        const year = date.getFullYear();
+        return `${day}-${month}-${year}`;
+      };
 
-    /* ================= DATE FORMAT ================= */
-    const formatDate = (d) => {
-      const date = new Date(d);
-      const day = String(date.getDate()).padStart(2, "0");
-      const month = date
-        .toLocaleString("en-US", { month: "short" })
-        .toUpperCase();
-      const year = date.getFullYear();
-      return `${day}-${month}-${year}`;
-    };
+      const clean = (v) => (v ? String(v).trim() : "0");
 
-    const clean = (v) => (v ? String(v).trim() : "0");
+      const paramStr = [
+        formatDate(values.date),
 
-    /* ================= PARAM STR (MATCH .NET EXACTLY) ================= */
-    const paramStr = [
-      formatDate(values.date),
+        "1", // ✅ ALWAYS 1 for new
 
-      "1", // ✅ ALWAYS 1 for new
+        values.department || "0",
+        "0",
 
-      values.department || "0",
-      "0",
+        values.transactionType, // ✅ DO NOT CHANGE
 
-      values.transactionType, // ✅ DO NOT CHANGE
+        "1", // InMode
+        "0", // RefNo
 
-      "1", // InMode
-      "0", // RefNo
+        " ", // ✅ VERY IMPORTANT (NOT "0")
+        " ", // ✅ VERY IMPORTANT
 
-      " ", // ✅ VERY IMPORTANT (NOT "0")
-      " ", // ✅ VERY IMPORTANT
+        values.budgetId || "0",
+        values.nidhiId || "0",
 
-      values.budgetId || "0",
-      values.nidhiId || "0",
+        values.transactionType === "5" ? values.chequeNo || "0" : "0",
 
-      values.transactionType === "5"
-        ? values.chequeNo || "0"
-        : "0",
+        formatDate(values.chequeDate),
 
-      formatDate(values.chequeDate),
+        values.transactionType === "5"
+          ? values.chequeRef || "0" // ✅ correct field
+          : "0",
+      ].join("~");
 
-      values.transactionType === "5"
-        ? values.chequeRef || "0" // ✅ correct field
-        : "0",
-    ].join("~");
+      /* ================= PARAM STR 2 ================= */
+      const credit = [
+        clean(values.creditDept),
+        clean(values.creditLedger),
+        Number(values.creditAmount || 0),
+        clean(values.details),
+        clean(values.party || "0"),
+      ].join("#");
 
-    /* ================= PARAM STR 2 ================= */
-    const credit = [
-      clean(values.creditDept),
-      clean(values.creditLedger),
-      Number(values.creditAmount || 0),
-      clean(values.details),
-      clean(values.party || "0"),
-    ].join("#");
+      const debit = [
+        clean(values.debitDept),
+        clean(values.debitLedger),
+        -Math.abs(values.debitAmount || 0), // ✅ MUST NEGATIVE
+        clean(values.details),
+        clean(values.party || "0"),
+      ].join("#");
 
-    const debit = [
-      clean(values.debitDept),
-      clean(values.debitLedger),
-      -Math.abs(values.debitAmount || 0), // ✅ MUST NEGATIVE
-      clean(values.details),
-      clean(values.party || "0"),
-    ].join("#");
+      const paramStr2 = `${credit}$${debit}`;
 
-    const paramStr2 = `${credit}$${debit}`;
+      console.log("FINAL paramStr:", paramStr);
+      console.log("FINAL paramStr2:", paramStr2);
 
-    console.log("FINAL paramStr:", paramStr);
-    console.log("FINAL paramStr2:", paramStr2);
-
-    /* ================= SAVE ================= */
-    Swal.fire({
-      title: "Saving...",
-      text: "Please wait",
-      allowOutsideClick: false,
-      didOpen: () => Swal.showLoading(),
-    });
-
-    const saveRes = await axios.post(
-      `${BASE_URL}/api/FrmTransfer/transfer-save`,
-      {
-        userId: user?.userId,
-        paramStr,
-        paramStr2,
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-
-    Swal.close();
-
-    const response = saveRes.data;
-
-    /* ================= SUCCESS ================= */
-    if (response?.ok && response?.data?.success) {
-      await Swal.fire({
-        icon: "success",
-        title: "Success",
-        text: response.data.message,
+      /* ================= SAVE ================= */
+      Swal.fire({
+        title: "Saving...",
+        text: "Please wait",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
       });
 
-      /* ================= REF NO ================= */
-      const message = response.data.message;
-      const refMatch = message.match(/Reference No\. *: *(\d+)/);
-      const refNo = refMatch ? refMatch[1] : null;
+      const saveRes = await axios.post(
+        `${BASE_URL}/api/FrmTransfer/transfer-save`,
+        {
+          userId: user?.userId,
+          paramStr,
+          paramStr2,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
-      /* ================= PDF ================= */
-      if (refNo) {
-        try {
-          Swal.fire({
-            title: "PDF तयार होत आहे...",
-            allowOutsideClick: false,
-            didOpen: () => Swal.showLoading(),
-          });
+      Swal.close();
 
-          const pdfRes = await axios.post(
-            `${BASE_URL}/api/FrmTransfer/counter-voucher-pdf`,
-            {
-              refno: Number(refNo),
-              ulbId: user?.ulbId,
-            },
-            {
-              headers: { Authorization: `Bearer ${token}` },
+      const response = saveRes.data;
+
+      /* ================= SUCCESS ================= */
+      if (response?.ok && response?.data?.success) {
+        await Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: response.data.message,
+        });
+
+        /* ================= REF NO ================= */
+        const message = response.data.message;
+        const refMatch = message.match(/Reference No\. *: *(\d+)/);
+        const refNo = refMatch ? refMatch[1] : null;
+
+        /* ================= PDF ================= */
+        if (refNo) {
+          try {
+            Swal.fire({
+              title: "PDF तयार होत आहे...",
+              allowOutsideClick: false,
+              didOpen: () => Swal.showLoading(),
+            });
+
+            const pdfRes = await axios.post(
+              `${BASE_URL}/api/FrmTransfer/counter-voucher-pdf`,
+              {
+                refno: Number(refNo),
+                ulbId: user?.ulbId,
+              },
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              },
+            );
+
+            Swal.close();
+
+            const pdfUrl = pdfRes?.data?.pdfUrl;
+
+            if (pdfUrl) {
+              window.open(pdfUrl, "_blank");
+            } else {
+              Swal.fire("PDF तयार करण्यात अडचण आली");
             }
-          );
-
-          Swal.close();
-
-          const pdfUrl = pdfRes?.data?.pdfUrl;
-
-          if (pdfUrl) {
-            window.open(pdfUrl, "_blank");
-          } else {
-            Swal.fire("PDF तयार करण्यात अडचण आली");
+          } catch (err) {
+            Swal.close();
+            console.error(err);
+            Swal.fire("PDF Error");
           }
-        } catch (err) {
-          Swal.close();
-          console.error(err);
-          Swal.fire("PDF Error");
         }
+
+        resetForm();
+
+        setTimeout(() => {
+          navigate("/Transactions/FrmTransferList");
+        }, 800);
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text:
+            response?.data?.message ||
+            response?.message ||
+            "Something went wrong",
+        });
       }
+    } catch (err) {
+      Swal.close();
+      console.error(err);
 
-      resetForm();
-
-      setTimeout(() => {
-        navigate("/Transactions/FrmTransferList");
-      }, 800);
-    } else {
       Swal.fire({
         icon: "error",
-        title: "Error",
-        text:
-          response?.data?.message ||
-          response?.message ||
-          "Something went wrong",
+        title: "Server Error",
+        text: "Something went wrong",
       });
     }
-  } catch (err) {
-    Swal.close();
-    console.error(err);
-
-    Swal.fire({
-      icon: "error",
-      title: "Server Error",
-      text: "Something went wrong",
-    });
-  }
-};
+  };
 
   /* ================= UI ================= */
   return (
@@ -582,69 +578,84 @@ const handleSubmit = async (values, { resetForm }) => {
                   </CardTitle>
                 </CardHeader>
 
-                <CardContent>
+                <CardContent className="p-4 sm:p-6">
                   {/* 🔷 TOP ROW */}
-                  <div className="grid grid-cols-4 gap-6 mb-4">
-                    <div className="flex items-center gap-2">
-                      <Label className="w-24 text-right">प्रभाग :</Label>
-                      <Select
-                        value={values.department}
-                        onValueChange={(v) => setFieldValue("department", v)}
-                        disabled={isEditMode}
-                      >
-                        <SelectTrigger className="w-full h-8">
-                          <SelectValue placeholder="-- निवडा --" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {zones.map((z) => (
-                            <SelectItem key={z.ZONEID} value={String(z.ZONEID)}>
-                              {z.ZONEENAME}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-4">
+                    {/* प्रभाग */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <Label className="sm:w-24 sm:text-right whitespace-nowrap">
+                        प्रभाग :
+                      </Label>
+                      <div className="flex-1">
+                        <Select
+                          value={values.department}
+                          onValueChange={(v) => setFieldValue("department", v)}
+                          disabled={isEditMode}
+                        >
+                          <SelectTrigger className="w-full h-9">
+                            <SelectValue placeholder="-- निवडा --" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {zones.map((z) => (
+                              <SelectItem
+                                key={z.ZONEID}
+                                value={String(z.ZONEID)}
+                              >
+                                {z.ZONEENAME}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <Label className="w-28 text-right">
+                    {/* व्यवहार प्रकार */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <Label className="sm:w-28 sm:text-right whitespace-nowrap">
                         व्यवहार प्रकार :
                       </Label>
-                      <Select
-                        value={values.transactionType}
-                        onValueChange={handleTransactionChange}
-                        disabled={isEditMode}
-                      >
-                        <SelectTrigger className="w-full h-8">
-                          <SelectValue placeholder="-- निवडा --" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {transactionTypes.map((t) => (
-                            <SelectItem
-                              key={t.NUM_TRNSTYPE_TRNSTYPEID}
-                              value={String(t.NUM_TRNSTYPE_TRNSTYPEID)}
-                            >
-                              {t.VAR_TRNSTYPE_TRNSTYPE}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="flex-1">
+                        <Select
+                          value={values.transactionType}
+                          onValueChange={handleTransactionChange}
+                          disabled={isEditMode}
+                        >
+                          <SelectTrigger className="w-full h-9">
+                            <SelectValue placeholder="-- निवडा --" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {transactionTypes.map((t) => (
+                              <SelectItem
+                                key={t.NUM_TRNSTYPE_TRNSTYPEID}
+                                value={String(t.NUM_TRNSTYPE_TRNSTYPEID)}
+                              >
+                                {t.VAR_TRNSTYPE_TRNSTYPE}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <Label className="w-20 text-right">दिनांक :</Label>
+                    {/* दिनांक */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <Label className="sm:w-20 sm:text-right whitespace-nowrap">
+                        दिनांक :
+                      </Label>
                       <Input
-                        className="w-[150px] h-8"
+                        className="w-full sm:w-[150px] h-9"
                         value={formatDate(values.date)}
                         readOnly
                       />
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <Label className="w-32 text-right">
+                    {/* व्हाउचर क्रमांक */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <Label className="sm:w-32 sm:text-right whitespace-nowrap">
                         व्हाउचर क्रमांक :
                       </Label>
                       <Input
-                        className="w-[150px] h-8"
+                        className="w-full sm:w-[150px] h-9"
                         value={values.voucherNo}
                         onChange={(e) =>
                           setFieldValue("voucherNo", e.target.value)
@@ -656,11 +667,13 @@ const handleSubmit = async (values, { resetForm }) => {
 
                   <hr className="my-4" />
 
-                  {/* 🔷 MAIN */}
-                  <div className="grid grid-cols-2 gap-16">
-                    {/* LEFT */}
+                  {/* 🔷 MAIN SECTION */}
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 xl:gap-12">
+                    {/* LEFT SECTION */}
                     <div>
-                      <h3 className="mb-2 font-semibold">जमा</h3>
+                      <h3 className="mb-3 font-semibold text-base sm:text-lg">
+                        जमा
+                      </h3>
 
                       <div className="space-y-3">
                         <Row label="विभाग कोड">
@@ -672,14 +685,13 @@ const handleSubmit = async (values, { resetForm }) => {
                             value={values.creditDept}
                             onChange={async (v) => {
                               const glcode = v?.value || v;
-
                               setFieldValue("creditDept", glcode);
                               setFieldValue("creditLedger", "");
-
-                              await loadLedgers(glcode, "credit"); // 🔥 THIS WAS MISSING
+                              await loadLedgers(glcode, "credit");
                             }}
                           />
                         </Row>
+
                         <Row label="लेखाशिर्ष">
                           <SearchableSelect
                             options={creditLedgers.map((l) => ({
@@ -687,40 +699,35 @@ const handleSubmit = async (values, { resetForm }) => {
                               value: String(l.OBJECTCODE || ""),
                             }))}
                             value={values.creditLedger}
-                            onChange={(v) => {
-                              setFieldValue("creditLedger", v?.value);
-                            }}
+                            onChange={(v) =>
+                              setFieldValue("creditLedger", v?.value || "")
+                            }
                           />
                         </Row>
 
                         <Row label="रक्कम">
                           <Input
-                            className="w-full h-8"
+                            className="w-full h-9"
                             value={values.creditAmount}
                             onChange={(e) => {
                               const val = e.target.value;
-
-                              // ✅ update credit
                               setFieldValue("creditAmount", val);
-
-                              // ✅ auto sync debit
                               setFieldValue("debitAmount", val);
                             }}
                           />
                         </Row>
+
                         {showChequeFields && (
                           <>
                             <Row label="धनादेश क्रमांक">
                               <Input
-                                className="w-full h-8"
+                                className="w-full h-9"
                                 maxLength={6}
                                 value={values.chequeNo}
                                 onChange={(e) => {
                                   const value = e.target.value;
-
                                   setFieldValue("chequeNo", value);
 
-                                  // 🔥 Trigger when valid
                                   if (
                                     value &&
                                     /^\d{1,6}$/.test(value) &&
@@ -740,7 +747,7 @@ const handleSubmit = async (values, { resetForm }) => {
 
                             <Row label="धनादेश तारीख">
                               <Input
-                                className="w-full h-8"
+                                className="w-full h-9"
                                 value={formatDate(values.chequeDate)}
                                 readOnly
                               />
@@ -753,10 +760,9 @@ const handleSubmit = async (values, { resetForm }) => {
                                   setFieldValue("chequeRef", v)
                                 }
                               >
-                                <SelectTrigger className="w-full h-8">
+                                <SelectTrigger className="w-full h-9">
                                   <SelectValue placeholder="Select" />
                                 </SelectTrigger>
-
                                 <SelectContent>
                                   {chequeBooks.map((b) => (
                                     <SelectItem
@@ -774,7 +780,7 @@ const handleSubmit = async (values, { resetForm }) => {
 
                         <Row label="तपशील">
                           <Textarea
-                            className="w-full"
+                            className="w-full min-h-[80px]"
                             value={values.details}
                             onChange={(e) =>
                               setFieldValue("details", e.target.value)
@@ -782,21 +788,19 @@ const handleSubmit = async (values, { resetForm }) => {
                           />
                         </Row>
 
-                        {/* ✅ FIXED PARTY */}
                         <Row label="पार्टी संकेतांक">
                           <Select
                             value={values.party ? String(values.party) : ""}
                             onValueChange={(v) => setFieldValue("party", v)}
                           >
-                            <SelectTrigger className="w-full h-8">
+                            <SelectTrigger className="w-full h-9">
                               <SelectValue placeholder="-- निवडा --" />
                             </SelectTrigger>
-
                             <SelectContent>
                               {parties.map((p) => (
                                 <SelectItem
                                   key={p.NUM_PARTYMST_PARTYID}
-                                  value={String(p.NUM_PARTYMST_PARTYID)} // ✅ correct field
+                                  value={String(p.NUM_PARTYMST_PARTYID)}
                                 >
                                   {p.VAR_PARTYMST_PARTYNAME || "--"}
                                 </SelectItem>
@@ -807,9 +811,11 @@ const handleSubmit = async (values, { resetForm }) => {
                       </div>
                     </div>
 
-                    {/* RIGHT */}
+                    {/* RIGHT SECTION */}
                     <div>
-                      <h3 className="mb-2 font-semibold">खर्च</h3>
+                      <h3 className="mb-3 font-semibold text-base sm:text-lg">
+                        खर्च
+                      </h3>
 
                       <div className="space-y-3">
                         <Row label="विभाग कोड">
@@ -821,10 +827,8 @@ const handleSubmit = async (values, { resetForm }) => {
                             value={values.debitDept}
                             onChange={async (v) => {
                               const glcode = v?.value || v;
-
                               setFieldValue("debitDept", glcode);
                               setFieldValue("debitLedger", "");
-
                               await loadLedgers(glcode, "debit");
                             }}
                           />
@@ -837,22 +841,19 @@ const handleSubmit = async (values, { resetForm }) => {
                               value: String(l.OBJECTCODE || ""),
                             }))}
                             value={values.debitLedger}
-                            onChange={(v) => {
-                              setFieldValue("debitLedger", v?.value);
-                            }}
+                            onChange={(v) =>
+                              setFieldValue("debitLedger", v?.value || "")
+                            }
                           />
                         </Row>
 
                         <Row label="रक्कम">
                           <Input
-                            className="w-full h-8"
+                            className="w-full h-9"
                             value={values.debitAmount}
                             onChange={(e) => {
                               const val = e.target.value;
-
                               setFieldValue("creditAmount", val);
-
-                              // 🔥 AUTO FILL DEBIT
                               setFieldValue("debitAmount", val);
                             }}
                           />
@@ -861,26 +862,28 @@ const handleSubmit = async (values, { resetForm }) => {
                     </div>
                   </div>
 
-                  {/* BUTTONS */}
-                  <div className="flex justify-center gap-3 mt-6">
+                  {/* 🔷 BUTTONS */}
+                  <div className="flex flex-col sm:flex-row justify-center gap-3 mt-8">
                     <Button
                       type="submit"
-                      className="bg-blue-900 text-white px-6"
+                      className="w-full sm:w-auto bg-blue-900 text-white px-6"
                     >
                       स्वीकार
                     </Button>
+
                     <Button
                       type="button"
                       variant="destructive"
-                      className="px-6"
+                      className="w-full sm:w-auto px-6"
                       onClick={() => navigate("/Transactions/FrmTransferList")}
                     >
                       रद्द
                     </Button>
+
                     <Button
                       type="button"
                       variant="secondary"
-                      className="px-6"
+                      className="w-full sm:w-auto px-6"
                       onClick={() => formikRef.current.resetForm()}
                     >
                       बदल

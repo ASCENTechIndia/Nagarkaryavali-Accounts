@@ -81,7 +81,6 @@ const BankDeposit = () => {
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(false);
 
-  /* ================= API ================= */
 
   const fetchGL = async () => {
     try {
@@ -225,127 +224,151 @@ const BankDeposit = () => {
     }
   }, [ulbId, selectedDept]);
 
-  const handleSearch = async (values) => {
-    const formatDate = (date) => {
-      if (!date) return "";
+const handleSearch = async (values) => {
+  const formatDate = (date) => {
+    if (!date) return "";
 
-      const d = new Date(date);
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, "0");
-      const dd = String(d.getDate()).padStart(2, "0");
+    const d = new Date(date);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
 
-      return `${yyyy}-${mm}-${dd}`;
-    };
+    return `${yyyy}-${mm}-${dd}`;
+  };
 
-    const fromDate = values?.fromDate ? formatDate(values.fromDate) : "";
-    const toDate = values?.toDate ? formatDate(values.toDate) : "";
+  const fromDate = values?.fromDate ? formatDate(values.fromDate) : "";
+  const toDate = values?.toDate ? formatDate(values.toDate) : "";
 
-    if (!fromDate || !toDate) {
+  if (!fromDate || !toDate) {
+    Swal.fire({
+      icon: "warning",
+      title: "Warning",
+      text: "Please select From Date and To Date",
+    });
+    return;
+  }
+
+  const payload = {
+    ulbId: Number(ulbId),
+    fromDate,
+    toDate,
+    deptId: selectedDept !== "-1" ? Number(selectedDept) : "",
+    zoneId: selectedZone !== "-1" ? Number(selectedZone) : "",
+    collectionId:
+      selectedCollection !== "-1" ? Number(selectedCollection) : "",
+    receiptNos: [],
+    accountNos: [],
+    challanNos: [],
+    rmode: [],
+  };
+
+  try {
+    setLoading(true);
+
+    // ✅ SweetAlert Loader Start
+    Swal.fire({
+      title: "Searching...",
+      text: "Please wait while fetching records.",
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      showConfirmButton: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    const res = await axios.post(
+      `${BASE_URL}/api/Bankdeposit/summary-bankDeposit`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    // ✅ Close Loader
+    Swal.close();
+
+    // API failed
+    if (!res.data?.ok || !res.data?.data?.success) {
+      const message =
+        res.data?.data?.message ||
+        res.data?.message ||
+        "No records available for the selected criteria.";
+
+      setTableData([]);
+      setShowTable(false);
+
       Swal.fire({
         icon: "warning",
-        title: "Warning",
-        text: "Please select From Date and To Date",
+        title: "No Data Found",
+        text: message,
       });
       return;
     }
 
-    const payload = {
-      ulbId: Number(ulbId),
-      fromDate,
-      toDate,
-      deptId: selectedDept !== "-1" ? Number(selectedDept) : "",
-      zoneId: selectedZone !== "-1" ? Number(selectedZone) : "",
-      collectionId:
-        selectedCollection !== "-1" ? Number(selectedCollection) : "",
-      receiptNos: [],
-      accountNos: [],
-      challanNos: [],
-      rmode: [],
-    };
+    const list = res.data?.data?.list || [];
 
-    try {
-      setLoading(true);
-
-      const res = await axios.post(
-        `${BASE_URL}/api/Bankdeposit/summary-bankDeposit`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
-      // If API response is not successful
-      if (!res.data?.ok || !res.data?.data?.success) {
-        const message =
-          res.data?.data?.message ||
-          res.data?.message ||
-          "No records available for the selected criteria.";
-
-        setTableData([]);
-        setShowTable(false); // ✅ Hide table
-
-        Swal.fire({
-          icon: "warning",
-          title: "No Data Found",
-          text: message,
-        });
-
-        return;
-      }
-
-      const list = res.data?.data?.list || [];
-
-      // If list is empty
-      if (list.length === 0) {
-        setTableData([]);
-        setShowTable(false); // ✅ Hide table
-
-        Swal.fire({
-          icon: "warning",
-          title: "No Data Found",
-          text: "No records available for the selected criteria.",
-        });
-
-        return;
-      }
-
-      // Map data
-      const mapped = list.map((item, index) => ({
-        id: index + 1,
-        checked: false,
-        department: item.DEPARTMENT || "",
-        departmentId: item.DEPTID || "",
-        accountCode: item.ACCNO || "",
-        accountHead: item.ACCOUNTNAME || "",
-        amount: Math.abs(Number(item.AMOUNT || 0)),
-        glcodeg: item.GLCODEG || "",
-        accnog: item.ACCNOG || "",
-      }));
-
-      setTableData(mapped);
-      setShowTable(true); // ✅ Show table only when data exists
-    } catch (err) {
-      console.error("Search API Error:", err);
-
+    // No data
+    if (list.length === 0) {
       setTableData([]);
-      setShowTable(false); // ✅ Hide table on error
-
-      const message =
-        err?.response?.data?.data?.message ||
-        err?.response?.data?.message ||
-        "Failed to fetch data";
+      setShowTable(false);
 
       Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: message,
+        icon: "warning",
+        title: "No Data Found",
+        text: "No records available for the selected criteria.",
       });
-    } finally {
-      setLoading(false);
+      return;
     }
-  };
+
+    // Map data
+    const mapped = list.map((item, index) => ({
+      id: index + 1,
+      checked: false,
+      department: item.DEPARTMENT || "",
+      departmentId: item.DEPTID || "",
+      accountCode: item.ACCNO || "",
+      accountHead: item.ACCOUNTNAME || "",
+      amount: Math.abs(Number(item.AMOUNT || 0)),
+      glcodeg: item.GLCODEG || "",
+      accnog: item.ACCNOG || "",
+    }));
+
+    setTableData(mapped);
+    setShowTable(true);
+
+    Swal.fire({
+      icon: "success",
+      title: "Success",
+      text: `${mapped.length} record(s) found.`,
+      timer: 1500,
+      showConfirmButton: false,
+    });
+  } catch (err) {
+    console.error("Search API Error:", err);
+
+    Swal.close();
+
+    setTableData([]);
+    setShowTable(false);
+
+    const message =
+      err?.response?.data?.data?.message ||
+      err?.response?.data?.message ||
+      "Failed to fetch data";
+
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: message,
+    });
+  } finally {
+    setLoading(false);
+    Swal.close(); // ✅ Ensure loader closes in all cases
+  }
+};
 
   const handleAddPavati = () => {
     const selected = pavatiData.filter((r) => r.checked);
@@ -1149,7 +1172,7 @@ const BankDeposit = () => {
                     >
                       {loading ? "Saving..." : "Save"}
                     </Button>
-                    <Button variant="outline">Close</Button>
+                    <Button type="button" variant="outline">Close</Button>
                   </div>
                 </CardContent>
               </Card>
