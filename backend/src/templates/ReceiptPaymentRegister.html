@@ -1,0 +1,161 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+
+    <style>
+      body {
+        font-family: Arial;
+        font-size: 11px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        border: 1px solid #000;
+        padding: 5px;
+      }
+
+      .center {
+        text-align: center;
+      }
+
+      .right {
+        text-align: right;
+      }
+
+      .title {
+        font-size: 22px;
+        font-weight: bold;
+        text-align: center;
+      }
+      .subtitle {
+        font-size: 14px;
+        font-weight: bold;
+      }
+
+      .bold {
+        font-weight: bold;
+      }
+
+      .summary {
+        width: 300px;
+        margin-left: auto;
+        margin-top: 20px;
+      }
+      .signature-section {
+        width: 22%;
+        text-align: center;
+        vertical-align: bottom;
+        font-weight: bold;
+        font-size: 12px;
+        padding-top: 70px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <table style="border: none; margin-bottom: 10px">
+      <tr>
+        <td style="border: none; width: 80px; vertical-align: middle; text-align: left">
+          <img src="{{corporationLogo}}" width="100" height="100" />
+        </td>
+
+        <td style="border: none; text-align: center; vertical-align: middle">
+          <div class="title">{{corporationName}}</div>
+
+          <div class="subtitle">नमुना क्रमांक १</div>
+
+          <div class="subtitle">(नियम क्रमांक ४८, ५०, ९४, ४७३ पहा)</div>
+
+          <h2 class="subtitle">सर्वसाधारण रोकडवही / रोखपालाची रोकडवही</h2>
+
+          <div class="subtitle">दिनांक पासून {{fromDate}} &nbsp;&nbsp;&nbsp; दिनांक पर्यंत {{toDate}}</div>
+        </td>
+
+        <td style="border: none; width: 80px"></td>
+      </tr>
+    </table>
+
+    <br />
+
+    <table>
+      <thead>
+        <tr>
+          <th>दिनांक</th>
+          <th>प्रमाणक क्रमांक</th>
+          <th>व्यवहार क्रमांक</th>
+          <th>प्रदाता/अदाता</th>
+          <th>तपशील</th>
+          <th>लेखा सांकेतांक</th>
+          <th>प्राप्त रक्कम (जमा)</th>
+          <th>देण्यात आलेली रक्कम (खर्च)</th>
+          <th>प्राधिकृत अधिकाऱ्‍याचा शेरा व सही</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {{#each rows}}
+
+        <tr>
+          <!-- दिनांक -->
+          <td>{{trnsdate}}</td>
+
+          <!-- प्रमाणक क्रमांक -->
+          <td>{{docno}}</td>
+
+          <!-- व्यवहार क्रमांक -->
+          <td>{{transno}}</td>
+
+          <!-- प्रदाता/अदाता -->
+          <td>{{adataaccname}}</td>
+
+          <!-- तपशील -->
+          <td>{{narration}}</td>
+
+          <!-- लेखा सांकेतांक -->
+          <td>{{accname}}</td>
+
+          <!-- प्राप्त रक्कम -->
+          <td class="right">{{receiptamt}}</td>
+
+          <!-- खर्च -->
+          <td class="right">{{paymentamt}}</td>
+
+          <!-- सही -->
+          <td></td>
+        </tr>
+
+        {{/each}}
+      </tbody>
+    </table>
+
+    <table class="summary">
+      <tr>
+        <td class="bold">Opening Balance</td>
+        <td class="right bold">{{openingBal}}</td>
+      </tr>
+
+      <tr>
+        <td class="bold">Receipt</td>
+        <td class="right bold">{{receiptTotal}}</td>
+      </tr>
+
+      <tr>
+        <td class="bold">Payment</td>
+        <td class="right bold">{{paymentTotal}}</td>
+      </tr>
+
+      <tr>
+        <td class="bold">Closing Balance</td>
+        <td class="right bold">{{closingBal}}</td>
+      </tr>
+    </table>
+
+    <div style="font-size: 14px; width: 90%; text-align: right; margin-top: 40px; font-weight: bold">रोखपालाची सही</div>
+  </body>
+</html>
