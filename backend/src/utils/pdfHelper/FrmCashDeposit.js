@@ -190,7 +190,7 @@ const FrmCashDepositPDFHelper = async ({
     const firstRow = rows[0] || {};
 
     const totalAmount = rows.reduce(
-      (sum, row) => sum + Number(row.DEAMT || 0),
+      (sum, row) => sum + Number(row.AMT || 0),
       0
     );
 

@@ -93,7 +93,7 @@ exports.generateCashDepositPDF = asyncHandler(
       const result = await service.getCashDepositByRefNoService(refNo, ulbId, hasDenomination);
 
       const rows = result.list || [];
-
+      console.log("rows:",rows)
       if (!rows.length) {
         return res.status(404).json({
           success: false,
