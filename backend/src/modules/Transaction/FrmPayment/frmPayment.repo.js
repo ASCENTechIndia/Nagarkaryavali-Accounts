@@ -468,6 +468,42 @@ const getPaymentDetailsPDF = (refno, ulbid) =>
     { refno, ulbid },
   );
 
+async function getGLListByTransactionTypeRepo({ trnstyid }) {
+  console.log("📤 Repo: Fetch GL List By Transaction Type", { trnstyid });
+
+  let sql = `
+    SELECT DISTINCT 
+      var_accmst_function || '-' || var_glmaster_glname AS glname, 
+      var_accmst_function AS glcode,num_accmaster_accsubtype
+    FROM aoac_glmaster_def 
+    INNER JOIN aoac_accmaster_def 
+      ON var_accmst_function = num_glmaster_glcode 
+  `;
+
+  // For transaction types 1 and 3
+  if (trnstyid === "1" || trnstyid === "3") {
+    sql += `
+      and num_accmaster_accsubtype = 4810
+    `;
+  }
+
+  // For transaction types 2 and 4
+  if (trnstyid === "2" || trnstyid === "4") {
+    sql += `
+      AND num_accmaster_accsubtype IN (4820, 4822, 4821, 4823)
+    `;
+  }
+
+
+  const result = await executeQuery(sql);
+
+  if (!result.success) {
+    throw new Error(result.error);
+  }
+
+  return result.rows;
+}
+
 module.exports = {
   getFrmPaymentRepo,
   getTransactionTypeRepo,
@@ -482,5 +518,6 @@ module.exports = {
   getCorporationByIdRepo,
   getPaymentDetailsViewRepo,
   savePaymentRepo,
-  getPaymentDetailsPDF
+  getPaymentDetailsPDF,
+  getGLListByTransactionTypeRepo
 };

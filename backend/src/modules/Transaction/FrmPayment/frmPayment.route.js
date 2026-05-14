@@ -17,5 +17,5 @@ router.post("/corporation-by-id", auth(), controller.getCorporationById);
 router.post("/payment-details-view", auth(), controller.getPaymentDetailsView);
 router.post("/save-payment", auth(), controller.savePayment);
 router.post("/payment-pdf", controller.getPaymentPDF);
-
+router.post("/gl-list-by-transtype",  controller.getGLListByTransactionType);
 module.exports = router;

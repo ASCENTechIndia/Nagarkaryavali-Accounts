@@ -274,3 +274,19 @@ exports.getPaymentPDF = asyncHandler(async (req, res) => {
     data: data,
   });
 });
+
+exports.getGLListByTransactionType = asyncHandler(async (req, res) => {
+  console.log("📥 Request Body:", req.body);
+
+  const { trnstyid } = req.body;
+
+  if (!trnstyid) {
+    throw new AppError("trnstyid is required", 400);
+  }
+
+  const payload = { trnstyid };
+
+  const data = await service.getGLListByTransactionTypeService(payload);
+
+  return ok(res, data, "GL list fetched successfully");
+});

@@ -184,7 +184,17 @@ async function getPaymentDetailsServicePDF(payload) {
   return result.rows;
 }
 
+async function getGLListByTransactionTypeService(payload) {
+  console.log("📥 Service: Fetch GL List By Transaction Type", payload);
 
+  const data = await repo.getGLListByTransactionTypeRepo(payload);
+
+  return {
+    success: true,
+    count: data.length,
+    data,
+  };
+}
 
 module.exports = {
     getFrmPaymentService,
@@ -200,5 +210,6 @@ module.exports = {
     getCorporationByIdService,
     getPaymentDetailsViewService,
     savePaymentService,
-    getPaymentDetailsServicePDF
+    getPaymentDetailsServicePDF,
+    getGLListByTransactionTypeService
 };
