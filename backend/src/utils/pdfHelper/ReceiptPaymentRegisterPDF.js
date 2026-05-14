@@ -99,6 +99,7 @@ async function generateReceiptPaymentRegisterPDF({ reportData, corporationName, 
 
     await page.setContent(html, {
       waitUntil: "networkidle0",
+      timeout: 0
     });
 
     // PDF PATH
