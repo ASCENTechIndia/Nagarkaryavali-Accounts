@@ -18,7 +18,8 @@ const generatePaymentRegisterPDF = async ({
   majorCode = "",
   zone = "",
   logo = "", // ✅ dynamic logo
-  rptType
+  rptType,
+  zoneName = "-"
 }) => {
   let browser;
 
@@ -94,6 +95,7 @@ const generatePaymentRegisterPDF = async ({
       }),
       currentDate: new Date().toLocaleDateString("en-GB"),
       rptType: rptType === "0" ? "सारांश" : "तपशील",
+      zoneName 
     });
 
     /* ================= GENERATE PDF ================= */

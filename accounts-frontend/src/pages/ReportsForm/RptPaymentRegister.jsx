@@ -28,7 +28,7 @@ const initialValues = {
   head: "",
   userId: "",
   reportType: "1",
-  exportType: "excel",
+  exportType: "pdf",
 };
 
 const RptPaymentRegister = () => {
@@ -147,7 +147,11 @@ const handleSubmit = async (values) => {
   const year = d.getFullYear();
 
   return `${year}-${month}-${day}`;
-};
+};  
+  const selectedZone = zoneList.find(
+  (zone) => zone.ZONEID.toString() === values.zoneId?.toString()
+);
+  
     // ✅ CORRECT PAYLOAD
     const payload = {
       fromDate: formatDate(values.fromDate),
@@ -159,6 +163,7 @@ const handleSubmit = async (values) => {
       minorCode: values.head || null,       
       zoneId: values.zoneId || null,
       userId: values.userId || null,
+      zoneName: selectedZone?.ZONEENAME || "",
 
       budgetId: "",
       nidhiId: "",
