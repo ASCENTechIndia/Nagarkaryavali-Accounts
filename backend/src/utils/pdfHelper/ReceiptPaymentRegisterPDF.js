@@ -1,9 +1,6 @@
 const puppeteer = require("puppeteer");
-
 const fs = require("fs");
-
 const path = require("path");
-
 const Handlebars = require("handlebars");
 
 const formatNumber = (num) => {
@@ -15,7 +12,6 @@ const formatNumber = (num) => {
 
 const formatDate = (date) => {
   if (!date) return "";
-
   return new Date(date).toLocaleDateString("en-GB");
 };
 
@@ -23,42 +19,62 @@ const formatTime = () => {
   return new Date().toLocaleTimeString("en-US");
 };
 
-async function generateReceiptPaymentRegisterPDF({ reportData, corporationName, corporationLogo }) {
+// BATCH FUNCTION
+const chunkArray = (array, size) => {
+  const result = [];
+
+  for (let i = 0; i < array.length; i += size) {
+    result.push(array.slice(i, i + size));
+  }
+
+  return result;
+};
+
+async function generateReceiptPaymentRegisterPDF({
+  reportData,
+  corporationName,
+  corporationLogo,
+}) {
   try {
     // TEMPLATE PATH
-
-    const templatePath = path.resolve(__dirname, "../../templates/ReceiptPaymentRegister.html");
+    const templatePath = path.resolve(
+      __dirname,
+      "../../templates/ReceiptPaymentRegister.html"
+    );
 
     const htmlTemplate = fs.readFileSync(templatePath, "utf8");
 
     const template = Handlebars.compile(htmlTemplate);
 
-    // HTML DATA
+    // FORMATTED ROWS
+    const formattedRows = reportData.rows.map((x, index) => ({
+      srNo: index + 1,
+
+      trnsdate: formatDate(x.TRNSDATE),
+
+      docno: x.DOCNO || "",
+
+      transno: x.TRANSNO || "",
+
+      accname: x.ACCNAME || "",
+
+      narration: x.NARRATION || "",
+
+      adataaccname: x.ADATA_ACCNAME || "",
+
+      receiptamt: formatNumber(x.RECEIPTAMT),
+
+      paymentamt: formatNumber(x.PAYMENTAMT),
+    }));
+
+    const rowBatches = chunkArray(formattedRows, 10);
 
     const html = template({
       corporationName,
 
       corporationLogo,
 
-      rows: reportData.rows.map((x, index) => ({
-        srNo: index + 1,
-
-        trnsdate: formatDate(x.TRNSDATE),
-
-        docno: x.DOCNO || "",
-
-        transno: x.TRANSNO || "",
-
-        accname: x.ACCNAME || "",
-
-        narration: x.NARRATION || "",
-
-        adataaccname: x.ADATA_ACCNAME || "",
-
-        receiptamt: formatNumber(x.RECEIPTAMT),
-
-        paymentamt: formatNumber(x.PAYMENTAMT),
-      })),
+      rowBatches,
 
       openingBal: formatNumber(Math.abs(reportData.openingBal || 0)),
 
@@ -78,8 +94,10 @@ async function generateReceiptPaymentRegisterPDF({ reportData, corporationName, 
     });
 
     // CHROME PATH
-
-    const chromePath = path.resolve(__dirname, "../../../node_modules/puppeteer/.cache/puppeteer/chrome/win64-135.0.7049.84/chrome-win64/chrome.exe");
+    const chromePath = path.resolve(
+      __dirname,
+      "../../../node_modules/puppeteer/.cache/puppeteer/chrome/win64-135.0.7049.84/chrome-win64/chrome.exe"
+    );
 
     const launchOptions = {
       headless: true,
@@ -92,24 +110,21 @@ async function generateReceiptPaymentRegisterPDF({ reportData, corporationName, 
     }
 
     // BROWSER
-
     const browser = await puppeteer.launch(launchOptions);
 
     const page = await browser.newPage();
 
     await page.setContent(html, {
       waitUntil: "networkidle0",
-      timeout: 0
+      timeout: 0,
     });
 
     // PDF PATH
-
     const fileName = `ReceiptPaymentRegister_${Date.now()}.pdf`;
 
     const filePath = path.resolve("public/pdf", fileName);
 
     // GENERATE PDF
-
     await page.pdf({
       path: filePath,
 
