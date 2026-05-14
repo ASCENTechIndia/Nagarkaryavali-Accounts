@@ -142,3 +142,14 @@
   background: #083c76;
   border-radius: 3px;
 }
+
+html, body {
+  font-family: 'Poppins', sans-serif;
+}
+
+input,
+textarea,
+select,
+button {
+  font-family: 'Poppins', sans-serif;
+}
