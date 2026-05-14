@@ -88,11 +88,19 @@ const FrmBudgetAccountMap = () => {
           value: s.NUM_CORPORATION_ID.toString(),
           label: s.VAR_CORPORATION_MNAME,
         }));
+
+        console.log("Formatted Corporation:", formatted)
+
         setCorporations(formatted);
 
-        const matched = formatted.find((c) => c.value === ulbId?.toString());
-        if (matched) {
-          setSelectedCorporation(matched.value);
+        const selectedValue = String(ulbId);
+
+        const matchedCorporation = formatted.find(
+          (item) => item.value === selectedValue
+        );
+
+        if (matchedCorporation) {
+          setSelectedCorporation(matchedCorporation.value);
         }
       }
     } catch (err) {
@@ -857,7 +865,7 @@ const FrmBudgetAccountMap = () => {
                       className="bg-blue-900 hover:bg-blue-800 text-white"
                       disabled={isSubmitting || loadingHeads}
                     >
-                      {isSubmitting ? "सेव्ह करत आहे..." : "Submit"}
+                      Submit
                     </Button>
                     <Button
                       type="button"

@@ -1,0 +1,465 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      @page {
+        size: A4 landscape;
+        margin: 0px;
+      }
+
+      body {
+        font-family: 'Arial', 'SimHei', 'Microsoft Sans Serif', sans-serif;
+        font-size: 9px;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* ========== FIXED HEADER - REPEATS ON EVERY PAGE ========== */
+      .page-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 8px 20px 5px 20px;
+        z-index: 100;
+      }
+
+      .logo-img {
+        height: 45px;
+        width: auto;
+      }
+
+      .company-name {
+        text-align: center;
+        font-weight: bold;
+        font-size: 14px;
+        margin-bottom: 3px;
+        color: #1a1a1a;
+      }
+
+      .report-title {
+        text-align: center;
+        font-weight: bold;
+        font-size: 13px;
+        margin-bottom: 3px;
+        color: #2c3e50;
+      }
+
+      .report-subtitle {
+        text-align: center;
+        font-size: 10px;
+        color: #555;
+        margin-bottom: 3px;
+      }
+
+      .zone-info {
+        text-align: center;
+        font-size: 9px;
+        color: #666;
+        margin-bottom: 3px;
+      }
+
+      .header-line {
+        border-top: 2px solid #333;
+        margin: 5px 0 0 0;
+      }
+
+      /* ========== FIXED FOOTER - REPEATS ON EVERY PAGE ========== */
+      .page-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 5px 20px;
+        font-size: 8px;
+        display: flex;
+        justify-content: space-between;
+        border-top: 1px solid #ccc;
+        z-index: 100;
+      }
+
+      /* ========== PAGE CONTAINER ========== */
+      .page-container {
+        page-break-after: always;
+        margin-top: 130px;
+        margin-bottom: 50px;
+        padding: 0 20px;
+      }
+
+      .page-container:last-child {
+        page-break-after: auto;
+      }
+
+      /* ========== TABLE STYLES ========== */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 10px;
+      }
+
+      th {
+        border: 1px solid #000;
+        padding: 6px 3px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 10px;
+        vertical-align: middle;
+      }
+
+      td {
+        border: 1px solid #000;
+        padding: 4px 3px;
+        vertical-align: top;
+        font-size: 10px;
+      }
+
+      .right {
+        text-align: right;
+      }
+
+      .center {
+        text-align: center;
+      }
+
+      .left {
+        text-align: left;
+      }
+
+      .bold {
+        font-weight: bold;
+      }
+
+      .summary-row {
+        margin-top: 10px;
+        font-weight: bold;
+        text-align: right;
+        padding: 5px;
+        border-top: 1px solid #333;
+        font-size: 12px;
+      }
+
+      .total-label {
+        font-weight: bold;
+      }
+
+      .total-value {
+        margin-left: 10px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Fixed Header - Appears on Every Page -->
+    <div class="page-header">
+      <table style="width: 100%; border: none; margin-top: 0; border-collapse: collapse;">
+        <tr>
+          <td style="width: 80px; border: none; text-align: left; vertical-align: middle;">
+            {{#if logo}}
+              <img src="{{logo}}" class="logo-img" alt="Logo" />
+            {{/if}}
+          </td>
+          <td style="border: none; text-align: center; vertical-align: middle;">
+            <div class="company-name">{{corporationName}}</div>
+            <div class="report-title">{{reportTitle}}</div>
+            <div class="report-subtitle">{{reportSubtitle}}</div>
+          </td>
+        </tr>
+      </table>
+      <div class="header-line"></div>
+    </div>
+
+    <div class="page-footer">
+      <div>दिनांक: {{currentDate}} &nbsp;|&nbsp; वेळ: {{currentTime}}</div>
+    </div>
+
+    {{#each pages}}
+    <div class="page-container">
+      <table>
+
+        <thead>
+
+        <tr>
+            <th class="w-sr">
+            क्रमांक
+            </th>
+
+            <th class="w-date">
+            पावती तारीख
+            </th>
+
+            <th class="w-receipt">
+            पार्टी कोड
+            </th>
+
+            <th class="w-name">
+            पार्टी नाव
+            </th>
+
+            <th class="w-head">
+            बागाऊ रकमेचा किवा ठेवीचा तपशील
+            </th>
+
+            <th class="w-voucher">
+            पावती क्रमांक<br />
+            व्यवहार क्र.
+            </th>
+
+            <th class="w-amount">
+            ठेव रकम
+            </th>
+
+            <th class="w-month">
+            एप्रिल <br />
+            ऑक्टोबर
+            </th>
+
+            <th class="w-month">
+            मे <br />
+            नोव्हेंबर
+            </th>
+
+            <th class="w-month">
+            जून <br />
+            डिसेंबर
+            </th>
+
+            <th class="w-month">
+            जुलै <br />
+            जानेवारी
+            </th>
+
+            <th class="w-month">
+            ऑगस्ट <br />
+            फेब्रुवारी
+            </th>
+
+            <th class="w-month">
+            सप्टेंबर <br />
+            मार्च
+            </th>
+
+            <th class="w-month">
+            वर्षातील एकूण परतफेड
+            </th>
+
+            <th class="w-total">
+            वर्षाच्या शेवटी असमायोजित उर्वरीत शिल्लक
+            </th>
+
+            <th class="w-last">
+            सु. ब. परतावा प्रमाणक क्रमांक
+            </th>
+
+            <th class="w-last">
+            परतावा तारीख
+            </th>
+
+            <th class="w-last">
+            शेरा
+            </th>
+
+        </tr>
+
+        </thead>
+
+        <tbody>
+
+        {{#each rows}}
+
+        <tr>
+
+            <td class="center top-align">
+            {{srNo}}
+            </td>
+
+            <td class="center top-align">
+            {{receiptDate}}
+            </td>
+
+            <td class="center top-align">
+            {{receiptNo}}
+            </td>
+
+            <td class="top-align">
+            <div class="double-line">
+                {{partyName}}
+            </div>
+            </td>
+
+            <td class="top-align small">
+            <div>
+                {{headDetail}}
+            </div>
+            </td>
+
+            <td class="bottom-align right">
+            <div>
+                {{voucherNo}}
+            </div>
+
+            <br />
+
+            <div>
+                {{transactionNo}}
+            </div>
+            </td>
+
+            <td class="amount top-align">
+            {{depositAmount}}
+            </td>
+
+            <td class="amount">
+
+            <div>{{april}}</div>
+            <br />
+            <div>{{oct}}</div>
+
+            </td>
+
+            <td class="amount">
+
+            <div>{{may}}</div>
+            <br />
+            <div>{{nov}}</div>
+
+            </td>
+
+            <td class="amount">
+
+            <div>{{june}}</div>
+            <br />
+            <div>{{dec}}</div>
+
+            </td>
+
+            <td class="amount">
+
+            <div>{{july}}</div>
+            <br />
+            <div>{{jan}}</div>
+
+            </td>
+
+            <td class="amount">
+
+            <div>{{august}}</div>
+            <br />
+            <div>{{feb}}</div>
+
+            </td>
+
+            <td class="amount">
+
+            <div>{{september}}</div>
+            <br />
+            <div>{{mar}}</div>
+
+            </td>
+
+            <td class="amount">
+
+            <div>{{yearTotal}}</div>
+            <br />
+            <div>{{yearTotal2}}</div>
+
+            </td>
+
+            <td class="amount top-align">
+            {{adjustmentAmount}}
+            </td>
+
+            <td class="center top-align">
+            {{refundNo}}
+            </td>
+
+            <td class="center top-align">
+            {{refundDate}}
+            </td>
+
+            <td class="top-align">
+            {{remark}}
+            </td>
+
+        </tr>
+
+        {{/each}}
+
+        {{#if @last}}
+        <tr class="total-row">
+
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+
+            <td class="right bold">
+            एकूण :
+            </td>
+
+            <td></td>
+
+            <td class="amount bold">
+            {{../grandTotal.depositAmount}}
+            </td>
+
+            <td class="amount">
+            <div>{{../grandTotal.april}}</div>
+            <br />
+            <div>{{../grandTotal.oct}}</div>
+            </td>
+
+            <td class="amount">
+            <div>{{../grandTotal.may}}</div>
+            <br />
+            <div>{{../grandTotal.nov}}</div>
+            </td>
+
+            <td class="amount">
+            <div>{{../grandTotal.june}}</div>
+            <br />
+            <div>{{../grandTotal.dec}}</div>
+            </td>
+
+            <td class="amount">
+            <div>{{../grandTotal.july}}</div>
+            <br />
+            <div>{{../grandTotal.jan}}</div>
+            </td>
+
+            <td class="amount">
+            <div>{{../grandTotal.august}}</div>
+            <br />
+            <div>{{../grandTotal.feb}}</div>
+            </td>
+
+            <td class="amount">
+            <div>{{../grandTotal.september}}</div>
+            <br />
+            <div>{{../grandTotal.mar}}</div>
+            </td>
+
+            <td class="amount">
+            <div>{{../grandTotal.yearTotal}}</div>
+            </td>
+
+            <td class="amount bold">
+            {{../grandTotal.adjustmentAmount}}
+            </td>
+
+            <td></td>
+            <td></td>
+            <td></td>
+
+        </tr>
+        {{/if}}
+
+        </tbody>
+
+      </table>
+    </div>
+    {{/each}}
+  </body>
+</html>
