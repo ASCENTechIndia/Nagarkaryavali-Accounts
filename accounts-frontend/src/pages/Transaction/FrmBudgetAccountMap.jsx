@@ -465,6 +465,12 @@ const FrmBudgetAccountMap = () => {
     fetchHeads();
     fetchEntryGLCodes();
   }, []);
+
+  useEffect(() => {
+    if (ulbId && corporations.length > 0) {
+      setSelectedCorporation(String(ulbId));
+    }
+  }, [ulbId, corporations]);
   
   const handleAddToList = (values, setFieldValue, entries) => {
     if (entries && entries.length > 0) {
@@ -494,7 +500,11 @@ const FrmBudgetAccountMap = () => {
         return;
       }
 
-      if (!lastEntry.budgetProv || lastEntry.budgetProv === "") {
+      if (
+        lastEntry.budgetProv === "" ||
+        lastEntry.budgetProv === null ||
+        lastEntry.budgetProv === undefined
+      ) {
         Swal.fire({
           text: "Provisional Amount Can not be Blank!",
           confirmButtonColor: "#1e3a8a",
@@ -502,7 +512,11 @@ const FrmBudgetAccountMap = () => {
         return;
       }
 
-      if (!lastEntry.amount || lastEntry.amount === "") {
+      if (
+        lastEntry.amount === "" ||
+        lastEntry.amount === null ||
+        lastEntry.amount === undefined
+      ) {
         Swal.fire({
           text: "Revised Amount Can not be Blank!",
           confirmButtonColor: "#1e3a8a",
@@ -583,16 +597,20 @@ const FrmBudgetAccountMap = () => {
                         <span>:</span>
                       </div>
                       <Select
-                        value={selectedCorporation}
+                        value={selectedCorporation || ""}
                         onValueChange={(v) => setSelectedCorporation(v)}
                         disabled
                       >
                         <SelectTrigger className="w-full h-9">
                           <SelectValue placeholder="-- विकल्प निवडा --" />
                         </SelectTrigger>
+
                         <SelectContent>
                           {corporations.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
+                            <SelectItem
+                              key={option.value}
+                              value={String(option.value)}
+                            >
                               {option.label}
                             </SelectItem>
                           ))}
@@ -724,7 +742,7 @@ const FrmBudgetAccountMap = () => {
                       onClick={() => handleSearch(values)}
                       disabled={loadingHeads}
                     >
-                      {loadingHeads ? "शोधत आहे..." : "Search"}
+                      Search
                     </Button>
                   </div>
 
@@ -870,7 +888,7 @@ const FrmBudgetAccountMap = () => {
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => navigate("/")}
+                      path="/HomePage/FrmHomePage"
                     >
                       Cancel
                     </Button>
