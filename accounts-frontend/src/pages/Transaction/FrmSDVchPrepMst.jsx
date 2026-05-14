@@ -46,6 +46,9 @@ const FrmSDVchPrepMst = () => {
     const [certificateNo, setCertificateNo] = useState("");
     const [partyName, setPartyName] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [viewStateSDaccsubtype, setViewStateSDaccsubtype] = useState(null);
+     const [drglcode, setDrglCode] = useState("");
+     const [drglacc, setDrglAcc] = useState("");
 
     const formatDate = (date) => {
         if (!date) return "";
@@ -157,6 +160,38 @@ const FrmSDVchPrepMst = () => {
         }
     };
 
+    // const fetchVoucherDetails = async ({
+    //     refNo,
+    //     partyId,
+    //     sdid,
+    //     setFieldValue,
+    // }) => {
+    //     try {
+    //         const res = await axios.post(
+    //             `${BASE_URL}/api/frmSDRef/voucher-details`,
+    //             {
+    //                 refNo: Number(RefNo),
+    //                 partyId: Number(partyId),
+    //                 sdid: Number(sdid),
+    //                 ulbId: ulbId,
+    //             },
+    //             { headers: { Authorization: `Bearer ${token}` } },
+    //         );
+    //         const data = res.data?.data?.data || [];
+    //         if (data.length > 0) {
+    //             const firstDetail = data[0];
+    //             setFieldValue("objectCode", firstDetail.ACCNO?.toString() || "");
+    //             if (firstDetail.NARRATN) {
+    //                 setFieldValue("details", firstDetail.NARRATN);
+    //             }
+    //             setVoucherDetails(data);
+    //         }
+    //     } catch (err) {
+    //         console.error("Voucher Details API Error:", err);
+    //     }
+    // };
+
+
     const fetchVoucherDetails = async ({
         refNo,
         partyId,
@@ -182,6 +217,10 @@ const FrmSDVchPrepMst = () => {
                     setFieldValue("details", firstDetail.NARRATN);
                 }
                 setVoucherDetails(data);
+
+                if (firstDetail.ACCSUBTYPE) {
+                    setViewStateSDaccsubtype(firstDetail.ACCSUBTYPE);
+                }
             }
         } catch (err) {
             console.error("Voucher Details API Error:", err);
@@ -340,7 +379,12 @@ const FrmSDVchPrepMst = () => {
                 setFieldValue("fund", "");
             }
 
+
+
             if (data.DRGL && data.DRGL !== 0) {
+
+                setDrglCode(data.DRGL);
+                
                 let functionCodeValue = data.DRGL.toString();
                 const matchedGL = glList.find((gl) => gl.value === functionCodeValue);
                 if (matchedGL) {
@@ -360,6 +404,7 @@ const FrmSDVchPrepMst = () => {
             }
 
             if (data.DRACC && data.DRACC !== 0) {
+                setDrglAcc(data.DRACC);
                 setFieldValue("objectCode", data.DRACC.toString());
             } else {
                 setFieldValue("objectCode", "");
@@ -456,8 +501,234 @@ const FrmSDVchPrepMst = () => {
         }
     };
 
+    const fetchAccountSubtype = async (debitGl, debitAcc) => {
+        try {
+            const response = await axios.post(
+                `${BASE_URL}/api/frmSDRef/account-subtype`,
+                {
+                    debitGl: debitGl,
+                    debitAcc: debitAcc,
+                    ulbId: Number(ulbId)
+                },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            if (response.data?.ok && response.data?.data?.data?.length > 0) {
+                return response.data.data.data[0].ACCSUBTYPE;
+            }
+            return null;
+        } catch (err) {
+            console.error("Account Subtype API Error:", err);
+            return null;
+        }
+    };
+
+    // const handleSubmit = async (values) => {
+    //     try {
+    //         if (!values.prabhag) {
+    //             return Swal.fire({ icon: "warning", text: "प्रभाग निवडा" });
+    //         }
+    //         if (!values.department) {
+    //             return Swal.fire({ icon: "warning", text: "विभाग निवडा" });
+    //         }
+    //         if (!values.voucherDate) {
+    //             return Swal.fire({ icon: "warning", text: "तारीख निवडा" });
+    //         }
+    //         if (!values.refundVoucherNo) {
+    //             return Swal.fire({
+    //                 icon: "warning",
+    //                 text: "सु.अ.परतावा प्रमाणक क्र रिक्त असू शकत नाही",
+    //             });
+    //         }
+    //         if (!values.functionCode) {
+    //             return Swal.fire({ icon: "warning", text: "फंक्शन कोड निवडा" });
+    //         }
+    //         if (!values.objectCode) {
+    //             return Swal.fire({ icon: "warning", text: "ऑब्जेक्ट कोड रिक्त आहे" });
+    //         }
+    //         if (!values.totalAmount) {
+    //             return Swal.fire({ icon: "warning", text: "एकूण रक्कम रिक्त आहे" });
+    //         }
+    //         if (!values.details) {
+    //             return Swal.fire({ icon: "warning", text: "तपशील भरा" });
+    //         }
+    //         if (!values.bankName || !values.accountNo) {
+    //             return Swal.fire({ icon: "warning", text: "कृपया पार्टी बँक निवडा" });
+    //         }
+
+    //         const voucherDate = formatDate(values.voucherDate)
+    //             .toUpperCase()
+    //             .replace(/-/g, "-");
+
+    //         const refundDate = formatDate(values.refundDate)
+    //             .toUpperCase()
+    //             .replace(/-/g, "-");
+
+    //         const convertToOracleDate = (dateStr) => {
+    //             const months = [
+    //                 "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+    //                 "JUL", "AUG", "SEP", "OCT", "NOV", "DEC",
+    //             ];
+    //             const [day, month, year] = dateStr.split("-");
+    //             return `${day}-${months[Number(month) - 1]}-${year}`;
+    //         };
+
+    //         const oracleVoucherDate = convertToOracleDate(voucherDate);
+    //         const oracleRefundDate = convertToOracleDate(refundDate);
+
+    //         const partyBankId = values.partyBankId || 0;
+
+    //         if (!partyBankId) {
+    //             return Swal.fire({
+    //                 icon: "warning",
+    //                 text: "Party Bank ID मिळाला नाही",
+    //             });
+    //         }
+
+    //         const SDdeptid = voucherDetails?.[0]?.DEPTID || values.department;
+    //         const SDdepotypeid = voucherDetails?.[0]?.DEPOTYPEID || 1;
+    //         const SDdepono = voucherDetails?.[0]?.DEPONO || 0;
+    //         const SDbankaccno = voucherDetails?.[0]?.BANKACCNO || 0;
+    //         const depodetail = voucherDetails?.[0]?.DEPODDETAIL || "E-Deposit";
+    //         const rectransno = values.transactionNo;
+
+    //         const paramStr4 =
+    //             `${partyId}#` +
+    //             `${values.functionCode}#` +
+    //             `${values.objectCode}#` +
+    //             `${values.totalAmount}#` +
+    //             `${SDdeptid}#` +
+    //             `${SDdepotypeid}#` +
+    //             `${SDdepono}#` +
+    //             `${SDbankaccno}#` +
+    //             `${depodetail}#` +
+    //             `${oracleRefundDate}#` +
+    //             `${values.refundVoucherNo}`;
+
+    //         const mode = 3;
+
+    //         const paramStr =
+    //             `${oracleVoucherDate}~` +
+    //             `${values.transactionNo}~` +
+    //             `${values.prabhag}~` +
+    //             `~` + // Gram Panchayat blank
+    //             `${partyId}~` +
+    //             `${values.totalAmount}~` +
+    //             `${values.functionCode}~` +
+    //             `${values.objectCode}~` +
+    //             `${partyBankId}~` +
+    //             `${mode}~` +
+    //             `0~` +
+    //             `0~` +
+    //             `0~` +
+    //             `${values.details}~` +
+    //             `${values.budget || 0}~` +
+    //             `${values.fund || 0}~` +
+    //             `${rectransno}~` +
+    //             `${values.totalAmount}~` +
+    //             `${values.department}~` +
+    //             `${sdid}`;
+
+    //         const payload = {
+    //             userId: user?.userId,
+    //             zoneId: Number(values.prabhag),
+    //             paramStr: paramStr,
+    //             paramStr2: "",
+    //             paramStr3: "",
+    //             paramStr4: paramStr4,
+    //         };
+
+    //         console.log("payload :", payload)
+
+    //         Swal.fire({
+    //             title: "Saving...",
+    //             allowOutsideClick: false,
+    //             didOpen: () => Swal.showLoading(),
+    //         });
+
+    //         const res = await axios.post(`${BASE_URL}/api/frmSDRef/save`, payload, {
+    //             headers: { Authorization: `Bearer ${token}` },
+    //         });
+
+    //         if (res.data?.ok) {
+    //             const voucherNo = res.data?.data?.refno;
+
+    //             Swal.close();
+    //             Swal.fire({
+    //                 title: "Generating PDF...",
+    //                 allowOutsideClick: false,
+    //                 didOpen: () => Swal.showLoading(),
+    //             });
+
+    //             try {
+    //                 const pdfRes = await axios.post(
+    //                     `${BASE_URL}/api/frmSDRef/voucherreceiptpdf`,
+    //                     {
+    //                         voucherNo: Number(voucherNo),
+    //                         ulbId: Number(ulbId),
+    //                         sdid: Number(sdid),
+    //                     },
+    //                     { headers: { Authorization: `Bearer ${token}` } }
+    //                 );
+
+    //                 Swal.close();
+
+    //                 if (pdfRes.data?.success && pdfRes.data?.pdfUrl) {
+
+    //                     window.open(pdfRes.data.pdfUrl, "_blank");
+    //                     await Swal.fire({
+    //                         icon: "success",
+    //                         title: "Success",
+    //                         text: res.data?.data?.message || "SD Refund voucher saved successfully",
+    //                         confirmButtonColor: "#1e3a8a",
+    //                     });
+
+    //                     navigate("/Transactions/FrmSDRefund");
+    //                 } else {
+    //                     Swal.fire({
+    //                         icon: "success",
+    //                         title: "Success",
+    //                         text: "Voucher saved but PDF generation failed",
+    //                         confirmButtonColor: "#1e3a8a",
+    //                     }).then(() => {
+    //                         navigate("/Transactions/FrmSDRefund");
+    //                     });
+    //                 }
+    //             } catch (pdfErr) {
+    //                 console.error("PDF API ERROR:", pdfErr);
+    //                 Swal.close();
+    //                 Swal.fire({
+    //                     icon: "success",
+    //                     title: "Success",
+    //                     text: "Voucher saved but PDF generation failed",
+    //                     confirmButtonColor: "#1e3a8a",
+    //                 }).then(() => {
+    //                     navigate("/Transactions/FrmSDRefund");
+    //                 });
+    //             }
+    //         } else {
+    //             Swal.close();
+    //             Swal.fire({
+    //                 icon: "error",
+    //                 text: res.data?.message || "Failed to save",
+    //                 confirmButtonColor: "#1e3a8a",
+    //             });
+    //         }
+    //     } catch (err) {
+    //         console.error("SAVE API ERROR:", err);
+    //         Swal.close();
+    //         Swal.fire({
+    //             icon: "error",
+    //             text: err.response?.data?.message || "Failed to save SD Refund Voucher",
+    //             confirmButtonColor: "#1e3a8a",
+    //         });
+    //     }
+    // };
+
+
     const handleSubmit = async (values) => {
         try {
+            // Validation checks
             if (!values.prabhag) {
                 return Swal.fire({ icon: "warning", text: "प्रभाग निवडा" });
             }
@@ -489,6 +760,24 @@ const FrmSDVchPrepMst = () => {
                 return Swal.fire({ icon: "warning", text: "कृपया पार्टी बँक निवडा" });
             }
 
+            const debitGl = drglcode;
+            const debitAcc = drglacc;
+
+            const accountSubtype = await fetchAccountSubtype(debitGl, debitAcc);
+
+            const sdAccSubtype = voucherDetails?.[0]?.ACCSUBTYPE || ViewStateSDaccsubtype;
+
+            if (accountSubtype && sdAccSubtype && accountSubtype !== sdAccSubtype) {
+                return Swal.fire({
+                    icon: "warning",
+                    text: "Account subtype mismatch. Please check Function Code and Object Code."
+                });
+            }
+
+            if (!accountSubtype) {
+                console.warn("No account subtype found for the selected GL and Account");
+            }
+
             const voucherDate = formatDate(values.voucherDate)
                 .toUpperCase()
                 .replace(/-/g, "-");
@@ -518,33 +807,27 @@ const FrmSDVchPrepMst = () => {
                 });
             }
 
-            const SDdeptid = voucherDetails?.[0]?.DEPTID || values.department;
-            const SDdepotypeid = voucherDetails?.[0]?.DEPOTYPEID || 1;
-            const SDdepono = voucherDetails?.[0]?.DEPONO || 0;
-            const SDbankaccno = voucherDetails?.[0]?.BANKACCNO || 0;
-            const depodetail = voucherDetails?.[0]?.DEPODDETAIL || "E-Deposit";
-            const rectransno = values.transactionNo;
+            let secDeposit = "";
 
-            const paramStr4 =
-                `${partyId}#` +
-                `${values.functionCode}#` +
-                `${values.objectCode}#` +
-                `${values.totalAmount}#` +
-                `${SDdeptid}#` +
-                `${SDdepotypeid}#` +
-                `${SDdepono}#` +
-                `${SDbankaccno}#` +
-                `${depodetail}#` +
-                `${oracleRefundDate}#` +
-                `${values.refundVoucherNo}`;
+            if (accountSubtype && sdAccSubtype && accountSubtype === sdAccSubtype) {
+                const SDdeptid = voucherDetails?.[0]?.DEPTID || values.department;
+                const SDdepotypeid = voucherDetails?.[0]?.DEPOTYPEID || 1;
+                const SDdepono = voucherDetails?.[0]?.DEPONO || 0;
+                const SDbankaccno = voucherDetails?.[0]?.BANKACCNO || 0;
+                const depodetail = voucherDetails?.[0]?.DEPODDETAIL || "E-Deposit";
+
+                secDeposit = `${partyId}#${values.functionCode}#${values.objectCode}#${values.totalAmount}#${SDdeptid}#${SDdepotypeid}#${SDdepono}#${SDbankaccno}#${depodetail}#${oracleRefundDate}#${values.refundVoucherNo}`;
+            } else {
+                console.warn("SecDeposit not built due to account subtype mismatch");
+            }
 
             const mode = 3;
+            const rectransno = values.transactionNo;
 
-            const paramStr =
-                `${oracleVoucherDate}~` +
+            const paramStr = `${oracleVoucherDate}~` +
                 `${values.transactionNo}~` +
                 `${values.prabhag}~` +
-                `~` + // Gram Panchayat blank
+                `~` + 
                 `${partyId}~` +
                 `${values.totalAmount}~` +
                 `${values.functionCode}~` +
@@ -552,13 +835,13 @@ const FrmSDVchPrepMst = () => {
                 `${partyBankId}~` +
                 `${mode}~` +
                 `0~` +
-                `0~` +
-                `0~` +
+                `0~` + 
+                `0~` + 
                 `${values.details}~` +
                 `${values.budget || 0}~` +
                 `${values.fund || 0}~` +
                 `${rectransno}~` +
-                `${values.totalAmount}~` +
+                `${values.totalAmount}~` + 
                 `${values.department}~` +
                 `${sdid}`;
 
@@ -566,10 +849,12 @@ const FrmSDVchPrepMst = () => {
                 userId: user?.userId,
                 zoneId: Number(values.prabhag),
                 paramStr: paramStr,
-                paramStr2: "",
-                paramStr3: "",
-                paramStr4: paramStr4,
+                paramStr2: "", 
+                paramStr3: "", 
+                paramStr4: secDeposit,
             };
+
+            console.log("payload :", payload);
 
             Swal.fire({
                 title: "Saving...",
@@ -605,7 +890,6 @@ const FrmSDVchPrepMst = () => {
                     Swal.close();
 
                     if (pdfRes.data?.success && pdfRes.data?.pdfUrl) {
-
                         window.open(pdfRes.data.pdfUrl, "_blank");
                         await Swal.fire({
                             icon: "success",
@@ -613,7 +897,6 @@ const FrmSDVchPrepMst = () => {
                             text: res.data?.data?.message || "SD Refund voucher saved successfully",
                             confirmButtonColor: "#1e3a8a",
                         });
-
                         navigate("/Transactions/FrmSDRefund");
                     } else {
                         Swal.fire({
