@@ -436,7 +436,7 @@ const FrmBudgetHeadConfig = () => {
                       disabled={selectedOption === "Head" || (Number(mode) === 2 && selectedOption !== "Head")}
 
                     >
-                      <SelectTrigger className="flex-1 h-9">
+                      <SelectTrigger className="w-full! h-9 overflow-hidden">
                         <SelectValue placeholder="-- Select Head --" />
                       </SelectTrigger>
                       <SelectContent>
@@ -456,7 +456,7 @@ const FrmBudgetHeadConfig = () => {
                       onValueChange={setSelectedSubHead}
                       disabled={selectedOption === "Head" || selectedOption === "SubHead" || (Number(mode) === 2 && selectedOption !== "SubHead")}
                     >
-                      <SelectTrigger className="flex-1 h-9">
+                      <SelectTrigger className="w-full! h-9 overflow-hidden">
                         <SelectValue placeholder="-- Select SubHead --" />
                       </SelectTrigger>
                       <SelectContent>
@@ -476,7 +476,7 @@ const FrmBudgetHeadConfig = () => {
                       onValueChange={setSelectedGroup}
                       disabled={selectedOption === "Head" || selectedOption === "SubHead" || selectedOption === "Group" || (Number(mode) === 2 && selectedOption !== "Group")}
                     >
-                      <SelectTrigger className="flex-1 h-9">
+                      <SelectTrigger className="w-full! h-9 overflow-hidden">
                         <SelectValue placeholder="-- Select Group --" />
                       </SelectTrigger>
                       <SelectContent>
