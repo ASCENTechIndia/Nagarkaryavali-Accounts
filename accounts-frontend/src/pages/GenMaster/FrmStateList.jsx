@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 
-import { useAuth } from "@/context/AuthContext"; // ✅ ADD
+import { useAuth } from "@/context/AuthContext";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +14,7 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const FrmStateList = () => {
   const navigate = useNavigate();
-  const { user } = useAuth(); // ✅ GET TOKEN
+  const { user } = useAuth();
 
   const [stateList, setStateList] = useState([]);
 
@@ -25,7 +25,7 @@ const FrmStateList = () => {
     "राज्याचे नाव": "name",
   };
 
-  /* 🔥 FETCH LIST */
+  /* FETCH STATE LIST */
   const fetchStates = async () => {
     try {
       Swal.fire({
@@ -38,41 +38,52 @@ const FrmStateList = () => {
         `${BASE_URL}/api/CityList/statelist`,
         {
           headers: {
-            Authorization: `Bearer ${user?.token}`, // ✅ FIX
+            Authorization: `Bearer ${user?.token}`,
           },
         }
       );
 
       Swal.close();
 
-      if (res.data?.ok && res.data?.data?.list) {
+      if (res.data?.ok && Array.isArray(res.data?.data?.list)) {
         setStateList(res.data.data.list);
       } else {
         setStateList([]);
       }
-    } catch (err) {
+    } catch (error) {
       Swal.close();
-      console.error("State list error:", err);
-      Swal.fire("Error loading states");
+      console.error("State list error:", error);
+
+      setStateList([]);
+
+      Swal.fire({
+        icon: "error",
+        title: "Error loading states",
+      });
     }
   };
 
+  /* LOAD DATA WHEN TOKEN IS AVAILABLE */
   useEffect(() => {
     if (user?.token) {
-      fetchStates(); // ✅ only call when token available
+      fetchStates();
     }
-  }, [user]);
+  }, [user?.token]);
 
-  /* 🔥 TABLE DATA */
+  /* TABLE DATA */
   const tableData = stateList.map((row, index) => ({
     id: row.STATE_ID || index,
     select: (
       <Button
+        type="button"
         variant="link"
         className="text-blue-700 px-0"
         onClick={() =>
           navigate("/Masters/FrmState", {
-            state: { mode: 2, data: row },
+            state: {
+              mode: 2, // Update mode
+              data: row,
+            },
           })
         }
       >
@@ -82,41 +93,49 @@ const FrmStateList = () => {
     name: row.STATE_NAME?.trim() || "-",
   }));
 
-  const finalData =
-    tableData.length > 0
-      ? tableData
-      : [
-          {
-            id: 0,
-            select: "",
-            name: "डेटा उपलब्ध नाही",
-          },
-        ];
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="max-w-7xl mx-auto mt-6"
     >
-       <Card className="shadow-sm border rounded-lg">
-        <CardHeader className="border-b flex justify-between items-center">
-           <CardTitle className="text-lg font-semibold">राज्याची यादी</CardTitle>
+      <Card className="shadow-sm border rounded-lg">
+        {/* Header */}
+        <CardHeader className="border-b flex flex-row justify-between items-center">
+          <CardTitle className="text-lg font-semibold">
+            राज्याची यादी
+          </CardTitle>
 
-          <Button onClick={() => navigate("/Masters/FrmState")}>
+          <Button
+            type="button"
+            onClick={() =>
+              navigate("/Masters/FrmState", {
+                state: {
+                  mode: 1, // Insert mode
+                },
+              })
+            }
+          >
             नवीन जोडा
           </Button>
         </CardHeader>
 
+        {/* Content */}
         <CardContent className="p-6">
-          <div className="border rounded-md overflow-hidden">
-            <ShadCNTable
-              headers={headers}
-              data={finalData}
-              keyMapping={keyMapping}
-              pagination={tableData.length > 0}
-            />
-          </div>
+          {tableData.length > 0 ? (
+            <div className="border rounded-md overflow-hidden">
+              <ShadCNTable
+                headers={headers}
+                data={tableData}
+                keyMapping={keyMapping}
+                pagination={true}
+              />
+            </div>
+          ) : (
+            <div className="text-center py-10 text-gray-500 font-medium">
+              Data not found 
+            </div>
+          )}
         </CardContent>
       </Card>
     </motion.div>

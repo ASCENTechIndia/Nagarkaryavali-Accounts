@@ -71,59 +71,83 @@ const FrmState = () => {
     }
   }, [user]);
 
-  /* 🔥 SUBMIT (NEW API) */
-  const handleSubmit = async (values, { resetForm }) => {
-    debugger;
-    try {
-      if (!values.stateName) {
-        return Swal.fire("राज्याचे नाव भरा");
+
+const handleSubmit = async (values, { resetForm }) => {
+  try {
+    // Validation
+    if (!values.stateName?.trim()) {
+      return Swal.fire({
+        icon: "warning",
+        title: "राज्याचे नाव भरा",
+      });
+    }
+
+    // Payload
+    const payload = {
+      stateName: values.stateName.trim(),
+      userId: user?.userId,
+      mode, 
+    };
+
+    
+    if (mode === 2) {
+      payload.stateId = Number(values.stateCode);
+    }
+
+    console.log("Submit Payload:", payload);
+
+   
+    Swal.fire({
+      title: mode === 1 ? "Saving..." : "Updating...",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
+
+  
+    const res = await axios.post(
+      `${BASE_URL}/api/District/statemaster`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${user?.token}`,
+          "Content-Type": "application/json",
+        },
       }
+    );
 
-      const payload = {
-        stateId:
-          mode === 2 ? Number(values.stateCode) : 0, // ✅ FIX
+    Swal.close();
 
-        stateName: values.stateName,
-        userId: user?.userName || "admin",
-        mode: mode === 2 ? 2 : 1,
-      };
-
-      Swal.fire({
-        title: "Saving...",
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading(),
+    // Success Response
+    if (res.data?.ok && res.data?.data?.success) {
+      await Swal.fire({
+        icon: "success",
+        title:
+          mode === 1
+            ? "Record Saved Successfully"
+            : "Record Updated Successfully",
       });
 
-      const res = await axios.post(
-        `${BASE_URL}/api/District/statemaster`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${user?.token}`,
-          },
-        }
-      );
-
-      Swal.close();
-
-      if (res.data?.ok) {
-        await Swal.fire({
-          icon: "success",
-          title: res.data.message || "Saved Successfully",
-        });
-
-        navigate("/Masters/FrmStateList");
-        resetForm();
-      } else {
-        Swal.fire(res.data?.message || "Error");
-      }
-    } catch (err) {
-      Swal.close();
-      console.error(err);
-      Swal.fire("Server error");
+      resetForm();
+      navigate("/Masters/FrmStateList");
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: res.data?.message || "Something went wrong",
+      });
     }
-  };
+  } catch (error) {
+    Swal.close();
+    console.error("Submit Error:", error);
 
+    Swal.fire({
+      icon: "error",
+      title:
+        error?.response?.data?.message ||
+        error?.message ||
+        "Server Error",
+    });
+  }
+};
   if (loading) {
     return <div className="text-center mt-10">Loading...</div>;
   }
