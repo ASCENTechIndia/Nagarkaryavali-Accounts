@@ -64,7 +64,8 @@ const FrmPayment = () => {
     const [transTypes, setTransTypes] = useState([]);
     const [paymentTypes, setPaymentTypes] = useState([]);
     const [partyMaster, setPartyMaster] = useState([]);
-    const [glList, setGlList] = useState([]);
+    const [deptGlList, setDeptGlList] = useState([]);
+    const [debtorGlList, setDebtorGlList] = useState([]);
     const [entryHeadList, setEntryHeadList] = useState([]);
     const [partyList, setPartyList] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -111,6 +112,33 @@ const FrmPayment = () => {
         }
     };
 
+    const fetchAdvancePaymentType = async (setFieldValue) => {
+        try {
+            const res = await axios.get(
+                `${BASE_URL}/api/frmPayment/advance-payment-type`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            const paymentList = res.data?.data?.data || [];
+
+            setPaymentTypes(paymentList);
+
+            if (paymentList.length > 0) {
+                setFieldValue(
+                    "debtorType",
+                    paymentList[0].VALUEFIELD.toString()
+                );
+            }
+
+        } catch (err) {
+            console.error("Advance Payment Type API Error:", err);
+        }
+    };
+
     const fetchPartyMaster = async () => {
         try {
             const res = await axios.post(
@@ -130,16 +158,46 @@ const FrmPayment = () => {
         }
     };
 
-    const fetchGLList = async () => {
+    const fetchDeptGLList = async (trnstyid) => {
+        try {
+            if (!trnstyid) {
+                setDeptGlList([]);
+                return;
+            }
+
+            const res = await axios.post(
+                `${BASE_URL}/api/frmPayment/gl-list-by-transtype`,
+                {
+                    trnstyid,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            setDeptGlList(res.data?.data?.data || []);
+        } catch (err) {
+            console.error("Dept GL List API Error:", err);
+            setDeptGlList([]);
+        }
+    };
+
+    const fetchDebtorGLList = async () => {
         try {
             const res = await axios.get(
                 `${BASE_URL}/api/Receipt/searchGLALL`,
-                { headers: { Authorization: `Bearer ${token}` } }
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
             );
 
-            setGlList(res.data?.data || []);
+            setDebtorGlList(res.data?.data || []);
         } catch (err) {
-            console.error("GL List API Error:", err);
+            console.error("Debtor GL List API Error:", err);
         }
     };
 
@@ -184,7 +242,14 @@ const FrmPayment = () => {
 
             setFieldValue("date", new Date(data.TRNSDATE));
             setFieldValue("voucherNo", data.VCHNO?.toString());
-            setFieldValue("transactionType", data.TRNSTYPE?.toString());
+            // setFieldValue("transactionType", data.TRNSTYPE?.toString());
+            // setFieldValue("zoneId", data.ZONEID?.toString());
+            const trnsType = data.TRNSTYPE?.toString();
+
+            setFieldValue("transactionType", trnsType);
+
+            await fetchDeptGLList(trnsType);
+
             setFieldValue("zoneId", data.ZONEID?.toString());
             setFieldValue("chequeNo", data.CHQNO?.toString());
             setFieldValue("chequePageNo", data.CHQBOOKNO?.toString() || "");
@@ -351,7 +416,7 @@ const FrmPayment = () => {
                     text: result.message,
                     confirmButtonColor: "#1e3a8a",
                 }).then(async () => {
- debugger;
+                    debugger;
                     try {
                         // ✅ SHOW LOADER AFTER OK CLICK
                         Swal.fire({
@@ -364,7 +429,7 @@ const FrmPayment = () => {
 
                         const generatedRefNo = result?.refno || currentRefNo;
 
-                       
+
                         const pdfRes = await axios.post(
                             `${BASE_URL}/api/frmPayment/payment-pdf`,
                             {
@@ -438,7 +503,7 @@ const FrmPayment = () => {
             fetchTransTypes(),
             fetchPaymentTypes(),
             fetchPartyMaster(),
-            fetchGLList()
+            fetchDebtorGLList(),
         ])
             .then(() => {
                 // 👉 If NOT edit mode → close here
@@ -475,9 +540,14 @@ const FrmPayment = () => {
         }
     }, [partyList, tempDebtorLedger]);
 
-    const glOptions = glList.map((g) => ({
+    const deptGlOptions = deptGlList.map((g) => ({
+        label: g.GLNAME,
+        value: g.GLCODE?.toString(),
+    }));
+
+    const debtorGlOptions = debtorGlList.map((g) => ({
         label: g.GLSEARCHNAME,
-        value: g.GLFUNCTION?.toString()
+        value: g.GLFUNCTION?.toString(),
     }));
 
 
@@ -512,7 +582,7 @@ const FrmPayment = () => {
                         transTypes.length &&
                         paymentTypes.length &&
                         partyMaster.length &&
-                        glList.length;
+                        debtorGlList.length;
 
                     if (allLoaded) {
                         fetchPaymentDetails(setFieldValue).finally(() => {
@@ -520,7 +590,7 @@ const FrmPayment = () => {
                             Swal.close();
                         });
                     }
-                }, [refNo, ulbId, zones, transTypes, paymentTypes, partyMaster, glList]);
+                }, [refNo, ulbId, zones, transTypes, paymentTypes, partyMaster]);
 
                 useEffect(() => {
                     if (values.deptCode && values.ledgerHead) {
@@ -529,6 +599,26 @@ const FrmPayment = () => {
                 }, [values.deptCode, values.ledgerHead, values.date]);
 
                 const isBankPayment = values.transactionType === "4";
+
+                useEffect(() => {
+                    if (values.transactionType) {
+                        fetchDeptGLList(values.transactionType);
+
+                        setFieldValue("deptCode", "");
+                        setFieldValue("ledgerHead", "");
+                    } else {
+                        setDeptGlList([]);
+                    }
+                }, [values.transactionType]);
+
+                useEffect(() => {
+                    if (values.transactionType === "3") {
+                        fetchAdvancePaymentType(setFieldValue);
+                    } else {
+                        fetchPaymentTypes();
+                        setFieldValue("debtorType", "");
+                    }
+                }, [values.transactionType]);
 
                 return (
                     <Form>
@@ -613,7 +703,7 @@ const FrmPayment = () => {
                                         <div>
                                             <Label text="विभाग कोड :" />
                                             <SearchableSelect
-                                                options={glOptions}
+                                                options={deptGlOptions}
                                                 name="deptCode"
                                                 value={values.deptCode}
                                                 onChange={(val) => {
@@ -735,7 +825,7 @@ const FrmPayment = () => {
                                         <div>
                                             <Label text="विभाग कोड :" />
                                             <SearchableSelect
-                                                options={glOptions}
+                                                options={debtorGlOptions}
                                                 name="debtorDeptCode"
                                                 value={values.debtorDeptCode}
                                                 onChange={(val) => {

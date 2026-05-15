@@ -490,7 +490,7 @@ async function getGLListByTransactionTypeRepo({ trnstyid }) {
   // For transaction types 2 and 4
   if (trnstyid === "2" || trnstyid === "4") {
     sql += `
-      AND num_accmaster_accsubtype IN (4820, 4822, 4821, 4823)
+      AND num_accmaster_accsubtype IN (4820)
     `;
   }
 
