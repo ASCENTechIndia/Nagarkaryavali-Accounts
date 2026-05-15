@@ -130,14 +130,13 @@ const FrmAccountList = () => {
   // ================= SEARCH =================
   const handleSearch = async () => {
     try {
-       Swal.fire({
-      title: "Loading...",
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      },
-    });
-
+      Swal.fire({
+        title: "Loading...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
 
       setLoading(true);
 
@@ -166,41 +165,40 @@ const FrmAccountList = () => {
       // 🔥 SAFE DATA EXTRACTION
       const list = res.data?.data?.data || res.data?.data?.rows || [];
 
-    const mapped = list.map((row) => ({
-  select: (
-    <Button
-      variant="link"
-      className="text-blue-700 px-0 h-auto"
-      onClick={() =>
-        navigate("/Masters/FrmAccountMst", {
-          state: {
-            accNo: row.OBJECTCODE,
-            oldAccNo: row.OLDACCNO,
-            functionCode: row.FUNCTIONCODE,
-            ulbId: filters.ulbId,
-            balanceSheet: row.ACCSUBTYPE,
-          },
-        })
-      }
-    >
-      निवडा
-    </Button>
-  ),
+      const mapped = list.map((row) => ({
+        select: (
+          <Button
+            variant="link"
+            className="text-blue-700 px-0 h-auto"
+            onClick={() =>
+              navigate("/Masters/FrmAccountMst", {
+                state: {
+                  accNo: row.OBJECTCODE,
+                  oldAccNo: row.OLDACCNO,
+                  functionCode: row.FUNCTIONCODE,
+                  ulbId: filters.ulbId,
+                  balanceSheet: row.ACCSUBTYPE,
+                },
+              })
+            }
+          >
+            निवडा
+          </Button>
+        ),
 
-  FUNCTIONCODE: row.FUNCTIONCODE,
-  OBJECTCODE: row.OBJECTCODE,
+        FUNCTIONCODE: row.FUNCTIONCODE,
+        OBJECTCODE: row.OBJECTCODE,
 
-  // ✅ CLEANED SUBTYPE
-  SUBTYPE: row.ACCSUBTYPE
-    ? row.ACCSUBTYPE
-        .replace(/\t/g, "")
-        .split("-")
-        .map((p) => p.trim())
-        .join(" - ")
-    : "",
+        // ✅ CLEANED SUBTYPE
+        SUBTYPE: row.ACCSUBTYPE
+          ? row.ACCSUBTYPE.replace(/\t/g, "")
+              .split("-")
+              .map((p) => p.trim())
+              .join(" - ")
+          : "",
 
-  name: row.VAR_ACCMASTER_ACCNAME,
-}));
+        name: row.VAR_ACCMASTER_ACCNAME,
+      }));
 
       setTableData(mapped);
       setShowTable(true);

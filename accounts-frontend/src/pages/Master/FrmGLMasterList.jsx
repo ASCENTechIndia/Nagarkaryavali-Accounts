@@ -12,7 +12,7 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const FrmGLMasterList = () => {
   const navigate = useNavigate();
-  const {user} = useAuth();
+  const { user } = useAuth();
 
   const [glList, setGlList] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -25,35 +25,34 @@ const FrmGLMasterList = () => {
   };
 
   /* 🔥 FETCH API (like Transfer page pattern) */
-const fetchGLList = async () => {
-  try {
-    setLoading(true);
+  const fetchGLList = async () => {
+    try {
+      setLoading(true);
 
-    const headersConfig = {
-      Authorization: `Bearer ${user?.token}`,
-    };
+      const headersConfig = {
+        Authorization: `Bearer ${user?.token}`,
+      };
 
-    const res = await axios.get(
-      `${BASE_URL}/api/master/glmaster/list`,
-      { headers: headersConfig }
-    );
+      const res = await axios.get(`${BASE_URL}/api/master/glmaster/list`, {
+        headers: headersConfig,
+      });
 
-    console.log("GL LIST API:", res.data);
+      console.log("GL LIST API:", res.data);
 
-    if (res.data?.ok && res.data?.data?.list) {
-      setGlList(res.data.data.list);
+      if (res.data?.ok && res.data?.data?.list) {
+        setGlList(res.data.data.list);
+      }
+    } catch (err) {
+      console.error("Error fetching GL list:", err);
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error("Error fetching GL list:", err);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
-useEffect(() => {
-  if (!user?.token) return;   // ✅ wait for token
-  fetchGLList();
-}, [user?.token]);
+  useEffect(() => {
+    if (!user?.token) return; // ✅ wait for token
+    fetchGLList();
+  }, [user?.token]);
 
   /* 🔥 MAP DATA TO TABLE */
   const tableData = glList.map((row) => ({
@@ -78,18 +77,12 @@ useEffect(() => {
 
   if (loading) {
     return (
-      <div className="flex justify-center mt-10 text-gray-600">
-        Loading...
-      </div>
+      <div className="flex justify-center mt-10 text-gray-600">Loading...</div>
     );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      
-    >
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
       <Card className="shadow-sm border rounded-lg">
         {/* Header */}
         <CardHeader className="border-b flex justify-between items-center">
@@ -108,12 +101,20 @@ useEffect(() => {
         {/* Table */}
         <CardContent className="p-6">
           <div className="border rounded-md overflow-hidden bg-white">
-            <ShadCNTable
-              headers={headers}
-              data={tableData}
-              keyMapping={keyMapping}
-              pagination={true} // optional
-            />
+            {tableData.length > 0 ? (
+              <div className="border rounded-md overflow-hidden">
+                <ShadCNTable
+                  headers={headers}
+                  data={tableData}
+                  keyMapping={keyMapping}
+                  pagination={true} // optional
+                />
+              </div>
+            ) : (
+              <div className="text-center py-10 text-gray-500 font-medium">
+                Data not found
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

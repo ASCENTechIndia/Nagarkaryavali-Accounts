@@ -81,20 +81,13 @@ const FrmBalanceSheetGroupList = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center mt-10 text-gray-600">
-        Loading...
-      </div>
+      <div className="flex justify-center mt-10 text-gray-600">Loading...</div>
     );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-     
-    >
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
       <Card className="shadow-sm border rounded-lg">
-
         {/* HEADER */}
         <CardHeader className="border-b flex justify-between items-center">
           <CardTitle className="text-lg font-semibold">
@@ -103,9 +96,7 @@ const FrmBalanceSheetGroupList = () => {
 
           <Button
             className="bg-blue-900 hover:bg-blue-800 text-white"
-            onClick={() =>
-              navigate("/Masters/FrmBalanceSheetGroupMst")
-            }
+            onClick={() => navigate("/Masters/FrmBalanceSheetGroupMst")}
           >
             नवीन जोडा
           </Button>
@@ -114,15 +105,20 @@ const FrmBalanceSheetGroupList = () => {
         {/* TABLE */}
         <CardContent className="p-6">
           <div className="border rounded-md overflow-hidden bg-white">
-            <ShadCNTable
-              headers={headers}
-              data={tableData}
-              keyMapping={keyMapping}
-              pagination={true}
-            />
+            {tableData.length > 0 ? (
+              <ShadCNTable
+                headers={headers}
+                data={tableData}
+                keyMapping={keyMapping}
+                pagination={true}
+              />
+            ) : (
+              <div className="text-center py-10 text-gray-500 font-medium">
+                Data not found
+              </div>
+            )}
           </div>
         </CardContent>
-
       </Card>
     </motion.div>
   );

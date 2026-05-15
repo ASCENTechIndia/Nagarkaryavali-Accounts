@@ -36,7 +36,7 @@ const FrmGramPanchayatList = () => {
     "मराठी नाव": "nameMarathi",
   };
 
-  /* 🔥 FETCH ZONES */
+  /* FETCH ZONES */
   const fetchZones = async () => {
     try {
       Swal.fire({
@@ -56,16 +56,25 @@ const FrmGramPanchayatList = () => {
 
       Swal.close();
 
-      if (res.data?.ok && res.data?.data?.list) {
+      if (res.data?.ok && Array.isArray(res.data?.data?.list)) {
         setZones(res.data.data.list);
+      } else {
+        setZones([]);
       }
-    } catch (err) {
+    } catch (error) {
       Swal.close();
-      Swal.fire("Error loading zones");
+      console.error("Zone list error:", error);
+
+      setZones([]);
+
+      Swal.fire({
+        icon: "error",
+        title: "Error loading zones",
+      });
     }
   };
 
-  /* 🔥 FETCH LIST */
+  /* FETCH GRAMPANCHAYAT LIST */
   const fetchList = async (zoneId) => {
     try {
       Swal.fire({
@@ -85,101 +94,140 @@ const FrmGramPanchayatList = () => {
 
       Swal.close();
 
-      if (res.data?.ok && res.data?.data?.list) {
+      if (res.data?.ok && Array.isArray(res.data?.data?.list)) {
         setList(res.data.data.list);
       } else {
         setList([]);
       }
-    } catch (err) {
+    } catch (error) {
       Swal.close();
-      Swal.fire("Error loading list");
+      console.error("Grampanchayat list error:", error);
+
+      setList([]);
+
+      Swal.fire({
+        icon: "error",
+        title: "Error loading list",
+      });
     }
   };
 
+  /* LOAD ZONES */
   useEffect(() => {
-    fetchZones();
-  }, []);
+    if (user?.token) {
+      fetchZones();
+    }
+  }, [user?.token]);
 
+  /* LOAD LIST WHEN ZONE CHANGES */
   useEffect(() => {
-    if (selectedZone) fetchList(selectedZone);
-    else setList([]);
+    if (selectedZone) {
+      fetchList(selectedZone);
+    } else {
+      setList([]);
+    }
   }, [selectedZone]);
 
-  const tableData = list.map((row) => ({
+  /* TABLE DATA */
+  const tableData = list.map((row, index) => ({
+    id: row.NUM_GRAMPANCH_ID || index,
     select: (
       <Button
+        type="button"
         variant="link"
         size="sm"
         className="text-blue-700 px-0"
         onClick={() =>
           navigate("/Masters/FrmGramPanchayat", {
-            state: { mode: 2, data: row },
+            state: {
+              mode: 2,
+              data: row,
+            },
           })
         }
       >
         निवडा
       </Button>
     ),
-    name: row.VAR_GRAMPANCH_GRAMPANCH?.trim(),
-    nameMarathi: row.VAR_GRAMPANCH_MARATHINAME?.trim(),
+    name: row.VAR_GRAMPANCH_GRAMPANCH?.trim() || "-",
+    nameMarathi: row.VAR_GRAMPANCH_MARATHINAME?.trim() || "-",
   }));
 
   return (
-    <motion.div className="max-w-7xl mx-auto mt-6">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="max-w-7xl mx-auto mt-6"
+    >
       <Card className="shadow-sm border rounded-lg">
-        <CardHeader className="border-b flex justify-between items-center">
-          <CardTitle className="text-lg font-semibold">ग्रामपंचायत यादी</CardTitle>
+        {/* Header */}
+        <CardHeader className="border-b flex flex-row justify-between items-center">
+          <CardTitle className="text-lg font-semibold">
+            ग्रामपंचायत यादी
+          </CardTitle>
 
-          <Button onClick={() => navigate("/Masters/FrmGramPanchayat")}>
+          <Button
+            type="button"
+            onClick={() =>
+              navigate("/Masters/FrmGramPanchayat", {
+                state: {
+                  mode: 1,
+                },
+              })
+            }
+          >
             नवीन जोडा
           </Button>
         </CardHeader>
 
+        {/* Content */}
         <CardContent className="p-6 space-y-6">
-
-          {/* SEARCH */}
-          <div className="flex gap-4 items-center">
+          {/* Zone Dropdown */}
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
             <Label>झोन नाव :</Label>
 
             <Select
               value={selectedZone}
-              onValueChange={(val) => setSelectedZone(val)}
+              onValueChange={(value) => setSelectedZone(value)}
             >
-              <SelectTrigger className="w-72">
+              <SelectTrigger className="w-full sm:w-72">
                 <SelectValue placeholder="निवडा" />
               </SelectTrigger>
 
               <SelectContent>
-                {zones.map((z) => (
+                {zones.map((zone) => (
                   <SelectItem
-                    key={z.VALUE}
-                    value={z.VALUE.toString()}
+                    key={zone.VALUE}
+                    value={zone.VALUE.toString()}
                   >
-                    {z.LABEL}
+                    {zone.LABEL}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          {/* TABLE */}
-          <ShadCNTable
-            headers={headers}
-            data={
-              list.length > 0
-                ? tableData
-                : [
-                    {
-                      select: "",
-                      name: "डेटा उपलब्ध नाही",
-                      nameMarathi: "",
-                    },
-                  ]
-            }
-            keyMapping={keyMapping}
-            pagination={list.length > 0}
-          />
-
+          {/* Table / No Data Message */}
+          {selectedZone ? (
+            tableData.length > 0 ? (
+              <div className="border rounded-md overflow-hidden">
+                <ShadCNTable
+                  headers={headers}
+                  data={tableData}
+                  keyMapping={keyMapping}
+                  pagination={true}
+                />
+              </div>
+            ) : (
+              <div className="text-center py-10 text-gray-500 font-medium border rounded-md">
+                Data not found 
+              </div>
+            )
+          ) : (
+            <div className="text-center py-10 text-gray-500 font-medium border rounded-md">
+              कृपया झोन निवडा
+            </div>
+          )}
         </CardContent>
       </Card>
     </motion.div>

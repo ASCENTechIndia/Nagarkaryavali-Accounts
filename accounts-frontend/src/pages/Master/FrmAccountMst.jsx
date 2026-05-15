@@ -54,8 +54,6 @@ const FrmAccountMaster = () => {
     return config;
   });
 
-  /* ================= LOAD DATA ================= */
-
   useEffect(() => {
     if (!user?.token) return;
 
