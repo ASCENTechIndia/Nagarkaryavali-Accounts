@@ -601,7 +601,7 @@ const FrmBudgetAccountMap = () => {
                         onValueChange={(v) => setSelectedCorporation(v)}
                         disabled
                       >
-                        <SelectTrigger className="!w-full h-9 overflow-hidden">
+                        <SelectTrigger className="w-full! h-9 overflow-hidden">
                           <SelectValue placeholder="-- विकल्प निवडा --" />
                         </SelectTrigger>
 
@@ -638,7 +638,7 @@ const FrmBudgetAccountMap = () => {
                           }
                         }}
                       >
-                        <SelectTrigger className="w-full h-9">
+                        <SelectTrigger className="w-full! h-9 overflow-hidden">
                           <SelectValue placeholder="-- विकल्प निवडा --" />
                         </SelectTrigger>
                         <SelectContent>
@@ -670,7 +670,7 @@ const FrmBudgetAccountMap = () => {
                         }}
                         disabled={!values.head || values.head === "0"}
                       >
-                        <SelectTrigger className="w-full h-9">
+                        <SelectTrigger className="w-full! h-9 overflow-hidden">
                           <SelectValue placeholder="-- विकल्प निवडा --" />
                         </SelectTrigger>
                         <SelectContent>
@@ -700,7 +700,7 @@ const FrmBudgetAccountMap = () => {
                         }}
                         disabled={!values.subHead || values.subHead === "0"}
                       >
-                        <SelectTrigger className="w-full h-9">
+                        <SelectTrigger className="w-full! h-9 overflow-hidden">
                           <SelectValue placeholder="-- विकल्प निवडा --" />
                         </SelectTrigger>
                         <SelectContent>
@@ -723,7 +723,7 @@ const FrmBudgetAccountMap = () => {
                         onValueChange={(v) => setFieldValue("subGroup", v)}
                         disabled={!values.group || values.group === "0"}
                       >
-                        <SelectTrigger className="w-full h-9">
+                        <SelectTrigger className="w-full! h-9 overflow-hidden">
                           <SelectValue placeholder="-- विकल्प निवडा --" />
                         </SelectTrigger>
                         <SelectContent>
