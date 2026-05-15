@@ -601,7 +601,7 @@ const FrmBudgetAccountMap = () => {
                         onValueChange={(v) => setSelectedCorporation(v)}
                         disabled
                       >
-                        <SelectTrigger className="w-full h-9">
+                        <SelectTrigger className="!w-full h-9 overflow-hidden">
                           <SelectValue placeholder="-- विकल्प निवडा --" />
                         </SelectTrigger>
 
