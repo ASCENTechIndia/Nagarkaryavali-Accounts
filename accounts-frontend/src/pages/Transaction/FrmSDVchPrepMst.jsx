@@ -811,18 +811,20 @@ const FrmSDVchPrepMst = () => {
 
             if (accountSubtype && sdAccSubtype && accountSubtype === sdAccSubtype) {
                 const SDdeptid = voucherDetails?.[0]?.DEPTID || values.department;
-                const SDdepotypeid = voucherDetails?.[0]?.DEPOTYPEID || 1;
-                const SDdepono = voucherDetails?.[0]?.DEPONO || 0;
-                const SDbankaccno = voucherDetails?.[0]?.BANKACCNO || 0;
-                const depodetail = voucherDetails?.[0]?.DEPODDETAIL || "E-Deposit";
+                const SDdepotypeid = voucherDetails?.[0]?.DEPOTYPEID;
+                const SDdepono = voucherDetails?.[0]?.DEPONO ?? "" ;
+                const SDbankaccno = voucherDetails?.[0]?.BANKACCNO ?? "";
+                const depodetail = voucherDetails?.[0]?.DEPODETAIL;
 
-                secDeposit = `${partyId}#${values.functionCode}#${values.objectCode}#${values.totalAmount}#${SDdeptid}#${SDdepotypeid}#${SDdepono}#${SDbankaccno}#${depodetail}#${oracleRefundDate}#${values.refundVoucherNo}`;
+                secDeposit = `${partyId}#${debitGl}#${values.objectCode}#${values.totalAmount}#${SDdeptid}#${SDdepotypeid}#${SDdepono}#${SDbankaccno}#${depodetail}#${oracleRefundDate}#${values.refundVoucherNo}`;
             } else {
                 console.warn("SecDeposit not built due to account subtype mismatch");
             }
 
             const mode = 3;
-            const rectransno = values.transactionNo;
+            const rectransno = voucherDetails?.[0]?.RECTRANSNO;
+
+            console.log("Voucher Details",voucherDetails )
 
             const paramStr = `${oracleVoucherDate}~` +
                 `${values.transactionNo}~` +
@@ -830,7 +832,7 @@ const FrmSDVchPrepMst = () => {
                 `~` + 
                 `${partyId}~` +
                 `${values.totalAmount}~` +
-                `${values.functionCode}~` +
+                `${debitGl}~` +
                 `${values.objectCode}~` +
                 `${partyBankId}~` +
                 `${mode}~` +
@@ -838,10 +840,11 @@ const FrmSDVchPrepMst = () => {
                 `0~` + 
                 `0~` + 
                 `${values.details}~` +
-                `${values.budget || 0}~` +
-                `${values.fund || 0}~` +
+                `${values.budget == "" || null ? 0 : values.budget}~` +
+                `${values.fund}~` +
                 `${rectransno}~` +
-                `${values.totalAmount}~` + 
+                `0~` + 
+                // `${values.totalAmount}~` + 
                 `${values.department}~` +
                 `${sdid}`;
 

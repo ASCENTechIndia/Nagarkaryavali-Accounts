@@ -250,7 +250,7 @@ async function getRdoReport147(corpId, zoneId, fromDate, toDate) {
         AND num_secdeposit_partyid = num_sdrefund_partyid
       INNER JOIN aoac_partymst_def ON num_partymst_partyid = num_secdeposit_partyid 
         AND num_partymst_ulbid = num_secdepodet_ulbid
-      INNER JOIN view_zone v ON v.zoneid = num_secdeposit_deptid
+      LEFT JOIN view_zone v ON v.zoneid = num_secdeposit_deptid
       LEFT OUTER JOIN aoac_deposittypemst_def ON num_depositmst_deposittypeid = num_secdeposit_depotypeid 
         AND num_depositmst_ulbid = num_secdepodet_ulbid
       WHERE TRUNC(date_secdeposit_rectrnsdate) BETWEEN TO_DATE(:fromDate, 'DD-MON-YYYY') AND TO_DATE(:toDate, 'DD-MON-YYYY')
