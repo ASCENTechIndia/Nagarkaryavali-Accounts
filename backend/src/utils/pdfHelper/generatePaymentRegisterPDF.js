@@ -81,12 +81,26 @@ const generatePaymentRegisterPDF = async ({
       };
     });
 
+    const formatDate = (date) => {
+      if (!date) return "";
+
+      const d = new Date(date);
+
+      const day = String(d.getDate()).padStart(2, "0");
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const year = d.getFullYear();
+
+      return `${day}/${month}/${year}`;
+    };
+
+
+
     /* ================= HTML ================= */
     const html = template({
       corporationName,
       logo: finalLogo,
-      fromDate,
-      toDate,
+      fromDate: formatDate(fromDate),
+      toDate: formatDate(toDate),
       majorCode,
       zone,
       rows: formattedRows,
@@ -95,7 +109,7 @@ const generatePaymentRegisterPDF = async ({
       }),
       currentDate: new Date().toLocaleDateString("en-GB"),
       rptType: rptType === "0" ? "सारांश" : "तपशील",
-      zoneName 
+      zoneName
     });
 
     /* ================= GENERATE PDF ================= */
