@@ -31,74 +31,186 @@ const getPartyList = async ({ corp_id }) => {
 };
 
 // ✅ 3. Balance Voucher Details
-const getBalanceVoucherDetails = async (params) => {
+// const getBalanceVoucherDetails = async (params) => {
 
+//   let query = `
+//     SELECT *
+//     FROM (
+//       SELECT 
+//         trnsdate, refno, num_vchtransbal_vchtransbalno, vchno,
+//         zonename, grampanch, partyname, totalamt,
+//         drgl, glname, dracc, accname,
+//         zoneid, ulbid, budgetid, amt,
+//         partycode, prenarration, deptid,
+//         NVL(totalamt, 0) - NVL(amt, 0) - NVL(bal, 0) AS balamt,
+//         nidhiid
+//       FROM (
+//         SELECT 
+//           trnsdate, refno, num_vchtransbal_vchtransbalno, vchno,
+//           zonename, grampanch, partyname, totalamt,
+//           drgl, glname, dracc, accname,
+//           zoneid, ulbid, budgetid,
+//           NVL(amt, 0) AS amt,
+//           partycode, prenarration, deptid,
+//           NVL(SUM(bal), 0) AS bal,
+//           nidhiid
+//         FROM vw_balvochdetails
+//         GROUP BY 
+//           trnsdate, refno, num_vchtransbal_vchtransbalno, vchno,
+//           zonename, grampanch, partyname, totalamt,
+//           drgl, glname, dracc, accname,
+//           zoneid, ulbid, budgetid, amt,
+//           partycode, prenarration, deptid, nidhiid
+//       )
+//     )
+//     WHERE balamt > 0
+//       AND zoneid = :zone_id
+//       AND trnsdate BETWEEN 
+//         TO_DATE(:from_date,'DD/MM/YYYY') 
+//         AND 
+//         TO_DATE(:to_date,'DD/MM/YYYY')
+//       AND ulbid = :corp_id
+//   `;
+
+//   const binds = {
+//     zone_id: params.zone_id,
+//     from_date: params.from_date,
+//     to_date: params.to_date,
+//     corp_id: params.corp_id,
+//   };
+
+//   if (params.party_id !== null) {
+//     query += ` AND partycode = :party_id `;
+//     binds.party_id = params.party_id;
+//   }
+
+//   if (params.budget_id !== null) {
+//     query += ` AND budgetid = :budget_id `;
+//     binds.budget_id = params.budget_id;
+//   }
+
+//   if (params.nidhi_id !== null) {
+//     query += ` AND nidhiid = :nidhi_id `;
+//     binds.nidhi_id = params.nidhi_id;
+//   }
+
+//   console.log("query", query);
+//   console.log("binds", binds);
+
+//   return await executeQuery(query, binds);
+// };
+
+const getBalanceVoucherDetails = async (params) => {
   let query = `
     SELECT *
     FROM (
-      SELECT 
-        trnsdate, refno, num_vchtransbal_vchtransbalno, vchno,
-        zonename, grampanch, partyname, totalamt,
-        drgl, glname, dracc, accname,
-        zoneid, ulbid, budgetid, amt,
-        partycode, prenarration, deptid,
+      SELECT
+        trnsdate,
+        refno,
+        num_vchtransbal_vchtransbalno,
+        vchno,
+        zonename,
+        grampanch,
+        partyname,
+        totalamt,
+        drgl,
+        glname,
+        dracc,
+        accname,
+        zoneid,
+        ulbid,
+        budgetid,
+        amt,
+        partycode,
+        prenarration,
+        deptid,
         NVL(totalamt, 0) - NVL(amt, 0) - NVL(bal, 0) AS balamt,
         nidhiid
       FROM (
-        SELECT 
-          trnsdate, refno, num_vchtransbal_vchtransbalno, vchno,
-          zonename, grampanch, partyname, totalamt,
-          drgl, glname, dracc, accname,
-          zoneid, ulbid, budgetid,
+        SELECT
+          trnsdate,
+          refno,
+          num_vchtransbal_vchtransbalno,
+          vchno,
+          zonename,
+          grampanch,
+          partyname,
+          totalamt,
+          drgl,
+          glname,
+          dracc,
+          accname,
+          zoneid,
+          ulbid,
+          budgetid,
           NVL(amt, 0) AS amt,
-          partycode, prenarration, deptid,
+          partycode,
+          prenarration,
+          deptid,
           NVL(SUM(bal), 0) AS bal,
           nidhiid
         FROM vw_balvochdetails
-        GROUP BY 
-          trnsdate, refno, num_vchtransbal_vchtransbalno, vchno,
-          zonename, grampanch, partyname, totalamt,
-          drgl, glname, dracc, accname,
-          zoneid, ulbid, budgetid, amt,
-          partycode, prenarration, deptid, nidhiid
+        GROUP BY
+          trnsdate,
+          refno,
+          num_vchtransbal_vchtransbalno,
+          vchno,
+          zonename,
+          grampanch,
+          partyname,
+          totalamt,
+          drgl,
+          glname,
+          dracc,
+          accname,
+          zoneid,
+          ulbid,
+          budgetid,
+          amt,
+          partycode,
+          prenarration,
+          deptid,
+          nidhiid
       )
     )
     WHERE balamt > 0
-      AND zoneid = :zone_id
-      AND trnsdate BETWEEN 
-        TO_DATE(:from_date,'DD/MM/YYYY') 
-        AND 
-        TO_DATE(:to_date,'DD/MM/YYYY')
+      AND (:zone_id = -1 OR zoneid = :zone_id)
+      AND TRUNC(trnsdate) BETWEEN
+          TO_DATE(:from_date, 'DD/MM/YYYY')
+          AND TO_DATE(:to_date, 'DD/MM/YYYY')
       AND ulbid = :corp_id
   `;
 
   const binds = {
-    zone_id: params.zone_id,
+    zone_id: Number(params.zone_id),
     from_date: params.from_date,
     to_date: params.to_date,
-    corp_id: params.corp_id,
+    corp_id: Number(params.corp_id),
   };
 
-  if (params.party_id !== null) {
+  if (params.party_id != null && params.party_id !== "") {
     query += ` AND partycode = :party_id `;
-    binds.party_id = params.party_id;
+    binds.party_id = Number(params.party_id);
   }
 
-  if (params.budget_id !== null) {
+  if (params.budget_id != null && params.budget_id !== "") {
     query += ` AND budgetid = :budget_id `;
-    binds.budget_id = params.budget_id;
+    binds.budget_id = Number(params.budget_id);
   }
 
-  if (params.nidhi_id !== null) {
+  if (params.nidhi_id != null && params.nidhi_id !== "") {
     query += ` AND nidhiid = :nidhi_id `;
-    binds.nidhi_id = params.nidhi_id;
+    binds.nidhi_id = Number(params.nidhi_id);
   }
 
-  console.log("query", query);
-  console.log("binds", binds);
+  query += ` ORDER BY trnsdate, vchno `;
+
+  console.log("query:", query);
+  console.log("binds:", binds);
 
   return await executeQuery(query, binds);
 };
+
 
 // ✅ 4. Voucher Prep List
 const getVoucherPrepList = async (params) => {

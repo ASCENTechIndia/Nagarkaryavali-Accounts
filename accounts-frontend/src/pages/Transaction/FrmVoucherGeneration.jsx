@@ -570,7 +570,7 @@
 //         const message = res.data.errorMsg;
 //         const match = message.match(/Vocher No\.\s*:\s*(\d+)/);
 //         const savedRefNo = match ? match[1] : null;
-        
+
 //         Swal.fire({
 //           title: "Success",
 //           text: res.data.errorMsg,
@@ -1146,14 +1146,7 @@
 
 // export default FrmVoucherGeneration;
 
-
-
-import {
-useState,
-  useEffect,
-  useMemo,
-  useCallback,
-} from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -1182,7 +1175,7 @@ import {
 } from "@/Components/ui/select";
 
 const initialValues = {
-  department: "",
+  department: "-1",
   fromDate: new Date(),
   toDate: new Date(),
   fromDateEnabled: false,
@@ -1202,17 +1195,11 @@ const initialValues = {
 
 const FormField = ({ label, children }) => (
   <div className="flex flex-col sm:grid sm:grid-cols-[140px_10px_1fr] items-start sm:items-center gap-2">
-    <Label className="sm:text-right w-full font-medium">
-      {label}
-    </Label>
+    <Label className="sm:text-right w-full font-medium">{label}</Label>
 
-    <span className="hidden sm:block font-semibold">
-      :
-    </span>
+    <span className="hidden sm:block font-semibold">:</span>
 
-    <div className="w-full">
-      {children}
-    </div>
+    <div className="w-full">{children}</div>
   </div>
 );
 
@@ -1226,12 +1213,9 @@ const formatDate = (date) =>
     .replace(/ /g, "-");
 
 const formatDate2 = (date) =>
-  new Date(date)
-    .toLocaleDateString("en-GB")
-    .replace(/\//g, "-");
+  new Date(date).toLocaleDateString("en-GB").replace(/\//g, "-");
 
-const formatDisplayDate = (date) =>
-  new Date(date).toLocaleDateString("en-GB");
+const formatDisplayDate = (date) => new Date(date).toLocaleDateString("en-GB");
 
 const FrmVoucherGeneration = () => {
   const navigate = useNavigate();
@@ -1248,20 +1232,15 @@ const FrmVoucherGeneration = () => {
   const [voucherList, setVoucherList] = useState([]);
   const [voucherDetails, setVoucherDetails] = useState([]);
   const [chequeBooks, setChequeBooks] = useState([]);
-  const [searchDone, setSearchDone] =
-    useState(false);
+  const [searchDone, setSearchDone] = useState(false);
 
-  const [currentPage, setCurrentPage] =
-    useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const [pageLoading, setPageLoading] =
-    useState(false);
+  const [pageLoading, setPageLoading] = useState(false);
 
-  const [tableLoading, setTableLoading] =
-    useState(false);
+  const [tableLoading, setTableLoading] = useState(false);
 
-  const [submitLoading, setSubmitLoading] =
-    useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
 
   const rowsPerPage = 10;
 
@@ -1271,78 +1250,54 @@ const FrmVoucherGeneration = () => {
     () => ({
       Authorization: `Bearer ${token}`,
     }),
-    [token]
+    [token],
   );
 
   /* ================= INITIAL LOAD ================= */
 
-  const loadInitialData = useCallback(
-    async () => {
-      if (!ulbId || !token) return;
+  const loadInitialData = useCallback(async () => {
+    if (!ulbId || !token) return;
 
-      try {
-        setPageLoading(true);
+    try {
+      setPageLoading(true);
 
-        const [
-          zonesRes,
-          glRes,
-          partyRes,
-        ] = await Promise.all([
-          axios.post(
-            `${BASE_URL}/api/Receipt/zones`,
-            { corp_id: ulbId },
-            { headers }
-          ),
+      const [zonesRes, glRes, partyRes] = await Promise.all([
+        axios.post(
+          `${BASE_URL}/api/Receipt/zones`,
+          { corp_id: ulbId },
+          { headers },
+        ),
 
-          axios.get(
-            `${BASE_URL}/api/Receipt/searchGLALL`,
-            {
-              headers: {
-                ...headers,
-                "Cache-Control":
-                  "no-cache",
-              },
-            }
-          ),
+        axios.get(`${BASE_URL}/api/Receipt/searchGLALL`, {
+          headers: {
+            ...headers,
+            "Cache-Control": "no-cache",
+          },
+        }),
 
-          axios.post(
-            `${BASE_URL}/api/FrmTransfer/party-list`,
-            { corpId: ulbId },
-            { headers }
-          ),
-        ]);
+        axios.post(
+          `${BASE_URL}/api/FrmTransfer/party-list`,
+          { corpId: ulbId },
+          { headers },
+        ),
+      ]);
 
-        setZones(
-          zonesRes.data?.data || []
-        );
+      setZones(zonesRes.data?.data || []);
 
-        setGlCodes(
-          glRes.data?.data || []
-        );
+      setGlCodes(glRes.data?.data || []);
 
-        setParties(
-          partyRes.data?.data?.rows ||
-            []
-        );
-      } catch (err) {
-        console.error(err);
+      setParties(partyRes.data?.data?.rows || []);
+    } catch (err) {
+      console.error(err);
 
-        Swal.fire({
-          icon: "error",
-          text:
-            "Initial data load failed",
-        });
-      } finally {
-        setPageLoading(false);
-      }
-    },
-    [
-      BASE_URL,
-      ulbId,
-      token,
-      headers,
-    ]
-  );
+      Swal.fire({
+        icon: "error",
+        text: "Initial data load failed",
+      });
+    } finally {
+      setPageLoading(false);
+    }
+  }, [BASE_URL, ulbId, token, headers]);
 
   useEffect(() => {
     loadInitialData();
@@ -1353,28 +1308,21 @@ const FrmVoucherGeneration = () => {
   const partyOptions = useMemo(
     () =>
       parties.map((p) => ({
-        label:
-          p.VAR_PARTYMST_PARTYNAME ||
-          "",
+        label: p.VAR_PARTYMST_PARTYNAME || "",
 
-        value: String(
-          p.NUM_PARTYMST_PARTYID
-        ),
+        value: String(p.NUM_PARTYMST_PARTYID),
       })),
-    [parties]
+    [parties],
   );
 
   const glOptions = useMemo(
     () =>
       glCodes.map((g) => ({
-        label:
-          g.GLSEARCHNAME || "",
+        label: g.GLSEARCHNAME || "",
 
-        value: String(
-          g.GLCODE || ""
-        ),
+        value: String(g.GLCODE || ""),
       })),
-    [glCodes]
+    [glCodes],
   );
 
   const ledgerOptions = useMemo(
@@ -1382,47 +1330,30 @@ const FrmVoucherGeneration = () => {
       ledgers.map((l) => ({
         label: l.ACCNAME || "",
 
-        value: String(
-          l.OBJECTCODE || ""
-        ),
+        value: String(l.OBJECTCODE || ""),
       })),
-    [ledgers]
+    [ledgers],
   );
 
   /* ================= TOTAL ================= */
 
-  const totalSelectedAmount =
-    useMemo(() => {
-      return voucherList
-        .filter((v) => v.selected)
-        .reduce(
-          (sum, v) =>
-            sum +
-            Math.abs(
-              v.deyRakkam || 0
-            ),
-          0
-        );
-    }, [voucherList]);
+  const totalSelectedAmount = useMemo(() => {
+    return voucherList
+      .filter((v) => v.selected)
+      .reduce((sum, v) => sum + Math.abs(v.deyRakkam || 0), 0);
+  }, [voucherList]);
 
   /* ================= PAGINATION ================= */
 
   const paginatedData = useMemo(() => {
-    const startIndex =
-      (currentPage - 1) *
-      rowsPerPage;
+    const startIndex = (currentPage - 1) * rowsPerPage;
 
-    return voucherList.slice(
-      startIndex,
-      startIndex + rowsPerPage
-    );
+    return voucherList.slice(startIndex, startIndex + rowsPerPage);
   }, [voucherList, currentPage]);
 
   /* ================= LOAD LEDGERS ================= */
 
-  const loadLedgers = async (
-    glcode
-  ) => {
+  const loadLedgers = async (glcode) => {
     if (!glcode || !ulbId) return;
 
     try {
@@ -1432,12 +1363,10 @@ const FrmVoucherGeneration = () => {
           corp_id: Number(ulbId),
           glcode: Number(glcode),
         },
-        { headers }
+        { headers },
       );
 
-      setLedgers(
-        res.data?.data?.rows || []
-      );
+      setLedgers(res.data?.data?.rows || []);
     } catch (err) {
       console.error(err);
     }
@@ -1445,215 +1374,117 @@ const FrmVoucherGeneration = () => {
 
   /* ================= FETCH VOUCHERS ================= */
 
-  const fetchVouchers = async (
-    values
-  ) => {
+  const fetchVouchers = async (values) => {
     try {
       setTableLoading(true);
 
       Swal.fire({
-        title:
-          "लोड होत आहे...",
-        text:
-          "कृपया थांबा",
+        title: "लोड होत आहे...",
+        text: "कृपया थांबा",
         allowOutsideClick: false,
-        didOpen: () =>
-          Swal.showLoading(),
+        didOpen: () => Swal.showLoading(),
       });
 
+    
+
       const payload = {
-        zone_id:
-          Number(
-            values.department
-          ) || null,
+        zone_id: Number(values.department) || "",
 
-        from_date:
-          values.fromDateEnabled
-            ? formatDate2(
-                values.fromDate
-              )
-            : "",
+        from_date: values.fromDateEnabled ? formatDate2(values.fromDate) : "",
 
-        to_date:
-          values.fromDateEnabled
-            ? formatDate2(
-                values.toDate
-              )
-            : "",
+        to_date: values.fromDateEnabled ? formatDate2(values.toDate) : "",
 
-        party_id:
-          values.partyCode
-            ? Number(
-                values.partyCode
-              )
-            : null,
+        party_id: values.partyCode ? Number(values.partyCode) : null,
 
-        budget_id:
-          values.budgetId
-            ? Number(
-                values.budgetId
-              )
-            : null,
+        budget_id: values.budgetId ? Number(values.budgetId) : null,
 
-        nidhi_id:
-          values.nidhiId
-            ? Number(
-                values.nidhiId
-              )
-            : null,
+        nidhi_id: values.nidhiId ? Number(values.nidhiId) : null,
 
         corp_id: Number(ulbId),
       };
 
-      const [
-        balanceRes,
-        prepRes,
-      ] = await Promise.all([
+      console.log("Payload for voucher fetch:", payload); 
+
+      const [balanceRes, prepRes] = await Promise.all([
         axios.post(
           `${BASE_URL}/api/FrmVoucherGeneration/balance-voucher`,
           payload,
-          { headers }
+          { headers },
         ),
 
         axios.post(
           `${BASE_URL}/api/FrmVoucherGeneration/voucher-prep`,
           payload,
-          { headers }
+          { headers },
         ),
       ]);
 
-      const normalizeData = (
-        data
-      ) =>
+      const normalizeData = (data) =>
         (data || []).map((row) => ({
-          REFNO:
-            row.REFNO ??
-            row.refno,
+          REFNO: row.REFNO ?? row.refno,
 
-          TRNSDATE:
-            row.TRNSDATE ??
-            row.trnsdate,
+          TRNSDATE: row.TRNSDATE ?? row.trnsdate,
 
-          VCHNO:
-            row.VCHNO ??
-            row.vchno,
+          VCHNO: row.VCHNO ?? row.vchno,
 
-          ZONENAME:
-            row.ZONENAME ??
-            row.zonename,
+          ZONENAME: row.ZONENAME ?? row.zonename,
 
-          PARTYNAME:
-            row.PARTYNAME ??
-            row.partyname ??
-            "",
+          PARTYNAME: row.PARTYNAME ?? row.partyname ?? "",
 
-          TOTALAMT: Number(
-            row.TOTALAMT ??
-              row.totalamt ??
-              0
-          ),
+          TOTALAMT: Number(row.TOTALAMT ?? row.totalamt ?? 0),
 
-          AMT: Number(
-            row.AMT ??
-              row.amt ??
-              0
-          ),
+          AMT: Number(row.AMT ?? row.amt ?? 0),
 
-          BALAMT: Number(
-            row.BALAMT ??
-              row.balamt ??
-              0
-          ),
+          BALAMT: Number(row.BALAMT ?? row.balamt ?? 0),
 
-          DRGL:
-            row.DRGL ??
-            row.drgl,
+          DRGL: row.DRGL ?? row.drgl,
 
-          GLNAME:
-            row.GLNAME ??
-            row.glname,
+          GLNAME: row.GLNAME ?? row.glname,
 
-          DRACC:
-            row.DRACC ??
-            row.dracc,
+          DRACC: row.DRACC ?? row.dracc,
 
-          ACCNAME:
-            row.ACCNAME ??
-            row.accname,
+          ACCNAME: row.ACCNAME ?? row.accname,
 
-          PRENARRATION:
-            row.PRENARRATION ??
-            row.prenarration ??
-            "",
+          PRENARRATION: row.PRENARRATION ?? row.prenarration ?? "",
 
-          PARTYCODE:
-            row.PARTYCODE ??
-            row.partycode ??
-            0,
+          PARTYCODE: row.PARTYCODE ?? row.partycode ?? 0,
 
-          DEPTID:
-            row.DEPTID ??
-            row.deptid ??
-            0,
+          DEPTID: row.DEPTID ?? row.deptid ?? 0,
         }));
 
-      const balanceData =
-        normalizeData(
-          balanceRes.data?.rows
-        );
+      const balanceData = normalizeData(balanceRes.data?.rows);
 
-      const prepData =
-        normalizeData(
-          prepRes.data?.rows
-        );
+      const prepData = normalizeData(prepRes.data?.rows);
 
-      const finalData = [
-        ...balanceData,
-        ...prepData,
-      ];
+      const finalData = [...balanceData, ...prepData];
 
-      const formattedData =
-        finalData.map((v) => {
-          const nival =
-            v.BALAMT ||
-            v.TOTALAMT -
-              v.AMT;
+      const formattedData = finalData.map((v) => {
+        const nival = v.BALAMT || v.TOTALAMT - v.AMT;
 
-          return {
-            ...v,
-            selected: false,
-            deyRakkam:
-              Math.abs(nival),
-          };
-        });
+        return {
+          ...v,
+          selected: false,
+          deyRakkam: Math.abs(nival),
+        };
+      });
 
-      setVoucherList(
-        formattedData
-      );
+      setVoucherList(formattedData);
 
       setCurrentPage(1);
 
       Swal.close();
 
-      if (
-        formattedData.length > 0
-      ) {
+      if (formattedData.length > 0) {
         setSearchDone(true);
       } else {
-        Swal.fire(
-          "No data found"
-        );
+        Swal.fire("No data found");
       }
     } catch (err) {
       console.error(err);
 
       Swal.close();
 
-      Swal.fire(
-        "Error",
-        "Voucher fetch failed",
-        "error"
-      );
+      Swal.fire("Error", "Voucher fetch failed", "error");
     } finally {
       setTableLoading(false);
     }
@@ -1662,680 +1493,501 @@ const FrmVoucherGeneration = () => {
   /* ================= FETCH CHEQUE BOOK ================= */
 
   const fetchChequeBook = async ({
-      chequeNo,
-      deptCode,
-      ledger,
-      department,
-      setFieldValue,
-    }) => {
-      try {
-        const payload = {
-          bank_glcode: String(deptCode),
-          bank_accno: String(ledger),
-          cheque_no: String(chequeNo),
-          corp_id: String(ulbId),
-          zone_id: String(department),
-        };
+    chequeNo,
+    deptCode,
+    ledger,
+    department,
+    setFieldValue,
+  }) => {
+    try {
+      const payload = {
+        bank_glcode: String(deptCode),
+        bank_accno: String(ledger),
+        cheque_no: String(chequeNo),
+        corp_id: String(ulbId),
+        zone_id: String(department),
+      };
 
-        const res = await axios.post(
-            `${BASE_URL}/api/FrmVoucherGeneration/cheque-book`,
-            payload,
-            { headers }
-        );
+      const res = await axios.post(
+        `${BASE_URL}/api/FrmVoucherGeneration/cheque-book`,
+        payload,
+        { headers },
+      );
 
-        const books = res.data?.rows || [];
-        setChequeBooks(books);
+      const books = res.data?.rows || [];
+      setChequeBooks(books);
 
-        if (books.length > 0) {
-          const bookNo = String(books[0].NUM_CHEQUEBOOK_BOOKNO);
-          setFieldValue("chequeBookNo", bookNo);
-        } else {
-          Swal.fire({
-            text:
-              "This cheque is either used or does not exist",
+      if (books.length > 0) {
+        const bookNo = String(books[0].NUM_CHEQUEBOOK_BOOKNO);
+        setFieldValue("chequeBookNo", bookNo);
+      } else {
+        Swal.fire({
+          text: "This cheque is either used or does not exist",
 
-            confirmButtonColor:
-              "#1e3a8a",
-          });
+          confirmButtonColor: "#1e3a8a",
+        });
 
-          setFieldValue(
-            "chequeBookNo",
-            ""
-          );
-        }
-      } catch (err) {
-        console.error(err);
+        setFieldValue("chequeBookNo", "");
       }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   /* ================= FETCH DETAILS ================= */
 
-  const fetchVoucherDetails =
-    async (
-      selectedRefs
-    ) => {
-      try {
-        const res =
-          await axios.post(
-            `${BASE_URL}/api/FrmVoucherGeneration/voucher-details`,
-            {
-              refno_list:
-                selectedRefs,
+  const fetchVoucherDetails = async (selectedRefs) => {
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/api/FrmVoucherGeneration/voucher-details`,
+        {
+          refno_list: selectedRefs,
 
-              corp_id: ulbId,
-            },
-            { headers }
-          );
+          corp_id: ulbId,
+        },
+        { headers },
+      );
 
-        setVoucherDetails(
-          res.data?.rows || []
-        );
-      } catch (err) {
-        console.error(err);
-      }
-    };
+      setVoucherDetails(res.data?.rows || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   /* ================= FETCH BANK BALANCE ================= */
 
-  const fetchBankBalance =
-    async (
-      glcode,
-      accno,
-      setFieldValue
-    ) => {
-      try {
-        const res =
-          await axios.post(
-            `${BASE_URL}/api/frmPayment/account-balance`,
-            {
-              targetDate:
-                formatDate(
-                  new Date()
-                ),
+  const fetchBankBalance = async (glcode, accno, setFieldValue) => {
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/api/frmPayment/account-balance`,
+        {
+          targetDate: formatDate(new Date()),
 
-              corpId:
-                Number(ulbId),
+          corpId: Number(ulbId),
 
-              ulbid:
-                Number(ulbId),
+          ulbid: Number(ulbId),
 
-              glcode:
-                Number(glcode),
+          glcode: Number(glcode),
 
-              accno:
-                Number(accno),
-            },
-            { headers }
-          );
+          accno: Number(accno),
+        },
+        { headers },
+      );
 
-        const balance =
-          res.data?.data?.data
-            ?.BALANCE || 0;
+      const balance = res.data?.data?.data?.BALANCE || 0;
 
-        setFieldValue(
-          "bankBalance",
-          Math.abs(balance)
-        );
-      } catch (err) {
-        console.error(err);
+      setFieldValue("bankBalance", Math.abs(balance));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchVoucherFullData = async (voucherNo) => {
+    try {
+      const [tableRes, taxRes] = await Promise.all([
+        axios.post(
+          `${BASE_URL}/api/FrmVoucherGeneration/voucher-table`,
+          {
+            voucher_no: voucherNo,
+
+            corp_id: ulbId,
+          },
+          { headers },
+        ),
+
+        axios.post(
+          `${BASE_URL}/api/FrmVoucherGeneration/voucher-tax`,
+          {
+            voucher_no: voucherNo,
+
+            corp_id: ulbId,
+          },
+          { headers },
+        ),
+      ]);
+
+      return {
+        table: tableRes.data?.data?.rows || [],
+
+        tax: taxRes.data?.rows || [],
+      };
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handlePrintPDF = async (refNo) => {
+    try {
+      const loader = Swal.fire({
+        title: "Generating PDF...",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => Swal.showLoading(),
+      });
+
+      const res = await axios.post(
+        `${BASE_URL}/api/FrmVoucherGeneration/counter-voucher-generation-pdf`,
+        {
+          ulbId: Number(ulbId),
+
+          refno: Number(refNo),
+        },
+        { headers },
+      );
+
+      loader.close();
+
+      if (res?.data?.success && res?.data?.pdfUrl) {
+        window.open(res.data.pdfUrl, "_blank");
+      } else {
+        throw new Error("PDF generation failed");
       }
-    };
+    } catch (error) {
+      console.error(error);
 
-  const fetchVoucherFullData =
-    async (voucherNo) => {
-      try {
-        const [
-          tableRes,
-          taxRes,
-        ] = await Promise.all([
-          axios.post(
-            `${BASE_URL}/api/FrmVoucherGeneration/voucher-table`,
-            {
-              voucher_no:
-                voucherNo,
+      Swal.fire({
+        text: error.response?.data?.message || "PDF तयार करताना त्रुटी आली.",
 
-              corp_id: ulbId,
-            },
-            { headers }
-          ),
+        confirmButtonColor: "#1e3a8a",
+      });
+    }
+  };
 
-          axios.post(
-            `${BASE_URL}/api/FrmVoucherGeneration/voucher-tax`,
-            {
-              voucher_no:
-                voucherNo,
+  const formatOracleDate = (date) => {
+    if (!date) return "";
 
-              corp_id: ulbId,
-            },
-            { headers }
-          ),
-        ]);
+    const d = new Date(date);
 
-        return {
-          table:
-            tableRes.data?.data
-              ?.rows || [],
+    const day = String(d.getDate()).padStart(2, "0");
 
-          tax:
-            taxRes.data?.rows ||
-            [],
-        };
-      } catch (err) {
-        console.error(err);
+    const months = [
+      "JAN",
+      "FEB",
+      "MAR",
+      "APR",
+      "MAY",
+      "JUN",
+      "JUL",
+      "AUG",
+      "SEP",
+      "OCT",
+      "NOV",
+      "DEC",
+    ];
+
+    const month = months[d.getMonth()];
+
+    const year = d.getFullYear();
+
+    return `${day}-${month}-${year}`;
+  };
+
+  const handleSubmit = async (values, formikHelpers) => {
+    try {
+      debugger;
+      setSubmitLoading(true);
+
+      const selectedRows = voucherList.filter((v) => v.selected);
+
+      if (!selectedRows.length) {
+        Swal.fire("किमान एक व्यवहार निवडा");
+
+        return;
       }
-    };
 
-  const handlePrintPDF =
-    async (refNo) => {
-      try {
-        const loader =
-          Swal.fire({
-            title:
-              "Generating PDF...",
-            allowOutsideClick: false,
-            showConfirmButton: false,
-            didOpen: () =>
-              Swal.showLoading(),
-          });
+      const isCheque = values.paymentType === "2" || values.paymentType === "3";
 
-        const res =
-          await axios.post(
-            `${BASE_URL}/api/FrmVoucherGeneration/counter-voucher-generation-pdf`,
-            {
-              ulbId:
-                Number(ulbId),
+      if (isCheque) {
+        if (!values.chequeNo) {
+          Swal.fire("Cheque number required");
 
-              refno:
-                Number(refNo),
-            },
-            { headers }
-          );
-
-        loader.close();
-
-        if (
-          res?.data?.success &&
-          res?.data?.pdfUrl
-        ) {
-          window.open(
-            res.data.pdfUrl,
-            "_blank"
-          );
-        } else {
-          throw new Error(
-            "PDF generation failed"
-          );
+          return;
         }
-      } catch (error) {
-        console.error(error);
 
-        Swal.fire({
-          text:
-            error.response?.data
-              ?.message ||
-            "PDF तयार करताना त्रुटी आली.",
+        if (!values.chequeBookNo) {
+          Swal.fire("Cheque book required");
 
-          confirmButtonColor:
-            "#1e3a8a",
-        });
-      }
-    };
-
-const formatOracleDate = (
-  date
-) => {
-  if (!date) return "";
-
-  const d = new Date(date);
-
-  const day = String(
-    d.getDate()
-  ).padStart(2, "0");
-
-  const months = [
-    "JAN",
-    "FEB",
-    "MAR",
-    "APR",
-    "MAY",
-    "JUN",
-    "JUL",
-    "AUG",
-    "SEP",
-    "OCT",
-    "NOV",
-    "DEC",
-  ];
-
-  const month =
-    months[d.getMonth()];
-
-  const year =
-    d.getFullYear();
-
-  return `${day}-${month}-${year}`;
-};
-
-const handleSubmit = async (
-  values,
-  formikHelpers
-) => {
-  try {
-    debugger;
-    setSubmitLoading(true);
-
-    const selectedRows =
-      voucherList.filter(
-        (v) => v.selected
-      );
-
-    if (
-      !selectedRows.length
-    ) {
-      Swal.fire(
-        "किमान एक व्यवहार निवडा"
-      );
-
-      return;
-    }
-
-    const isCheque =
-      values.paymentType ===
-        "2" ||
-      values.paymentType ===
-        "3";
-
-    if (isCheque) {
-      if (
-        !values.chequeNo
-      ) {
-        Swal.fire(
-          "Cheque number required"
-        );
-
-        return;
+          return;
+        }
       }
 
-      if (
-        !values.chequeBookNo
-      ) {
-        Swal.fire(
-          "Cheque book required"
-        );
+      Swal.fire({
+        title: "Saving...",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      });
 
-        return;
-      }
-    }
-
-    Swal.fire({
-      title: "Saving...",
-      allowOutsideClick: false,
-      didOpen: () =>
-        Swal.showLoading(),
-    });
-
-    /* =====================================
+      /* =====================================
        FETCH FULL DATA
        ===================================== */
 
-    const fullData =
-      await fetchVoucherFullData(
-        selectedRows[0]
-          .VCHNO
-      );
+      const fullData = await fetchVoucherFullData(selectedRows[0].VCHNO);
 
-    if (!fullData) {
-      Swal.close();
+      if (!fullData) {
+        Swal.close();
 
-      Swal.fire(
-        "Error",
-        "Voucher data load failed",
-        "error"
-      );
+        Swal.fire("Error", "Voucher data load failed", "error");
 
-      return;
-    }
+        return;
+      }
 
-    /* =====================================
+      /* =====================================
        TAX DATA
        ===================================== */
 
-    const firstTax =
-      fullData.tax?.[0];
+      const firstTax = fullData.tax?.[0];
 
-    const deptCode =
-      firstTax?.GLCODE ||
-      values.deptCode;
+      const deptCode = firstTax?.GLCODE || values.deptCode;
 
-    const ledger =
-      firstTax?.ACCNO ||
-      values.ledger;
+      const ledger = firstTax?.ACCNO || values.ledger;
 
-    const narration =
-      fullData.table?.[0]
-        ?.NARRATION ||
-      values.details ||
-      "-";
+      const narration = fullData.table?.[0]?.NARRATION || values.details || "-";
 
-    /* =====================================
+      /* =====================================
        TOTAL
        ===================================== */
 
-    const totalSelectedAmount =
-      selectedRows.reduce(
-        (sum, v) =>
-          sum +
-          Number(
-            v.deyRakkam || 0
-          ),
-        0
+      const totalSelectedAmount = selectedRows.reduce(
+        (sum, v) => sum + Number(v.deyRakkam || 0),
+        0,
       );
 
-    /* =====================================
+      /* =====================================
        CHEQUE VALUES
        ===================================== */
 
-    let chequeNo = "0";
+      let chequeNo = "0";
 
-    let chequeBook =
-      "0";
+      let chequeBook = "0";
 
-    let chequeDate = "";
+      let chequeDate = "";
 
-    if (isCheque) {
-      chequeNo =
-        values.chequeNo ||
-        "0";
+      if (isCheque) {
+        chequeNo = values.chequeNo || "0";
 
-      chequeBook =
-        values.chequeBookNo ||
-        "0";
+        chequeBook = values.chequeBookNo || "0";
 
-      chequeDate =
-        formatOracleDate(
-          values.chequeDate
-        );
-    }
+        chequeDate = formatOracleDate(values.chequeDate);
+      }
 
-    /* =====================================
+      /* =====================================
        VOUCHER NO
        ===================================== */
 
-    const getVoucherNo = (
-      v
-    ) =>
-      Number(
-        v.VCHNO ||
-          v.VOUCHERNO ||
-          0
-      );
+      const getVoucherNo = (v) => Number(v.VCHNO || v.VOUCHERNO || 0);
 
-    const str1 = [
-  "A",
+      const str1 = [
+        "A",
 
-  4,
+        4,
 
-  narration || "-",
+        narration || "-",
 
-  deptCode || 0,
+        deptCode || 0,
 
-  ledger || 0,
+        ledger || 0,
 
-  totalSelectedAmount || 0,
+        totalSelectedAmount || 0,
 
-  chequeNo || "",
+        chequeNo || "",
 
-  chequeDate || "",
+        chequeDate || "",
 
-  values.department || 0,
+        values.department || 0,
 
-  0,
+        0,
 
-  formatOracleDate(
-    values.transactionDate
-  ),
+        formatOracleDate(values.transactionDate),
 
-  values.budgetId || 0,
+        values.budgetId || 0,
 
-  chequeBook || 0,
+        chequeBook || 0,
 
-  values.paymentType || 0,
-].join("~");
+        values.paymentType || 0,
+      ].join("~");
 
-  const str2 = selectedRows
-  .map((v) => v.REFNO)
-  .join(",");
-    /* =====================================
+      const str2 = selectedRows.map((v) => v.REFNO).join(",");
+      /* =====================================
        STR3
        ===================================== */
 
-   const str3 = selectedRows
-  .map((v) => {
-    const nivalDey =
-      Number(v.BALAMT || 0);
+      const str3 = selectedRows
+        .map((v) => {
+          const nivalDey = Number(v.BALAMT || 0);
 
-    const dey =
-      Number(
-        v.deyRakkam || 0
-      );
+          const dey = Number(v.deyRakkam || 0);
 
-    const shillak =
-      nivalDey - dey;
+          const shillak = nivalDey - dey;
 
-    return [
-      Number(v.REFNO || 0),
+          return [
+            Number(v.REFNO || 0),
 
-      nivalDey,
+            nivalDey,
 
-      dey,
+            dey,
 
-      shillak,
+            shillak,
 
-      Number(v.TOTALAMT || 0),
+            Number(v.TOTALAMT || 0),
 
-      Number(v.AMT || 0),
+            Number(v.AMT || 0),
 
-      Number(v.VCHNO || 0),
+            Number(v.VCHNO || 0),
 
-      Number(v.DEPTID || 0),
-    ].join("#");
-  })
-  .join("$");
-  const str4 = selectedRows
-  .map((v) => {
-    const nivalDey =
-      Number(v.BALAMT || 0);
+            Number(v.DEPTID || 0),
+          ].join("#");
+        })
+        .join("$");
+      const str4 = selectedRows
+        .map((v) => {
+          const nivalDey = Number(v.BALAMT || 0);
 
-    const dey =
-      Number(
-        v.deyRakkam || 0
-      );
+          const dey = Number(v.deyRakkam || 0);
 
-    const shillak =
-      nivalDey - dey;
+          const shillak = nivalDey - dey;
 
-    return [
-      Number(v.REFNO || 0),
+          return [
+            Number(v.REFNO || 0),
 
-      formatOracleDate(
-        v.TRNSDATE
-      ),
+            formatOracleDate(v.TRNSDATE),
 
-      Number(v.VCHNO || 0),
+            Number(v.VCHNO || 0),
 
-      Number(v.DRGL || 0),
+            Number(v.DRGL || 0),
 
-      String(v.DRACC || 0),
+            String(v.DRACC || 0),
 
-      String(
-        (
-          v.PRENARRATION ||
-          narration ||
-          "-"
-        )
-          .replace(
-            /[&%#;,]/g,
-            ""
-          )
-          .trim()
-      ),
+            String(
+              (v.PRENARRATION || narration || "-")
+                .replace(/[&%#;,]/g, "")
+                .trim(),
+            ),
 
-      nivalDey,
+            nivalDey,
 
-      dey,
+            dey,
 
-      shillak,
+            shillak,
 
-      Number(
-        v.PARTYCODE || 0
-      ),
+            Number(v.PARTYCODE || 0),
 
-      Number(v.DEPTID || 0),
-    ].join("#");
-  })
-  .join("$");
-    /* =====================================
+            Number(v.DEPTID || 0),
+          ].join("#");
+        })
+        .join("$");
+      /* =====================================
        FINAL PAYLOAD
        ===================================== */
 
-    const payload = {
-      refNo:
-        selectedRows[0]
-          .REFNO,
+      const payload = {
+        refNo: selectedRows[0].REFNO,
 
-      userId:
-        user?.userId,
+        userId: user?.userId,
 
-      txnSourceId: 6,
+        txnSourceId: 6,
 
-      txnStatus: "A",
+        txnStatus: "A",
 
-      str1,
-      str2,
-      str3,
-      str4,
-    };
+        str1,
+        str2,
+        str3,
+        str4,
+      };
 
-    console.log(
-      "FINAL PAYLOAD:",
-      payload
-    );
+      console.log("FINAL PAYLOAD:", payload);
 
-    /* =====================================
+      /* =====================================
        API CALL
        ===================================== */
 
-    const res =
-      await axios.post(
+      const res = await axios.post(
         `${BASE_URL}/api/FrmVoucherGeneration/voucher-generation`,
         payload,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
-    console.log(
-      "SAVE RESPONSE:",
-      res.data
-    );
+      console.log("SAVE RESPONSE:", res.data);
 
-    Swal.close();
+      Swal.close();
 
-    /* =====================================
+      /* =====================================
        SUCCESS
        ===================================== */
 
-    if (
-      res.data?.success
-    ) {
-      const message = res.data.errorMsg;
+      if (res.data?.success) {
+        const message = res.data.errorMsg;
         const match = message.match(/Vocher No\.\s*:\s*(\d+)/);
         console.log("Voucher Number: ", match);
         const savedRefNo = match ? match[1] : null;
         console.log("savedRefNo Number: ", savedRefNo);
 
-  
-      Swal.fire({
-        title: "Success",
+        Swal.fire({
+          title: "Success",
 
-        text:
-          res.data
-            ?.errorMsg ||
-          "Voucher generated successfully",
+          text: res.data?.errorMsg || "Voucher generated successfully",
 
-        icon: "success",
+          icon: "success",
 
+          confirmButtonColor: "#1e3a8a",
+        }).then(async (result) => {
+          // if (
+          //   savedRefNo
+          // ) {
+          //   await handlePrintPDF(
+          //     savedRefNo
+          //   );
+          // }
 
+          if (result.isConfirmed) {
+            await new Promise((resolve) => setTimeout(resolve, 1500));
 
-            confirmButtonColor: '#1e3a8a'
-      }).then(async (result) => {
-        // if (
-        //   savedRefNo
-        // ) {
-        //   await handlePrintPDF(
-        //     savedRefNo
-        //   );
-        // }
-
-         if (result.isConfirmed) {
-          await new Promise((resolve) =>
-            setTimeout(resolve, 1500)
-          );
-
-          if (savedRefNo) {
-            await handlePrintPDF(savedRefNo);
+            if (savedRefNo) {
+              await handlePrintPDF(savedRefNo);
+            }
           }
-       
-        }
-      });
+        });
 
-      formikHelpers.resetForm();
+        formikHelpers.resetForm();
 
-      setVoucherList([]);
+        setVoucherList([]);
 
-      setVoucherDetails(
-        []
-      );
+        setVoucherDetails([]);
 
-      setChequeBooks([]);
+        setChequeBooks([]);
 
-      setSearchDone(false);
-    } else {
+        setSearchDone(false);
+      } else {
+        Swal.fire(
+          "Error",
+          res.data?.errorMsg || "Voucher generation failed",
+          "error",
+        );
+      }
+    } catch (err) {
+      console.error("Voucher Generation Error:", err);
+
+      Swal.close();
+
       Swal.fire(
         "Error",
-        res.data?.errorMsg ||
-          "Voucher generation failed",
-        "error"
+        err.response?.data?.message || "Voucher generation failed",
+        "error",
       );
+    } finally {
+      setSubmitLoading(false);
     }
-  } catch (err) {
-    console.error(
-      "Voucher Generation Error:",
-      err
-    );
-
-    Swal.close();
-
-    Swal.fire(
-      "Error",
-      err.response?.data
-        ?.message ||
-        "Voucher generation failed",
-      "error"
-    );
-  } finally {
-    setSubmitLoading(false);
-  }
-};
+  };
 
   if (pageLoading) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
     );
@@ -2343,7 +1995,7 @@ const handleSubmit = async (
 
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-      {({values, handleChange, setFieldValue, resetForm,}) => (
+      {({ values, handleChange, setFieldValue, resetForm }) => (
         <Form>
           <motion.div
             initial={{
@@ -2354,7 +2006,6 @@ const handleSubmit = async (
             }}
           >
             <Card className="border shadow-sm">
-
               <CardHeader className="border-b">
                 <CardTitle className="text-lg font-semibold">
                   प्रमाणक निर्मिती
@@ -2362,44 +2013,27 @@ const handleSubmit = async (
               </CardHeader>
 
               <CardContent className="p-4 sm:p-6 space-y-6">
-
                 <section className="border rounded-xl p-4 sm:p-5 space-y-4 bg-white">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     <FormField label="प्रभाग">
                       <Select
-                        value={
-                          values.department
-                        }
-                        onValueChange={(
-                          v
-                        ) =>
-                          setFieldValue(
-                            "department",
-                            v
-                          )
-                        }
+                        value={values.department}
+                        onValueChange={(v) => setFieldValue("department", v)}
                       >
                         <SelectTrigger className="h-9 w-full">
                           <SelectValue placeholder="-- विकल्प निवडा --" />
                         </SelectTrigger>
 
                         <SelectContent>
-                          {zones.map(
-                            (z) => (
-                              <SelectItem
-                                key={
-                                  z.ZONEID
-                                }
-                                value={String(
-                                  z.ZONEID
-                                )}
-                              >
-                                {
-                                  z.ZONEENAME
-                                }
-                              </SelectItem>
-                            )
-                          )}
+                          {/* All Option */}
+                          <SelectItem value="-1">-- ALL --</SelectItem>
+
+                          {/* Zone Options */}
+                          {zones.map((z) => (
+                            <SelectItem key={z.ZONEID} value={String(z.ZONEID)}>
+                              {z.ZONEENAME}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </FormField>
@@ -2407,70 +2041,32 @@ const handleSubmit = async (
                     <FormField label="दिनांक पासून">
                       <div className="flex items-center gap-3">
                         <Checkbox
-                          checked={
-                            values.fromDateEnabled
-                          }
-                          onCheckedChange={(
-                            v
-                          ) =>
-                            setFieldValue(
-                              "fromDateEnabled",
-                              v
-                            )
+                          checked={values.fromDateEnabled}
+                          onCheckedChange={(v) =>
+                            setFieldValue("fromDateEnabled", v)
                           }
                         />
 
                         <DatePicker
-                          value={
-                            values.fromDate
-                          }
-                          onChange={(
-                            d
-                          ) =>
-                            setFieldValue(
-                              "fromDate",
-                              d
-                            )
-                          }
-                          disabled={
-                            !values.fromDateEnabled
-                          }
+                          value={values.fromDate}
+                          onChange={(d) => setFieldValue("fromDate", d)}
+                          disabled={!values.fromDateEnabled}
                         />
                       </div>
                     </FormField>
 
                     <FormField label="दिनांक पर्यंत">
                       <DatePicker
-                        value={
-                          values.toDate
-                        }
-                        onChange={(
-                          d
-                        ) =>
-                          setFieldValue(
-                            "toDate",
-                            d
-                          )
-                        }
+                        value={values.toDate}
+                        onChange={(d) => setFieldValue("toDate", d)}
                       />
                     </FormField>
 
                     <FormField label="पार्टी संकेतांक">
                       <SearchableSelect
-                        options={
-                          partyOptions
-                        }
-                        value={
-                          values.partyCode
-                        }
-                        onChange={(
-                          v
-                        ) =>
-                          setFieldValue(
-                            "partyCode",
-                            v?.value
-                          )
-                        }
+                        options={partyOptions}
+                        value={values.partyCode}
+                        onChange={(v) => setFieldValue("partyCode", v?.value)}
                       />
                     </FormField>
 
@@ -2478,11 +2074,7 @@ const handleSubmit = async (
                       <Button
                         type="button"
                         className="bg-blue-900 text-white"
-                        onClick={() =>
-                          fetchVouchers(
-                            values
-                          )
-                        }
+                        onClick={() => fetchVouchers(values)}
                       >
                         व्हाउचर शोध
                       </Button>
@@ -2492,34 +2084,17 @@ const handleSubmit = async (
                           type="button"
                           className="bg-green-700 text-white"
                           onClick={() => {
-                            const selectedRefs =
-                              voucherList
-                                .filter(
-                                  (
-                                    v
-                                  ) =>
-                                    v.selected
-                                )
-                                .map(
-                                  (
-                                    v
-                                  ) =>
-                                    v.REFNO
-                                );
+                            const selectedRefs = voucherList
+                              .filter((v) => v.selected)
+                              .map((v) => v.REFNO);
 
-                            if (
-                              !selectedRefs.length
-                            ) {
-                              Swal.fire(
-                                "किमान एक व्यवहार निवडा"
-                              );
+                            if (!selectedRefs.length) {
+                              Swal.fire("किमान एक व्यवहार निवडा");
 
                               return;
                             }
 
-                            fetchVoucherDetails(
-                              selectedRefs
-                            );
+                            fetchVoucherDetails(selectedRefs);
                           }}
                         >
                           व्यवहार तपशील
@@ -2532,314 +2107,159 @@ const handleSubmit = async (
                 <section>
                   {tableLoading && (
                     <div className="flex justify-center py-10 text-gray-600">
-                      Loading
-                      vouchers...
+                      Loading vouchers...
                     </div>
                   )}
 
-                  {voucherList.length >
-                    0 && !tableLoading && (
+                  {voucherList.length > 0 && !tableLoading && (
                     <div className="border border-gray-300 bg-white shadow-sm overflow-auto max-h-[600px] rounded-md">
                       <table className="w-full text-sm">
                         <thead className="sticky top-0 z-10 bg-[#163e72] text-white">
                           <tr>
-                            <th className="p-2">
-                              Select
-                            </th>
+                            <th className="p-2">Select</th>
 
-                            <th className="p-2">
-                              रेफ.
-                              क्र.
-                            </th>
+                            <th className="p-2">रेफ. क्र.</th>
 
-                            <th className="p-2">
-                              दिनांक
-                            </th>
+                            <th className="p-2">दिनांक</th>
 
-                            <th className="p-2">
-                              व्हा.
-                              क्र.
-                            </th>
+                            <th className="p-2">व्हा. क्र.</th>
 
-                            <th className="p-2">
-                              झोन
-                            </th>
+                            <th className="p-2">झोन</th>
 
-                            <th className="p-2">
-                              पार्टी
-                            </th>
+                            <th className="p-2">पार्टी</th>
 
-                            <th className="p-2 text-right">
-                              एकूण
-                              रक्कम
-                            </th>
+                            <th className="p-2 text-right">एकूण रक्कम</th>
 
-                            <th className="p-2">
-                              डेबिट
-                              जीएल
-                            </th>
+                            <th className="p-2">डेबिट जीएल</th>
 
-                            <th className="p-2">
-                              डेबिट
-                              जीएल
-                              नाव
-                            </th>
+                            <th className="p-2">डेबिट जीएल नाव</th>
 
-                            <th className="p-2">
-                              डेबिट
-                              खाते
-                            </th>
+                            <th className="p-2">डेबिट खाते</th>
 
-                            <th className="p-2">
-                              डेबिट
-                              खाते
-                              नाव
-                            </th>
+                            <th className="p-2">डेबिट खाते नाव</th>
 
-                            <th className="p-2">
-                              तपशील
-                            </th>
+                            <th className="p-2">तपशील</th>
 
-                            <th className="p-2 text-right">
-                              रक्कम
-                            </th>
+                            <th className="p-2 text-right">रक्कम</th>
 
-                            <th className="p-2 text-right">
-                              निव्वळ
-                              देय
-                            </th>
+                            <th className="p-2 text-right">निव्वळ देय</th>
 
-                            <th className="p-2 text-right">
-                              देय
-                              रक्कम
-                            </th>
+                            <th className="p-2 text-right">देय रक्कम</th>
 
-                            <th className="p-2 text-right">
-                              शिल्लक
-                            </th>
+                            <th className="p-2 text-right">शिल्लक</th>
                           </tr>
                         </thead>
 
                         <tbody>
-                          {paginatedData.map(
-                            (
-                              row,
-                              i
-                            ) => {
-                              const actualIndex =
-                                (currentPage -
-                                  1) *
-                                  rowsPerPage +
-                                i;
+                          {paginatedData.map((row, i) => {
+                            const actualIndex =
+                              (currentPage - 1) * rowsPerPage + i;
 
-                              const nivalDey =
-                                row.BALAMT !=
-                                null
-                                  ? Number(
-                                      row.BALAMT
-                                    )
-                                  : (row.TOTALAMT ||
-                                      0) -
-                                    (row.AMT ||
-                                      0);
+                            const nivalDey =
+                              row.BALAMT != null
+                                ? Number(row.BALAMT)
+                                : (row.TOTALAMT || 0) - (row.AMT || 0);
 
-                              const deyRakkam =
-                                row.deyRakkam ??
-                                nivalDey;
+                            const deyRakkam = row.deyRakkam ?? nivalDey;
 
-                              const shillak =
-                                nivalDey -
-                                deyRakkam;
+                            const shillak = nivalDey - deyRakkam;
 
-                              return (
-                                <tr
-                                  key={
-                                    i
-                                  }
-                                  className="border-b hover:bg-gray-50"
-                                >
-                                  <td className="p-2 text-center">
-                                    <Checkbox
-                                      checked={
-                                        row.selected ||
-                                        false
-                                      }
-                                      onCheckedChange={(
-                                        checked
-                                      ) => {
-                                        setVoucherList(
-                                          (
-                                            prev
-                                          ) =>
-                                            prev.map(
-                                              (
-                                                v,
-                                                idx
-                                              ) =>
-                                                idx ===
-                                                actualIndex
-                                                  ? {
-                                                      ...v,
+                            return (
+                              <tr key={i} className="border-b hover:bg-gray-50">
+                                <td className="p-2 text-center">
+                                  <Checkbox
+                                    checked={row.selected || false}
+                                    onCheckedChange={(checked) => {
+                                      setVoucherList((prev) =>
+                                        prev.map((v, idx) =>
+                                          idx === actualIndex
+                                            ? {
+                                                ...v,
 
-                                                      selected:
-                                                        checked,
+                                                selected: checked,
 
-                                                      deyRakkam:
-                                                        checked
-                                                          ? (v.deyRakkam ??
-                                                            nivalDey)
-                                                          : 0,
-                                                    }
-                                                  : v
-                                            )
+                                                deyRakkam: checked
+                                                  ? (v.deyRakkam ?? nivalDey)
+                                                  : 0,
+                                              }
+                                            : v,
+                                        ),
+                                      );
+                                    }}
+                                  />
+                                </td>
+
+                                <td className="p-2">{row.REFNO}</td>
+
+                                <td className="p-2">
+                                  {row.TRNSDATE
+                                    ? formatDisplayDate(row.TRNSDATE)
+                                    : "-"}
+                                </td>
+
+                                <td className="p-2">{row.VCHNO}</td>
+
+                                <td className="p-2">{row.ZONENAME}</td>
+
+                                <td className="p-2">
+                                  {row.PARTYNAME || `${row.PARTYCODE}`}
+                                </td>
+
+                                <td className="p-2 text-right">
+                                  {row.TOTALAMT}
+                                </td>
+
+                                <td className="p-2">{row.DRGL}</td>
+
+                                <td className="p-2">{row.GLNAME}</td>
+
+                                <td className="p-2">{row.DRACC}</td>
+
+                                <td className="p-2">{row.ACCNAME}</td>
+
+                                <td className="p-2">{row.PRENARRATION}</td>
+
+                                <td className="p-2 text-right">{row.AMT}</td>
+
+                                <td className="p-2 text-right font-semibold">
+                                  {nivalDey}
+                                </td>
+
+                                <td className="p-2 text-right">
+                                  <Input
+                                    className="h-8 w-24 text-right"
+                                    value={deyRakkam}
+                                    disabled={!row.selected}
+                                    onChange={(e) => {
+                                      let val = Number(e.target.value) || 0;
+
+                                      if (val > nivalDey) {
+                                        Swal.fire(
+                                          "देय रक्कम जास्त असू शकत नाही!",
                                         );
-                                      }}
-                                    />
-                                  </td>
 
-                                  <td className="p-2">
-                                    {
-                                      row.REFNO
-                                    }
-                                  </td>
-
-                                  <td className="p-2">
-                                    {row.TRNSDATE
-                                      ? formatDisplayDate(
-                                          row.TRNSDATE
-                                        )
-                                      : "-"}
-                                  </td>
-
-                                  <td className="p-2">
-                                    {
-                                      row.VCHNO
-                                    }
-                                  </td>
-
-                                  <td className="p-2">
-                                    {
-                                      row.ZONENAME
-                                    }
-                                  </td>
-
-                                  <td className="p-2">
-                                    {row.PARTYNAME ||
-                                      `ID: ${row.PARTYCODE}`}
-                                  </td>
-
-                                  <td className="p-2 text-right">
-                                    {
-                                      row.TOTALAMT
-                                    }
-                                  </td>
-
-                                  <td className="p-2">
-                                    {
-                                      row.DRGL
-                                    }
-                                  </td>
-
-                                  <td className="p-2">
-                                    {
-                                      row.GLNAME
-                                    }
-                                  </td>
-
-                                  <td className="p-2">
-                                    {
-                                      row.DRACC
-                                    }
-                                  </td>
-
-                                  <td className="p-2">
-                                    {
-                                      row.ACCNAME
-                                    }
-                                  </td>
-
-                                  <td className="p-2">
-                                    {
-                                      row.PRENARRATION
-                                    }
-                                  </td>
-
-                                  <td className="p-2 text-right">
-                                    {
-                                      row.AMT
-                                    }
-                                  </td>
-
-                                  <td className="p-2 text-right font-semibold">
-                                    {
-                                      nivalDey
-                                    }
-                                  </td>
-
-                                  <td className="p-2 text-right">
-                                    <Input
-                                      className="h-8 w-24 text-right"
-                                      value={
-                                        deyRakkam
+                                        return;
                                       }
-                                      disabled={
-                                        !row.selected
-                                      }
-                                      onChange={(
-                                        e
-                                      ) => {
-                                        let val =
-                                          Number(
-                                            e
-                                              .target
-                                              .value
-                                          ) ||
-                                          0;
 
-                                        if (
-                                          val >
-                                          nivalDey
-                                        ) {
-                                          Swal.fire(
-                                            "देय रक्कम जास्त असू शकत नाही!"
-                                          );
+                                      setVoucherList((prev) =>
+                                        prev.map((v, idx) =>
+                                          idx === actualIndex
+                                            ? {
+                                                ...v,
 
-                                          return;
-                                        }
+                                                deyRakkam: val,
+                                              }
+                                            : v,
+                                        ),
+                                      );
+                                    }}
+                                  />
+                                </td>
 
-                                        setVoucherList(
-                                          (
-                                            prev
-                                          ) =>
-                                            prev.map(
-                                              (
-                                                v,
-                                                idx
-                                              ) =>
-                                                idx ===
-                                                actualIndex
-                                                  ? {
-                                                      ...v,
-
-                                                      deyRakkam:
-                                                        val,
-                                                    }
-                                                  : v
-                                            )
-                                        );
-                                      }}
-                                    />
-                                  </td>
-
-                                  <td className="p-2 text-right">
-                                    {
-                                      shillak
-                                    }
-                                  </td>
-                                </tr>
-                              );
-                            }
-                          )}
+                                <td className="p-2 text-right">{shillak}</td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </table>
 
@@ -2847,33 +2267,15 @@ const handleSubmit = async (
                         <Button
                           type="button"
                           variant="outline"
-                          disabled={
-                            currentPage ===
-                            1
-                          }
-                          onClick={() =>
-                            setCurrentPage(
-                              (
-                                prev
-                              ) =>
-                                prev -
-                                1
-                            )
-                          }
+                          disabled={currentPage === 1}
+                          onClick={() => setCurrentPage((prev) => prev - 1)}
                         >
                           Previous
                         </Button>
 
                         <span className="text-sm">
-                          Page{" "}
-                          {
-                            currentPage
-                          }{" "}
-                          of{" "}
-                          {Math.ceil(
-                            voucherList.length /
-                              rowsPerPage
-                          )}
+                          Page {currentPage} of{" "}
+                          {Math.ceil(voucherList.length / rowsPerPage)}
                         </span>
 
                         <Button
@@ -2881,20 +2283,9 @@ const handleSubmit = async (
                           variant="outline"
                           disabled={
                             currentPage ===
-                            Math.ceil(
-                              voucherList.length /
-                                rowsPerPage
-                            )
+                            Math.ceil(voucherList.length / rowsPerPage)
                           }
-                          onClick={() =>
-                            setCurrentPage(
-                              (
-                                prev
-                              ) =>
-                                prev +
-                                1
-                            )
-                          }
+                          onClick={() => setCurrentPage((prev) => prev + 1)}
                         >
                           Next
                         </Button>
@@ -2909,81 +2300,43 @@ const handleSubmit = async (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     <FormField label="विभाग कोड">
                       <SearchableSelect
-                        options={
-                          glOptions
-                        }
-                        value={
-                          values.deptCode
-                        }
-                        onChange={async (
-                          v
-                        ) => {
-                          const glcode =
-                            v?.value ||
-                            v;
+                        options={glOptions}
+                        value={values.deptCode}
+                        onChange={async (v) => {
+                          const glcode = v?.value || v;
 
-                          setFieldValue(
-                            "deptCode",
-                            glcode
-                          );
+                          setFieldValue("deptCode", glcode);
 
-                          setFieldValue(
-                            "ledger",
-                            ""
-                          );
+                          setFieldValue("ledger", "");
 
-                          await loadLedgers(
-                            glcode
-                          );
+                          await loadLedgers(glcode);
                         }}
                       />
                     </FormField>
 
                     <FormField label="लेखाशीर्ष">
                       <SearchableSelect
-                        options={
-                          ledgerOptions
-                        }
-                        value={
-                          values.ledger
-                        }
-                        onChange={(
-                          v
-                        ) => {
-                          const value =
-                            v?.value;
+                        options={ledgerOptions}
+                        value={values.ledger}
+                        onChange={(v) => {
+                          const value = v?.value;
 
-                          setFieldValue(
-                            "ledger",
-                            value
+                          setFieldValue("ledger", value);
+
+                          const selectedLedger = ledgers.find(
+                            (l) => String(l.OBJECTCODE) === String(value),
                           );
 
-                          const selectedLedger =
-                            ledgers.find(
-                              (
-                                l
-                              ) =>
-                                String(
-                                  l.OBJECTCODE
-                                ) ===
-                                String(
-                                  value
-                                )
-                            );
-
-                          if (
-                            selectedLedger
-                          ) {
+                          if (selectedLedger) {
                             fetchBankBalance(
                               values.deptCode,
                               value,
-                              setFieldValue
+                              setFieldValue,
                             );
 
                             setFieldValue(
                               "details",
-                              selectedLedger.ACCNAME ||
-                                ""
+                              selectedLedger.ACCNAME || "",
                             );
                           }
                         }}
@@ -2992,9 +2345,7 @@ const handleSubmit = async (
 
                     <FormField label="बँकेची शिल्लक">
                       <Input
-                        value={
-                          values.bankBalance
-                        }
+                        value={values.bankBalance}
                         readOnly
                         className="h-9 w-full bg-gray-100 cursor-not-allowed"
                       />
@@ -3002,81 +2353,42 @@ const handleSubmit = async (
 
                     <FormField label="व्यवहार दिनांक">
                       <DatePicker
-                        value={
-                          values.transactionDate
-                        }
-                        onChange={(
-                          d
-                        ) =>
-                          setFieldValue(
-                            "transactionDate",
-                            d
-                          )
-                        }
+                        value={values.transactionDate}
+                        onChange={(d) => setFieldValue("transactionDate", d)}
                       />
                     </FormField>
 
                     <FormField label="देय रक्कम एकूण">
-                      <Input
-                        value={
-                          totalSelectedAmount
-                        }
-                        readOnly
-                      />
+                      <Input value={totalSelectedAmount} readOnly />
                     </FormField>
 
                     <FormField label="देयक प्रकार">
                       <Select
-                        value={
-                          values.paymentType
-                        }
-                        onValueChange={(
-                          v
-                        ) =>
-                          setFieldValue(
-                            "paymentType",
-                            v
-                          )
-                        }
+                        value={values.paymentType}
+                        onValueChange={(v) => setFieldValue("paymentType", v)}
                       >
                         <SelectTrigger className="h-9 w-full">
                           <SelectValue placeholder="निवडा" />
                         </SelectTrigger>
 
                         <SelectContent>
-                          <SelectItem value="2">
-                            Cheque
-                          </SelectItem>
+                          <SelectItem value="2">Cheque</SelectItem>
 
-                          <SelectItem value="1">
-                            Bank
-                            Transfer
-                          </SelectItem>
+                          <SelectItem value="1">Bank Transfer</SelectItem>
 
-                          <SelectItem value="3">
-                            RTGS
-                          </SelectItem>
+                          <SelectItem value="3">RTGS</SelectItem>
 
-                          <SelectItem value="4">
-                            Adjustment
-                          </SelectItem>
+                          <SelectItem value="4">Adjustment</SelectItem>
 
-                          <SelectItem value="5">
-                            FDR
-                          </SelectItem>
+                          <SelectItem value="5">FDR</SelectItem>
 
-                          <SelectItem value="6">
-                            Bank
-                            Guarantee
-                          </SelectItem>
+                          <SelectItem value="6">Bank Guarantee</SelectItem>
                         </SelectContent>
                       </Select>
                     </FormField>
 
-                    {(values.paymentType ===
-                      "2" ||
-                      values.paymentType ===
-                        "3") && (
+                    {(values.paymentType === "2" ||
+                      values.paymentType === "3") && (
                       <>
                         {/* <FormField label="धनादेश पुस्तिका क्रमांक">
                           <Select
@@ -3116,101 +2428,78 @@ const handleSubmit = async (
                           </Select>
                         </FormField> */}
 
-                          <FormField label="धनादेश पुस्तिका क्रमांक">
-                            {chequeBooks.length === 1 ? (
-                              <Input
-                                value={String(chequeBooks[0].NUM_CHEQUEBOOK_BOOKNO)}
-                                readOnly
-                                className="h-9 w-full bg-gray-100 cursor-not-allowed"
-                              />
-                            ) : chequeBooks.length > 1 ? (
-                              <Select
-                                value={values.chequeBookNo || ""}
-                                onValueChange={(v) => setFieldValue("chequeBookNo", v)}
-                              >
-                                <SelectTrigger className="h-9 w-full">
-                                  <SelectValue placeholder="निवडा" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {chequeBooks.map((b) => (
-                                    <SelectItem
-                                      key={b.NUM_CHEQUEBOOK_BOOKNO}
-                                      value={String(b.NUM_CHEQUEBOOK_BOOKNO)}
-                                    >
-                                      {b.BOOKNO || b.NUM_CHEQUEBOOK_BOOKNO}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            ) : (
-                              <Input
-                                value=""
-                                readOnly
-                                placeholder="धनादेश क्रमांक टाका..."
-                                className="h-9 w-full bg-gray-100 cursor-not-allowed"
-                              />
-                            )}
-                          </FormField>
+                        <FormField label="धनादेश पुस्तिका क्रमांक">
+                          {chequeBooks.length === 1 ? (
+                            <Input
+                              value={String(
+                                chequeBooks[0].NUM_CHEQUEBOOK_BOOKNO,
+                              )}
+                              readOnly
+                              className="h-9 w-full bg-gray-100 cursor-not-allowed"
+                            />
+                          ) : chequeBooks.length > 1 ? (
+                            <Select
+                              value={values.chequeBookNo || ""}
+                              onValueChange={(v) =>
+                                setFieldValue("chequeBookNo", v)
+                              }
+                            >
+                              <SelectTrigger className="h-9 w-full">
+                                <SelectValue placeholder="निवडा" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {chequeBooks.map((b) => (
+                                  <SelectItem
+                                    key={b.NUM_CHEQUEBOOK_BOOKNO}
+                                    value={String(b.NUM_CHEQUEBOOK_BOOKNO)}
+                                  >
+                                    {b.BOOKNO || b.NUM_CHEQUEBOOK_BOOKNO}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <Input
+                              value=""
+                              readOnly
+                              placeholder="धनादेश क्रमांक टाका..."
+                              className="h-9 w-full bg-gray-100 cursor-not-allowed"
+                            />
+                          )}
+                        </FormField>
 
                         <FormField label="धनादेश क्रमांक">
                           <Input
-                            value={
-                              values.chequeNo
-                            }
-                            onChange={(
-                              e
-                            ) => {
-                              const value =
-                                e.target.value
-                                  .replace(
-                                    /[^0-9]/g,
-                                    ""
-                                  )
-                                  .slice(
-                                    0,
-                                    6
-                                  );
+                            value={values.chequeNo}
+                            onChange={(e) => {
+                              const value = e.target.value
+                                .replace(/[^0-9]/g, "")
+                                .slice(0, 6);
 
-                              setFieldValue(
-                                "chequeNo",
-                                value
-                              );
+                              setFieldValue("chequeNo", value);
 
-                              setChequeBooks(
-                                []
-                              );
+                              setChequeBooks([]);
 
-                              setFieldValue(
-                                "chequeBookNo",
-                                ""
-                              );
+                              setFieldValue("chequeBookNo", "");
 
                               if (
                                 value &&
-                                /^\d{6}$/.test(
-                                  value
-                                ) &&
+                                /^\d{6}$/.test(value) &&
                                 values.deptCode &&
                                 values.ledger &&
                                 values.department
                               ) {
-                                fetchChequeBook(
-                                  {
-                                    chequeNo:
-                                      value,
+                                fetchChequeBook({
+                                  chequeNo: value,
 
-                                    deptCode:
-                                      values.deptCode,
+                                  deptCode: values.deptCode,
 
-                                    ledger:
-                                      values.ledger,
+                                  ledger: values.ledger,
 
-                                    department:
-                                      values.department,
+                                  department: values.department,
 
-                                    setFieldValue,
-                                  }
-                                );
+                                  setFieldValue,
+                                });
                               }
                             }}
                             disabled={
@@ -3218,47 +2507,28 @@ const handleSubmit = async (
                               !values.ledger ||
                               !values.department
                             }
-                            maxLength={
-                              6
-                            }
+                            maxLength={6}
                           />
                         </FormField>
 
                         <FormField label="धनादेश दिनांक">
                           <DatePicker
-                            value={
-                              values.chequeDate
-                            }
-                            onChange={(
-                              d
-                            ) =>
-                              setFieldValue(
-                                "chequeDate",
-                                d
-                              )
-                            }
+                            value={values.chequeDate}
+                            onChange={(d) => setFieldValue("chequeDate", d)}
                           />
                         </FormField>
                       </>
                     )}
 
                     <div className="flex flex-col sm:grid sm:grid-cols-[140px_10px_1fr] gap-2 col-span-full">
-                      <Label className="sm:text-right">
-                        तपशील
-                      </Label>
+                      <Label className="sm:text-right">तपशील</Label>
 
-                      <span className="hidden sm:block mt-2">
-                        :
-                      </span>
+                      <span className="hidden sm:block mt-2">:</span>
 
                       <Textarea
                         name="details"
-                        value={
-                          values.details
-                        }
-                        onChange={
-                          handleChange
-                        }
+                        value={values.details}
+                        onChange={handleChange}
                         className="min-h-[90px]"
                       />
                     </div>
@@ -3271,22 +2541,16 @@ const handleSubmit = async (
               <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 border-t p-4">
                 <Button
                   type="submit"
-                  disabled={
-                    submitLoading
-                  }
+                  disabled={submitLoading}
                   className="bg-blue-900 text-white px-6 w-full sm:w-auto"
                 >
-                  {submitLoading
-                    ? "Saving..."
-                    : "स्वीकार"}
+                  {submitLoading ? "Saving..." : "स्वीकार"}
                 </Button>
 
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={
-                    resetForm
-                  }
+                  onClick={resetForm}
                   className="w-full sm:w-auto"
                 >
                   रद्द
@@ -3295,9 +2559,7 @@ const handleSubmit = async (
                 <Button
                   type="button"
                   className="bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto"
-                  onClick={() =>
-                    navigate("/")
-                  }
+                  onClick={() => navigate("/")}
                 >
                   बाहेर जा
                 </Button>
