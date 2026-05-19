@@ -638,7 +638,7 @@ const FrmBulkReceipt = () => {
 
                                         <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                                             <div className="w-full sm:w-40 shrink-0 flex justify-between items-center">
-                                                <Label text="Chalan Number" />
+                                                <Label text="Chalan Number" className="sm:w-36"/>
                                                 <span>:</span>
                                             </div>
 
