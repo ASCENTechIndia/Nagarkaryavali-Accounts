@@ -3,7 +3,6 @@ const { AppError } = require("../../../libs/errors");
 
 async function getBillRegisterReportService(body) {
   const { fromDate, toDate } = body;
-
   if (!fromDate) {
     throw new AppError("From Date is required", 400);
   }
@@ -12,10 +11,9 @@ async function getBillRegisterReportService(body) {
     throw new AppError("To Date is required", 400);
   }
 
-  const result = await repo.getBillRegisterReport({
-    fromDate,
-    toDate,
-  });
+  const result = await repo.getBillRegisterReport(
+    body
+  );
 
   if (!result.success) {
     throw new AppError(result.error, 500);
@@ -23,8 +21,8 @@ async function getBillRegisterReportService(body) {
 
   return {
     success: true,
-    rows: result.rows,
     rowCount: result.rows.length,
+    rows: result.rows,
   };
 }
 
