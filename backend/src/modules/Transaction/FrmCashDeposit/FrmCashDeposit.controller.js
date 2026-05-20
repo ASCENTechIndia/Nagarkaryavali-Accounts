@@ -74,7 +74,7 @@ exports.saveCashDenomination = asyncHandler(async (req, res) => {
 exports.generateCashDepositPDF = asyncHandler(
   async (req, res) => {
     try {
-      const { refNo, ulbId, hasDenomination = true } = req.body;
+      const { refNo, ulbId, hasDenomination = true, glName, ledgerName, transNo } = req.body;
 
       if (!refNo) {
         return res.status(400).json({
@@ -103,7 +103,7 @@ exports.generateCashDepositPDF = asyncHandler(
 
       const ulbInfo = await getCorporationService({ulbId,});
 
-      const pdf = await FrmCashDepositPDFHelper({rows, ulbInfo,});
+      const pdf = await FrmCashDepositPDFHelper({rows, ulbInfo, glName, ledgerName, transNo});
 
       const baseUrl = `${req.protocol}://${req.get("host")}`;
 
