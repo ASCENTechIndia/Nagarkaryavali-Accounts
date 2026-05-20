@@ -864,7 +864,7 @@ const FrmCashDeposit = () => {
           
           if (denomRes?.data?.data?.errorCode === -100) {
             Swal.fire({
-              text: denomRes?.data?.data?.errorMsg,
+              text: bankRes.data.data.errorMsg,
               icon: "success",
               confirmButtonColor: '#1e3a8a'
             })
@@ -873,7 +873,32 @@ const FrmCashDeposit = () => {
                 if (receiptNo) {
                   await handlePrintPDF(selectedGL, selectedLedger, receiptNo, transNo);
                 }
-                handleResetForm(resetForm);
+                resetForm();
+                setFormValues({
+                  vibhag: "-1",
+                  prabhag: "-1",
+                  colCen: "-1",
+                  fromDate: new Date(),
+                  toDate: new Date(),
+                });
+                setTransactionData([]);
+                setSelectedTransactions(new Set());
+                setTotalAmount(0);
+                setDenominations([]);
+                setTotalDenominationAmount(0);
+                setSelectedRecNos([]);
+                setSelectedAccNos([]);
+                setSelectedChallanNos([]);
+                setDepositDate(new Date());
+                setShowTables(false);
+                setDeptCode("");
+                setLedger("");
+                setLedgerOptions([]);
+                // Clear these arrays as well
+                setGlCodes([]);
+                setVibhagOptions([]);
+                setPrabhagOptions([]);
+                setCollCenOptions([]);
               }
             });
           } else {
@@ -928,9 +953,9 @@ const FrmCashDeposit = () => {
     >
       {({ values, setFieldValue, isSubmitting, handleSubmit, resetForm }) => {
 
-        useEffect(() => {
-          setFormValues(values);
-        }, [values]);
+        // useEffect(() => {
+        //   setFormValues(values);
+        // }, [values]);
         
         return (
           <Form onSubmit={handleSubmit}>
@@ -1050,7 +1075,7 @@ const FrmCashDeposit = () => {
                     >
                       हटवा
                     </Button>
-                    <Button type="button" variant="outline">
+                    <Button type="button" variant="outline" path="/HomePage/FrmHomePage">
                       बाहेर
                     </Button>
                     <Button
