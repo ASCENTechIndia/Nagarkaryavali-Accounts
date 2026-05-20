@@ -81,7 +81,6 @@ const BankDeposit = () => {
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(false);
 
-
   const fetchGL = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/api/Receipt/searchGLALL`, {
@@ -179,18 +178,28 @@ const BankDeposit = () => {
 
       return;
     } finally {
-      Swal.close(); 
+      Swal.close();
     }
   };
 
   const fetchCollectionCenters = async (prabhagId) => {
+  
     try {
-      
       if (!prabhagId || prabhagId === "-1") {
         setCollectionList([]);
         setSelectedCollection("-1");
         return;
       }
+
+      Swal.fire({
+        title: "Loading Collection...",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
 
       const res = await axios.get(
         `${BASE_URL}/api/ChequeDepo/collectioncenter/${prabhagId}`,
@@ -201,174 +210,173 @@ const BankDeposit = () => {
         },
       );
 
-      if (res.data?.ok && res.data?.data?.success) {
-        setCollectionList(res.data?.data?.rows || []);
-        console.log("Collection Centers:", res.data?.data?.rows); 
-      } else {
-        setCollectionList([]);
-      }
+      const rows = res?.data?.data?.rows || [];
+      console.log("Collection Centers API Response:", res.data); // 🔍 DEBUG
 
+      setCollectionList(rows);
       setSelectedCollection("-1");
     } catch (err) {
       console.error("Collection Center API Error:", err);
       setCollectionList([]);
       setSelectedCollection("-1");
+    } finally {
+      Swal.close();
     }
   };
 
-  useEffect(() => {
-    if (ulbId) {
-      fetchGL();
-      fetchDepartments();
-      fetchZone(selectedDept);
-    }
-  }, [ulbId, selectedDept]);
-
-const handleSearch = async (values) => {
-  const formatDate = (date) => {
-    if (!date) return "";
-
-    const d = new Date(date);
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-
-    return `${yyyy}-${mm}-${dd}`;
-  };
-
-  const fromDate = values?.fromDate ? formatDate(values.fromDate) : "";
-  const toDate = values?.toDate ? formatDate(values.toDate) : "";
-
-  if (!fromDate || !toDate) {
-    Swal.fire({
-      icon: "warning",
-      title: "Warning",
-      text: "Please select From Date and To Date",
-    });
-    return;
+useEffect(() => {
+  if (ulbId) {
+    fetchGL();
+    fetchDepartments();
+    fetchZone(selectedDept);
   }
+}, [ulbId, selectedDept]);
 
-  const payload = {
-    ulbId: Number(ulbId),
-    fromDate,
-    toDate,
-    deptId: selectedDept !== "-1" ? Number(selectedDept) : "",
-    zoneId: selectedZone !== "-1" ? Number(selectedZone) : "",
-    collectionId:
-      selectedCollection !== "-1" ? Number(selectedCollection) : "",
-    receiptNos: [],
-    accountNos: [],
-    challanNos: [],
-    rmode: [],
-  };
+  const handleSearch = async (values) => {
+    const formatDate = (date) => {
+      if (!date) return "";
 
-  try {
-    setLoading(true);
+      const d = new Date(date);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
 
-    // ✅ SweetAlert Loader Start
-    Swal.fire({
-      title: "Searching...",
-      text: "Please wait while fetching records.",
-      allowOutsideClick: false,
-      allowEscapeKey: false,
-      showConfirmButton: false,
-      didOpen: () => {
-        Swal.showLoading();
-      },
-    });
+      return `${yyyy}-${mm}-${dd}`;
+    };
 
-    const res = await axios.post(
-      `${BASE_URL}/api/Bankdeposit/summary-bankDeposit`,
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
+    const fromDate = values?.fromDate ? formatDate(values.fromDate) : "";
+    const toDate = values?.toDate ? formatDate(values.toDate) : "";
+
+    if (!fromDate || !toDate) {
+      Swal.fire({
+        icon: "warning",
+        title: "Warning",
+        text: "Please select From Date and To Date",
+      });
+      return;
+    }
+
+    const payload = {
+      ulbId: Number(ulbId),
+      fromDate,
+      toDate,
+      deptId: selectedDept !== "-1" ? Number(selectedDept) : "",
+      zoneId: selectedZone !== "-1" ? Number(selectedZone) : "",
+      collectionId:
+        selectedCollection !== "-1" ? Number(selectedCollection) : "",
+      receiptNos: [],
+      accountNos: [],
+      challanNos: [],
+      rmode: [],
+    };
+
+    try {
+      setLoading(true);
+
+      // ✅ SweetAlert Loader Start
+      Swal.fire({
+        title: "Searching...",
+        text: "Please wait while fetching records.",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading();
         },
+      });
+
+      const res = await axios.post(
+        `${BASE_URL}/api/Bankdeposit/summary-bankDeposit`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      // ✅ Close Loader
+      Swal.close();
+
+      // API failed
+      if (!res.data?.ok || !res.data?.data?.success) {
+        const message =
+          res.data?.data?.message ||
+          res.data?.message ||
+          "No records available for the selected criteria.";
+
+        setTableData([]);
+        setShowTable(false);
+
+        Swal.fire({
+          icon: "warning",
+          title: "No Data Found",
+          text: message,
+        });
+        return;
       }
-    );
 
-    // ✅ Close Loader
-    Swal.close();
+      const list = res.data?.data?.list || [];
 
-    // API failed
-    if (!res.data?.ok || !res.data?.data?.success) {
-      const message =
-        res.data?.data?.message ||
-        res.data?.message ||
-        "No records available for the selected criteria.";
+      // No data
+      if (list.length === 0) {
+        setTableData([]);
+        setShowTable(false);
+
+        Swal.fire({
+          icon: "warning",
+          title: "No Data Found",
+          text: "No records available for the selected criteria.",
+        });
+        return;
+      }
+
+      // Map data
+      const mapped = list.map((item, index) => ({
+        id: index + 1,
+        checked: false,
+        department: item.DEPARTMENT || "",
+        departmentId: item.DEPTID || "",
+        accountCode: item.ACCNO || "",
+        accountHead: item.ACCOUNTNAME || "",
+        amount: Math.abs(Number(item.AMOUNT || 0)),
+        glcodeg: item.GLCODEG || "",
+        accnog: item.ACCNOG || "",
+      }));
+
+      setTableData(mapped);
+      setShowTable(true);
+
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: `${mapped.length} record(s) found.`,
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      console.error("Search API Error:", err);
+
+      Swal.close();
 
       setTableData([]);
       setShowTable(false);
 
+      const message =
+        err?.response?.data?.data?.message ||
+        err?.response?.data?.message ||
+        "Failed to fetch data";
+
       Swal.fire({
-        icon: "warning",
-        title: "No Data Found",
+        icon: "error",
+        title: "Error",
         text: message,
       });
-      return;
+    } finally {
+      setLoading(false);
+      Swal.close(); // ✅ Ensure loader closes in all cases
     }
-
-    const list = res.data?.data?.list || [];
-
-    // No data
-    if (list.length === 0) {
-      setTableData([]);
-      setShowTable(false);
-
-      Swal.fire({
-        icon: "warning",
-        title: "No Data Found",
-        text: "No records available for the selected criteria.",
-      });
-      return;
-    }
-
-    // Map data
-    const mapped = list.map((item, index) => ({
-      id: index + 1,
-      checked: false,
-      department: item.DEPARTMENT || "",
-      departmentId: item.DEPTID || "",
-      accountCode: item.ACCNO || "",
-      accountHead: item.ACCOUNTNAME || "",
-      amount: Math.abs(Number(item.AMOUNT || 0)),
-      glcodeg: item.GLCODEG || "",
-      accnog: item.ACCNOG || "",
-    }));
-
-    setTableData(mapped);
-    setShowTable(true);
-
-    Swal.fire({
-      icon: "success",
-      title: "Success",
-      text: `${mapped.length} record(s) found.`,
-      timer: 1500,
-      showConfirmButton: false,
-    });
-  } catch (err) {
-    console.error("Search API Error:", err);
-
-    Swal.close();
-
-    setTableData([]);
-    setShowTable(false);
-
-    const message =
-      err?.response?.data?.data?.message ||
-      err?.response?.data?.message ||
-      "Failed to fetch data";
-
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: message,
-    });
-  } finally {
-    setLoading(false);
-    Swal.close(); // ✅ Ensure loader closes in all cases
-  }
-};
+  };
 
   const handleAddPavati = () => {
     const selected = pavatiData.filter((r) => r.checked);
@@ -766,36 +774,37 @@ const handleSearch = async (values) => {
                         <span>:</span>
                       </div>
                       <div className="flex-1 min-w-[200px]">
-                        <Select
-                          value={selectedDept}
-                          onValueChange={(val) => {
-                            setSelectedDept(val);
-                            setSelectedZone("-1");
-                            setCollectionList([]);
-                            setSelectedCollection("-1");
-                          }}
-                        >
-                          <SelectTrigger className="w-full h-9">
-                            <SelectValue placeholder="-- निवडा --" />
-                          </SelectTrigger>
+                       <Select
+  value={selectedDept}
+  onValueChange={(val) => {
+    setSelectedDept(val);
+    setSelectedZone("-1");
+    setZoneList([]);
+    setCollectionList([]);
+    setSelectedCollection("-1");
+  }}
+>
+  <SelectTrigger className="w-full h-9">
+    <SelectValue placeholder="-- निवडा --" />
+  </SelectTrigger>
 
-                          <SelectContent>
-                            <SelectItem value="-1">All</SelectItem>
+  <SelectContent>
+    <SelectItem value="-1">All</SelectItem>
 
-                            {(deptList || []).map((dept) => {
-                              if (!dept?.DEPTID) return null;
+    {(deptList || []).map((dept) => {
+      if (!dept?.DEPTID) return null;
 
-                              return (
-                                <SelectItem
-                                  key={dept.DEPTID}
-                                  value={dept.DEPTID.toString()}
-                                >
-                                  {dept.DEPTNAME}
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
+      return (
+        <SelectItem
+          key={dept.DEPTID}
+          value={dept.DEPTID.toString()}
+        >
+          {dept.DEPTNAME}
+        </SelectItem>
+      );
+    })}
+  </SelectContent>
+</Select>
                       </div>
                     </div>
 
@@ -814,35 +823,43 @@ const handleSearch = async (values) => {
                     </div>
 
                     {/* Collection */}
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                      <div className="flex items-center gap-1 sm:w-[150px] shrink-0">
-                        <Label className="whitespace-nowrap">Collection</Label>
-                        <span>:</span>
-                      </div>
-                      <div className="flex-1 min-w-[200px]">
-                        <Select
-                          value={selectedCollection}
-                          onValueChange={(val) => setSelectedCollection(val)}
-                        >
-                          <SelectTrigger className="w-full h-9">
-                            <SelectValue placeholder="-- निवडा --" />
-                          </SelectTrigger>
+                    {selectedDept === "7" && (
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                        <div className="flex items-center gap-1 sm:w-[150px] shrink-0">
+                          <Label className="whitespace-nowrap">
+                            Collection
+                          </Label>
+                          <span>:</span>
+                        </div>
 
-                          <SelectContent>
-                            <SelectItem value="-1">All</SelectItem>
+                        <div className="flex-1 min-w-[200px]">
+                          <Select
+                            value={selectedCollection}
+                            onValueChange={(val) => setSelectedCollection(val)}
+                          >
+                            <SelectTrigger
+                              className="w-full h-9"
+                              
+                            >
+                              <SelectValue placeholder="-- निवडा --" />
+                            </SelectTrigger>
 
-                            {collectionList.map((item) => (
-                              <SelectItem
-                                key={item.VAR_COLLCEN_COLLCENID}
-                                value={item.VAR_COLLCEN_COLLCENID.toString()}
-                              >
-                                {item.VAR_COLLCEN_COLLCENNAME}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                            <SelectContent>
+                              <SelectItem value="-1">All</SelectItem>
+
+                              {collectionList.map((item) => (
+                                <SelectItem
+                                  key={item.VAR_COLLCEN_COLLCENID}
+                                  value={item.VAR_COLLCEN_COLLCENID.toString()}
+                                >
+                                  {item.VAR_COLLCEN_COLLCENNAME}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
 
                   {/* RIGHT COLUMN */}
@@ -1172,7 +1189,9 @@ const handleSearch = async (values) => {
                     >
                       {loading ? "Saving..." : "Save"}
                     </Button>
-                    <Button type="button" variant="outline">Close</Button>
+                    <Button type="button" variant="outline">
+                      Close
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

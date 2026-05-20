@@ -132,6 +132,7 @@ app.use("/api/FrmVouchergenerationReprint", require("./modules/Reports/FrmVouche
 app.use("/api/FrmContraRecReprint", require("./modules/Reports/frmContraRecReprint/frmContraRecReprint.route"));
 app.use("/api/FrmCashDepositReprint", require("./modules/Reports/FrmCashDepositReprint/FrmCashDepositReprint.route"));
 app.use("/api/ReceiptPaymentRegister", require("./modules/Reports/FrmReceiptPaymentRegisterRpt/FrmReceiptPaymentRegisterRpt.routes"));
+app.use("/api/RptGLAccStatement", require("./modules/Reports/RptGLAccStatement/RptGLAccStatement.routes"));
 app.use(errorMiddleware);
 
 module.exports = app;

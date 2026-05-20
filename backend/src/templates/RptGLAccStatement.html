@@ -1,0 +1,275 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      @page {
+        size: A4;
+        margin: 20mm 12mm 15mm 12mm;
+      }
+
+      body {
+        font-family: "Noto Sans Devanagari", Arial, sans-serif;
+        font-size: 12px;
+        margin: 0;
+        color: #000;
+      }
+
+      /* ================= HEADER ================= */
+      .report-header {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      .report-header table {
+        width: 100%;
+        border-collapse: collapse;
+        border: none;
+      }
+
+      .report-header td {
+        border: none;
+        vertical-align: middle;
+      }
+
+      .logo-cell {
+        width: 120px;
+        text-align: center;
+      }
+
+      .logo {
+        width: 95px;
+        height: auto;
+      }
+
+      .title-cell {
+        text-align: center;
+      }
+
+      .marathi-title {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 4px;
+      }
+
+      .english-title {
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 4px;
+      }
+
+      .date-range {
+        font-size: 14px;
+        font-weight: bold;
+      }
+
+      /* ================= MAIN TABLE ================= */
+      .statement-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 8px;
+      }
+
+      .statement-table thead th {
+        border-top: 2px solid #000;
+        border-bottom: 2px solid #000;
+        padding: 6px 4px;
+        font-weight: bold;
+        text-align: center;
+        font-size: 12px;
+      }
+
+      .statement-table tbody td {
+        border: none;
+        padding: 4px 6px;
+        vertical-align: top;
+        font-size: 12px;
+      }
+
+      .center {
+        text-align: center;
+      }
+
+      .right {
+        text-align: right;
+      }
+
+      .narration {
+        text-align: left;
+        line-height: 1.4;
+        word-break: break-word;
+      }
+
+      /* ================= TOTAL ================= */
+      .total-row td {
+        border-top: 2px solid #000 !important;
+        border-bottom: 2px solid #000 !important;
+        font-weight: bold;
+        padding-top: 6px !important;
+        padding-bottom: 6px !important;
+      }
+
+      /* ================= COLUMN WIDTHS ================= */
+
+      /* SUMMARY */
+      .summary .col-date {
+        width: 25%;
+      }
+
+      .summary .col-credit {
+        width: 20%;
+      }
+
+      .summary .col-debit {
+        width: 20%;
+      }
+
+      .summary .col-balance {
+        width: 25%;
+      }
+
+      /* DETAILS */
+      .details .col-doc {
+        width: 7%;
+      }
+
+      .details .col-date {
+        width: 10%;
+      }
+
+      .details .col-trans {
+        width: 8%;
+      }
+
+      .details .col-narration {
+        width: 28%;
+      }
+
+      .details .col-chqno {
+        width: 8%;
+      }
+
+      .details .col-chqdate {
+        width: 10%;
+      }
+
+      .details .col-credit {
+        width: 10%;
+      }
+
+      .details .col-debit {
+        width: 9%;
+      }
+
+      .details .col-balance {
+        width: 10%;
+      }
+
+      /* Page breaks for large detail reports */
+      tr {
+        page-break-inside: avoid;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ================= HEADER ================= -->
+   <div class="report-header">
+  <table>
+    <tr>
+      <td class="logo-cell">
+        <img src="{{logoUrl}}" class="logo" />
+      </td>
+
+      <td class="title-cell">
+        <div class="marathi-title">{{corporationName}}</div>
+
+        <div class="english-title">
+          {{reportTitle}}
+        </div>
+
+        {{#if dateRangeText}}
+        <div class="date-range">
+          {{dateRangeText}}
+        </div>
+        {{/if}}
+      </td>
+    </tr>
+  </table>
+</div>
+    <!-- ================= SUMMARY REPORT ================= -->
+    {{#unless showDetails}}
+    <table class="statement-table summary">
+      <thead>
+        <tr>
+          <th class="col-date">तारीख</th>
+          <th class="col-credit">क्रेडीट</th>
+          <th class="col-debit">डेबीट</th>
+          <th class="col-balance">शिल्लक</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {{#each rows}}
+        <tr>
+          <td class="center">{{trnsdate}}</td>
+          <td class="right">{{credit}}</td>
+          <td class="right">{{debit}}</td>
+          <td class="right">{{balance}}</td>
+        </tr>
+        {{/each}}
+
+        <tr class="total-row">
+          <td class="center">एकूण :-</td>
+          <td class="right">{{totalCredit}}</td>
+          <td class="right">{{totalDebit}}</td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+    {{/unless}}
+
+    <!-- ================= DETAILS REPORT ================= -->
+    {{#if showDetails}}
+    <table class="statement-table details">
+      <thead>
+        <tr>
+          <th class="col-doc">चलन/पावती क्र.</th>
+          <th class="col-date">तारीख</th>
+          <th class="col-trans">व्यवहार क्र</th>
+          <th class="col-narration">तपशील</th>
+          <th class="col-chqno">धनादेश क्र</th>
+          <th class="col-chqdate">धनादेश दिनांक</th>
+          <th class="col-credit">क्रेडीट</th>
+          <th class="col-debit">डेबीट</th>
+          <th class="col-balance">शिल्लक</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {{#each rows}}
+        <tr>
+          <td class="center">{{docno}}</td>
+          <td class="center">{{trnsdate}}</td>
+          <td class="center">{{transno}}</td>
+          <td class="narration">{{narration}}</td>
+          <td class="center">{{chqno}}</td>
+          <td class="center">{{chqdate}}</td>
+          <td class="right">{{credit}}</td>
+          <td class="right">{{debit}}</td>
+          <td class="right">{{balance}}</td>
+        </tr>
+        {{/each}}
+
+        <tr class="total-row">
+          <td colspan="6" class="right">एकूण :-</td>
+          <td class="right">{{totalCredit}}</td>
+          <td class="right">{{totalDebit}}</td>
+
+          <td class="right">{{totalBalance}}</td>
+        </tr>
+      </tbody>
+    </table>
+    {{/if}}
+  </body>
+</html>
