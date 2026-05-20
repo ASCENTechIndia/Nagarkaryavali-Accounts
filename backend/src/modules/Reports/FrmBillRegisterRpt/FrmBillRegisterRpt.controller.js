@@ -19,7 +19,7 @@ exports.getBillRegisterPDF = asyncHandler(async (req, res) => {
 
   console.log("filters", filters);
 
-  const {ulbId} = filters;
+  const {ulbid} = filters;
 
 
   const result = await service.getBillRegisterReportService(filters);
@@ -31,7 +31,7 @@ exports.getBillRegisterPDF = asyncHandler(async (req, res) => {
     });
   }
 
-  const corpInfo = await getCorporationService({ ulbId: ulbId });
+  const corpInfo = await getCorporationService({ ulbId: ulbid });
 
   const corporationName = corpInfo.ABC_MUNICIPAL_TEXT || "";
   const corporationLogo = corpInfo.ULBLOGO || "";
