@@ -306,6 +306,15 @@ const FrmSDRefund = () => {
 
             const rows = res.data?.data?.data || [];
 
+            if (!rows || rows.length === 0) {
+                setTableData([]);
+                Swal.fire({
+                    text: "No Record Found",
+                    confirmButtonColor: "#1e3a8a",
+                });
+                return;
+            }
+
             const formatted = rows.map((item) => ({
                 select: (
                     <Button
