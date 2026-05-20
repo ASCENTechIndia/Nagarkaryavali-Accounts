@@ -8,7 +8,7 @@ async function getBankDepositSummary(filters) {
         TRUNC(Recdate) BETWEEN TO_DATE(:fromDate, 'DD-MON-YYYY')
         AND TO_DATE(:toDate, 'DD-MON-YYYY')
         AND ULB = :ulbId
-        AND RMODE IN ('189', '253', '191', '2', '4')
+        AND RMODE IN ('189', '253', '191', '2', '4', '207')
         
     `;
     //AND RMODE IN ('189', '253', '191') removed from above query
@@ -54,7 +54,7 @@ async function getBankDepositDetails(filters) {
         TRUNC(Recdate) BETWEEN TO_DATE(:fromDate, 'DD-MON-YYYY')
         AND TO_DATE(:toDate, 'DD-MON-YYYY')
         AND ULB = :ulbId
-        AND RMODE IN ('189', '253', '191', '2', '4')
+        AND RMODE IN ('189', '253', '191', '2', '4', '207')
         
     `;
     //AND RMODE IN ('189', '253', '191', '2', '4') removed form above query

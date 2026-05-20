@@ -1,7 +1,19 @@
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import axios from "axios";
+import Swal from "sweetalert2";
+import { Formik, Form } from "formik";
+import { motion } from "framer-motion";
+import { useAuth } from "@/context/AuthContext";
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/calendar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import {
     Select,
     SelectContent,
@@ -9,457 +21,1018 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import AsyncSearchableSelect from "@/components/AsyncSearchableSelect";
 import ShadCNTable from "@/components/ui/table";
-import { useAuth } from "@/context/AuthContext";
-import axios from "axios";
-import { Form, Formik } from "formik";
-import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import Swal from "sweetalert2";
-import * as XLSX from "xlsx";
-import { FrmAccIntDataRptValidationSchema } from "../validations/global.validation";
 
-const container = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { staggerChildren: 0.08 } },
-};
-
-const FrmOnlineDeposit = () => {
-  const { user } = useAuth();
-  const token = user?.token;
-  const ulbId = user?.ulbId;
-  const navigate = useNavigate();
-
-  const [accIntData, setAccIntData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [vibhagOptions, setVibhagOptions] = useState([]);
-  const [collectionOptions, setCollectionOptions] = useState([]);
-  const [prabhagOptions, setPrabhagOptions] = useState([]);
-  const [hasSearched, setHasSearched] = useState(false);
-
-  const BASE_URL = import.meta.env.VITE_BASE_URL;
-
-  const initialFormValues = {
-    vibhag: "-1",
-    prabhag: "-1",
+const initialValues = {
+    department: "-1",
+    zone: "-1",
     collection: "-1",
     fromDate: new Date(),
     toDate: new Date(),
-  };
+    glcode: "",
+    accno: "",
+    depositDate: new Date(),
+};
 
-  const fetchVibhag = async () => {
-    try {
-      if (!ulbId) return;
+const FrmOnlineDeposit = () => {
+    const { user } = useAuth();
+    const token = user?.token;
+    const ulbId = user?.ulbId;
+    const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+    const [departmentList, setDepartmentList] = useState([]);
+    const [zoneList, setZoneList] = useState([]);
+    const [glOptions, setGlOptions] = useState([]);
+    const [accountOptions, setAccountOptions] = useState([]);
+    const [collectionList, setCollectionList] = useState([]);
+    const [loadingGL, setLoadingGL] = useState(false);
+    const [loadingAccount, setLoadingAccount] = useState(false);
+    const [summaryData, setSummaryData] = useState([]);
+    const [detailData, setDetailData] = useState([]);
+    const [detailDataCache, setDetailDataCache] = useState({});
+
+    const authHeaders = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    };
+
+    useEffect(() => {
+        if (token && ulbId) {
+            fetchDepartments();
+        }
+    }, [token, ulbId]);
+
+    useEffect(() => {
+      fetchZones(initialValues.department);
+    }, [token, ulbId]);
+
+    useEffect(() => {
+      fetchCollectionCenters(initialValues.zone);
+    }, [initialValues.department, initialValues.zone]);
+
+
+    const formatDate = (date) => {
+        if (!date) return "";
+
+        const d = new Date(date);
+        if (Number.isNaN(d.getTime())) {
+            return "";
+        }
+        const day = String(d.getDate()).padStart(2, "0");
+        const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC",];
+        const month = months[d.getMonth()];
+        const year = d.getFullYear();
+
+        return `${day}-${month}-${year}`;
+    };
+
+    const fetchDepartments = async () => {
+        try {
+          const res = await axios.post(
+            `${BASE_URL}/api/Receipt/departments`,
+            { ulbid: Number(ulbId) },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+
+          if (res?.data?.ok) {
+            const formatted = res.data.data.map((l) => ({
+              label: l.DEPTNAME,
+              value: String(l.DEPTID),
+            }));
+            const allFormatted = [{ value: "-1", label: "-- ALL --" }, ...formatted];
+            setDepartmentList(allFormatted);
+          }
+        } catch (error) {
+            console.error("Department fetch error:", error);
+            setDepartmentList([]);
+        } finally {
+            Swal.close();
+        }
+    };
+
+    const fetchZones = async (departmentId) => {
+        try {
+           if (!ulbId || !departmentId || departmentId === "-1") {
+            setZoneList([{ value: "-1", label: "-- ALL --" }]);
+            return;
+          }
       
-      const res = await axios.post(
-        `${BASE_URL}/api/Receipt/departments`,
-        {ulbid: Number(ulbId)},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
-      if (res?.data?.ok) {
-        const formatted = res.data.data.map((l) => ({
-          label: l.DEPTNAME,
-          value: String(l.DEPTID),
-        }));
+          const res = await axios.post(
+            `${BASE_URL}/api/FrmCashDeposit/zones-by-department`,
+            { deptId: String(departmentId), ulbId: Number(ulbId) },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
 
-        const allFormated = [
-            { value: "-1", label: "-- ALL --" },
-            ...formatted
-        ]
+          if (res?.data?.ok && res?.data?.data?.success) {
+            const formatted = res.data.data.list.map((l) => ({
+              label: l.NAME,
+              value: String(l.ID),
+            }));
+            const allFormatted = [{ value: "-1", label: "-- ALL --" }, ...formatted];
+            setZoneList(allFormatted);
+          }
+        } catch (err) {
+            console.error(
+                "Error fetching zones by department:",
+                err
+            );
+            setZoneList([]);
+        } finally {
+            Swal.close();
+        }
+    };
 
-        setVibhagOptions(allFormated);
-      }
-    } catch (err) {
-      console.error("Error fetching collection:", err);
-    }
-  };
+    const fetchCollectionCenters = async (prabhagId) => {
+        try {
+            if (!prabhagId || prabhagId === "-1") {
+              setCollectionList([{ value: "-1", label: "-- ALL --" }]);
+              return;
+            }
+            
+            const res = await axios.post(
+              `${BASE_URL}/api/RptChequeDishonour/collection-centers`,
+              { zoneId: prabhagId },
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            
+            if (res?.data?.ok && res?.data?.data?.success) {
+              const formatted = res.data.data.list.map((l) => ({
+                label: l.NAME,
+                value: String(l.ID),
+              }));
+              const allFormatted = [{ value: "-1", label: "-- ALL --" }, ...formatted];
+              setCollectionList(allFormatted);
+            }
+        } catch (error) {
+            console.error(
+                "Error fetching collection centers:",
+                error
+            );
+            setCollectionList([]);
+        } finally {
+            Swal.close();
+        }
+    };
 
-  const fetchDepartment = async () => {
-    try {
-      if (!ulbId) return;
-      
-      const res = await axios.post(
-        `${BASE_URL}/api/Receipt/departments`,
-        { ulbid: Number(ulbId)},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
-      if (res?.data?.ok) {
-        const formatted = res.data.data.map((l) => ({
-          label: l.DEPTNAME,
-          value: String(l.DEPTID),
-        }));
+    const searchGL = async (prefix, signal) => {
+        try {
+            setLoadingGL(true);
+            // Clear old results immediately
+            setGlOptions([]);
+            // If input is empty, do not call API
+            if (!prefix?.trim()) {
+                return;
+            }
+            const res = await axios.post(
+                `${BASE_URL}/api/FrmAccount/searchGL`,
+                { prefix: prefix.trim(), },
+                { ...authHeaders, signal, }
+            );
+            const data = res?.data?.data?.data || [];
+            setGlOptions(
+                data.map((item) => ({
+                    label: item.GLSEARCHNAME,
+                    value: item.GLFUNCTION?.toString(),
+                }))
+            );
+        } catch (error) {
+            // Ignore cancelled requests
+            if (
+                error.name === "AbortError" || error.code === "ERR_CANCELED"
+            ) {
+                return;
+            }
+            console.error("GL search error:", error);
+            // Clear options on error
+            setGlOptions([]);
+        } finally {
+            // Stop loading
+            setLoadingGL(false);
+        }
+    };
 
-        const allFormarted = [
-            { value: "-1", label: "-- ALL --" },
-            ...formatted
-        ]
+    const searchAccount = async (searchText, signal) => {
+        try {
+            // Clear previous results immediately
+            setAccountOptions([]);
+            // Validation
+            if (!searchText?.trim() || !ulbId) {
+                return;
+            }
+            setLoadingAccount(true);
+            const res = await axios.post(
+                `${BASE_URL}/api/FrmBulkReceipt/bulk-receipt-account-search`,
+                { ulbid: Number(ulbId), accno: searchText.trim(), },
+                { ...authHeaders, signal, }
+            );
 
-        console.log("All Formated Department :", allFormarted);
+            const data = res?.data?.data?.data || [];
+            setAccountOptions(
+                data.map((item) => ({
+                    label: `${item.ACCNO} - ${item.ACCOUNTNAME}`,
+                    value: String(item.ACCNO),
+                }))
+            );
+        } catch (error) {
+            // Ignore cancelled requests
+            if (
+                error.name === "AbortError" || error.code === "ERR_CANCELED"
+            ) {
+                return;
+            }
 
-        setCollectionOptions(allFormarted);
-      }
-    } catch (err) {
-      console.error("Error fetching collection:", err);
-    }
-  };
+            console.error("Account search error:", error);
+            setAccountOptions([]);
+        } finally {
+            setLoadingAccount(false);
+        }
+    };
 
-  const formatDateForAPI = (date) => {
-    if (!date) return null;
-    const d = new Date(date);
-    const day = String(d.getDate()).padStart(2, "0");
-    const month = d.toLocaleString('en', { month: 'short' }).toUpperCase();
-    const year = d.getFullYear();
-    return `${day}-${month}-${year}`;
-  };
-
-  const handleFormSubmit = async (values, { setSubmitting }) => {
-    try {
-        setLoading(true);
-        setHasSearched(true);
-
-        const validationResult = FrmAccIntDataRptValidationSchema.safeParse(values);
-        if (!validationResult.success) {
-            const firstError = validationResult.error.issues[0];
-            console.log("Validation error:", firstError);
-            await Swal.fire({
-                text: firstError.message,
-                confirmButtonColor: '#1e3a8a'
+    const handleSearch = async (values) => {
+        try {
+            Swal.fire({
+                title: "Loading ...",
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
             });
-            setSubmitting(false);
-            setLoading(false);
+            const payload = {
+                fromDate: formatDate(values.fromDate),
+                toDate: formatDate(values.toDate),
+                ulbId: String(ulbId),
+                zoneId: values.zone == "-1" ? null : values.zone,
+                deptId: values.department == "-1" ? null : values.department,
+                collId: values.collection == "-1" ?  null : values.collection,
+            };
+            setDetailDataCache({});
+            console.log("Cheque Deposit Summary Payload:", payload);
+
+            const res = await axios.post(
+                `${BASE_URL}/api/ChequeDepo/chequedepositsummary`,
+                payload,
+                {
+                    headers: { Authorization: `Bearer ${token}`, },
+                }
+            );
+            const rows = res?.data?.data?.rows || [];
+
+            if (rows.length === 0) {
+                Swal.close(); // close loader first
+
+                setSummaryData([]);
+                setDetailData([]);
+
+                await Swal.fire({
+                    // icon: "info",
+                    title: "No Data Found",
+                    confirmButtonText: "OK",
+                    allowOutsideClick: false,
+                });
+
+                return;
+            }
+
+            setSummaryData(
+                rows.map((row) => ({
+                    checked: false,
+                    department: row.DEPARTMENT,
+                    bankName: row.BANKNAME,
+                    amount: Number(row.BAMOUNT || 0),
+                }))
+            );
+            setDetailData([]);
+        } catch (error) {
+            console.error(
+                "Error fetching cheque deposit summary:",
+                error
+            );
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text:
+                    error?.response?.data?.message ||
+                    "Failed to fetch cheque deposit summary.",
+            });
+            setSummaryData([]);
+            setDetailData([]);
+        } finally {
+            Swal.close();
+        }
+    };
+
+    const loadDetailTable = async (
+        values,
+        selectedSummaryRows
+    ) => {
+        try {
+            Swal.fire({
+                title: "Loading...",
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+            });
+            const selectedBankNames = selectedSummaryRows.map((row) => row.bankName).filter(Boolean).sort();
+
+            const cacheKey = JSON.stringify({
+                fromDate: formatDate(values.fromDate),
+                toDate: formatDate(values.toDate),
+                ulbId: String(ulbId),
+                bankNames: selectedBankNames,
+                zoneId: values.zone == "-1" ? null : values.zone,
+                deptId: values.department == "-1" ? null : values.department,
+                collId: values.collection == "-1" ?  null : values.collection,
+            });
+
+            if (detailDataCache[cacheKey]) {
+                setDetailData(
+                    detailDataCache[cacheKey].map((row) => ({
+                        ...row,
+                        checked: false,
+                    }))
+                );
+                return;
+            }
+
+            const payload = JSON.parse(cacheKey);
+
+            console.log("Cheque Deposit Detail Payload:", payload);
+
+            const res = await axios.post(
+                `${BASE_URL}/api/ChequeDepo/chequedepositdetails`,
+                payload,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            const rows = res?.data?.data?.rows || [];
+
+            if (rows.length === 0) {
+                Swal.close(); // close loader first
+
+                setDetailData([]);
+
+                await Swal.fire({
+                    // icon: "info",
+                    title: "No Data Found",
+
+                    confirmButtonText: "OK",
+                    allowOutsideClick: false,
+                });
+
+                return;
+            }
+
+
+            const mappedData = rows.map((row) => ({
+                checked: false,
+                receiptNumber: row.RECNO || "",
+                refNo: row.CHALLANO || "",
+                receiptDate: row.RECDATE ? new Date(row.RECDATE).toLocaleDateString("en-GB") : "",
+                mode: row.RMODE_DESC || "",
+                department: row.DEPARTMENT || "",
+                chequeNo: row.CHEQUENO ? String(row.CHEQUENO) : "",
+                chequeDate: row.CHEQDT ? new Date(row.CHEQDT).toLocaleDateString("en-GB") : "",
+                bankName: row.BANKNAME || "",
+                amount: Number(row.AMOUNT || 0),
+                deptId: row.DEPTID,
+                zoneId: row.ZONEID,
+                propNo: row.PROPNO,
+            }));
+
+            setDetailDataCache((prev) => ({ ...prev, [cacheKey]: mappedData, }));
+
+            setDetailData(mappedData);
+        } catch (error) {
+            console.error(
+                "Error fetching cheque deposit details:",
+                error
+            );
+
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text:
+                    error?.response?.data?.message ||
+                    "Failed to fetch detail data.",
+            });
+
+            setDetailData([]);
+        } finally {
+            Swal.close();
+        }
+    };
+
+    const handleSummarySelectAll = async (
+        checked,
+        values
+    ) => {
+        const updated = summaryData.map((row) => ({ ...row, checked: !!checked, }));
+
+        setSummaryData(updated);
+
+        if (!checked) { setDetailData([]); return; }
+
+        // Load second table for all selected rows
+        await loadDetailTable(values, updated);
+    };
+
+    const handleSummaryRowCheck = async (
+        row,
+        checked,
+        values
+    ) => {
+        const updated = summaryData.map((item) =>
+            item === row ? { ...item, checked: !!checked } : item);
+
+        setSummaryData(updated);
+
+        const selectedRows = updated.filter(
+            (item) => item.checked
+        );
+
+        if (selectedRows.length === 0) {
+            setDetailData([]);
             return;
         }
 
-        const payload = {
-            ulbid: Number(values.vibhag),
-            prabhag: values.prabhag,
-            deptId: values.collection,
-            fromDate: formatDateForAPI(values.fromDate),
-            toDate: formatDateForAPI(values.toDate),
-        };
+        await loadDetailTable(values, selectedRows);
+    };
 
-        const res = await axios.post(
-            `${BASE_URL}/api/FrmAccIntDataRpt/collection-transactions`,
-            payload,
-            { headers: { Authorization: `Bearer ${token}` } }
+    const handleDetailSelectAll = (checked) => {
+        setDetailData((prev) =>
+            prev.map((row) => ({
+                ...row,
+                checked: !!checked,
+            }))
         );
+    };
 
-        if (res?.data?.ok && res?.data?.data?.success) {
-            const fetchedData = res.data.data.rows.map((item) => ({
-                deptName: item.DEPT_NAME,
-                drDate: item.TRANSDATE,
-                payMode: item.RECMODE,
-                description: item.DESCRIPTION,
-                receiptNo: item.RECEIPTNO,
-                challanNo: item.CHALANNO,
-                discount: item.DISCOUNT,
-                advance: item.ADVANCE,
-                collection: item.COLLECTION,
-                prabhag: item.STATUSFLAG,
-            }));
+    const handleDetailRowCheck = (row, checked) => {
+        setDetailData((prev) =>
+            prev.map((item) =>
+                item === row ? { ...item, checked } : item
+            )
+        );
+    };
 
-            setAccIntData(fetchedData);
-        } else {
-            setAccIntData([]);
+    const handleSave = async (values, resetForm) => {
+        try {
+            if (!values.glcode) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Validation",
+                    text: "विभाग संकेतांक रिक्त असू शकत नाही",
+                });
+                return;
+            }
+            if (!values.accno) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Validation",
+                    text: "लेखाशीर्ष रिक्त असू शकत नाही",
+                });
+                return;
+            }
+            if (!values.depositDate) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Validation",
+                    text: "ठेव तारीख रिक्त असू शकत नाही",
+                });
+                return;
+            }
+            const selectedRows = detailData.filter((row) => row.checked);
+
+            if (selectedRows.length === 0) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Validation",
+                    text: "Please select at least one record.",
+                });
+                return;
+            }
+
+            const paramStrParts = [
+                formatDate(values.depositDate), // 1 Transaction Date
+                "111", // 2 Voucher No
+                "2", // 3 Transaction Type
+                values.zone == "-1" ? "0" : values.zone, // 4 Zone Id
+                "0", // 5 Gram Panchayat Id
+                values.glcode || "0", // 6 Debit GL
+                values.accno || "0", // 7 Debit Account
+                "5", // 8 InMode
+                "0", // 9 Reserved
+                values.department == "-1" ? "0" : values.department, // 10 Department Id
+                "", // 11 Sub Department Id
+                "0", // 12 Budget Id
+                values.collection == "-1" ? "0" : values.department, // 13 Collection Center Id
+            ];
+
+            while (
+                paramStrParts.length &&
+                (paramStrParts[paramStrParts.length - 1] === "" ||
+                    paramStrParts[paramStrParts.length - 1] === null ||
+                    paramStrParts[paramStrParts.length - 1] === undefined)
+            ) {
+                paramStrParts.pop();
+            }
+
+            const paramStr = paramStrParts.join("~");
+            
+            const paramStr2 = selectedRows
+                .map((row) => {
+                    let modeCode = "4";
+                    const modeText = (row.mode || "").toLowerCase();
+
+                    if (modeText === "cheque") { modeCode = "189"; }
+                    else if (
+                        modeText === "pay order" || modeText === "dd / po"
+                    ) {
+                        modeCode = "191";
+                    }
+                    return [
+                        row.receiptNumber || "",
+                        row.receiptDate ? formatDate(new Date(row.receiptDate)) : "",
+                        modeCode,
+                        values.department == "-1" ? "0" : values.department,
+                        Number(row.amount || 0),
+                        values.zone == "-1" ? "0" : values.zone,
+                        row.mode,
+                        row.chequeNo || "",
+                        row.chequeDate ? formatDate(new Date(row.chequeDate)) : "",
+                        row.bankName || "",
+                        values.glcode || "0",
+                        values.accno || "0",
+                        values.glcode || "0",
+                        values.accno || "0",
+                    ].join("#");
+                })
+                .join("$");
+            const payload = {
+                userId: user?.userId,
+                ulbId: String(ulbId),
+                paramStr,
+                paramStr2,
+                fromDate: formatDate(values.fromDate),
+                toDate: formatDate(values.toDate),
+            };
+
+            console.log("Save Payload =>", payload);
+
             Swal.fire({
-                text: "माहिती उपलब्ध नाही",
-                confirmButtonColor: '#1e3a8a',
+                title: "Saving...",
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+            });
+
+            const res = await axios.post(`${BASE_URL}/api/ChequeDepo/savecashierreceipt`, payload,
+                {
+                    headers: { Authorization: `Bearer ${token}`, },
+                }
+            );
+            Swal.close();
+
+            const result = res?.data?.data;
+            console.log("result", result)
+            if (result?.errorCode === -100) {
+                const refNo = result?.returnStr;
+
+                Swal.fire({
+                    title: "Generating PDF...",
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    },
+                });
+
+                try {
+                    // PDF API Call
+                    const pdfRes = await axios.post(
+                        `${BASE_URL}/api/ChequeDepo/generatechequedepositpdf`,
+                        {
+                            refNo: String(refNo),
+                            ulbId: String(ulbId),
+                        },
+                        {
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                            },
+                        }
+                    );
+                    Swal.close();
+
+                    const pdfUrl =
+                        pdfRes?.data?.pdfUrl || pdfRes?.data?.data?.pdfUrl;
+
+                    await Swal.fire({
+                        icon: "success",
+                        title: "Success",
+                        text:
+                            result?.errorMsg ||
+                            `Transaction saved successfully. Reference No: ${refNo}`,
+                    });
+
+                    if (pdfUrl) {
+                        window.open(pdfUrl, "_blank");
+
+                    }
+
+                    // Reset Formik form
+                    resetForm({
+                        values: {
+                            department: "",
+                            zone: "",
+                            collection: "ALL",
+                            fromDate: new Date(),
+                            toDate: new Date(),
+                            glcode: "",
+                            accno: "",
+                            depositDate: new Date(),
+                        },
+                    });
+
+                    setSummaryData([]);
+                    setDetailData([]);
+                    setDetailDataCache({});
+                    setZoneList([]);
+                    setCollectionList([]);
+                    setGlOptions([]);
+                    setAccountOptions([]);
+
+                    await fetchDepartments();
+                } catch (pdfError) {
+                    Swal.close();
+
+                    console.error("PDF generation error:", pdfError);
+
+                    await Swal.fire({
+                        icon: "success",
+                        title: "Transaction Saved",
+                        text: result?.errorMsg || `Transaction saved successfully. Reference No: ${refNo}`,
+                    });
+                }
+            } else {
+                Swal.close();
+
+                Swal.fire({
+                    icon: "warning",
+                    title: "Warning",
+                    text: result?.errorMsg || "Unable to save transaction.",
+                });
+            }
+        } catch (error) {
+            Swal.close();
+
+            console.error("Save error:", error);
+
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: error?.response?.data?.error || error?.response?.data?.message || "Failed to save transaction.",
             });
         }
+    };
 
+    const totalSelectedAmount = useMemo(() => {
+        return detailData
+            .filter((item) => item.checked)
+            .reduce(
+                (sum, item) => sum + Number(item.amount || 0),
+                0
+            );
+    }, [detailData]);
 
-    } catch (err) {
-      console.error("Fetch Error:", err);
-      Swal.fire({
-        text: "सर्व्हर त्रुटी निर्माण झाली आहे",
-        confirmButtonColor: '#1e3a8a',
-      });
-    } finally {
-      setLoading(false);
-      setSubmitting(false);
-    }
-  };
-
-  const handleResetForm = (resetForm) => {
-    Swal.fire({
-      title: 'निश्चिती?',
-      text: "सर्व माहिती हटवायची आहे का?",
-      showCancelButton: true,
-      confirmButtonColor: '#dc2626',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'होय, हटवा',
-      cancelButtonText: 'रद्द करा'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        resetForm();
-        setAccIntData([]);
-        setSelectedFormValues(null);
-        setLoading(false);
-        setSubmitting(false);
-        Swal.fire({
-          text: "फॉर्म रीसेट झाला",
-          confirmButtonColor: '#1e3a8a',
-          timer: 1500
-        });
-      }
-    });
-  };
-
-  useEffect(() => {
-    if (ulbId) {
-      fetchVibhag();
-      fetchDepartment();
-    }
-  }, [ulbId]);
-
-  const exportToExcel = () => {
-    if (accIntData.length === 0) return;
-    const excelData = accIntData.map((row) => ({
-      "Department Name": row.deptName,
-      "Date": row.drDate, 
-      "PayMode": row.payMode,
-      "Description": row.description,
-      "Receipt No": row.receiptNo,
-      "Challan No": row.challanNo,
-      "Discount": row.discount,
-      "Advance": row.advance,
-      "Collection": row.collection,
-      "Status": row.prabhag,
-    }));
-
-    const ws = XLSX.utils.json_to_sheet(excelData);
-
-    ws['!cols'] = [
-      { wch: 20 }, 
-      { wch: 15 }, 
-      { wch: 12 }, 
-      { wch: 30 }, 
-      { wch: 20 }, 
-      { wch: 15 }, 
-      { wch: 10 },
-      { wch: 10 }, 
-      { wch: 15 },
-      { wch: 12 },
+    const summaryHeaders = [
+        "Select All",
+        "Department",
+        "Bank Name",
+        "Amount",
     ];
 
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Transactions");
-    XLSX.writeFile(wb, `Account_Report_${formatDateForAPI(new Date())}.xlsx`);
-  };
+    const summaryKeyMapping = {
+        "Select All": "checked",
+        Department: "department",
+        "Bank Name": "bankName",
+        Amount: "amount",
+    };
 
-  const headers = [
-    "Department Name",
-    "Date",
-    "PayMode",
-    "Description",
-    "Receipt No",
-    "Challan No",
-    "Discount",
-    "Advance",
-    "Collection",
-    "Status",
-  ];
+    const detailHeaders = [
+        "Select All",
+        "Receipt Number",
+        "Ref No",
+        "Receipt Date",
+        "Mode",
+        "Department",
+        "Cheque/DD/Pay order number",
+        "Cheque/DD/Pay order Date",
+        "Bank Name",
+        "Amount",
+    ];
 
-  const keyMapping = {
-    "Department Name": "deptName",
-    Date: "date",
-    "PayMode": "payMode",
-    "Description": "description",
-    "Receipt No": "receiptNo",
-    "Challan No": "challanNo",
-    "Discount": "discount",
-    "Advance": "advance",
-    "Collection": "collection",
-    "Status": "prabhag",
-  };
+    const detailKeyMapping = {
+        "Select All": "checked",
+        "Receipt Number": "receiptNumber",
+        "Ref No": "refNo",
+        "Receipt Date": "receiptDate",
+        Mode: "mode",
+        Department: "department",
+        "Cheque/DD/Pay order number": "chequeNo",
+        "Cheque/DD/Pay order Date": "chequeDate",
+        "Bank Name": "bankName",
+        Amount: "amount",
+    };
 
-  const tableRows = accIntData.map((row) => ({
-    deptName: row.deptName,
-    date: row.drDate ? formatDateForAPI(row.drDate) : "",
-    payMode: row.payMode || "",
-    description: row.description || "",
-    receiptNo: row.receiptNo || "",
-    challanNo: row.challanNo || "",
-    discount: row.discount || "0",   
-    advance: row.advance || "0",   
-    collection: row.collection || "",
-    prabhag: row.prabhag || "",
-  }))
+    return (
+        <Formik initialValues={initialValues} onSubmit={() => { }}>
+            {({ values, setFieldValue, resetForm }) => {
 
-  return (
-    <Formik
-      initialValues={initialFormValues}
-      enableReinitialize={false}
-      onSubmit={handleFormSubmit}
-    >
-      {({ values, setFieldValue, isSubmitting, handleSubmit, resetForm }) => {
-        return (
-          <Form onSubmit={handleSubmit}>
-            <motion.div variants={container} initial="hidden" animate="show">
-              <Card className="shadow-sm border">
-                <CardHeader className="border-b flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-                  <CardTitle className="text-lg font-semibold">
-                    Online Deposit
-                  </CardTitle>
-                </CardHeader>
+                return (
+                    <Form>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                        >
+                            <Card className="border shadow-sm">
+                                <CardHeader className="border-b">
+                                    <CardTitle className="text-xl font-semibold">
+                                        Online Deposit
+                                    </CardTitle>
+                                </CardHeader>
 
-                <CardContent className="p-4 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                      <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
-                        <Label text="विभाग" />
-                        <span>:</span>
-                      </div>
-                      <Select
-                        value={values.vibhag}
-                        onValueChange={(v) => setFieldValue("vibhag", v)}
-                      >
-                        <SelectTrigger className="!w-full h-9 overflow-hidden">
-                          <SelectValue placeholder="-- विकल्प निवडा --" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {vibhagOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                                <CardContent className="p-4 md:p-6 space-y-6">
+                                    <div className="space-y-4">
+                                        <div className={`grid grid-cols-1 gap-4 ${values.department === "7" ? "lg:grid-cols-3" : "lg:grid-cols-2"}`}>
+                                            <FieldRow label="विभाग">
+                                                <Select
+                                                    value={values.department}
+                                                    onValueChange={async (value) => {
+                                                        setFieldValue("department", value);
+                                                        await fetchZones(value);
+                                                    }}
+                                                >
+                                                    <SelectTrigger className="w-full">
+                                                        <SelectValue placeholder="-- Select --" />
+                                                    </SelectTrigger>
 
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                      <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
-                        <Label text="प्रभाग" />
-                        <span>:</span>
-                      </div>
-                      <Select
-                        value={values.prabhag}
-                        onValueChange={(v) => setFieldValue("prabhag", v)}
-                      >
-                        <SelectTrigger className="w-full h-9">
-                          <SelectValue placeholder="-- विकल्प निवडा --" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {prabhagOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                                                    <SelectContent>
+                                                        {departmentList.map((item) => (
+                                                            <SelectItem
+                                                                key={item.value}
+                                                                value={item.value}
+                                                            >
+                                                                {item.label}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </FieldRow>
 
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
-                        <Label text="दिनांका पासुन" />
-                        <span>:</span>
-                      </div>
-                      <DatePicker
-                        value={values.fromDate}
-                        onChange={(d) => setFieldValue("fromDate", d)}
-                        className="w-full h-9"
-                      />
-                    </div>
-                    
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
-                        <Label text="दिनांका पर्यंत" />
-                        <span>:</span>
-                      </div>
-                      <DatePicker
-                        value={values.toDate}
-                        onChange={(d) => setFieldValue("toDate", d)}
-                        className="w-full h-9"
-                      />
-                    </div>
-                    
-                    {
-                        values.vibhag == "7" && (
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                            <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
-                                <Label text="Collection" />
-                                <span>:</span>
-                            </div>
-                            <Select
-                                value={values.collection}
-                                onValueChange={(v) => setFieldValue("collection", v)}
-                            >
-                                <SelectTrigger className="w-full h-9">
-                                <SelectValue placeholder="-- विकल्प निवडा --" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                {collectionOptions.map((option) => (
-                                    <SelectItem key={option.value} value={option.value}>
-                                    {option.label}
-                                    </SelectItem>
-                                ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        )
-                    }
-                  </div>
+                                            <FieldRow label="प्रभाग">
+                                                <Select
+                                                    value={values.zone}
+                                                    onValueChange={async (value) => {
+                                                        setFieldValue("zone", value);
+                                                        setFieldValue("collection", "-1");
+                                                        if (values.department === "7") {
+                                                            await fetchCollectionCenters(value);
+                                                        }
+                                                    }}
+                                                >
+                                                    <SelectTrigger
+                                                        className="w-full"
+                                                        disabled={!values.department}
+                                                    >
+                                                        <SelectValue placeholder="-- Select --" />
+                                                    </SelectTrigger>
 
-                  <div className="flex justify-center gap-4">
-                    <Button type="submit" disabled={isSubmitting || loading}>
-                      {loading ? "लोड करत आहे..." : "प्रक्रिया"}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      onClick={() => handleResetForm(resetForm)}
-                      disabled={loading}
-                    >
-                      हटवा
-                    </Button>
-                    <Button type="button" variant="outline" path="/HomePage/FrmHomePage">
-                      बाहेर
-                    </Button>
-                  </div>
+                                                    <SelectContent>
+                                                        {zoneList.map((item) => (
+                                                            <SelectItem
+                                                                key={item.value}
+                                                                value={item.value}
+                                                            >
+                                                                {item.label}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </FieldRow>
 
-                  <div className="border rounded-lg bg-white">
-                    {loading && (
-                      <div className="py-10 text-center text-sm text-muted-foreground">
-                        माहिती लोड होत आहे...
-                      </div>
-                    )}
+                                            {values.department === "7" && (
+                                                <FieldRow label="Collection">
+                                                    <Select
+                                                        value={values.collection}
+                                                        onValueChange={(value) =>
+                                                            setFieldValue("collection", value)
+                                                        }
+                                                    >
+                                                        <SelectTrigger
+                                                            className="w-full"
+                                                            disabled={!values.zone}
+                                                        >
+                                                            <SelectValue placeholder="-- Select --" />
+                                                        </SelectTrigger>
 
-                    {!loading && hasSearched && accIntData.length === 0 && (
-                      <div className="py-10 text-center text-sm text-muted-foreground">
-                        कोणतीही माहिती उपलब्ध नाही
-                      </div>
-                    )}
+                                                        <SelectContent>
+                                                            {collectionList.map((item) => (
+                                                                <SelectItem
+                                                                    key={item.value}
+                                                                    value={item.value}
+                                                                >
+                                                                    {item.label}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </FieldRow>
+                                            )}
+                                        </div>
 
-                    {!loading && (accIntData.length > 0) && (
-                      <>
-                        <div className="flex justify-end items-center mb-4">
-                            <Button 
-                              type="button"  
-                              onClick={exportToExcel} className="bg-blue-900 hover:bg-blue-800 text-white px-8">
-                              Export
-                            </Button>
-                        </div>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                            <FieldRow label="दिनांक पासून">
+                                                <DatePicker
+                                                    value={values.fromDate}
+                                                    onChange={(date) =>
+                                                        setFieldValue("fromDate", date)
+                                                    }
+                                                />
+                                            </FieldRow>
 
-                        <ShadCNTable
-                          headers={headers}
-                          data={tableRows}
-                          keyMapping={keyMapping}
-                          className="max-sm:min-w-95"
-                        />
-                      </>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </Form>
-        );
-      }}
-    </Formik>
-  );
+                                            <FieldRow label="दिनांक पर्यंत">
+                                                <DatePicker
+                                                    value={values.toDate}
+                                                    onChange={(date) =>
+                                                        setFieldValue("toDate", date)
+                                                    }
+                                                />
+                                            </FieldRow>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-center">
+                                        <Button
+                                            type="button"
+                                            onClick={() => handleSearch(values)}
+                                        >
+                                            Search
+                                        </Button>
+                                    </div>
+
+                                    {summaryData.length > 0 && (
+                                        <>
+                                            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+                                                <FieldRow label="विभाग संकेतांक">
+                                                    <AsyncSearchableSelect
+                                                        options={glOptions}
+                                                        value={values.glcode}
+                                                        onSearch={searchGL}
+                                                        isLoading={loadingGL}
+                                                        loadingMessage="Searching GL..."
+                                                        noOptionsMessage="No Data Found"
+                                                        onChange={(option) => {
+                                                            const selectedValue =
+                                                                option?.value || "";
+
+                                                            setFieldValue(
+                                                                "glcode",
+                                                                selectedValue
+                                                            );
+
+                                                            // Reset लेखाशीर्ष
+                                                            setFieldValue("accno", "");
+                                                            setAccountOptions([]);
+                                                        }}
+                                                        placeholder="विभाग संकेतांक निवडा"
+                                                    />
+                                                </FieldRow>
+
+                                                <FieldRow label="लेखाशीर्ष">
+                                                    <AsyncSearchableSelect
+                                                        options={accountOptions}
+                                                        value={values.accno}
+                                                        onSearch={searchAccount}
+                                                        isLoading={loadingAccount}
+                                                        loadingMessage="Searching..."
+                                                        noOptionsMessage="No Data Found"
+                                                        onChange={(option) =>
+                                                            setFieldValue(
+                                                                "accno",
+                                                                option?.value || ""
+                                                            )
+                                                        }
+                                                        placeholder="लेखाशीर्ष निवडा"
+                                                    />
+                                                </FieldRow>
+
+                                                <FieldRow label="Deposit Date">
+                                                    <DatePicker
+                                                        value={values.depositDate}
+                                                        onChange={(date) =>
+                                                            setFieldValue(
+                                                                "depositDate",
+                                                                date
+                                                            )
+                                                        }
+                                                    />
+                                                </FieldRow>
+                                            </div>
+
+                                            <ShadCNTable
+                                                headers={summaryHeaders}
+                                                data={summaryData}
+                                                keyMapping={summaryKeyMapping}
+                                                onSelectAllChange={(checked) =>
+                                                    handleSummarySelectAll(
+                                                        checked,
+                                                        values
+                                                    )
+                                                }
+                                                onRowCheckChange={(row, checked) =>
+                                                    handleSummaryRowCheck(
+                                                        row,
+                                                        checked,
+                                                        values
+                                                    )
+                                                }
+                                                className="w-full"
+                                            />
+                                        </>
+                                    )}
+
+                                    {detailData.length > 0 && (
+                                        <>
+                                            <ShadCNTable
+                                                headers={detailHeaders}
+                                                data={detailData}
+                                                keyMapping={detailKeyMapping}
+                                                onSelectAllChange={
+                                                    handleDetailSelectAll
+                                                }
+                                                onRowCheckChange={
+                                                    handleDetailRowCheck
+                                                }
+                                                className="min-w-300"
+                                            />
+
+                                            <div className="max-w-xs">
+                                                <FieldRow label="Total Selected Amount">
+                                                    <Input
+                                                        value={totalSelectedAmount.toFixed(2)}
+                                                        disabled
+                                                    />
+                                                </FieldRow>
+                                            </div>
+
+                                            <div className="flex justify-center">
+                                                <Button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        handleSave(values, resetForm)
+                                                    }
+                                                >
+                                                    Save
+                                                </Button>
+                                            </div>
+                                        </>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    </Form>
+                );
+            }}
+        </Formik>
+    );
+};
+
+const FieldRow = ({ label, children }) => {
+    return (
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <div className="w-full sm:w-40 shrink-0 flex justify-between items-center">
+                <Label text={label} />
+                <span>:</span>
+            </div>
+            <div className="flex-1">{children}</div>
+        </div>
+    );
 };
 
 export default FrmOnlineDeposit;
+
+
