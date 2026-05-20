@@ -606,8 +606,8 @@ const FrmBulkReceipt = () => {
                                 </CardHeader>
 
                                 <CardContent className="p-4 sm:p-6 space-y-8">
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 lg:mr-5">
                                             <div className="w-full sm:w-40 shrink-0 flex justify-between items-center">
                                                 <Label text="Department" />
                                                 <span>:</span>
