@@ -167,6 +167,9 @@ const numberToMarathiWords = (num) => {
 const FrmCashDepositPDFHelper = async ({
   rows,
   ulbInfo,
+  glName, 
+  ledgerName,
+  transNo
 }) => {
 
   try {
@@ -221,6 +224,9 @@ const FrmCashDepositPDFHelper = async ({
       rows: formattedRows,
       totalAmount: formatNumber(totalAmount),
       amountInWords: numberToMarathiWords(totalAmount),
+      glName: glName, 
+      ledgerName: ledgerName,
+      transNo: transNo
     });
 
     const chromePath = path.resolve(
