@@ -19,6 +19,10 @@ const imageToBase64 = (imgPath) => {
   }
 };
 
+Handlebars.registerHelper("formatChequeNo", (num) => {
+  return String(num || "").padStart(6, "0");
+});
+
 const generatePaymentPDF = async ({ data, corporationName, corporationLogo }) => {
   const templatePath = path.resolve(__dirname, "../../templates/payment.html");
 
