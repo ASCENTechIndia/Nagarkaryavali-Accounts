@@ -7,21 +7,36 @@ const controller = require("./RptGLAccStatement.controller");
 // Summary PDF
 router.post(
   "/transaction-summaryPdf",
-  auth(),
+  
   controller.getTransactionSummaryPDF
 );
 
 // Detail PDF
 router.post(
   "/transaction-detailsPdf",
-  auth(),
+  
   controller.getTransactionDetailsPDF
+);
+
+
+// SUMMARY EXCEL
+router.post(
+  "/transaction-summaryExcel",
+  
+  controller.getTransactionSummaryExcel
+);
+
+// DETAILS EXCEL
+router.post(
+  "/transaction-detailsExcel",
+  
+  controller.getTransactionDetailsExcel
 );
 
 
 router.post(
   "/searchAccountHead",
-  auth(),
+  
   controller.searchAccountHead
 );
 
