@@ -37,7 +37,7 @@ async function getTransactionSummary(filters) {
 
     WHERE functioncode = :functioncode
     
-        OR objectcode = :objectcode
+        AND objectcode = :objectcode
   
       AND trnsdate BETWEEN
           TO_DATE(:fromDate, 'DD-MON-YYYY')
