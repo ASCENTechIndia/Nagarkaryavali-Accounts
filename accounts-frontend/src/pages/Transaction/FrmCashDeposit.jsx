@@ -895,10 +895,6 @@ const FrmCashDeposit = () => {
                 setLedger("");
                 setLedgerOptions([]);
                 // Clear these arrays as well
-                setGlCodes([]);
-                setVibhagOptions([]);
-                setPrabhagOptions([]);
-                setCollCenOptions([]);
               }
             });
           } else {
@@ -953,9 +949,9 @@ const FrmCashDeposit = () => {
     >
       {({ values, setFieldValue, isSubmitting, handleSubmit, resetForm }) => {
 
-        // useEffect(() => {
-        //   setFormValues(values);
-        // }, [values]);
+        useEffect(() => {
+          setFormValues(values);
+        }, [values]);
         
         return (
           <Form onSubmit={handleSubmit}>

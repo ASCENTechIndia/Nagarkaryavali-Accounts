@@ -129,7 +129,61 @@ const FrmTransactionUpdate = () => {
     }
   };
 
-  const handleVoucherSearch = async (transactionNo) => {
+   const handleVoucherSearch = async (transactionNo) => {
+    setLoading(true);
+    try {
+        const response = await axios.get(`${BASE_URL}/api/Tranrevoke/gettransview?transno=${transactionNo}&ulbid=${ulbId}`, 
+        {
+        headers: { Authorization: `Bearer ${token}` }
+        });
+
+        console.log("response: ", response);
+
+        if (response.data?.data?.rows && response.data.data.rows.length > 0) {
+        const mappedData = response.data.data.rows.map(item => ({
+            transactionType: item.TRNSTYPE || "",
+            transactionDate: item.TRNSDATE,
+            majorCode: item.GLCODE || "",
+            majorName: item.GLNAME || "",
+            minorCode: item.ACCNAME || "",
+            minorName: item.ACCNAME || "",
+            creditAmount: item.CREDIT || 0,
+            debitAmount: item.DEBIT || 0,
+            narration: item.NARRATION || "",
+            partyName: item.PARTYNAME || "",
+            id: item.TRANSNO,
+            docNo: item.DOCNO,
+            zoneName: item.ZONEENAME,
+            grampanch: item.GRAMPANCH
+        }));
+        
+        setTransactionData(mappedData);
+        setCurrentDataType("voucher");
+        const formattedData = formatTableData(mappedData);
+        setTableData(formattedData);
+        setShowTable(true);
+        } else {
+        setShowTable(false);
+        setTableData([]);
+        setTransactionData([]);
+        await Swal.fire({
+            text: "No Data Found",
+            confirmButtonColor: '#1e3a8a'
+        });
+        }
+    } catch (error) {
+        console.error("Transaction Search Error:", error);
+        Swal.fire({
+        text: error.response?.data?.message || "Error fetching transaction",
+        confirmButtonColor: "#1e3a8a",
+        });
+        setShowTable(false);
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  const handleVoucherGenerationSearch  = async (transactionNo) => {
     setLoading(true);
     try {
         const response = await axios.get(`${BASE_URL}/api/Tranrevoke/getvchgentransview?transno=${transactionNo}&ulbid=${ulbId}`, 
@@ -156,7 +210,7 @@ const FrmTransactionUpdate = () => {
         }));
         
         setVoucherData(mappedData);
-        setCurrentDataType("voucher");
+        setCurrentDataType("voucherGeneration"); 
         const formattedData = formatTableData(mappedData);
         setTableData(formattedData);
         setShowTable(true);
@@ -194,15 +248,20 @@ const FrmTransactionUpdate = () => {
       handleTransactionSearch(values.transactionNo);
     } else if (values.selectType === "voucher") {
       handleVoucherSearch(values.transactionNo);
-    } else {
-      Swal.fire({
-        text: "Voucher Generation is currently disabled",
-        confirmButtonColor: "#1e3a8a",
-      });
+    } else if (values.selectType === "voucherGeneration") {
+      handleVoucherGenerationSearch(values.transactionNo);
     }
   };
 
   const handleDelete = async (formikValues) => {
+    if (currentDataType === "voucherGeneration") {
+      Swal.fire({
+        text: "Voucher generation details can't be deleted, please revoke",
+        confirmButtonColor: "#1e3a8a",
+      });
+      return;
+    }
+
     if (!formikValues.transactionNo) {
         Swal.fire({
         text: "No transaction number found",
@@ -309,6 +368,8 @@ const FrmTransactionUpdate = () => {
             mode = "2";
         } else if (currentDataType === "voucher") {
             mode = "3"; 
+        } else if (currentDataType === "voucherGeneration") {
+          mode = "5"; 
         }
         
         const response = await axios.post(
@@ -369,7 +430,7 @@ const FrmTransactionUpdate = () => {
                     <Label>Select Type</Label>
                     <span>:</span>
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-4">
                     <div className="flex items-center gap-2">
                       <Input
                         type="radio"
@@ -396,6 +457,21 @@ const FrmTransactionUpdate = () => {
                       />
                       <Label htmlFor="voucher" className="font-medium cursor-pointer">
                         Voucher
+                      </Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="radio"
+                        id="voucherGeneration"
+                        name="selectType"
+                        value="voucherGeneration"
+                        checked={values.selectType === "voucherGeneration"}
+                        onChange={(e) => setFieldValue("selectType", e.target.value)}
+                        className="h-4 w-4"
+                        disabled
+                      />
+                      <Label htmlFor="voucherGeneration" className="font-medium cursor-pointer">
+                        Voucher Generation
                       </Label>
                     </div>
                   </div>
