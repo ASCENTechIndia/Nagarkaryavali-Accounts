@@ -218,6 +218,10 @@ const CounterVoucherGeneration = async ({
 
     const totalNetWithDeduction = totalDeductionAmount + totalPaid;
 
+    const formatChequeNo = (num) => {
+      return String(num || "").padStart(6, "0");
+    };
+
     // ================= TEMPLATE DATA =================
     const html = template({
       corporationName,
@@ -251,7 +255,7 @@ const CounterVoucherGeneration = async ({
 
       glcode: header.DRGLCODE || "",
       // BANK
-      chqno: header.CHQNO || "",
+      chqno: formatChequeNo(header.CHQNO) || "",
       bankname: header.BANKNAME || "",
 
       // TEXT
