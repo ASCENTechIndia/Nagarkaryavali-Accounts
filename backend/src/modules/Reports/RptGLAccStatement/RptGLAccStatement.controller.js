@@ -122,20 +122,35 @@ exports.searchAccountHead = asyncHandler(async (req, res) => {
 });
 
 
-exports.searchAccountHead = asyncHandler(async (req, res) => {
-  const { ulbId, functionCode, prefix } = req.body;
+// ================= SUMMARY EXCEL =================
+exports.getTransactionSummaryExcel = asyncHandler(async (req, res) => {
 
-  const data = await service.searchAccountHead({
-    ulbId,
-    functionCode,
-    prefix,
-  });
+  const filters = req.body;
+
+  const data =
+    await service.getTransactionSummary(filters);
 
   return res.status(200).json({
     success: true,
-    message: "Account heads fetched successfully.",
-    data: {
-      data,
-    },
+    message: "Summary Excel Data",
+    data,
   });
+
 });
+
+// ================= DETAILS EXCEL =================
+exports.getTransactionDetailsExcel = asyncHandler(async (req, res) => {
+
+  const filters = req.body;
+
+  const data =
+    await service.getTransactionDetails(filters);
+
+  return res.status(200).json({
+    success: true,
+    message: "Details Excel Data",
+    data,
+  });
+
+});
+
