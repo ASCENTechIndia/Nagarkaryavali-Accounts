@@ -36,12 +36,9 @@ async function getTransactionSummary(filters) {
     FROM transview a
 
     WHERE functioncode = :functioncode
-
-      AND (
-        :objectcode IS NULL
+    
         OR objectcode = :objectcode
-      )
-
+  
       AND trnsdate BETWEEN
           TO_DATE(:fromDate, 'DD-MON-YYYY')
       AND TO_DATE(:toDate, 'DD-MON-YYYY')
@@ -109,8 +106,7 @@ async function getTransactionDetails(filters) {
 
       AND        
          objectcode = :objectcode
-      
-
+    
       AND trnsdate BETWEEN
           TO_DATE(:fromDate, 'DD-MON-YYYY')
       AND TO_DATE(:toDate, 'DD-MON-YYYY')
