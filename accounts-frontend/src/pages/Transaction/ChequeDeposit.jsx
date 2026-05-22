@@ -248,7 +248,44 @@ const ChequeDeposit = () => {
         }
     };
 
-    const searchAccount = async (searchText, signal) => {
+    // const searchAccount = async (searchText, signal) => {
+    //     try {
+    //         // Clear previous results immediately
+    //         setAccountOptions([]);
+    //         // Validation
+    //         if (!searchText?.trim() || !ulbId) {
+    //             return;
+    //         }
+    //         setLoadingAccount(true);
+    //         const res = await axios.post(
+    //             `${BASE_URL}/api/FrmBulkReceipt/bulk-receipt-account-search`,
+    //             { ulbid: Number(ulbId), accno: searchText.trim(), },
+    //             { ...authHeaders, signal, }
+    //         );
+
+    //         const data = res?.data?.data?.data || [];
+    //         setAccountOptions(
+    //             data.map((item) => ({
+    //                 label: `${item.ACCNO} - ${item.ACCOUNTNAME}`,
+    //                 value: String(item.ACCNO),
+    //             }))
+    //         );
+    //     } catch (error) {
+    //         // Ignore cancelled requests
+    //         if (
+    //             error.name === "AbortError" || error.code === "ERR_CANCELED"
+    //         ) {
+    //             return;
+    //         }
+
+    //         console.error("Account search error:", error);
+    //         setAccountOptions([]);
+    //     } finally {
+    //         setLoadingAccount(false);
+    //     }
+    // };
+
+    const searchAccountHead = async (searchText, signal, functionCode) => {
         try {
             // Clear previous results immediately
             setAccountOptions([]);
@@ -256,22 +293,19 @@ const ChequeDeposit = () => {
             if (!searchText?.trim() || !ulbId) {
                 return;
             }
-            setLoadingAccount(true);
+            setLoadingAccount(true); 
             const res = await axios.post(
-                `${BASE_URL}/api/FrmBulkReceipt/bulk-receipt-account-search`,
-                { ulbid: Number(ulbId), accno: searchText.trim(), },
-                { ...authHeaders, signal, }
+                `${BASE_URL}/api/RptGLAccStatement/searchAccountHead`,
+                { ulbId, functionCode, prefix: searchText },
+                { headers: { Authorization: `Bearer ${token}` }, signal },
             );
 
-            const data = res?.data?.data?.data || [];
-            setAccountOptions(
-                data.map((item) => ({
-                    label: `${item.ACCNO} - ${item.ACCOUNTNAME}`,
-                    value: String(item.ACCNO),
-                }))
-            );
+            const formatted = (res.data?.data?.data || []).map((item) => ({
+                label: item.ACCNAME,
+                value: item.OBJECTCODE,
+            }));
+            setAccountOptions(formatted);
         } catch (error) {
-            // Ignore cancelled requests
             if (
                 error.name === "AbortError" || error.code === "ERR_CANCELED"
             ) {
@@ -996,9 +1030,13 @@ const ChequeDeposit = () => {
 
                                                 <FieldRow label="लेखाशीर्ष">
                                                     <AsyncSearchableSelect
+                                                    disabled={!values.glcode}
                                                         options={accountOptions}
                                                         value={values.accno}
-                                                        onSearch={searchAccount}
+                                                        // onSearch={searchAccountHead(values.glcode)}
+                                                        onSearch={(text, signal) =>
+                                                            searchAccountHead(text, signal, values.glcode)
+                                                        }
                                                         isLoading={loadingAccount}
                                                         loadingMessage="Searching..."
                                                         noOptionsMessage="No Data Found"
