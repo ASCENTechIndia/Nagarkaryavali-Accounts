@@ -22,7 +22,7 @@ import { useAuth } from "@/context/AuthContext";
 
 const ModalWrapper = ({ title, onClose, onConfirm, children }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-    <div className="bg-[#e8e1d8] rounded-lg shadow-xl w-[95%] max-w-5xl">
+    <div className="bg-[#fdfbf8] rounded-lg shadow-xl w-[95%] max-w-5xl">
       <div className="flex justify-between items-center px-4 py-3 border-b">
         <h2 className="text-lg font-semibold">{title}</h2>
         <button onClick={onClose} className="text-red-500 text-lg">
@@ -30,10 +30,10 @@ const ModalWrapper = ({ title, onClose, onConfirm, children }) => (
         </button>
       </div>
 
-      <div className="max-h-[400px] overflow-auto p-3">{children}</div>
+      <div className="max-h-[400px] overflow-auto p-3 no-scrollbar">{children}</div>
 
       <div className="flex justify-center gap-3 p-3 border-t">
-        <Button className="bg-green-600 hover:bg-green-700" onClick={onConfirm}>
+        <Button onClick={onConfirm}>
           Add Selected
         </Button>
 
@@ -1022,7 +1022,7 @@ const BankDeposit = () => {
                 onClose={() => setShowLekhaModal(false)}
                 onConfirm={handleAddLekha}
               >
-                <div className="w-full  rounded-md border">
+                <div >
                   {lekhaLoading ? (
                     <div className="flex items-center justify-center py-10 text-sm font-medium">
                       Loading...

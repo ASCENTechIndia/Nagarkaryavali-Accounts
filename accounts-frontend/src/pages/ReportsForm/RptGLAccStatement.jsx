@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
 import {
   Select,
   SelectTrigger,
@@ -388,52 +390,59 @@ export default function RptGLAccStatement() {
                 </div>
 
                 {/* ROW 3 */}
-                {/* ROW 3 */}
-                <div className="grid grid-cols-1 md:grid-cols-6 gap-3 items-center">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
                   {/* REPORT TYPE */}
-                  <Label className="text-sm">अहवालाचा प्रकार :</Label>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+                    <Label className="text-sm whitespace-nowrap">
+                      अहवालाचा प्रकार :
+                    </Label>
 
-                  <div className="flex gap-4">
-                    <label className="flex items-center gap-2 text-sm">
-                      <input
-                        type="radio"
-                        checked={values.reportType === "0"}
-                        onChange={() => setFieldValue("reportType", "0")}
-                      />
-                      सारांश
-                    </label>
+                    <div className="flex flex-wrap gap-4">
+                      <label className="flex items-center gap-2 text-sm">
+                        <Input
+                          type="radio"
+                          checked={values.reportType === "0"}
+                          onChange={() => setFieldValue("reportType", "0")}
+                        />
+                        सारांश
+                      </label>
 
-                    <label className="flex items-center gap-2 text-sm">
-                      <input
-                        type="radio"
-                        checked={values.reportType === "1"}
-                        onChange={() => setFieldValue("reportType", "1")}
-                      />
-                      तपशील
-                    </label>
+                      <label className="flex items-center gap-2 text-sm">
+                        <Input
+                          type="radio"
+                          checked={values.reportType === "1"}
+                          onChange={() => setFieldValue("reportType", "1")}
+                        />
+                        तपशील
+                      </label>
+                    </div>
                   </div>
 
-                  {/* EXPORT */}
-                  <Label className="text-sm">Export To :</Label>
+                  {/* EXPORT TYPE */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+                    <Label className="text-sm whitespace-nowrap">
+                      Export To :
+                    </Label>
 
-                  <div className="flex gap-4">
-                    <label className="flex items-center gap-2 text-sm">
-                      <input
-                        type="radio"
-                        checked={values.exportType === "pdf"}
-                        onChange={() => setFieldValue("exportType", "pdf")}
-                      />
-                      PDF
-                    </label>
+                    <div className="flex flex-wrap gap-3">
+                      <label className="flex items-center gap-2 text-sm">
+                        <Input
+                          type="radio"
+                          checked={values.exportType === "pdf"}
+                          onChange={() => setFieldValue("exportType", "pdf")}
+                        />
+                        PDF
+                      </label>
 
-                    <label className="flex items-center gap-2 text-sm">
-                      <input
-                        type="radio"
-                        checked={values.exportType === "excel"}
-                        onChange={() => setFieldValue("exportType", "excel")}
-                      />
-                      Excel
-                    </label>
+                      <label className="flex items-center gap-2 text-sm">
+                        <Input
+                          type="radio"
+                          checked={values.exportType === "excel"}
+                          onChange={() => setFieldValue("exportType", "excel")}
+                        />
+                        Excel
+                      </label>
+                    </div>
                   </div>
                 </div>
 
