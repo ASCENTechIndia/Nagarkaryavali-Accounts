@@ -151,7 +151,7 @@ const CashbookPDFHelper = async ({ reportData, openingBalanceData, filters, ulbI
     // Format date for display
     const formattedDate = filters.date;
 
-    const batchSize = 15;
+    const batchSize = 10;
 
     const batches = [];
 

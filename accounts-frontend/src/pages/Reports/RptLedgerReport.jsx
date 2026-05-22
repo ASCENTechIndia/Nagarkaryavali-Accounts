@@ -588,7 +588,7 @@ const RptLedgerReport = () => {
           DrNarration: "",
           DrAmount: "",
           DrChqNo: "",
-          CrTrnsDate: formatDateForDisplay(row.crDate),
+          CrTrnsDate: row.crDate,
           CrTransNo: row.TRANSNO || "",
           CrDocNo: row.DOCNO || "",
           CrAccNo: row.crAcCode || "",
@@ -607,7 +607,7 @@ const RptLedgerReport = () => {
       } else if (row.isDebit) {
         runningBalance = runningBalance + row.debitAmount;
         excelData.push({
-          DrTrnsDate: formatDateForDisplay(row.drDate),
+          DrTrnsDate: row.drDate,
           DrTransNo: row.TRANSNO || "",
           DrDocNo: row.DOCNO || "",
           DrAccNo: row.drAcCode || "",
@@ -858,7 +858,7 @@ const RptLedgerReport = () => {
         </Button>
       ),
       // Debit side fields (for negative amounts)
-      date: row.drDate ? formatDateForDisplay(row.drDate) : "",
+      date: row.drDate ? row.drDate : "",
       acCode: row.drAcCode || "",
       acName: row.drAcName || "",
       // particulars: row.drParticulars || "",
@@ -868,7 +868,7 @@ const RptLedgerReport = () => {
       chequeNo: row.drChequeNo || "",
       amount: row.debitAmount ? formatNumber(Math.abs(row.debitAmount)) : "0",
       // Credit side fields (for positive amounts)
-      dateCr: row.crDate ? formatDateForDisplay(row.crDate) : "",
+      dateCr: row.crDate ? row.crDate : "",
       acCodeCr: row.crAcCode || "",
       acNameCr: row.crAcName || "",
       panCardNo: row.crPanCard || row.drPanCard || "",

@@ -14,8 +14,14 @@ const imageToBase64 = (imgPath) => {
 };
 
 const formatDate = (date) => {
+  // if (!date) return "";
+  // return new Date(date).toLocaleDateString("en-GB");
   if (!date) return "";
-  return new Date(date).toLocaleDateString("en-GB");
+  const d = new Date(date);
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = d.toLocaleString('en', { month: 'short' }).toUpperCase();
+  const year = d.getFullYear();
+  return `${day}-${month}-${year}`;
 };
 
 const formatNumber = (num) => {
@@ -73,7 +79,7 @@ const RptLedgerReportPDFHelper = async ({
 
         row.CR_TRANS_NO = t.TRANSNO;
         row.CR_VOU_NO = t.DOCNO;
-        row.CR_DATE = formatDate(t.TRNSDATE);
+        row.CR_DATE = t.TRNSDATE;
         row.CR_PAN = t.PANCARD || "";
         row.CR_PARTICULARS = t.NARRATION || "";
         row.CR_CHEQUE = t.CHQNO || "";
@@ -88,7 +94,7 @@ const RptLedgerReportPDFHelper = async ({
 
         row.DR_TRANS_NO = t.TRANSNO;
         row.DR_VOU_NO = t.DOCNO;
-        row.DR_DATE = formatDate(t.TRNSDATE);
+        row.DR_DATE = t.TRNSDATE;
         row.DR_PARTICULARS = t.NARRATION || "";
         row.DR_CHEQUE = t.CHQNO || "";
         row.DR_AMOUNT = formatNumber(abs);
