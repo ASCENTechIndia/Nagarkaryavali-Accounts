@@ -19,6 +19,7 @@ import Swal from "sweetalert2";
 import * as XLSX from "xlsx";
 import { DatePicker } from "@/components/ui/calendar";
 import SearchableSelect from "@/components/SearchableSelect";
+import { Input } from "@/components/ui/input";
 
 const initialValues = {
   zoneId: "",
@@ -28,7 +29,7 @@ const initialValues = {
   head: "",
   userId: "",
   reportType: "1",
-  exportType: "excel",
+  exportType: "pdf",
 };
 
 const RptPaymentRegisterDetails = () => {
@@ -129,136 +130,136 @@ const RptPaymentRegisterDetails = () => {
     fetchUsers();
   }, [ulbId]);
 
-const handleSubmit = async (values) => {
-  if (!values.fromDate || !values.toDate) {
-    Swal.fire({
-      text: "Please select date",
-      icon: "warning",
-      confirmButtonColor: "#1e3a8a",
-    });
-    return;
-  }
-
-  const loading = Swal.fire({
-    title: "Generating Report...",
-    text: "Please wait",
-    allowOutsideClick: false,
-    didOpen: () => Swal.showLoading(),
-  });
-
-  const formatDate = (date) => {
-    if (!date) return null;
-    const d = new Date(date);
-    return `${String(d.getDate()).padStart(2, "0")}-${String(
-      d.getMonth() + 1
-    ).padStart(2, "0")}-${d.getFullYear()}`;
-  };
-
-  const payload = {
-    fromDate: formatDate(values.fromDate),
-    toDate: formatDate(values.toDate),
-
-    ulbid: Number(ulbId),
-    zoneid: Number(values.zoneId) || "" ,
-    glcode: Number(values.wardCode) || "",
-    functioncode: Number(values.wardCode) || "", 
-    objectcode: Number(values.head) || "",
-
-    budgetid: null,
-    nidhi_id: null,
-  };
-
-  try {
-    const url =
-      values.exportType === "pdf"
-        ? "/api/RptPaymentRegister/paymentRegisterReportPdf"
-        : "/api/RptPaymentRegister/payment-register-report";
-
-    const res = await axios.post(`${BASE_URL}${url}`, payload, {
-      headers: { Authorization: `Bearer ${token}` },
-      timeout: 120000, // ✅ prevent infinite waiting
-    });
-
-    Swal.close();
-
-    /* ================= PDF ================= */
-    if (values.exportType === "pdf") {
-      if (res.data?.pdfUrl) {
-        window.open(res.data.pdfUrl, "_blank");
-      } else {
-        Swal.fire({
-          text: "PDF generation failed",
-          icon: "error",
-        });
-      }
-      return;
-    }
-
-    /* ================= EXCEL ================= */
-    const rows = res.data?.data?.rows || [];
-
-    if (!rows.length) {
+  const handleSubmit = async (values) => {
+    if (!values.fromDate || !values.toDate) {
       Swal.fire({
-        text: "No data found",
-        icon: "info",
+        text: "Please select date",
+        icon: "warning",
+        confirmButtonColor: "#1e3a8a",
       });
       return;
     }
 
-    const formattedData = rows.map((item) => ({
-      DATE: item.TRNSDATE
-        ? new Date(item.TRNSDATE).toLocaleDateString("en-GB")
-        : "",
-      VOUCHER_NO: item.VCHREFNO || "",
-      TRANS_NO: item.TRANSNO || "",
-      DOC_NO: item.DOCNO || "",
-      GLCODE: item.GLCODE || "",
-      GLNAME: item.GLNAME || "",
-      ACCNO: item.ACCNO || "",
-      ACCNAME: item.ACCNAME || "",
-      ZONE: item.DEPTNAME || "",
-      FUNCTIONCODE: item.FUNCTIONCODE || "",
-      OBJECTCODE: item.OBJECTCODE || "",
-      // AMOUNT: item.AMOUNT || 0,
-      AMOUNT: Math.abs(item.AMOUNT || 0),
-      NARRATION: item.NARRATION || "",
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(formattedData);
-
-    worksheet["!cols"] = [
-      { wch: 12 },
-      { wch: 12 },
-      { wch: 12 },
-      { wch: 10 },
-      { wch: 10 },
-      { wch: 25 },
-      { wch: 15 },
-      { wch: 30 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 40 },
-    ];
-
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Payment Register");
-
-    XLSX.writeFile(workbook, `Payment_Register_${Date.now()}.xlsx`);
-  } catch (err) {
-    console.error(err);
-
-    Swal.close();
-
-    Swal.fire({
-      text:
-        err?.response?.data?.message ||
-        "Server is taking too long. Try again.",
-      icon: "error",
+    const loading = Swal.fire({
+      title: "Generating Report...",
+      text: "Please wait",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
     });
-  }
-};
+
+    const formatDate = (date) => {
+      if (!date) return null;
+      const d = new Date(date);
+      return `${String(d.getDate()).padStart(2, "0")}-${String(
+        d.getMonth() + 1
+      ).padStart(2, "0")}-${d.getFullYear()}`;
+    };
+
+    const payload = {
+      fromDate: formatDate(values.fromDate),
+      toDate: formatDate(values.toDate),
+
+      ulbid: Number(ulbId),
+      zoneid: Number(values.zoneId) || "",
+      glcode: Number(values.wardCode) || "",
+      functioncode: Number(values.wardCode) || "",
+      objectcode: Number(values.head) || "",
+
+      budgetid: null,
+      nidhi_id: null,
+    };
+
+    try {
+      const url =
+        values.exportType === "pdf"
+          ? "/api/RptPaymentRegister/paymentRegisterReportPdf"
+          : "/api/RptPaymentRegister/payment-register-report";
+
+      const res = await axios.post(`${BASE_URL}${url}`, payload, {
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 120000, // ✅ prevent infinite waiting
+      });
+
+      Swal.close();
+
+      /* ================= PDF ================= */
+      if (values.exportType === "pdf") {
+        if (res.data?.pdfUrl) {
+          window.open(res.data.pdfUrl, "_blank");
+        } else {
+          Swal.fire({
+            text: "PDF generation failed",
+            icon: "error",
+          });
+        }
+        return;
+      }
+
+      /* ================= EXCEL ================= */
+      const rows = res.data?.data?.rows || [];
+
+      if (!rows.length) {
+        Swal.fire({
+          text: "No data found",
+          icon: "info",
+        });
+        return;
+      }
+
+      const formattedData = rows.map((item) => ({
+        DATE: item.TRNSDATE
+          ? new Date(item.TRNSDATE).toLocaleDateString("en-GB")
+          : "",
+        VOUCHER_NO: item.VCHREFNO || "",
+        TRANS_NO: item.TRANSNO || "",
+        DOC_NO: item.DOCNO || "",
+        GLCODE: item.GLCODE || "",
+        GLNAME: item.GLNAME || "",
+        ACCNO: item.ACCNO || "",
+        ACCNAME: item.ACCNAME || "",
+        ZONE: item.DEPTNAME || "",
+        FUNCTIONCODE: item.FUNCTIONCODE || "",
+        OBJECTCODE: item.OBJECTCODE || "",
+        // AMOUNT: item.AMOUNT || 0,
+        AMOUNT: Math.abs(item.AMOUNT || 0),
+        NARRATION: item.NARRATION || "",
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(formattedData);
+
+      worksheet["!cols"] = [
+        { wch: 12 },
+        { wch: 12 },
+        { wch: 12 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 25 },
+        { wch: 15 },
+        { wch: 30 },
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 40 },
+      ];
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Payment Register");
+
+      XLSX.writeFile(workbook, `Payment_Register_${Date.now()}.xlsx`);
+    } catch (err) {
+      console.error(err);
+
+      Swal.close();
+
+      Swal.fire({
+        text:
+          err?.response?.data?.message ||
+          "Server is taking too long. Try again.",
+        icon: "error",
+      });
+    }
+  };
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
       {({ values, setFieldValue }) => {
@@ -354,17 +355,18 @@ const handleSubmit = async (values) => {
                     <div>
                       <div className="flex gap-4">
                         <Label className="text-sm">Export To :</Label>
-                        <Label className="flex items-center gap-2 text-sm">
-                          <input
+                        <label className="flex items-center gap-2 text-sm">
+                          <Input
                             type="radio"
+                            name="exportType"
                             checked={values.exportType === "pdf"}
                             onChange={() => setFieldValue("exportType", "pdf")}
                           />
                           PDF
-                        </Label>
+                        </label>
 
-                        <Label className="flex items-center gap-2 text-sm">
-                          <input
+                        <label className="flex items-center gap-2 text-sm">
+                          <Input
                             type="radio"
                             checked={values.exportType === "excel"}
                             onChange={() =>
@@ -372,7 +374,7 @@ const handleSubmit = async (values) => {
                             }
                           />
                           Excel
-                        </Label>
+                        </label>
                       </div>
                     </div>
                   </div>
