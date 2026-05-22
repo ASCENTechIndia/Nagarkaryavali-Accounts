@@ -64,22 +64,24 @@ const BankDeposit = () => {
   const [showLekhaModal, setShowLekhaModal] = useState(false);
 
   const [zoneList, setZoneList] = useState([]);
-  const [selectedZone, setSelectedZone] = useState("-1");
-
   const [lekhaData, setLekhaData] = useState([]);
   const [lekhaLoading, setLekhaLoading] = useState(false);
 
   const [pavatiData, setPavatiData] = useState([]);
   const [pavatiLoading, setPavatiLoading] = useState(false);
 
-  const [deptList, setDeptList] = useState([]);
-  const [selectedDept, setSelectedDept] = useState("-1");
+  const [departmentList, setDepartmentList] = useState([]);
 
   const [collectionList, setCollectionList] = useState([]);
-  const [selectedCollection, setSelectedCollection] = useState("-1");
 
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(false);
+
+  const authHeaders = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
 
   const fetchGL = async () => {
     try {
@@ -112,38 +114,10 @@ const BankDeposit = () => {
     }
   };
 
-  const fetchZone = async (deptId) => {
-    try {
-      const res = await axios.post(
-        `${BASE_URL}/api/Bankdeposit/dropdown`,
-        {
-          deptId: deptId && deptId !== "-1" ? deptId : "",
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
-
-      console.log("ZONE API RESPONSE:", res.data); // 🔍 DEBUG
-
-      if (res.data?.ok) {
-        setZoneList(res.data?.data?.list || []);
-      } else {
-        setZoneList([]);
-      }
-    } catch (err) {
-      console.error("Zone API Error:", err);
-      setZoneList([]);
-    }
-  };
-
-  // Update fetchDepartments() to use SweetAlert loader
-
   const fetchDepartments = async () => {
     try {
       Swal.fire({
-        title: "Loading...",
-        text: "Please wait...",
+        title: "Loading Departments...",
         allowOutsideClick: false,
         allowEscapeKey: false,
         showConfirmButton: false,
@@ -154,6 +128,48 @@ const BankDeposit = () => {
 
       const res = await axios.get(
         `${BASE_URL}/api/Bankdeposit/department?ulbId=${ulbId}`,
+        authHeaders,
+      );
+
+      const list = res?.data?.data?.list || [];
+
+      setDepartmentList(
+        list.map((item) => ({
+          value: String(item.DEPTID),
+          label: item.DEPTNAME,
+        })),
+      );
+    } catch (error) {
+      console.error("Department fetch error:", error);
+      setDepartmentList([]);
+    } 
+      Swal.close();
+    
+  };
+
+  const fetchZones = async (departmentId) => {
+    try {
+      if (!departmentId) {
+        setZoneList([]);
+        return;
+      }
+
+      Swal.fire({
+        title: "Loading Zone...",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      const res = await axios.post(
+        `${BASE_URL}/api/FrmCashDeposit/zones-by-department`,
+        {
+          deptId: String(departmentId),
+          ulbId: Number(ulbId),
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -161,36 +177,28 @@ const BankDeposit = () => {
         },
       );
 
-      if (res.data?.ok) {
-        setDeptList(res.data?.data?.list || []);
-      } else {
-        setDeptList([]);
-      }
+      const list = res?.data?.data?.list || [];
+
+      setZoneList(
+        list.map((zone) => ({
+          value: String(zone.ID),
+          label: zone.NAME,
+        })),
+      );
     } catch (err) {
-      console.error("Department API Error:", err);
-      setDeptList([]);
-
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Failed to load विभाग list",
-      });
-
-      return;
+      console.error("Error fetching zones by department:", err);
+      setZoneList([]);
     } finally {
       Swal.close();
     }
   };
 
   const fetchCollectionCenters = async (prabhagId) => {
-  
     try {
-      if (!prabhagId || prabhagId === "-1") {
+      if (!prabhagId) {
         setCollectionList([]);
-        setSelectedCollection("-1");
         return;
       }
-
       Swal.fire({
         title: "Loading Collection...",
         allowOutsideClick: false,
@@ -201,36 +209,35 @@ const BankDeposit = () => {
         },
       });
 
+      const collectionPrabhagId = Number(prabhagId) - 1282;
+
       const res = await axios.get(
-        `${BASE_URL}/api/ChequeDepo/collectioncenter/${prabhagId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
+        `${BASE_URL}/api/ChequeDepo/collectioncenter/${collectionPrabhagId}`,
+        authHeaders,
       );
 
       const rows = res?.data?.data?.rows || [];
-      console.log("Collection Centers API Response:", res.data); // 🔍 DEBUG
 
-      setCollectionList(rows);
-      setSelectedCollection("-1");
-    } catch (err) {
-      console.error("Collection Center API Error:", err);
+      setCollectionList(
+        rows.map((item) => ({
+          value: String(item.VAR_COLLCEN_COLLCENID),
+          label: item.VAR_COLLCEN_COLLCENNAME,
+        })),
+      );
+    } catch (error) {
+      console.error("Error fetching collection centers:", error);
       setCollectionList([]);
-      setSelectedCollection("-1");
     } finally {
       Swal.close();
     }
   };
 
-useEffect(() => {
-  if (ulbId) {
-    fetchGL();
-    fetchDepartments();
-    fetchZone(selectedDept);
-  }
-}, [ulbId, selectedDept]);
+  useEffect(() => {
+    if (ulbId) {
+      fetchGL();
+      fetchDepartments();
+    }
+  }, [ulbId]);
 
   const handleSearch = async (values) => {
     const formatDate = (date) => {
@@ -260,10 +267,10 @@ useEffect(() => {
       ulbId: Number(ulbId),
       fromDate,
       toDate,
-      deptId: selectedDept !== "-1" ? Number(selectedDept) : "",
-      zoneId: selectedZone !== "-1" ? Number(selectedZone) : "",
+      deptId: values.department || null,
+      zoneId: values.zone || null,
       collectionId:
-        selectedCollection !== "-1" ? Number(selectedCollection) : "",
+        values.department === "7" ? values.collection || null : null,
       receiptNos: [],
       accountNos: [],
       challanNos: [],
@@ -295,7 +302,7 @@ useEffect(() => {
         },
       );
 
-      // ✅ Close Loader
+      
       Swal.close();
 
       // API failed
@@ -374,8 +381,8 @@ useEffect(() => {
       });
     } finally {
       setLoading(false);
-      Swal.close(); // ✅ Ensure loader closes in all cases
     }
+    Swal.close(); 
   };
 
   const handleAddPavati = () => {
@@ -432,17 +439,19 @@ useEffect(() => {
     const mapped = selected.map((r) => ({
       id: `L-${r.id}`,
       department: r.giName,
-      departmentId: "",
+      departmentId: "-",
       accountCode: r.accountCode,
       accountHead: r.accountName,
       amount: r.amount,
 
-      // ✅ Copy actual values from modal row
+
       glcodeg: r.glcodeg || "",
       accnog: r.accnog || "",
 
       checked: false,
     }));
+
+    console.log("Selected Lekha rows to add:", mapped);
 
     setTableData((prev) => {
       const previousModalRows = prev.filter(
@@ -474,10 +483,10 @@ useEffect(() => {
           fromDate: values.fromDate,
           toDate: values.toDate,
 
-          zoneId: selectedZone === "-1" ? "" : selectedZone,
-          deptId: selectedDept === "-1" ? "" : selectedDept,
+          zoneId: values.zone || null,
+          deptId: values.department || null,
           collectionId:
-            selectedCollection !== "-1" ? Number(selectedCollection) : "",
+            values.department === "7" ? values.collection || null : null,
 
           rmode: [],
         },
@@ -488,6 +497,7 @@ useEffect(() => {
 
       if (res.data?.ok && res.data?.data?.success) {
         const list = res.data?.data?.list || [];
+        console.log("Account Wise API Response List:", list);
 
         const mapped = list.map((item, index) => ({
           id: index + 1,
@@ -538,10 +548,10 @@ useEffect(() => {
           fromDate: formatDateForChallan(values.fromDate),
           toDate: formatDateForChallan(values.toDate),
 
-          deptId: selectedDept !== "-1" ? Number(selectedDept) : "",
-          zoneId: selectedZone !== "-1" ? Number(selectedZone) : "",
+          deptId: values.department || null,
+          zoneId: values.zone || null,
           collectionId:
-            selectedCollection !== "-1" ? Number(selectedCollection) : "",
+            values.department === "7" ? values.collection || null : null,
 
           rmode: [],
         },
@@ -554,6 +564,7 @@ useEffect(() => {
 
       if (res.data?.ok && res.data?.data?.success) {
         const list = res.data?.data?.list || [];
+     
 
         const mapped = list.map((item, index) => ({
           id: index + 1,
@@ -637,7 +648,7 @@ useEffect(() => {
         formattedDate,
         Date.now(),
         2,
-        selectedZone === "-1" ? 0 : selectedZone,
+        values.zone || 0,
         0,
         selectedGL.value,
         selectedLedger.value,
@@ -657,7 +668,7 @@ useEffect(() => {
             8, // MODE (BANK = 8)
             row.departmentId || 0, // DEPARTMENT
             Math.abs(row.amount || 0), // AMOUNT
-            selectedZone === "-1" ? 0 : selectedZone,
+            values.zone || 0,
             "Bank",
             "",
             "",
@@ -734,6 +745,9 @@ useEffect(() => {
   return (
     <Formik
       initialValues={{
+        department: "",
+        zone: "",
+        collection: "ALL",
         fromDate: new Date(),
         toDate: new Date(),
         depositDate: new Date(),
@@ -774,37 +788,31 @@ useEffect(() => {
                         <span>:</span>
                       </div>
                       <div className="flex-1 min-w-[200px]">
-                       <Select
-  value={selectedDept}
-  onValueChange={(val) => {
-    setSelectedDept(val);
-    setSelectedZone("-1");
-    setZoneList([]);
-    setCollectionList([]);
-    setSelectedCollection("-1");
-  }}
->
-  <SelectTrigger className="w-full h-9">
-    <SelectValue placeholder="-- निवडा --" />
-  </SelectTrigger>
+                        <Select
+                          value={values.department}
+                          onValueChange={async (value) => {
+                            setFieldValue("department", value);
+                            setFieldValue("zone", "");
+                            setFieldValue("collection", "");
 
-  <SelectContent>
-    <SelectItem value="-1">All</SelectItem>
+                            setZoneList([]);
+                            setCollectionList([]);
 
-    {(deptList || []).map((dept) => {
-      if (!dept?.DEPTID) return null;
+                            await fetchZones(value);
+                          }}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="-- Select --" />
+                          </SelectTrigger>
 
-      return (
-        <SelectItem
-          key={dept.DEPTID}
-          value={dept.DEPTID.toString()}
-        >
-          {dept.DEPTNAME}
-        </SelectItem>
-      );
-    })}
-  </SelectContent>
-</Select>
+                          <SelectContent>
+                            {departmentList.map((item) => (
+                              <SelectItem key={item.value} value={item.value}>
+                                {item.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
 
@@ -821,45 +829,6 @@ useEffect(() => {
                         onChange={(date) => setFieldValue("fromDate", date)}
                       />
                     </div>
-
-                    {/* Collection */}
-                    {selectedDept === "7" && (
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                        <div className="flex items-center gap-1 sm:w-[150px] shrink-0">
-                          <Label className="whitespace-nowrap">
-                            Collection
-                          </Label>
-                          <span>:</span>
-                        </div>
-
-                        <div className="flex-1 min-w-[200px]">
-                          <Select
-                            value={selectedCollection}
-                            onValueChange={(val) => setSelectedCollection(val)}
-                          >
-                            <SelectTrigger
-                              className="w-full h-9"
-                              
-                            >
-                              <SelectValue placeholder="-- निवडा --" />
-                            </SelectTrigger>
-
-                            <SelectContent>
-                              <SelectItem value="-1">All</SelectItem>
-
-                              {collectionList.map((item) => (
-                                <SelectItem
-                                  key={item.VAR_COLLCEN_COLLCENID}
-                                  value={item.VAR_COLLCEN_COLLCENID.toString()}
-                                >
-                                  {item.VAR_COLLCEN_COLLCENNAME}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                    )}
                   </div>
 
                   {/* RIGHT COLUMN */}
@@ -872,25 +841,29 @@ useEffect(() => {
                       </div>
                       <div className="flex-1 min-w-[200px]">
                         <Select
-                          value={selectedZone}
-                          onValueChange={(val) => {
-                            setSelectedZone(val);
-                            fetchCollectionCenters(val); // ✅ Use प्रभाग ID
+                          value={values.zone}
+                          onValueChange={async (value) => {
+                            setFieldValue("zone", value);
+                            setFieldValue("collection", "");
+
+                            setCollectionList([]);
+
+                            if (values.department === "7") {
+                              await fetchCollectionCenters(value);
+                            }
                           }}
                         >
-                          <SelectTrigger className="w-full h-9">
-                            <SelectValue placeholder="-- निवडा --" />
+                          <SelectTrigger
+                            className="w-full"
+                            disabled={!values.department}
+                          >
+                            <SelectValue placeholder="-- Select --" />
                           </SelectTrigger>
 
                           <SelectContent>
-                            <SelectItem value="-1">All</SelectItem>
-
-                            {zoneList.map((zone) => (
-                              <SelectItem
-                                key={zone.ID}
-                                value={zone.ID.toString()}
-                              >
-                                {zone.NAME}
+                            {zoneList.map((item) => (
+                              <SelectItem key={item.value} value={item.value}>
+                                {item.label}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -912,6 +885,39 @@ useEffect(() => {
                       />
                     </div>
                   </div>
+
+                  {values.department === "7" && (
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                      <div className="flex items-center gap-1 sm:w-[150px] shrink-0">
+                        <Label className="whitespace-nowrap">Collection</Label>
+                        <span>:</span>
+                      </div>
+
+                      <div className="flex-1 min-w-[200px]">
+                        <Select
+                          value={values.collection}
+                          onValueChange={(value) =>
+                            setFieldValue("collection", value)
+                          }
+                        >
+                          <SelectTrigger
+                            className="w-full"
+                            disabled={!values.zone}
+                          >
+                            <SelectValue placeholder="-- Select --" />
+                          </SelectTrigger>
+
+                          <SelectContent>
+                            {collectionList.map((item) => (
+                              <SelectItem key={item.value} value={item.value}>
+                                {item.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* 🔵 BUTTONS */}
@@ -975,11 +981,13 @@ useEffect(() => {
                 onClose={() => setShowPavatiModal(false)}
                 onConfirm={handleAddPavati}
               >
-                <div className="w-full overflow-x-auto">
-                  <div className="min-w-[800px]">
-                    {pavatiLoading ? (
-                      <div className="text-center py-10">Loading...</div>
-                    ) : (
+                 <div >
+                  {pavatiLoading ? (
+                    <div className="flex items-center justify-center py-10 text-sm font-medium">
+                      Loading...
+                    </div>
+                  ) : (
+                    <>
                       <ShadCNTable
                         headers={[
                           "Select",
@@ -1015,8 +1023,8 @@ useEffect(() => {
                           );
                         }}
                       />
-                    )}
-                  </div>
+                    </>
+                  )}
                 </div>
               </ModalWrapper>
             )}
@@ -1027,11 +1035,13 @@ useEffect(() => {
                 onClose={() => setShowLekhaModal(false)}
                 onConfirm={handleAddLekha}
               >
-                <div className="w-full overflow-x-auto">
-                  <div className="min-w-[1000px]">
-                    {lekhaLoading ? (
-                      <div className="text-center py-10">Loading...</div>
-                    ) : (
+                <div className="w-full  rounded-md border">
+                  {lekhaLoading ? (
+                    <div className="flex items-center justify-center py-10 text-sm font-medium">
+                      Loading...
+                    </div>
+                  ) : (
+                    <>
                       <ShadCNTable
                         headers={[
                           "Select",
@@ -1063,17 +1073,19 @@ useEffect(() => {
                         }}
                         onSelectAllChange={(checked) => {
                           setLekhaData((prev) =>
-                            prev.map((r) => ({ ...r, checked })),
+                            prev.map((r) => ({
+                              ...r,
+                              checked,
+                            })),
                           );
                         }}
                       />
-                    )}
-                  </div>
+                    </>
+                  )}
                 </div>
               </ModalWrapper>
             )}
 
-            {/* 🟢 AFTER SEARCH */}
             {showTable && (
               <Card className="mt-4">
                 <CardContent className="p-6">
@@ -1141,8 +1153,8 @@ useEffect(() => {
                   </div>
 
                   {/* TABLE */}
-                  <div className="w-full overflow-x-auto rounded-lg border">
-                    <div className="min-w-[900px]">
+                  <div >
+                    <>
                       <ShadCNTable
                         headers={[
                           "Select",
@@ -1168,7 +1180,7 @@ useEffect(() => {
                         onRowCheckChange={handleRowCheck}
                         onSelectAllChange={handleSelectAll}
                       />
-                    </div>
+                    </>
                   </div>
 
                   {/* TOTAL */}
