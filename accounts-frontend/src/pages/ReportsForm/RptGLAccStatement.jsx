@@ -163,7 +163,7 @@ export default function RptGLAccStatement() {
 
         zoneid: values.zoneId === "-1" ? null : values.zoneId,
 
-        ulbId: ulbId?.toString(),
+        ulbId: ulbId,
 
         type: values.reportType,
       };
@@ -197,7 +197,6 @@ export default function RptGLAccStatement() {
         return;
       }
 
-      // ================= EXCEL =================
       // ================= EXCEL =================
       const excelUrl =
         values.reportType === "0"
@@ -283,7 +282,7 @@ export default function RptGLAccStatement() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="px-2 sm:px-4 mt-4 sm:mt-6"
+            // className="px-2 sm:px-4 mt-4 sm:mt-6"
           >
             <Card className="border shadow-sm">
               <CardHeader className="border-b">
@@ -308,7 +307,7 @@ export default function RptGLAccStatement() {
                       </SelectTrigger>
 
                       <SelectContent>
-                        <SelectItem value="-1">सर्व</SelectItem>
+                        <SelectItem value="-1">-- सर्व --</SelectItem>
 
                         {zoneList.map((z) => (
                           <SelectItem
