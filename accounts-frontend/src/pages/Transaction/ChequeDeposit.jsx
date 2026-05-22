@@ -169,7 +169,7 @@ const ChequeDeposit = () => {
                 return;
             }
             Swal.fire({
-                title: "Loading Collection...",
+                title: "Loading Collection Center...",
                 allowOutsideClick: false,
                 allowEscapeKey: false,
                 showConfirmButton: false,
@@ -525,7 +525,7 @@ const ChequeDeposit = () => {
             if (!values.glcode) {
                 Swal.fire({
                     icon: "warning",
-                    title: "Validation",
+                    // title: "Validation",
                     text: "विभाग संकेतांक रिक्त असू शकत नाही",
                 });
                 return;
@@ -533,7 +533,7 @@ const ChequeDeposit = () => {
             if (!values.accno) {
                 Swal.fire({
                     icon: "warning",
-                    title: "Validation",
+                    // title: "Validation",
                     text: "लेखाशीर्ष रिक्त असू शकत नाही",
                 });
                 return;
@@ -541,7 +541,7 @@ const ChequeDeposit = () => {
             if (!values.depositDate) {
                 Swal.fire({
                     icon: "warning",
-                    title: "Validation",
+                    // title: "Validation",
                     text: "ठेव तारीख रिक्त असू शकत नाही",
                 });
                 return;
@@ -551,7 +551,7 @@ const ChequeDeposit = () => {
             if (selectedRows.length === 0) {
                 Swal.fire({
                     icon: "warning",
-                    title: "Validation",
+                    // title: "Validation",
                     text: "Please select at least one record.",
                 });
                 return;
@@ -583,7 +583,7 @@ const ChequeDeposit = () => {
             }
 
             const paramStr = paramStrParts.join("~");
-            
+
             const paramStr2 = selectedRows
                 .map((row) => {
                     let modeCode = "4";
@@ -770,7 +770,7 @@ const ChequeDeposit = () => {
     const detailHeaders = [
         "Select All",
         "Receipt Number",
-        "Ref No",
+        "Challan No",
         "Receipt Date",
         "Mode",
         "Department",
@@ -783,7 +783,7 @@ const ChequeDeposit = () => {
     const detailKeyMapping = {
         "Select All": "checked",
         "Receipt Number": "receiptNumber",
-        "Ref No": "refNo",
+        "Challan No": "refNo",
         "Receipt Date": "receiptDate",
         Mode: "mode",
         Department: "department",
@@ -880,7 +880,7 @@ const ChequeDeposit = () => {
                                             </FieldRow>
 
                                             {values.department === "7" && (
-                                                <FieldRow label="Collection">
+                                                <FieldRow label="Collection Center">
                                                     <Select
                                                         value={values.collection}
                                                         onValueChange={(value) =>
@@ -930,14 +930,32 @@ const ChequeDeposit = () => {
                                         </div>
                                     </div>
 
-                                    <div className="flex justify-center">
+                                    <div className="flex justify-center gap-3">
                                         <Button
                                             type="button"
                                             onClick={() => handleSearch(values)}
                                         >
                                             Search
                                         </Button>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={() => {
+                                                resetForm();
+
+                                                setSummaryData([]);
+                                                setDetailData([]);
+                                                setDetailDataCache({});
+                                                setZoneList([]);
+                                                setCollectionList([]);
+                                                setGlOptions([]);
+                                                setAccountOptions([]);
+                                            }}
+                                        >
+                                            Reset
+                                        </Button>
                                     </div>
+
 
                                     {summaryData.length > 0 && (
                                         <>

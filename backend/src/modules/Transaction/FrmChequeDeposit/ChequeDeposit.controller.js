@@ -87,7 +87,7 @@ exports.generateChequeDepositPDF = asyncHandler(
         await getCorporationService({
           ulbId,
         });
-
+        console.log("rows",rows)
       const pdf =
         await FrmChequeDepositPDFHelper({
           rows,

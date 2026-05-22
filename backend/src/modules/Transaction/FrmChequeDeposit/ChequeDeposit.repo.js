@@ -96,14 +96,14 @@ async function getBankDepositDetails(filters) {
     conditions += ` AND collid = :collId`;
     binds.collId = filters.collId;
   }
-
+  // WHEN RMODE = 189 THEN 'cheque'  removed from below CASE in future for LIVE RMODE should chnage
   const sql = `
         SELECT 
             RECNO,
             RECDATE,
 
             CASE 
-                WHEN RMODE = 189 THEN 'cheque'
+                WHEN  RMODE IN ('189', '191', '2', '4', '207') THEN 'cheque'
                 WHEN RMODE = 253 THEN 'DD / PO'
                 ELSE 'Pay Order'
             END AS RMODE_DESC,
