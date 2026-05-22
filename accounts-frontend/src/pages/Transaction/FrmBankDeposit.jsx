@@ -75,7 +75,6 @@ const BankDeposit = () => {
   const [collectionList, setCollectionList] = useState([]);
 
   const [loading, setLoading] = useState(false);
-  const [pageLoading, setPageLoading] = useState(false);
 
   const authHeaders = {
     headers: {
@@ -280,10 +279,8 @@ const BankDeposit = () => {
     try {
       setLoading(true);
 
-      // ✅ SweetAlert Loader Start
       Swal.fire({
         title: "Searching...",
-        text: "Please wait while fetching records.",
         allowOutsideClick: false,
         allowEscapeKey: false,
         showConfirmButton: false,
@@ -331,9 +328,9 @@ const BankDeposit = () => {
         setShowTable(false);
 
         Swal.fire({
-          icon: "warning",
+          // icon: "warning",
           title: "No Data Found",
-          text: "No records available for the selected criteria.",
+          // text: "No records available for the selected criteria.",
         });
         return;
       }
@@ -417,10 +414,9 @@ const BankDeposit = () => {
 
       const newRows = mapped.filter((row) => !existingIds.has(row.id));
 
-      // Show only old modal rows + new modal rows
       return [...previousModalRows, ...newRows];
     });
-
+    
     setShowTable(true);
     setShowPavatiModal(false);
 
@@ -756,16 +752,7 @@ const BankDeposit = () => {
     >
       {({ values, setFieldValue }) => (
         <Form>
-          {pageLoading && (
-            <div className="fixed inset-0 z-[99999] bg-black/50 flex items-center justify-center">
-              <div className="bg-white rounded-xl shadow-xl px-8 py-6 flex flex-col items-center gap-4">
-                <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-lg font-semibold text-gray-700">
-                  Loading...
-                </p>
-              </div>
-            </div>
-          )}
+
 
           <motion.div
             initial={{ opacity: 0, y: 10 }}
