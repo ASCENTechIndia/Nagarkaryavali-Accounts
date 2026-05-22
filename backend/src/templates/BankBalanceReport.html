@@ -3,334 +3,340 @@
 
 <head>
 
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<title>
-Bank Balance Report
-</title>
+    <title>
+        Bank Balance Report
+    </title>
 
-<style>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            color: #000;
+            padding: 10px 18px;
+        }
 
-body{
-    font-family:Arial, Helvetica, sans-serif;
-    font-size:12px;
-    color:#000;
-    padding:10px 18px;
-}
+        .page {
+            width: 100%;
+        }
 
-.page{
-    width:100%;
-}
+        /* ================= HEADER ================= */
 
-/* ================= HEADER ================= */
+        .header {
+            position: relative;
+            margin-bottom: 18px;
+            min-height: 70px;
+        }
 
-.header{
-    position:relative;
-    margin-bottom:20px;
-    min-height:70px;
-}
+        .logo {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+        }
 
-.logo{
-    position:absolute;
-    left:0;
-    top:0;
-    width:60px;
-    height:60px;
-    object-fit:contain;
-}
+        .title {
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+        }
 
-.title{
-    text-align:center;
-    font-size:22px;
-    font-weight:bold;
-}
+        .subtitle {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
 
-.subtitle{
-    text-align:center;
-    font-size:18px;
-    font-weight:bold;
-    margin-top:5px;
-}
+        /* DATE CENTER */
+        .report-date {
+            margin-top: 10px;
+            font-size: 13px;
+            font-weight: bold;
+            text-align: center;
+        }
 
-.report-date{
-    margin-top:10px;
-    font-size:13px;
-    font-weight:bold;
-}
+        /* ================= GROUP ================= */
 
-/* ================= GROUP ================= */
+        .group-title {
+            font-weight: bold;
+            margin-top: 14px;
+            margin-bottom: 0;
+            font-size: 15px;
+        }
 
-.group-title{
-    font-weight:bold;
-    margin-top:18px;
-    margin-bottom:8px;
-    font-size:15px;
-}
+        /* BORDER ADDED */
+        .group-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 6px;
+            font-size: 12px;
+        }
 
-.row{
-    display:flex;
-    width:100%;
-    padding:3px 0;
-    align-items:flex-start;
-}
+        .group-table td {
+            border: 1px solid #000;
+            padding: 4px 6px;
+            vertical-align: top;
+        }
 
-.col1{
-    width:18%;
-}
+        .col1 {
+            width: 18%;
+        }
 
-.col2{
-    width:57%;
-    padding-right:10px;
-}
+        .col2 {
+            width: 57%;
+        }
 
-.col3{
-    width:17%;
-    text-align:right;
-}
+        .col3 {
+            width: 17%;
+            text-align: right;
+        }
 
-.col4{
-    width:8%;
-    text-align:right;
-}
+        .col4 {
+            width: 8%;
+            text-align: right;
+        }
 
-.total-row{
-    margin-top:10px;
-    font-weight:bold;
-    border-top:1px solid #000;
-    border-bottom:1px solid #000;
-    padding:6px 0;
-}
+        .total-row {
+            font-weight: bold;
+        }
 
-/* ================= SUMMARY ================= */
+        /* ================= SUMMARY ================= */
 
-.summary{
-    margin-top:22px;
-    width:380px;
-}
+        .summary {
+            margin-top: 18px;
+            width: 380px;
+        }
 
-.summary-table{
-    width:100%;
-    border-collapse:collapse;
-    font-size:12px;
-}
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
 
-.summary-table th,
-.summary-table td{
-    border:1px solid #000;
-    padding:6px 10px;
-}
+        .summary-table th,
+        .summary-table td {
+            border: 1px solid #000;
+            padding: 6px 10px;
+        }
 
-.summary-table th{
-    text-align:left;
-}
+        .summary-table th {
+            text-align: left;
+        }
 
-.summary-amount{
-    text-align:right;
-}
+        .summary-amount {
+            text-align: right;
+        }
 
-.grand-total-row{
-    font-weight:bold;
-}
+        .grand-total-row {
+            font-weight: bold;
+        }
 
-/* ================= FOOTER ================= */
+        /* ================= FOOTER ================= */
 
-.footer{
-    margin-top:25px;
-    border-top:1px solid #000;
-    padding-top:6px;
+        .footer {
+            margin-top: 20px;
+            border-top: 1px solid #000;
+            padding-top: 5px;
 
-    display:flex;
-    justify-content:space-between;
+            display: flex;
+            justify-content: space-between;
 
-    font-size:11px;
-}
-
-</style>
+            font-size: 11px;
+        }
+    </style>
 
 </head>
 
 <body>
 
-<div class="page">
+    <div class="page">
 
-<!-- ================= HEADER ================= -->
+        <!-- ================= HEADER ================= -->
 
-<div class="header">
+        <div class="header">
 
-<img
-src="{{logo}}"
-class="logo"
-/>
+            <img src="{{logo}}" class="logo" />
 
-<div class="title">
-{{corporationName}}
-</div>
+            <div class="title">
+                {{corporationName}}
+            </div>
 
-<div class="subtitle">
-रोक आणि बँक शिल्लक
-</div>
+            <div class="subtitle">
+                रोक आणि बँक शिल्लक
+            </div>
 
-<div class="report-date">
-दिनांक :
-{{reportDate}}
-</div>
+            <div class="report-date">
+                दिनांक : {{reportDate}}
+            </div>
 
-</div>
+        </div>
 
-<!-- ================= GROUPS ================= -->
+        <!-- ================= GROUPS ================= -->
 
-{{#each groups}}
+        {{#each groups}}
 
-<div class="group-title">
-{{groupName}}
-</div>
+        <div class="group-title">
+            {{groupName}}
+        </div>
 
-{{#each rows}}
+        <table class="group-table">
 
-<div class="row">
+            <tbody>
 
-<div class="col1">
-{{objectCode}}
-</div>
+                {{#each rows}}
 
-<div class="col2">
-{{accName}}
-</div>
+                <tr>
 
-<div class="col3">
-{{balance}}
-</div>
+                    <td class="col1">
+                        {{objectCode}}
+                    </td>
 
-<div class="col4">
-{{crdr}}
-</div>
+                    <td class="col2">
+                        {{accName}}
+                    </td>
 
-</div>
+                    <td class="col3">
+                        {{balance}}
+                    </td>
 
-{{/each}}
+                    <td class="col4">
+                        {{crdr}}
+                    </td>
 
-<div class="row total-row">
+                </tr>
 
-<div class="col1"></div>
+                {{/each}}
 
-<div class="col2">
-{{groupName}}एकूण: -
-</div>
+                <tr class="total-row">
 
-<div class="col3">
-{{total}}
-</div>
+                    <td class="col1"></td>
 
-<div class="col4">
-{{totalCrDr}}
-</div>
+                    <td class="col2">
+                        {{groupName}}एकूण: -
+                    </td>
 
-</div>
+                    <td class="col3">
+                        {{total}}
+                    </td>
 
-{{/each}}
+                    <td class="col4">
+                        {{totalCrDr}}
+                    </td>
 
-<!-- ================= SUMMARY ================= -->
+                </tr>
 
-<div class="summary">
+            </tbody>
 
-<table class="summary-table">
+        </table>
 
-<tr>
+        {{/each}}
 
-<th>
-Type
-</th>
+        <!-- ================= SUMMARY ================= -->
 
-<th>
-Balance
-</th>
+        <div class="summary">
 
-</tr>
+            <table class="summary-table">
 
-<tr>
+                <tr>
 
-<td>
-Cash Account
-</td>
+                    <th>
+                        Type
+                    </th>
 
-<td class="summary-amount">
-{{cashTotal}}
-{{cashCrDr}}
-</td>
+                    <th>
+                        Balance
+                    </th>
 
-</tr>
+                </tr>
 
-<tr>
+                <tr>
 
-<td>
-Bank Account
-</td>
+                    <td>
+                        Cash Account
+                    </td>
 
-<td class="summary-amount">
-{{bankTotal}}
-{{bankCrDr}}
-</td>
+                    <td class="summary-amount">
+                        {{cashTotal}}
+                        {{cashCrDr}}
+                    </td>
 
-</tr>
+                </tr>
 
-<tr>
+                <tr>
 
-<td>
-Investment
-</td>
+                    <td>
+                        Bank Account
+                    </td>
 
-<td class="summary-amount">
-{{investmentTotal}}
-{{investmentCrDr}}
-</td>
+                    <td class="summary-amount">
+                        {{bankTotal}}
+                        {{bankCrDr}}
+                    </td>
 
-</tr>
+                </tr>
 
-<tr class="grand-total-row">
+                <tr>
 
-<td>
-Total
-</td>
+                    <td>
+                        Investment
+                    </td>
 
-<td class="summary-amount">
-{{grandTotal}}
-{{grandCrDr}}
-</td>
+                    <td class="summary-amount">
+                        {{investmentTotal}}
+                        {{investmentCrDr}}
+                    </td>
 
-</tr>
+                </tr>
 
-</table>
+                <tr class="grand-total-row">
 
-</div>
+                    <td>
+                        Total
+                    </td>
 
-<!-- ================= FOOTER ================= -->
+                    <td class="summary-amount">
+                        {{grandTotal}}
+                        {{grandCrDr}}
+                    </td>
 
-<div class="footer">
+                </tr>
 
-<div>
-दिनांक :
-{{currentDate}}
-{{currentTime}}
-</div>
+            </table>
 
-<div>
-युजर आयडी :
-</div>
+        </div>
 
-<div>
-प्रति :
-1 / 1
-</div>
+        <!-- ================= FOOTER ================= -->
 
-</div>
+        <div class="footer">
 
-</div>
+            <div>
+                दिनांक :
+                {{currentDate}}
+                {{currentTime}}
+            </div>
+
+            <div>
+                युजर आयडी :
+            </div>
+
+            <div>
+                प्रति :
+                1 / 1
+            </div>
+
+        </div>
+
+    </div>
 
 </body>
 
