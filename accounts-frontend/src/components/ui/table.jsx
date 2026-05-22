@@ -11,7 +11,7 @@ function Table({
   ...props
 }) {
   return (
-    <div data-slot="table-container" className="relative w-full overflow-x-auto">
+    <div data-slot="table-container" className="relative w-full custom-scrollbar">
       <table
         data-slot="table"
         className={cn("w-full caption-bottom text-sm", className)}
@@ -125,11 +125,6 @@ export {
 }
 
 
-
-
-import { useNavigate } from "react-router";
-
-
 const fadeInUp = {
   initial: { opacity: 0, y: 10 },
   animate: { opacity: 1, y: 0 },
@@ -212,7 +207,7 @@ const ShadCNTable = ({
             </TableHeader>
           </Table>
 
-          <ScrollArea className="max-h-[380px]  overflow-y-auto custom-scrollbar">
+          <ScrollArea className="max-h-[380px]  overflow-y-auto custom-scrollbar"  style={{ scrollbarGutter: "stable" }}>
             <Table className="table-fixed w-full">
               <TableBody className="text-center">
                 {paginatedData.length > 0 ? (
@@ -269,23 +264,23 @@ const ShadCNTable = ({
       {/* ✅ PAGINATION */}
       {pagination && totalPages > 1 && (
         <div className="flex justify-center items-center gap-4 py-3">
-          <Button
+          <button
             className="border border-indigo-300 rounded px-3 py-1"
             disabled={currentPage === 1}
             onClick={() => setCurrentPage((p) => p - 1)}
           >
             Previous
-          </Button>
+          </button>
           <span className="font-semibold">
             Page {currentPage} of {totalPages}
           </span>
-          <Button
+          <button
             className="border border-indigo-300 rounded px-3 py-1"
             disabled={currentPage === totalPages}
             onClick={() => setCurrentPage((p) => p + 1)}
           >
             Next
-          </Button>
+          </button>
         </div>
       )}
     </motion.div>

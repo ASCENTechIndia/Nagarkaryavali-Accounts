@@ -1033,7 +1033,6 @@ const ChequeDeposit = () => {
                                                         values
                                                     )
                                                 }
-                                                className="w-full"
                                             />
                                         </>
                                     )}
@@ -1050,7 +1049,6 @@ const ChequeDeposit = () => {
                                                 onRowCheckChange={
                                                     handleDetailRowCheck
                                                 }
-                                                className="min-w-300"
                                             />
 
                                             <div className="max-w-xs">
