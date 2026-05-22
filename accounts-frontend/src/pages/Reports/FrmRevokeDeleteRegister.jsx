@@ -269,7 +269,7 @@ const FrmRevokeDeleteRegister = () => {
                     </div>
 
                     <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-                      <div className="space-y-2">
+                      <div className="flex flex-col sm:flex-row gap-3 ">
                         <Label className="text-sm font-semibold">
                           Export To :
                         </Label>
@@ -304,10 +304,8 @@ const FrmRevokeDeleteRegister = () => {
                           </label>
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label className="text-sm font-semibold">
-                          Status :
-                        </Label>
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <Label className="text-sm font-semibold" text="Status :" />
 
                         <div className="flex flex-wrap items-center gap-6 px-4 py-3 min-h-[42px]">
                           <label className="flex items-center gap-2 cursor-pointer">
