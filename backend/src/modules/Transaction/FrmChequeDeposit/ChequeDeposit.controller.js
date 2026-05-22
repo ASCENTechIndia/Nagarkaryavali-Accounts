@@ -55,7 +55,7 @@ exports.generateChequeDepositPDF = asyncHandler(
   async (req, res) => {
     try {
 
-      const { refNo, ulbId } = req.body;
+      const { refNo, ulbId, transactionNo } = req.body;
 
       if (!refNo) {
         return res.status(400).json({
@@ -92,6 +92,7 @@ exports.generateChequeDepositPDF = asyncHandler(
         await FrmChequeDepositPDFHelper({
           rows,
           ulbInfo,
+          transactionNo
         });
 
       const baseUrl =

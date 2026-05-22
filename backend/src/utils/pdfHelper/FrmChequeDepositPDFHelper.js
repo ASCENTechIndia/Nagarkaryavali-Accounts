@@ -178,6 +178,7 @@ const numberToMarathiWords = (num) => {
 const FrmChequeDepositPDFHelper = async ({
   rows,
   ulbInfo,
+  transactionNo
 }) => {
 
   try {
@@ -240,8 +241,11 @@ const FrmChequeDepositPDFHelper = async ({
       panNo:
         firstRow.PANNO || "",
 
+      // slipNo:
+      //   firstRow.PAVTINNO || "",
+
       slipNo:
-        firstRow.PAVTINNO || "",
+        transactionNo || "",
 
       accountType:
         firstRow.ACTYPE || "",

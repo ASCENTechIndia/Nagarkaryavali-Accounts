@@ -646,6 +646,14 @@ const ChequeDeposit = () => {
             if (result?.errorCode === -100) {
                 const refNo = result?.returnStr;
 
+                const transactionNoMatch = result?.errorMsg?.match(
+                    /Transaction No\.\s*:\s*(\d+)/
+                );
+
+                const transactionNo = transactionNoMatch?.[1] || "";
+
+                console.log("Transaction No =>", transactionNo);
+
                 Swal.fire({
                     title: "Generating PDF...",
                     allowOutsideClick: false,
@@ -663,6 +671,7 @@ const ChequeDeposit = () => {
                         {
                             refNo: String(refNo),
                             ulbId: String(ulbId),
+                            transactionNo: String(transactionNo),
                         },
                         {
                             headers: {
