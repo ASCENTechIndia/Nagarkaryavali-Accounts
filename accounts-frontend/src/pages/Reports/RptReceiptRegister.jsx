@@ -19,6 +19,7 @@ import Swal from "sweetalert2";
 import * as XLSX from "xlsx";
 import { DatePicker } from "@/components/ui/calendar";
 import SearchableSelect from "@/components/SearchableSelect";
+import { Input } from "@/components/ui/input";
 
 const initialValues = {
     zoneId: "",
@@ -27,8 +28,8 @@ const initialValues = {
     wardCode: "",
     head: "",
     userId: "",
-    reportType: "detail",
-    exportType: "excel",
+    reportType: "summary",
+    exportType: "pdf",
 };
 
 const RptReceiptRegister = () => {
@@ -387,8 +388,9 @@ const RptReceiptRegister = () => {
                                         <Label className="text-sm">अहवालाचा प्रकार :</Label>
                                         <div className="flex gap-4">
                                             <label className="flex items-center gap-2 text-sm">
-                                                <input
+                                                <Input
                                                     type="radio"
+                                                    name="reportType"
                                                     checked={values.reportType === "summary"}
                                                     onChange={() =>
                                                         setFieldValue("reportType", "summary")
@@ -398,8 +400,9 @@ const RptReceiptRegister = () => {
                                             </label>
 
                                             <label className="flex items-center gap-2 text-sm">
-                                                <input
+                                                <Input
                                                     type="radio"
+                                                    name="reportType"
                                                     checked={values.reportType === "detail"}
                                                     onChange={() =>
                                                         setFieldValue("reportType", "detail")
@@ -412,8 +415,9 @@ const RptReceiptRegister = () => {
                                         <Label className="text-sm">Export To :</Label>
                                         <div className="flex gap-4">
                                             <label className="flex items-center gap-2 text-sm">
-                                                <input
+                                                <Input
                                                     type="radio"
+                                                    name="exportType"
                                                     checked={values.exportType === "pdf"}
                                                     onChange={() =>
                                                         setFieldValue("exportType", "pdf")
@@ -423,8 +427,9 @@ const RptReceiptRegister = () => {
                                             </label>
 
                                             <label className="flex items-center gap-2 text-sm">
-                                                <input
+                                                <Input
                                                     type="radio"
+                                                    name="exportType"
                                                     checked={values.exportType === "excel"}
                                                     onChange={() =>
                                                         setFieldValue("exportType", "excel")
