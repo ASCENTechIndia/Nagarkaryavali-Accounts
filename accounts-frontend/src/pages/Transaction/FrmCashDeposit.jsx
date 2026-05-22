@@ -563,7 +563,7 @@ const FrmCashDeposit = () => {
     }
   };
 
-  const handlePrintPDF = async (selectedGL, selectedLedger, refNo, transNo) => {
+  const handlePrintPDF = async (selectedGL, selectedLedger, refNo, transNo, hasDenomination = true) => {
     try {
       const loader = Swal.fire({
         title: "Generating PDF...",
@@ -580,6 +580,7 @@ const FrmCashDeposit = () => {
           glName: selectedGL?.label,
           ledgerName: selectedLedger?.label,
           transNo: transNo,
+          hasDenomination
         },
         {
           headers: {
@@ -625,13 +626,13 @@ const FrmCashDeposit = () => {
       }
 
       const hasAnyDenomination = denominations.some(d => d.count > 0);
-      if (!hasAnyDenomination) {
-        Swal.fire({
-          text: "कृपया किमान एक Denomination तपशील भरा",
-          confirmButtonColor: '#1e3a8a'
-        });
-        return;
-      }
+      // if (!hasAnyDenomination) {
+      //   Swal.fire({
+      //     text: "कृपया किमान एक Denomination तपशील भरा",
+      //     confirmButtonColor: '#1e3a8a'
+      //   });
+      //   return;
+      // }
 
       const hasInvalidCount = denominations.some(d => d.count < 0);
       if (hasInvalidCount) {
@@ -642,15 +643,21 @@ const FrmCashDeposit = () => {
         return;
       }
 
-      const totalDenomAmt = totalDenominationAmount;
-      const totalAmt = totalAmount;
-      
-      if (totalAmt !== totalDenomAmt) {
-        Swal.fire({
-          text: `Denomination Amount (${totalDenomAmt.toLocaleString('en-IN')}) आणि Total Amount (${totalAmt.toLocaleString('en-IN')}) जुळत नाही`,
-          confirmButtonColor: '#1e3a8a'
-        });
-        return;
+      if (hasAnyDenomination) {
+        const totalDenomAmt = totalDenominationAmount;
+        const totalAmt = totalAmount;
+
+        if (totalAmt !== totalDenomAmt) {
+          Swal.fire({
+            text: `Denomination Amount (${totalDenomAmt.toLocaleString(
+              "en-IN"
+            )}) आणि Total Amount (${totalAmt.toLocaleString(
+              "en-IN"
+            )}) जुळत नाही`,
+            confirmButtonColor: "#1e3a8a",
+          });
+          return;
+        }
       }
 
       if (!depositDate) {
@@ -830,6 +837,51 @@ const FrmCashDeposit = () => {
         }
         
         console.log("Extracted - ReceiptNo:", receiptNo, "TransNo:", transNo);
+
+        const hasDenomination = denominations.some(d => d.count > 0);
+
+        if (!hasDenomination) {
+          Swal.fire({
+            text: bankRes.data.data.errorMsg,
+            icon: "success",
+            confirmButtonColor: "#1e3a8a",
+          }).then(async (result) => {
+            if (result.isConfirmed) {
+
+              await handlePrintPDF(
+                selectedGL,
+                selectedLedger,
+                receiptNo,
+                transNo,
+                false
+              );
+
+              resetForm();
+              setFormValues({
+                  vibhag: "-1",
+                  prabhag: "-1",
+                  colCen: "-1",
+                  fromDate: new Date(),
+                  toDate: new Date(),
+                });
+                setTransactionData([]);
+                setSelectedTransactions(new Set());
+                setTotalAmount(0);
+                setDenominations([]);
+                setTotalDenominationAmount(0);
+                setSelectedRecNos([]);
+                setSelectedAccNos([]);
+                setSelectedChallanNos([]);
+                setDepositDate(new Date());
+                setShowTables(false);
+                setDeptCode("");
+                setLedger("");
+                setLedgerOptions([]);
+            }
+          });
+
+          return;
+        }
         
         if (receiptNo) {
           let denomStr = "";
@@ -861,7 +913,7 @@ const FrmCashDeposit = () => {
           );
           
           console.log("denomRes: ", denomRes.data);
-          
+
           if (denomRes?.data?.data?.errorCode === -100) {
             Swal.fire({
               text: bankRes.data.data.errorMsg,
@@ -871,7 +923,7 @@ const FrmCashDeposit = () => {
             .then(async (result) => {
               if (result.isConfirmed) {
                 if (receiptNo) {
-                  await handlePrintPDF(selectedGL, selectedLedger, receiptNo, transNo);
+                  await handlePrintPDF(selectedGL, selectedLedger, receiptNo, transNo, true);
                 }
                 resetForm();
                 setFormValues({
@@ -894,7 +946,6 @@ const FrmCashDeposit = () => {
                 setDeptCode("");
                 setLedger("");
                 setLedgerOptions([]);
-                // Clear these arrays as well
               }
             });
           } else {
