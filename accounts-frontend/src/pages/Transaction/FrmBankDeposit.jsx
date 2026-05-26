@@ -199,7 +199,7 @@ const BankDeposit = () => {
         return;
       }
       Swal.fire({
-        title: "Loading Collection...",
+        title: "Loading Collection Center...",
         allowOutsideClick: false,
         allowEscapeKey: false,
         showConfirmButton: false,
