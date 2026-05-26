@@ -66,9 +66,11 @@ async function getAccountWiseReport(filters) {
     ulbId: filters.ulbId,
 
     // ✅ Convert JS date → Oracle DATE
-    fromDate: new Date(filters.fromDate),
-    toDate: new Date(filters.toDate)
+    fromDate: filters.fromDate,
+    toDate: filters.toDate
   };
+
+  console.log("filters:",filters)
 
   let sql = `
     SELECT 
@@ -77,7 +79,8 @@ async function getAccountWiseReport(filters) {
       'Bank' AS rmode,
       SUM(amount) AS amount
     FROM vw_bankdeposit
-    WHERE TRUNC(recdate) BETWEEN :fromDate AND :toDate
+    WHERE TRUNC(recdate) BETWEEN TO_DATE(:fromDate,'YYYY-MM-DD')
+      AND TO_DATE(:toDate,'YYYY-MM-DD') 
       AND ulb = :ulbId
       AND rmode IN ('8','41')
   `;
@@ -100,10 +103,12 @@ async function getAccountWiseReport(filters) {
   sql += `
     GROUP BY glcode, accno, glname, accountname, challano, recdate
   `;
-
+  console.log("params:",params)
   const result = await executeQuery(sql, params);
   if (!result.success) throw new Error(result.error);
 
+  console.log("result:",result)
+  console.log("params:",params)
   return result.rows;
 }
 

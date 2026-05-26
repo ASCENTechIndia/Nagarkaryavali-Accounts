@@ -141,9 +141,9 @@ const BankDeposit = () => {
     } catch (error) {
       console.error("Department fetch error:", error);
       setDepartmentList([]);
-    } 
-      Swal.close();
-    
+    }
+    Swal.close();
+
   };
 
   const fetchZones = async (departmentId) => {
@@ -295,7 +295,7 @@ const BankDeposit = () => {
         },
       );
 
-      
+
       Swal.close();
 
       // API failed
@@ -375,7 +375,7 @@ const BankDeposit = () => {
     } finally {
       setLoading(false);
     }
-    Swal.close(); 
+    Swal.close();
   };
 
   const handleAddPavati = () => {
@@ -412,7 +412,7 @@ const BankDeposit = () => {
 
       return [...previousModalRows, ...newRows];
     });
-    
+
     setShowTable(true);
     setShowPavatiModal(false);
 
@@ -468,19 +468,32 @@ const BankDeposit = () => {
     try {
       setLekhaLoading(true);
 
+
+      const formatDate = (date) => {
+        if (!date) return "";
+
+        const d = new Date(date);
+
+        const day = String(d.getDate()).padStart(2, "0");
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const year = d.getFullYear();
+
+        return `${year}-${month}-${day}`;
+      };
+
       const res = await axios.post(
         `${BASE_URL}/api/Bankdeposit/account-wise`,
         {
           ulbId: Number(ulbId),
-          fromDate: values.fromDate,
-          toDate: values.toDate,
+          fromDate: formatDate(values.fromDate),
+          toDate: formatDate(values.toDate),
 
           zoneId: values.zone || null,
           deptId: values.department || null,
-          collectionId:
+          collId:
             values.department === "7" ? values.collection || null : null,
 
-          rmode: [],
+          // rmode: [],
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -542,7 +555,7 @@ const BankDeposit = () => {
 
           deptId: values.department || null,
           zoneId: values.zone || null,
-          collectionId:
+          collId:
             values.department === "7" ? values.collection || null : null,
 
           rmode: [],
@@ -556,7 +569,7 @@ const BankDeposit = () => {
 
       if (res.data?.ok && res.data?.data?.success) {
         const list = res.data?.data?.list || [];
-     
+
 
         const mapped = list.map((item, index) => ({
           id: index + 1,
@@ -964,7 +977,7 @@ const BankDeposit = () => {
                 onClose={() => setShowPavatiModal(false)}
                 onConfirm={handleAddPavati}
               >
-                 <div >
+                <div >
                   {pavatiLoading ? (
                     <div className="flex items-center justify-center py-10 text-sm font-medium">
                       Loading...
