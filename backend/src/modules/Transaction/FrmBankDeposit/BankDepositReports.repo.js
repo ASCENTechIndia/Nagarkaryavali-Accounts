@@ -45,9 +45,9 @@ async function getBankDepositSummary(filters) {
     params.deptId = filters.deptId;
   }
 
-  if (filters.collId) {
+  if (filters.collectionId) {
     sql += " AND collid = :collId";
-    params.collId = filters.collId;
+    params.collId = filters.collectionId;
   }
 
   sql += `
@@ -55,6 +55,7 @@ async function getBankDepositSummary(filters) {
   `;
 
   const result = await executeQuery(sql, params);
+
   if (!result.success) throw new Error(result.error);
   return result.rows;
 }

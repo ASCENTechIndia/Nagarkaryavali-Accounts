@@ -270,10 +270,6 @@ const BankDeposit = () => {
       zoneId: values.zone || null,
       collectionId:
         values.department === "7" ? values.collection || null : null,
-      receiptNos: [],
-      accountNos: [],
-      challanNos: [],
-      rmode: [],
     };
 
     try {
