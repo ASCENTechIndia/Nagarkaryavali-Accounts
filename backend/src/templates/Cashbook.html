@@ -83,6 +83,12 @@ th, td {
   text-align: left;
   font-weight: bold;
 }
+.text-wrap {
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
 </style>
 </head>
 
@@ -149,7 +155,7 @@ th, td {
     <td>{{SR}}</td>
     <td>{{R_ZONE}}</td>
     <td>{{R_DEPT}}</td>
-    <td>{{R_DOCNO}}</td>
+    <td class="text-wrap">{{R_DOCNO}}</td>
     <td>{{R_ACCNAME}}</td>
     <td class="text-left">{{R_NARRATION}}</td>
     <td>{{R_CASH}}</td>
