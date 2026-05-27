@@ -30,7 +30,7 @@ const ModalWrapper = ({ title, onClose, onConfirm, children }) => (
         </button>
       </div>
 
-      <div className="max-h-[400px] overflow-auto p-3 no-scrollbar">{children}</div>
+      <div className="max-h-100 overflow-auto p-3 no-scrollbar">{children}</div>
 
       <div className="flex justify-center gap-3 p-3 border-t">
         <Button onClick={onConfirm}>
@@ -420,7 +420,7 @@ const BankDeposit = () => {
     setPavatiData((prev) => prev.map((row) => ({ ...row, checked: false })));
   };
 
-  const handleAddLekha = () => {
+  const handleAddLekha = (values) => {
     const selected = lekhaData.filter((r) => r.checked);
 
     if (selected.length === 0) {
@@ -428,14 +428,34 @@ const BankDeposit = () => {
       return;
     }
 
+    // const mapped = selected.map((r) => ({
+    //   id: `L-${r.id}`,
+    //   department: r.giName,
+    //   departmentId: "-",
+    //   accountCode: r.accountCode,
+    //   accountHead: r.accountName,
+    //   amount: r.amount,
+
+
+    //   glcodeg: r.glcodeg || "",
+    //   accnog: r.accnog || "",
+
+    //   checked: false,
+    // }));
+
     const mapped = selected.map((r) => ({
       id: `L-${r.id}`,
-      department: r.giName,
-      departmentId: "-",
+
+      department:
+        departmentList.find(
+          (d) => d.value === values.department
+        )?.label || "",
+
+      departmentId: values.department || "-",
+
       accountCode: r.accountCode,
       accountHead: r.accountName,
       amount: r.amount,
-
 
       glcodeg: r.glcodeg || "",
       accnog: r.accnog || "",
@@ -779,11 +799,11 @@ const BankDeposit = () => {
                   <div className="space-y-4">
                     {/* विभाग */}
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                      <div className="flex items-center gap-1 sm:w-[150px] shrink-0">
+                      <div className="flex items-center gap-1 sm:w-38 shrink-0">
                         <Label className="whitespace-nowrap">विभाग</Label>
                         <span>:</span>
                       </div>
-                      <div className="flex-1 min-w-[200px]">
+                      <div className="flex-1 min-w-50">
                         <Select
                           value={values.department}
                           onValueChange={async (value) => {
@@ -814,7 +834,7 @@ const BankDeposit = () => {
 
                     {/* दिनांक पासून */}
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                      <div className="flex items-center gap-1 sm:w-[150px] shrink-0">
+                      <div className="flex items-center gap-1 sm:w-38 shrink-0">
                         <Label className="whitespace-nowrap">
                           दिनांक पासून
                         </Label>
@@ -831,11 +851,11 @@ const BankDeposit = () => {
                   <div className="space-y-4">
                     {/* प्रभाग */}
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                      <div className="flex items-center gap-1 sm:w-[150px] shrink-0">
+                      <div className="flex items-center gap-1 sm:w-38 shrink-0">
                         <Label className="whitespace-nowrap">प्रभाग</Label>
                         <span>:</span>
                       </div>
-                      <div className="flex-1 min-w-[200px]">
+                      <div className="flex-1 min-w-50">
                         <Select
                           value={values.zone}
                           onValueChange={async (value) => {
@@ -869,7 +889,7 @@ const BankDeposit = () => {
 
                     {/* दिनांक पर्यंत */}
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                      <div className="flex items-center gap-1 sm:w-[150px] shrink-0">
+                      <div className="flex items-center gap-1 sm:w-38 shrink-0">
                         <Label className="whitespace-nowrap">
                           दिनांक पर्यंत
                         </Label>
@@ -884,12 +904,12 @@ const BankDeposit = () => {
 
                   {values.department === "7" && (
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                      <div className="flex items-center gap-1 sm:w-[150px] shrink-0">
+                      <div className="flex items-center gap-1 sm:w-38 shrink-0">
                         <Label className="whitespace-nowrap">Collection</Label>
                         <span>:</span>
                       </div>
 
-                      <div className="flex-1 min-w-[200px]">
+                      <div className="flex-1 min-w-50">
                         <Select
                           value={values.collection}
                           onValueChange={(value) =>
@@ -1029,7 +1049,8 @@ const BankDeposit = () => {
               <ModalWrapper
                 title="लेखाशीर्ष तपशील"
                 onClose={() => setShowLekhaModal(false)}
-                onConfirm={handleAddLekha}
+                // onConfirm={handleAddLekha}
+                onConfirm={() => handleAddLekha(values)}
               >
                 <div >
                   {lekhaLoading ? (
@@ -1086,17 +1107,17 @@ const BankDeposit = () => {
               <Card className="mt-4">
                 <CardContent className="p-6">
                   {/* 🔥 GL + LEDGER SECTION */}
-                  <div className="flex flex-col lg:flex-row gap-4 mb-4">
+                  <div className="flex flex-col flex-wrap lg:flex-row gap-4 mb-4">
                     {/* GL */}
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 flex-1">
-                      <div className="flex items-center gap-1 sm:w-[160px] shrink-0">
+                    <div className="flex flex-col  sm:flex-row sm:items-center gap-1 sm:gap-2 flex-1">
+                      <div className="flex items-center gap-1 sm:w-40 shrink-0">
                         <Label className="whitespace-nowrap">
                           विभाग संकेतांक
                         </Label>
                         <span>:</span>
                       </div>
 
-                      <div className="flex-1 min-w-[200px]">
+                      <div className="flex-1 min-w-50">
                         <SearchableSelect
                           options={glList.map((g) => ({
                             label: g.GLSEARCHNAME,
@@ -1113,14 +1134,13 @@ const BankDeposit = () => {
                       </div>
                     </div>
 
-                    {/* LEDGER */}
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 flex-1">
-                      <div className="flex items-center gap-1 sm:w-[160px] shrink-0">
+                    <div className="flex flex-col sm:flex-row  sm:items-center gap-1 sm:gap-2 flex-1">
+                      <div className="flex items-center gap-1 sm:w-40 shrink-0">
                         <Label className="whitespace-nowrap">लेखाशीर्ष</Label>
                         <span>:</span>
                       </div>
 
-                      <div className="flex-1 min-w-[200px]">
+                      <div className="flex-1 min-w-50">
                         <SearchableSelect
                           options={creditList.map((c) => ({
                             label: c.ACCNAME,
@@ -1134,7 +1154,7 @@ const BankDeposit = () => {
 
                     {/* DATE */}
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 flex-1">
-                      <div className="flex items-center gap-1 sm:w-[160px] shrink-0">
+                      <div className="flex items-center gap-1 sm:w-40 shrink-0">
                         <Label className="whitespace-nowrap">
                           Deposit Date
                         </Label>

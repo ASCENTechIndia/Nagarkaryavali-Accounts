@@ -4,15 +4,15 @@ const { executeQuery } = require("../../../db/queryExecutor");
 
 async function getBillRegisterReport(params) {
   const {
-    fromDate,
-    toDate,
-    zoneId = null,  
-    deptId = null,   
-    partyId = [],   
-    accno = null,   
-    glcode = null,   
-    ulbid = null    
-  } = params;
+  fromDate,
+  toDate,
+  zoneId = null,
+  deptId = [],
+  partyId = [],
+  accno = [],
+  glcode = [],
+  ulbid = null
+} = params;
 
   let query = `
     SELECT
@@ -52,20 +52,44 @@ async function getBillRegisterReport(params) {
     bindParams.zoneId = zoneId;
   }
 
-  if (deptId) {
-    query += ` AND DEPTID = :deptId`;
-    bindParams.deptId = deptId;
-  }
+// DEPTID array filter
+if (Array.isArray(deptId) && deptId.length > 0) {
+  const placeholders = deptId
+    .map((_, index) => `:deptId${index}`)
+    .join(", ");
 
-  if (accno) {
-    query += ` AND ACCNO = :accno`;
-    bindParams.accno = accno;
-  }
+  query += ` AND DEPTID IN (${placeholders})`;
 
-  if (glcode) {
-    query += ` AND GLCODE = :glcode`;
-    bindParams.glcode = glcode;
-  }
+  deptId.forEach((id, index) => {
+    bindParams[`deptId${index}`] = id;
+  });
+}
+
+// ACCNO array filter
+if (Array.isArray(accno) && accno.length > 0) {
+  const placeholders = accno
+    .map((_, index) => `:accno${index}`)
+    .join(", ");
+
+  query += ` AND ACCNO IN (${placeholders})`;
+
+  accno.forEach((id, index) => {
+    bindParams[`accno${index}`] = id;
+  });
+}
+
+// GLCODE array filter
+if (Array.isArray(glcode) && glcode.length > 0) {
+  const placeholders = glcode
+    .map((_, index) => `:glcode${index}`)
+    .join(", ");
+
+  query += ` AND GLCODE IN (${placeholders})`;
+
+  glcode.forEach((id, index) => {
+    bindParams[`glcode${index}`] = id;
+  });
+}
 
   if (ulbid) {
     query += ` AND ULBID = :ulbid`;
