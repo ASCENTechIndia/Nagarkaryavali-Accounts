@@ -11,6 +11,7 @@ async function getVoucherGenerationReprintRepo(payload) {
       TRUNC(transdate) AS transdate,
       SUM(cramt) AS cramt,
       refno,
+      chqno,
       partyname,
       zoneename
     FROM vw_vchgendtlsrpt
@@ -22,6 +23,7 @@ async function getVoucherGenerationReprintRepo(payload) {
       prevchno,
       TRUNC(transdate),
       refno,
+      chqno,
       partyname,
       zoneename
     ORDER BY

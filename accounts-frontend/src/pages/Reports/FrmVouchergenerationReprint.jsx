@@ -54,7 +54,7 @@ const FrmVouchergenerationReprint = () => {
         "व्हाउचर क्रमांक": "PREVCHNO",
         "व्हाउचर दिनांक": "TRANSDATE",
         "रक्कम": "CRAMT",
-        "चेक क्रमांक": "REFNO",
+        "चेक क्रमांक": "CHQNO",
         "प्रिंट": "PRINT",
     };
 
@@ -93,12 +93,12 @@ const FrmVouchergenerationReprint = () => {
             });
 
             const payload = {
-                refNo: row.REFNO,
-                ulbId: String(ulbId),
+                refno: Number(row.REFNO),
+                ulbId: Number(ulbId),
             };
 
             const res = await axios.post(
-                `${BASE_URL}/api/FrmVouchergenerationReprint/voucher-generation-print`,
+                `${BASE_URL}/api/FrmVoucherGeneration/counter-voucher-generation-pdf`,
                 payload,
                 {
                     headers: {
