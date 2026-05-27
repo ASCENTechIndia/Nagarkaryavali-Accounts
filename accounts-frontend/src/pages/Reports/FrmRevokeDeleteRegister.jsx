@@ -211,7 +211,7 @@ const FrmRevokeDeleteRegister = () => {
                 </CardHeader>
 
                 <CardContent className="p-4">
-                  <div className="border p-4 sm:p-6 space-y-6">
+                  <div className="sm:p-4 space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                       <div className="space-y-2">
                         <Label

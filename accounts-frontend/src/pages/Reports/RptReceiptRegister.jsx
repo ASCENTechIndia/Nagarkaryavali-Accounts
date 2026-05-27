@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Formik, Form } from "formik";
 import { motion } from "framer-motion";
@@ -14,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
-import config from "@/utils/config.jsx"
+import config from "@/utils/config.jsx";
 import Swal from "sweetalert2";
 import * as XLSX from "xlsx";
 import { DatePicker } from "@/components/ui/calendar";
@@ -53,7 +54,7 @@ const RptReceiptRegister = () => {
                 { corp_id: ulbId },
                 {
                     headers: { Authorization: `Bearer ${token}` },
-                }
+                },
             );
 
             if (res.data?.ok) {
@@ -74,7 +75,7 @@ const RptReceiptRegister = () => {
                 },
                 {
                     headers: { Authorization: `Bearer ${token}` },
-                }
+                },
             );
 
             if (res.data?.success) {
@@ -87,12 +88,11 @@ const RptReceiptRegister = () => {
 
     const fetchGLList = async () => {
         try {
-            const res = await axios.get(`${BASE_URL}/api/Receipt/searchGLALL`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${user.token}`,
-                    },
-                });
+            const res = await axios.get(`${BASE_URL}/api/Receipt/searchGLALL`, {
+                headers: {
+                    Authorization: `Bearer ${user.token}`,
+                },
+            });
             setGlList(res.data.data || []);
         } catch (err) {
             console.error("GL API Error:", err);
@@ -101,12 +101,14 @@ const RptReceiptRegister = () => {
 
     const fetchCreditLeasure = async (glcode, type) => {
         try {
-            const res = await axios.get(`${BASE_URL}/api/FrmContract/search-gl?ulbId=${ulbId}`,
+            const res = await axios.get(
+                `${BASE_URL}/api/FrmContract/search-gl?ulbId=${ulbId}`,
                 {
                     headers: {
                         Authorization: `Bearer ${user.token}`,
                     },
-                });
+                },
+            );
 
             const data = res.data?.data?.list || [];
 
@@ -123,12 +125,10 @@ const RptReceiptRegister = () => {
         }
     };
 
-
     useEffect(() => {
         fetchZones();
         fetchUsers();
     }, [ulbId]);
-
 
     const handleSubmit = async (values) => {
         try {
@@ -160,7 +160,7 @@ const RptReceiptRegister = () => {
                     payload,
                     {
                         headers: { Authorization: `Bearer ${token}` },
-                    }
+                    },
                 );
 
                 Swal.close();
@@ -169,7 +169,6 @@ const RptReceiptRegister = () => {
                     const pdfUrl = res.data.pdfUrl;
 
                     window.open(pdfUrl, "_blank");
-
                 } else {
                     Swal.fire({
                         text: "Failed to generate PDF",
@@ -185,7 +184,7 @@ const RptReceiptRegister = () => {
                 payload,
                 {
                     headers: { Authorization: `Bearer ${token}` },
-                }
+                },
             );
 
             Swal.close();
@@ -204,7 +203,7 @@ const RptReceiptRegister = () => {
                 if (!date) return "";
                 const d = new Date(date);
                 return `${String(d.getDate()).padStart(2, "0")}-${String(
-                    d.getMonth() + 1
+                    d.getMonth() + 1,
                 ).padStart(2, "0")}-${d.getFullYear()}`;
             };
 
@@ -245,7 +244,6 @@ const RptReceiptRegister = () => {
             const filename = `Receipt_Register_${timestamp}.xlsx`;
 
             XLSX.writeFile(workbook, filename);
-
         } catch (err) {
             console.error("Error:", err);
             Swal.fire({
@@ -258,7 +256,6 @@ const RptReceiptRegister = () => {
     return (
         <Formik initialValues={initialValues} onSubmit={handleSubmit}>
             {({ values, setFieldValue }) => {
-
                 useEffect(() => {
                     fetchGLList();
                 }, []);
@@ -285,17 +282,21 @@ const RptReceiptRegister = () => {
                                 </CardHeader>
 
                                 <CardContent className="p-4 sm:p-5 space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                                            <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                                                <Label text="प्रभाग" />
+                                                <span>:</span>
+                                            </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
-                                        <div>
-                                            <Label className="text-sm">प्रभाग :</Label>
                                             <Select
                                                 value={values.zoneId}
                                                 onValueChange={(v) => setFieldValue("zoneId", v)}
                                             >
-                                                <SelectTrigger className="w-full sm:flex-1">
+                                                <SelectTrigger className="w-full h-9">
                                                     <SelectValue placeholder="-- निवडा --" />
                                                 </SelectTrigger>
+
                                                 <SelectContent>
                                                     {zoneList.map((zone) => (
                                                         <SelectItem
@@ -309,57 +310,85 @@ const RptReceiptRegister = () => {
                                             </Select>
                                         </div>
 
-                                        <div>
-                                            <Label className="text-sm">दिनांक पासून :</Label>
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                            <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                                                <Label text="दिनांक पासून" />
+                                                <span>:</span>
+                                            </div>
+
                                             <DatePicker
                                                 value={values.fromDate}
                                                 onChange={(date) =>
                                                     setFieldValue("fromDate", date)
                                                 }
+                                                className="w-full h-9"
                                             />
                                         </div>
-                                        <div>
-                                            <Label className="text-sm">दिनांक पर्यंत :</Label>
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                            <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                                                <Label text="दिनांक पर्यंत" />
+                                                <span>:</span>
+                                            </div>
+
                                             <DatePicker
                                                 value={values.toDate}
                                                 onChange={(date) =>
                                                     setFieldValue("toDate", date)
                                                 }
+                                                className="w-full h-9"
                                             />
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
-                                        <div>
-                                            <Label text="विभाग संकेतांक :" />
-                                            <SearchableSelect
-                                                options={glList.map((g) => ({
-                                                    label: g.GLSEARCHNAME,
-                                                    value: g.GLCODE.toString(),
-                                                }))}
-                                                name="wardCode"
-                                                value={values.wardCode}
-                                                onChange={(val) => setFieldValue("wardCode", val.value)}
-                                            />
-                                        </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                            <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                                                <Label text="विभाग संकेतांक" />
+                                                <span>:</span>
+                                            </div>
 
-                                        <div>
-                                            <Label text="लेखाशीर्ष :" />
-                                            <SearchableSelect
-                                                key={values.head}
-                                                options={partyList}
-                                                name="head"
-                                                value={values.head}
-                                                onChange={(val) => setFieldValue("head", val.value)}
-                                            />
+                                            <div className="w-full">
+                                                <SearchableSelect
+                                                    options={glList.map((g) => ({
+                                                        label: g.GLSEARCHNAME,
+                                                        value: g.GLCODE.toString(),
+                                                    }))}
+                                                    name="wardCode"
+                                                    value={values.wardCode}
+                                                    onChange={(val) =>
+                                                        setFieldValue("wardCode", val.value)
+                                                    }
+                                                />
+                                            </div>
                                         </div>
-                                        <div>
-                                            <Label className="text-sm">वापरकर्ता निवडा :</Label>
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                            <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                                                <Label text="लेखाशीर्ष" />
+                                                <span>:</span>
+                                            </div>
+
+                                            <div className="w-full">
+                                                <SearchableSelect
+                                                    options={partyList}
+                                                    name="head"
+                                                    value={values.head}
+                                                    onChange={(val) =>
+                                                        setFieldValue("head", val.value)
+                                                    }
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                            <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                                                <Label text="वापरकर्ता" />
+                                                <span>:</span>
+                                            </div>
+
                                             <Select
                                                 value={values.userId}
                                                 onValueChange={(v) => setFieldValue("userId", v)}
                                             >
-                                                <SelectTrigger className="w-full sm:flex-1">
+                                                <SelectTrigger className="w-full h-9">
                                                     <SelectValue placeholder="-- विकल्प निवडा --" />
                                                 </SelectTrigger>
 
@@ -383,10 +412,14 @@ const RptReceiptRegister = () => {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-6 gap-3 items-center">
 
-                                        <Label className="text-sm">अहवालाचा प्रकार :</Label>
-                                        <div className="flex gap-4">
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                        <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                                            <Label text="अहवालाचा प्रकार" />
+                                            <span>:</span>
+                                        </div>
+
+                                        <div className="flex flex-wrap items-center gap-4">
                                             <label className="flex items-center gap-2 text-sm">
                                                 <Input
                                                     type="radio"
@@ -395,6 +428,7 @@ const RptReceiptRegister = () => {
                                                     onChange={() =>
                                                         setFieldValue("reportType", "summary")
                                                     }
+                                                    className="h-4 w-4"
                                                 />
                                                 सारांश
                                             </label>
@@ -407,13 +441,20 @@ const RptReceiptRegister = () => {
                                                     onChange={() =>
                                                         setFieldValue("reportType", "detail")
                                                     }
+                                                    className="h-4 w-4"
                                                 />
                                                 तपशील
                                             </label>
                                         </div>
+                                    </div>
 
-                                        <Label className="text-sm">Export To :</Label>
-                                        <div className="flex gap-4">
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                        <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                                            <Label text="Export To" />
+                                            <span>:</span>
+                                        </div>
+
+                                        <div className="flex flex-wrap items-center gap-4">
                                             <label className="flex items-center gap-2 text-sm">
                                                 <Input
                                                     type="radio"
@@ -422,6 +463,7 @@ const RptReceiptRegister = () => {
                                                     onChange={() =>
                                                         setFieldValue("exportType", "pdf")
                                                     }
+                                                    className="h-4 w-4"
                                                 />
                                                 PDF
                                             </label>
@@ -434,13 +476,15 @@ const RptReceiptRegister = () => {
                                                     onChange={() =>
                                                         setFieldValue("exportType", "excel")
                                                     }
+                                                    className="h-4 w-4"
                                                 />
                                                 Excel
                                             </label>
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-wrap justify-center gap-3 pt-4">
+
+                                    <div className="flex justify-center flex-wrap gap-4 pt-4">
                                         <Button
                                             type="submit"
                                             className="bg-blue-900 text-white px-6 h-9"
@@ -465,7 +509,6 @@ const RptReceiptRegister = () => {
                                             बाहेर जा
                                         </Button>
                                     </div>
-
                                 </CardContent>
                             </Card>
                         </motion.div>
