@@ -1242,7 +1242,7 @@ const FrmVoucherGeneration = () => {
 
   const [submitLoading, setSubmitLoading] = useState(false);
 
-  const rowsPerPage = 10;
+  const rowsPerPage = 5;
 
   /* ================= HEADERS ================= */
 
@@ -2112,7 +2112,7 @@ const FrmVoucherGeneration = () => {
                   )}
 
                   {voucherList.length > 0 && !tableLoading && (
-                    <div className="border border-gray-300 bg-white shadow-sm overflow-auto max-h-[600px] rounded-md">
+                    <div className="border border-gray-300 bg-white shadow-sm overflow-auto  rounded-md">
                       <table className="w-full text-sm">
                         <thead className="sticky top-0 z-10 bg-[#163e72] text-white">
                           <tr>

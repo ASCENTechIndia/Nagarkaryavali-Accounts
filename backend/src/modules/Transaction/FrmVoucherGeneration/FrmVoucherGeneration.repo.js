@@ -174,7 +174,7 @@ const getBalanceVoucherDetails = async (params) => {
       )
     )
     WHERE balamt > 0
-      AND (:zone_id = -1 OR zoneid = :zone_id)
+
       AND TRUNC(trnsdate) BETWEEN
           TO_DATE(:from_date, 'DD/MM/YYYY')
           AND TO_DATE(:to_date, 'DD/MM/YYYY')
@@ -182,7 +182,7 @@ const getBalanceVoucherDetails = async (params) => {
   `;
 
   const binds = {
-    zone_id: Number(params.zone_id),
+    // zone_id: Number(params.zone_id),
     from_date: params.from_date,
     to_date: params.to_date,
     corp_id: Number(params.corp_id),
@@ -193,7 +193,12 @@ const getBalanceVoucherDetails = async (params) => {
     binds.party_id = Number(params.party_id);
   }
 
-  if (params.budget_id != null && params.budget_id !== "") {
+  if (params.zone_id !== null && params.zone_id !== -1) {
+    query += ` AND zoneid = :zone_id `;
+    binds.zone_id = Number(params.zone_id);
+  }
+
+  if (params.budget_id !== null && params.budget_id !== "") {
     query += ` AND budgetid = :budget_id `;
     binds.budget_id = Number(params.budget_id);
   }
@@ -205,8 +210,6 @@ const getBalanceVoucherDetails = async (params) => {
 
   query += ` ORDER BY trnsdate, vchno `;
 
-  console.log("query:", query);
-  console.log("binds:", binds);
 
   return await executeQuery(query, binds);
 };
@@ -256,13 +259,18 @@ const getVoucherPrepList = async (params) => {
         FROM aoac_vchtrans_def 
         WHERE num_vchtrans_ulbid = :corp_id
       )
-      AND num_vchprepmst_zoneid = :zone_id
+
   `;
 
   const binds = {
     corp_id: Number(params.corp_id),
-    zone_id: Number(params.zone_id),
   };
+
+
+   if (params.zone_id !== null && params.zone_id !== -1) {
+    query += ` AND num_vchprepmst_zoneid = :zone_id `;
+    binds.zone_id = Number(params.zone_id);
+  }
 
   // ✅ DATE FILTER
   if (params.from_date && params.to_date) {

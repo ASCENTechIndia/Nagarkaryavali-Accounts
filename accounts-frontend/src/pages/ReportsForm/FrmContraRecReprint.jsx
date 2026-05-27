@@ -211,7 +211,6 @@ const FrmContraRecReprint = () => {
                             </CardHeader>
 
                             <CardContent className="p-4 md:p-6 space-y-6">
-                                <div className="border rounded-md p-4 md:p-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                                             <div className="w-full sm:w-40 shrink-0 flex justify-between items-center">
@@ -240,7 +239,6 @@ const FrmContraRecReprint = () => {
                                             />
                                         </div>
                                     </div>
-                                </div>
 
                                 <div className="flex flex-wrap justify-center gap-3">
                                     <Button
