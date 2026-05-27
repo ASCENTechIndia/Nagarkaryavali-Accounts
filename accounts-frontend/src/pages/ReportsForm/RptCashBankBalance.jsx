@@ -165,9 +165,22 @@ const RptCashBankBalance = () => {
   };
 
   const handlePDFExport = async (values) => {
+    let loaderSwal;
+
     try {
 
+      
+
       setLoading(true);
+
+      loaderSwal = Swal.fire({
+        title: "Generating...",
+        text: "Please wait for cash bank balance pdf",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => Swal.showLoading(),
+        });
+      
 
       const payload = {
         toDate: formatDateForAPI(values.asOnDate),
@@ -183,6 +196,8 @@ const RptCashBankBalance = () => {
           },
         }
       );
+
+      loaderSwal.close();
 
       if (!res.data?.success) {
         Swal.fire("Error", "PDF generation failed", "error");
@@ -243,7 +258,7 @@ const RptCashBankBalance = () => {
       ),
       accNo: row.OBJECTCODE || "",
       accName: row.ACCNAME || "",
-      amount: row.BALANCE ? formatNumber(row.BALANCE) : "0",
+      amount: row.BALANCE ? formatNumber(Math.abs(row.BALANCE)) : "0",
     }))
   ];
 
