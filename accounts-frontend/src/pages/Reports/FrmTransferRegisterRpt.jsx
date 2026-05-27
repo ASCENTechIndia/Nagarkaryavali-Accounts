@@ -315,7 +315,7 @@ const FrmTransferRegisterRpt = () => {
               <CardContent className="p-4 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <div className="sm:w-36 flex justify-between">
+                    <div className="sm:w-36 flex items-center justify-between shrink-0">
                       <Label text="दिनांका पासुन" />
                       <span>:</span>
                     </div>
@@ -327,7 +327,7 @@ const FrmTransferRegisterRpt = () => {
                   </div>
 
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <div className="sm:w-36 flex justify-between">
+                    <div className="sm:w-36 flex items-center justify-between shrink-0">
                       <Label text="दिनांका पर्यंत" />
                       <span>:</span>
                     </div>
@@ -339,10 +339,11 @@ const FrmTransferRegisterRpt = () => {
                   </div>
                   
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <div className="sm:w-36 flex justify-between">
+                    <div className="sm:w-36 flex items-center justify-between shrink-0">
                         <div className="flex items-center gap-2">
                             <Input
                                 type="checkbox"
+                                className="w-4 h-4"
                                 checked={values.useGL}
                                 onChange={(e) => {
                                 const checked = e.target.checked;
@@ -357,26 +358,28 @@ const FrmTransferRegisterRpt = () => {
                             />
                             <Label text="विभाग संकेतांक." />
                         </div>
-                      <span>:</span>
+                      <span className="ml-2">:</span>
                     </div>
-                    <SearchableSelect
-                      options={glCodes}
-                      value={values.deptCode}
-                      onChange={(option) => {
-                        const val = option?.value || "";
-                        setFieldValue("deptCode", val);
-                        setFieldValue("ledger", "");
-                        setLedgerOptions([]);
-                        if (val) fetchLedger(val);
-                      }}
-                      placeholder="विभाग संकेतांक निवडा"
-                      disabled={!values.useGL}
-                    />
+                    <div className="flex-1">
+                      <SearchableSelect
+                        options={glCodes}
+                        value={values.deptCode}
+                        onChange={(option) => {
+                          const val = option?.value || "";
+                          setFieldValue("deptCode", val);
+                          setFieldValue("ledger", "");
+                          setLedgerOptions([]);
+                          if (val) fetchLedger(val);
+                        }}
+                        placeholder="विभाग संकेतांक निवडा"
+                        disabled={!values.useGL}
+                      />
+                    </div>
                   </div>
                   
                   
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <div className="sm:w-36 flex justify-between">
+                    <div className="sm:w-36 flex items-center justify-between shrink-0">
                       <Label text="लेखाशीर्ष" />
                       <span>:</span>
                     </div>
@@ -392,7 +395,7 @@ const FrmTransferRegisterRpt = () => {
                   </div>
                   
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <div className="sm:w-36 flex justify-between">
+                    <div className="sm:w-36 flex items-center justify-between shrink-0">
                       <Label text="पार्टी" />
                       <span>:</span>
                     </div>

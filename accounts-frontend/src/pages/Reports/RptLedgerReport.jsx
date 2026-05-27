@@ -506,7 +506,7 @@ const RptLedgerReport = () => {
     console.log("totalCrAmount:", totalCrAmount);
     console.log("openingBalance:", openingBalance);
     
-    const calculatedClosingBalance = openingBalance + totalDrAmount - totalCrAmount;
+    const calculatedClosingBalance = Math.abs(openingBalance + totalDrAmount - totalCrAmount);
     console.log("calculatedClosingBalance:", calculatedClosingBalance);
     setClosingBalance(calculatedClosingBalance);
   }, [openingBalance, transactions]);
@@ -577,7 +577,7 @@ const RptLedgerReport = () => {
     let runningBalance = openingBalance;
     transactions.forEach((row) => {
       if (row.isCredit) {
-        runningBalance = runningBalance - row.creditAmount;
+        runningBalance = Math.abs(runningBalance - row.creditAmount);
         excelData.push({
           DrTrnsDate: "",
           DrTransNo: "",
