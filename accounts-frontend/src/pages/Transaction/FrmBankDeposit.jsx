@@ -398,26 +398,26 @@ const BankDeposit = () => {
       checked: false,
     }));
 
-    setTableData((prev) => {
-      // Keep only rows that were added from modals
-      const previousModalRows = prev.filter(
-        (row) =>
-          String(row.id).startsWith("P-") || String(row.id).startsWith("L-"),
-      );
+    // setTableData((prev) => {
+    //   // Keep only rows that were added from modals
+    //   const previousModalRows = prev.filter(
+    //     (row) =>
+    //       String(row.id).startsWith("P-") || String(row.id).startsWith("L-"),
+    //   );
 
-      // Prevent duplicate modal rows
-      const existingIds = new Set(previousModalRows.map((row) => row.id));
+    //   // Prevent duplicate modal rows
+    //   const existingIds = new Set(previousModalRows.map((row) => row.id));
 
-      const newRows = mapped.filter((row) => !existingIds.has(row.id));
+    //   const newRows = mapped.filter((row) => !existingIds.has(row.id));
 
-      return [...previousModalRows, ...newRows];
-    });
+    //   return [...previousModalRows, ...newRows];
+    // });
 
-    setShowTable(true);
+    // setShowTable(true);
     setShowPavatiModal(false);
 
-    // Clear modal selection
-    setPavatiData((prev) => prev.map((row) => ({ ...row, checked: false })));
+    // // Clear modal selection
+    // setPavatiData((prev) => prev.map((row) => ({ ...row, checked: false })));
   };
 
   const handleAddLekha = (values) => {
@@ -657,8 +657,8 @@ const BankDeposit = () => {
 
     if (!selectedGL?.value || !selectedLedger?.value) {
       Swal.fire({
-        icon: "warning",
-        title: "Missing GL / Ledger",
+        // icon: "warning",
+        // title: "Missing GL / Ledger",
         text: "Please select GL Code and Ledger",
       });
       return;
@@ -1212,6 +1212,7 @@ const BankDeposit = () => {
                   {/* ACTION BUTTONS */}
                   <div className="flex justify-center gap-4 mt-6">
                     <Button
+                    type="button"
                       onClick={() => handleSave(values)}
                       disabled={loading}
                     >
