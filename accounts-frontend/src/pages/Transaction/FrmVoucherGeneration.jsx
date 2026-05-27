@@ -1385,8 +1385,6 @@ const FrmVoucherGeneration = () => {
         didOpen: () => Swal.showLoading(),
       });
 
-    
-
       const payload = {
         zone_id: Number(values.department) || "",
 
@@ -1403,7 +1401,7 @@ const FrmVoucherGeneration = () => {
         corp_id: Number(ulbId),
       };
 
-      console.log("Payload for voucher fetch:", payload); 
+      console.log("Payload for voucher fetch:", payload);
 
       const [balanceRes, prepRes] = await Promise.all([
         axios.post(
@@ -1616,43 +1614,6 @@ const FrmVoucherGeneration = () => {
     }
   };
 
-  const handlePrintPDF = async (refNo) => {
-    try {
-      const loader = Swal.fire({
-        title: "Generating PDF...",
-        allowOutsideClick: false,
-        showConfirmButton: false,
-        didOpen: () => Swal.showLoading(),
-      });
-
-      const res = await axios.post(
-        `${BASE_URL}/api/FrmVoucherGeneration/counter-voucher-generation-pdf`,
-        {
-          ulbId: Number(ulbId),
-
-          refno: Number(refNo),
-        },
-        { headers },
-      );
-
-      loader.close();
-
-      if (res?.data?.success && res?.data?.pdfUrl) {
-        window.open(res.data.pdfUrl, "_blank");
-      } else {
-        throw new Error("PDF generation failed");
-      }
-    } catch (error) {
-      console.error(error);
-
-      Swal.fire({
-        text: error.response?.data?.message || "PDF तयार करताना त्रुटी आली.",
-
-        confirmButtonColor: "#1e3a8a",
-      });
-    }
-  };
-
   const formatOracleDate = (date) => {
     if (!date) return "";
 
@@ -1682,16 +1643,73 @@ const FrmVoucherGeneration = () => {
     return `${day}-${month}-${year}`;
   };
 
+  const handlePrintPDF = async (generatedVoucherNo) => {
+    try {
+      console.log("PRINT VOUCHER NO:", generatedVoucherNo);
+
+      if (!generatedVoucherNo) {
+        Swal.fire("Error", "Invalid Voucher No", "error");
+        return;
+      }
+      const loader = Swal.fire({
+        title: "Generating PDF...",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => Swal.showLoading(),
+      });
+
+      const res = await axios.post(
+        `${BASE_URL}/api/FrmVoucherGeneration/counter-voucher-generation-pdf`,
+        {
+          ulbId: Number(ulbId),
+
+          // IMPORTANT:
+          // send generated voucher no
+          refno: Number(generatedVoucherNo),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      console.log("PDF RESPONSE:", res.data);
+
+      loader.close();
+
+      if (res?.data?.success && res?.data?.pdfUrl) {
+        window.open(res.data.pdfUrl, "_blank");
+      } else {
+        throw new Error(res?.data?.message || "PDF generation failed");
+      }
+    } catch (error) {
+      console.error("PDF ERROR:", error);
+
+      Swal.close();
+
+      Swal.fire({
+        icon: "error",
+        title: "PDF Error",
+        text:
+          error.response?.data?.message ||
+          error.message ||
+          "PDF तयार करताना त्रुटी आली.",
+        confirmButtonColor: "#1e3a8a",
+      });
+    }
+  };
+
   const handleSubmit = async (values, formikHelpers) => {
     try {
-      debugger;
+    
+
       setSubmitLoading(true);
 
       const selectedRows = voucherList.filter((v) => v.selected);
 
       if (!selectedRows.length) {
         Swal.fire("किमान एक व्यवहार निवडा");
-
         return;
       }
 
@@ -1700,13 +1718,11 @@ const FrmVoucherGeneration = () => {
       if (isCheque) {
         if (!values.chequeNo) {
           Swal.fire("Cheque number required");
-
           return;
         }
 
         if (!values.chequeBookNo) {
           Swal.fire("Cheque book required");
-
           return;
         }
       }
@@ -1714,12 +1730,13 @@ const FrmVoucherGeneration = () => {
       Swal.fire({
         title: "Saving...",
         allowOutsideClick: false,
+        showConfirmButton: false,
         didOpen: () => Swal.showLoading(),
       });
 
       /* =====================================
        FETCH FULL DATA
-       ===================================== */
+    ===================================== */
 
       const fullData = await fetchVoucherFullData(selectedRows[0].VCHNO);
 
@@ -1733,7 +1750,7 @@ const FrmVoucherGeneration = () => {
 
       /* =====================================
        TAX DATA
-       ===================================== */
+    ===================================== */
 
       const firstTax = fullData.tax?.[0];
 
@@ -1745,7 +1762,7 @@ const FrmVoucherGeneration = () => {
 
       /* =====================================
        TOTAL
-       ===================================== */
+    ===================================== */
 
       const totalSelectedAmount = selectedRows.reduce(
         (sum, v) => sum + Number(v.deyRakkam || 0),
@@ -1754,12 +1771,10 @@ const FrmVoucherGeneration = () => {
 
       /* =====================================
        CHEQUE VALUES
-       ===================================== */
+    ===================================== */
 
       let chequeNo = "0";
-
       let chequeBook = "0";
-
       let chequeDate = "";
 
       if (isCheque) {
@@ -1771,45 +1786,35 @@ const FrmVoucherGeneration = () => {
       }
 
       /* =====================================
-       VOUCHER NO
-       ===================================== */
-
-      const getVoucherNo = (v) => Number(v.VCHNO || v.VOUCHERNO || 0);
+       STR1
+    ===================================== */
 
       const str1 = [
         "A",
-
         4,
-
         narration || "-",
-
         deptCode || 0,
-
         ledger || 0,
-
         totalSelectedAmount || 0,
-
         chequeNo || "",
-
         chequeDate || "",
-
         values.department === "-1" ? 0 : values.department,
-
         0,
-
         formatOracleDate(values.transactionDate),
-
         values.budgetId || 0,
-
         chequeBook || 0,
-
         values.paymentType || 0,
       ].join("~");
 
+      /* =====================================
+       STR2
+    ===================================== */
+
       const str2 = selectedRows.map((v) => v.REFNO).join(",");
+
       /* =====================================
        STR3
-       ===================================== */
+    ===================================== */
 
       const str3 = selectedRows
         .map((v) => {
@@ -1821,23 +1826,21 @@ const FrmVoucherGeneration = () => {
 
           return [
             Number(v.REFNO || 0),
-
             nivalDey,
-
             dey,
-
             shillak,
-
             Number(v.TOTALAMT || 0),
-
             Number(v.AMT || 0),
-
             Number(v.VCHNO || 0),
-
             Number(v.DEPTID || 0),
           ].join("#");
         })
         .join("$");
+
+      /* =====================================
+       STR4
+    ===================================== */
+
       const str4 = selectedRows
         .map((v) => {
           const nivalDey = Number(v.BALAMT || 0);
@@ -1875,9 +1878,10 @@ const FrmVoucherGeneration = () => {
           ].join("#");
         })
         .join("$");
+
       /* =====================================
        FINAL PAYLOAD
-       ===================================== */
+    ===================================== */
 
       const payload = {
         refNo: selectedRows[0].REFNO,
@@ -1897,8 +1901,8 @@ const FrmVoucherGeneration = () => {
       console.log("FINAL PAYLOAD:", payload);
 
       /* =====================================
-       API CALL
-       ===================================== */
+       SAVE API
+    ===================================== */
 
       const res = await axios.post(
         `${BASE_URL}/api/FrmVoucherGeneration/voucher-generation`,
@@ -1916,56 +1920,44 @@ const FrmVoucherGeneration = () => {
 
       /* =====================================
        SUCCESS
-       ===================================== */
-
+    ===================================== */
       if (res.data?.success) {
-        const message = res.data.errorMsg;
-        const match = message.match(/Vocher No\.\s*:\s*(\d+)/);
-        console.log("Voucher Number: ", match);
-        const savedRefNo = match ? match[1] : null;
-        console.log("savedRefNo Number: ", savedRefNo);
+        const msg = res.data?.errorMsg || "";
+
+        const voucherMatch = msg.match(/Vocher No\. ?: ?(\d+)/i);
+
+        // IMPORTANT FIX
+        const generatedVoucherNo = voucherMatch?.[1];
+
+        console.log("GENERATED VOUCHER:", generatedVoucherNo);
 
         Swal.fire({
           title: "Success",
-
-          text: res.data?.errorMsg || "Voucher generated successfully",
-
+          text: msg || "Voucher generated successfully",
           icon: "success",
-
           confirmButtonColor: "#1e3a8a",
         }).then(async (result) => {
-          // if (
-          //   savedRefNo
-          // ) {
-          //   await handlePrintPDF(
-          //     savedRefNo
-          //   );
-          // }
-
           if (result.isConfirmed) {
-            await new Promise((resolve) => setTimeout(resolve, 1500));
+            await new Promise((resolve) => setTimeout(resolve, 2000));
 
-            if (savedRefNo) {
-              await handlePrintPDF(savedRefNo);
+            if (generatedVoucherNo) {
+              await handlePrintPDF(generatedVoucherNo);
+
+              formikHelpers.resetForm();
+              setVoucherList([]);
+
+              setVoucherDetails([]);
+
+              setChequeBooks([]);
+
+              setSearchDone(false);
+
+              setCurrentPage(1);
+            } else {
+              Swal.fire("Error", "Generated voucher number not found", "error");
             }
           }
         });
-
-        formikHelpers.resetForm();
-
-        setVoucherList([]);
-
-        setVoucherDetails([]);
-
-        setChequeBooks([]);
-
-        setSearchDone(false);
-      } else {
-        Swal.fire(
-          "Error",
-          res.data?.errorMsg || "Voucher generation failed",
-          "error",
-        );
       }
     } catch (err) {
       console.error("Voucher Generation Error:", err);
