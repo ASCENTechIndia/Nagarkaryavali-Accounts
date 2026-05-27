@@ -1793,7 +1793,7 @@ const FrmVoucherGeneration = () => {
 
         chequeDate || "",
 
-        values.department || 0,
+        values.department === "-1" ? 0 : values.department,
 
         0,
 
