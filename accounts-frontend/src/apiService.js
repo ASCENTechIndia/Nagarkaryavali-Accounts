@@ -2,7 +2,7 @@
 import CryptoJS from "crypto-js";
 
 const API_SECRET = "your-secret-key"; // Must match backend
-const BASE_API_URL = "https://cfcapi.nagarkaryavalinew.com";
+const BASE_API_URL = "https://accountsapi.nagarkaryavalinewuat.com"
 // const BASE_API_URL = "http://localhost:5000"
 
 const encryptParams = (params) => {

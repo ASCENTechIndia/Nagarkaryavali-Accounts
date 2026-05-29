@@ -104,4 +104,33 @@ exports.getReceiptPDF = asyncHandler(async (req, res) => {
   });
 });
 
+exports.getReceiptDetails = asyncHandler(
+
+  async (req, res) => {
+
+    console.log(
+      "📥 Request Body:",
+      req.body
+    );
+
+    const payload = {
+
+      ulbid:
+        req.body.ulbid
+
+    };
+
+    const data =
+      await service.getReceiptDetailsService(
+        payload
+      );
+
+    return ok(
+      res,
+      data,
+      "Receipt details fetched successfully"
+    );
+  }
+);
+
 

@@ -150,7 +150,30 @@ const getReceiptPdfData = async (payload) => {
 
   return data.rows;
 };
-// ================= EXPORT =================
+async function getReceiptDetailsService(payload) {
+
+  if (!payload.ulbid) {
+
+    throw new AppError(
+      "ULB ID is required",
+      400
+    );
+  }
+
+  const data =
+    await repo.getReceiptPDF(payload);
+
+  return {
+
+    success: true,
+
+    count: data.length,
+
+    data
+
+  };
+}
+
 module.exports = {
   getReceiptList,
   getZones,
@@ -165,4 +188,5 @@ module.exports = {
   searchGLALL,
   getBudgetHeads,
   getReceiptPdfData,
+  getReceiptDetailsService
 };

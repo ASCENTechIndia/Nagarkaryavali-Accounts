@@ -235,6 +235,45 @@ const getReceiptDetailsPdfRepo = (refno, ulbid) =>
     { refno, ulbid },
   );
 
+async function getReceiptPDF(payload) {
+
+  try {
+
+    const query = `
+      SELECT
+          REFNO,
+          TRANSDATE,
+          TRANSTYPE,
+          ZONEENAME,
+          ACCNAME,
+          ACCNO,
+          TAXNAME,
+          TAXAC,
+          REMARKS,
+          AMOUNT,
+          PARTYNAME,
+          ULBID,
+          partycode
+      FROM VW_Receiptdetails
+      WHERE ulbid = :ulbid
+    `;
+
+    const result = await executeQuery(
+      query,
+      {
+        ulbid: payload.ulbid
+      }
+    );
+
+    return result.rows;
+
+  } catch (err) {
+
+    throw err;
+  }
+}
+
+
 module.exports = {
   getReceiptListRepo,
   getZonesRepo,
@@ -248,5 +287,6 @@ module.exports = {
   receiptInsertUpdateRepo,
   searchGLALLRepo,
   getBudgetHeadsRepo,
-  getReceiptDetailsPdfRepo
+  getReceiptDetailsPdfRepo,
+  getReceiptPDF
 };
