@@ -110,6 +110,8 @@ const FrmReceipt = () => {
     setFieldValue("entryHead", "");
     setFieldValue("entryAmount", "");
     setFieldValue("remark", "");
+    setFieldValue("PrevAmount", "");
+    setFieldValue("CurrentAmount", "");
 
 
 
