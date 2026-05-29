@@ -236,9 +236,7 @@ const getReceiptDetailsPdfRepo = (refno, ulbid) =>
   );
 
 async function getReceiptPDF(payload) {
-
   try {
-
     const query = `
       SELECT
           REFNO,
@@ -256,22 +254,24 @@ async function getReceiptPDF(payload) {
           partycode
       FROM VW_Receiptdetails
       WHERE ulbid = :ulbid
+        AND TRANSDATE BETWEEN :fromDate AND :toDate
     `;
 
     const result = await executeQuery(
       query,
       {
-        ulbid: payload.ulbid
+        ulbid: payload.ulbid,
+        fromDate: payload.fromDate, 
+        toDate: payload.toDate      
       }
     );
 
     return result.rows;
-
   } catch (err) {
-
     throw err;
   }
 }
+
 
 
 module.exports = {

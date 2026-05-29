@@ -150,29 +150,24 @@ const getReceiptPdfData = async (payload) => {
 
   return data.rows;
 };
+
 async function getReceiptDetailsService(payload) {
-
   if (!payload.ulbid) {
-
-    throw new AppError(
-      "ULB ID is required",
-      400
-    );
+    throw new AppError("ULB ID is required", 400);
+  }
+  if (!payload.fromDate || !payload.toDate) {
+    throw new AppError("From Date and To Date are required", 400);
   }
 
-  const data =
-    await repo.getReceiptPDF(payload);
+  const data = await repo.getReceiptPDF(payload);
 
   return {
-
     success: true,
-
     count: data.length,
-
     data
-
   };
 }
+
 
 module.exports = {
   getReceiptList,

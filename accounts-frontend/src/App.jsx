@@ -100,6 +100,7 @@ import FrmCashDepositReprint from "./pages/Reports/FrmCashDepositReprint";
 import FrmReceiptPaymentRegisterRpt from "./pages/Reports/FrmReceiptPaymentRegisterRpt";
 
 import RptGLAccStatement from "./pages/ReportsForm/RptGLAccStatement";
+import FrmReceiptReprint from "./pages/Reports/FrmReceiptReprint";
 
 const Home = () => <Button>Click me</Button>;
 
@@ -509,7 +510,11 @@ export const router = createBrowserRouter([
       {
         path: "ReportsForm/RptGLAccStatement",
         element: <RptGLAccStatement />,
-      }
+      },
+      {
+        path: "ReportsForm/FrmReceiptReprint",
+        element: <FrmReceiptReprint />,
+      },
     ],
   },
 ]);

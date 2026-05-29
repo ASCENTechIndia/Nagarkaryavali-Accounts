@@ -104,33 +104,19 @@ exports.getReceiptPDF = asyncHandler(async (req, res) => {
   });
 });
 
-exports.getReceiptDetails = asyncHandler(
+exports.getReceiptDetailsReprint = asyncHandler(async (req, res) => {
+  console.log("📥 Request Body:", req.body);
 
-  async (req, res) => {
+  const payload = {
+    ulbid: req.body.ulbid,
+    fromDate: req.body.fromDate,  
+    toDate: req.body.toDate       
+  };
 
-    console.log(
-      "📥 Request Body:",
-      req.body
-    );
+  const data = await service.getReceiptDetailsService(payload);
 
-    const payload = {
+  return ok(res, data, "Receipt details fetched successfully");
+});
 
-      ulbid:
-        req.body.ulbid
-
-    };
-
-    const data =
-      await service.getReceiptDetailsService(
-        payload
-      );
-
-    return ok(
-      res,
-      data,
-      "Receipt details fetched successfully"
-    );
-  }
-);
 
 
