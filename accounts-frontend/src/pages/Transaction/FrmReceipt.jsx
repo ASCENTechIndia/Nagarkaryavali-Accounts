@@ -60,6 +60,7 @@ const FrmReceipt = () => {
   const [glAllList, setGlAllList] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showAmountFields, setShowAmountFields] = useState(false);
 
 
   const handleAddRow = (values, setFieldValue) => {
@@ -228,6 +229,34 @@ const FrmReceipt = () => {
     }
   };
 
+  // for jcmc only
+  const fetchCorporationById = async () => {
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/api/frmPayment/corporation-by-id`,
+        {
+          corpId: ulbId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        }
+      );
+
+      const corpData = res.data?.data?.data?.[0];
+
+      if (corpData?.CORPORATIONCODE === "JCMC") {
+        setShowAmountFields(true);
+      } else {
+        setShowAmountFields(false);
+      }
+    } catch (err) {
+      console.error("Corporation API Error:", err);
+      setShowAmountFields(false);
+    }
+  };
+
   useEffect(() => {
     if (!ulbId) return;
 
@@ -246,9 +275,9 @@ const FrmReceipt = () => {
       fetchRemarks(),
       fetchPartyMaster(),
       fetchGLAll(),
+      fetchCorporationById(),
     ])
       .then(() => {
-        // if NOT edit mode → close loader here
         if (!refNo) {
           setIsLoading(false);
           Swal.close();
@@ -476,6 +505,8 @@ const FrmReceipt = () => {
         "",
         1,
         1,
+        values.PrevAmount || 0,
+        values.CurrentAmount || 0,
       ].join("~");
 
       const paramStr2 = tableData
@@ -596,13 +627,16 @@ const FrmReceipt = () => {
     department: "",
     reciptNo: "",
     wardCode: "",
+    selectedRemark: "",
     remark: "",
     status: "",
     date: new Date(),
-    partyId: "", 
-    entryDeptCode: "", 
-    entryHead: "", 
-    entryAmount: "" 
+    partyId: "",
+    entryDeptCode: "",
+    entryHead: "",
+    entryAmount: "",
+    PrevAmount: "",
+    CurrentAmount: "",
   };
 
 
@@ -687,6 +721,18 @@ const FrmReceipt = () => {
         useEffect(() => {
           setFieldValue("finalTotal", finalTotal);
         }, [tableData]);
+
+        useEffect(() => {
+          // only for JCMC fields
+          if (showAmountFields) {
+            const prev = Number(values.PrevAmount || 0);
+            const current = Number(values.CurrentAmount || 0);
+
+            const total = prev + current;
+
+            setFieldValue("entryAmount", total ? total.toString() : "");
+          }
+        }, [values.PrevAmount, values.CurrentAmount, showAmountFields]);
 
 
         return (
@@ -857,9 +903,13 @@ const FrmReceipt = () => {
 
                     <div>
                       <Label text="Select Remark :" />
+
                       <Select
-                        value={values.remark}
-                        onValueChange={(v) => setFieldValue("remark", v)}
+                        value={values.selectedRemark}
+                        onValueChange={(v) => {
+                          setFieldValue("selectedRemark", v);
+                          setFieldValue("remark", v);
+                        }}
                       >
                         <SelectTrigger className="w-full border rounded-md">
                           <SelectValue placeholder="-- विकल्प निवडा --" />
@@ -878,8 +928,56 @@ const FrmReceipt = () => {
                       </Select>
                     </div>
 
+                    {showAmountFields && (
+                      <>
+                        <div>
+                          <Label text="मागील रक्कम :" />
+                          <div className="flex gap-2">
+                            <Input
+                              name="PrevAmount"
+                              value={values.PrevAmount || ""}
+                              onChange={handleChange}
+                            />
+
+                            <Select defaultValue="credit">
+                              <SelectTrigger className="w-30 border rounded-md">
+                                <SelectValue />
+                              </SelectTrigger>
+
+                              <SelectContent>
+                                <SelectItem value="credit">Credit</SelectItem>
+                                <SelectItem value="debit">Debit</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label text="चालू रक्कम :" />
+                          <div className="flex gap-2">
+                            <Input
+                              name="CurrentAmount"
+                              value={values.CurrentAmount || ""}
+                              onChange={handleChange}
+                            />
+
+                            <Select defaultValue="credit">
+                              <SelectTrigger className="w-30 border rounded-md">
+                                <SelectValue />
+                              </SelectTrigger>
+
+                              <SelectContent>
+                                <SelectItem value="credit">Credit</SelectItem>
+                                <SelectItem value="debit">Debit</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </>
+                    )}
+
                     <div>
-                      <Label text="रक्कम :" />
+                      <Label text="एकूण रक्कम :" />
                       <div className="flex gap-2">
                         <Input name="entryAmount" value={values.entryAmount || ""} onChange={handleChange} />
                         <Select defaultValue="credit">
@@ -893,6 +991,7 @@ const FrmReceipt = () => {
                         </Select>
                       </div>
                     </div>
+
 
                     <div>
                       <Label text="तपशील :" />
