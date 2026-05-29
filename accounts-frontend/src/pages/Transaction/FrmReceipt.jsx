@@ -61,12 +61,27 @@ const FrmReceipt = () => {
   const [tableData, setTableData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showAmountFields, setShowAmountFields] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
 
   const handleAddRow = (values, setFieldValue) => {
     if (!values.entryDeptCode || !values.entryHead || !values.entryAmount) {
       Swal.fire({
         text: "Please fill all required fields",
+        confirmButtonColor: "#1e3a8a",
+      });
+      return;
+    }
+
+    const isDuplicate = tableData.some(
+      (row) =>
+        row.deptCode === values.entryDeptCode &&
+        row.head === values.entryHead
+    );
+
+    if (isDuplicate) {
+      Swal.fire({
+        text: "मेजर कोड आणि मायनर कोड पुन्हा यादीत जाऊ शकत नाही",
         confirmButtonColor: "#1e3a8a",
       });
       return;
@@ -404,6 +419,10 @@ const FrmReceipt = () => {
   };
 
   const handleSave = async (values) => {
+
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     try {
 
       if (!values.zoneId || values.zoneId === "0") {
@@ -411,6 +430,7 @@ const FrmReceipt = () => {
           text: "प्रभाग रिक्त असू शकत नाही",
           confirmButtonColor: "#1e3a8a",
         });
+        setIsSubmitting(false);
         return;
       }
 
@@ -419,6 +439,7 @@ const FrmReceipt = () => {
           text: "व्यवहार प्रकार रिक्त असू शकत नाही",
           confirmButtonColor: "#1e3a8a",
         });
+        setIsSubmitting(false);
         return;
       }
 
@@ -427,6 +448,7 @@ const FrmReceipt = () => {
           text: "तारीख रिक्त असू शकत नाही",
           confirmButtonColor: "#1e3a8a",
         });
+        setIsSubmitting(false);
         return;
       }
 
@@ -435,6 +457,7 @@ const FrmReceipt = () => {
           text: "चलन/पावती क्र रिक्त असू शकत नाही",
           confirmButtonColor: "#1e3a8a",
         });
+        setIsSubmitting(false);
         return;
       }
 
@@ -443,6 +466,7 @@ const FrmReceipt = () => {
           text: "डेबिट GL रिक्त असू शकत नाही",
           confirmButtonColor: "#1e3a8a",
         });
+        setIsSubmitting(false);
         return;
       }
 
@@ -451,6 +475,7 @@ const FrmReceipt = () => {
           text: "डेबिट खाते रिक्त असू शकत नाही",
           confirmButtonColor: "#1e3a8a",
         });
+        setIsSubmitting(false);
         return;
       }
 
@@ -459,6 +484,7 @@ const FrmReceipt = () => {
           text: "एकूण रक्कम रिक्त असू शकत नाही",
           confirmButtonColor: "#1e3a8a",
         });
+        setIsSubmitting(false);
         return;
       }
 
@@ -467,6 +493,7 @@ const FrmReceipt = () => {
           text: "व्यवहार ची दिटैल्स व्यवहार सूची मध्ये जोडा",
           confirmButtonColor: "#1e3a8a",
         });
+        setIsSubmitting(false);
         return;
       }
 
@@ -476,6 +503,7 @@ const FrmReceipt = () => {
           text: "एकूण रक्कम आणि यादीतील एकूण रक्कम जुळत नाही",
           confirmButtonColor: "#1e3a8a",
         });
+        setIsSubmitting(false);
         return;
       }
 
@@ -546,6 +574,12 @@ const FrmReceipt = () => {
         confirmButtonColor: "#1e3a8a",
       }).then(async () => {
 
+        // JCMC -> do not generate PDF
+        if (showAmountFields) {
+          navigate("/Transactions/FrmReceiptList");
+          return;
+        }
+
         Swal.fire({
           title: "Generating PDF...",
           allowOutsideClick: false,
@@ -598,6 +632,8 @@ const FrmReceipt = () => {
         text: "Error while saving",
         confirmButtonColor: "#1e3a8a",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1061,10 +1097,14 @@ const FrmReceipt = () => {
                     </div>
 
                     <div className="flex gap-3">
-                      <Button type="submit" className="bg-blue-900 text-white">
-                        साठवा
+                      <Button
+                        type="submit"
+                        className="bg-blue-900 text-white"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? "Saving..." : "साठवा"}
                       </Button>
-                      <Button type="button" variant="destructive" onClick={() => navigate("/Transactions/FrmPaymentList")}>
+                      <Button type="button" variant="destructive" onClick={() => navigate("/Transactions/FrmReceiptList")}>
                         रद्द
                       </Button>
                     </div>

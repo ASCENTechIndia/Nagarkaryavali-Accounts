@@ -71,6 +71,7 @@ const FrmPayment = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [tempLedger, setTempLedger] = useState(null);
     const [tempDebtorLedger, setTempDebtorLedger] = useState(null);
+    const [showAmountFields, setShowAmountFields] = useState(false);
 
     const setFieldValueRef = useRef(null);
 
@@ -339,6 +340,101 @@ const FrmPayment = () => {
         }
     };
 
+    // for jcmc only
+    const fetchCorporationById = async () => {
+        try {
+            const res = await axios.post(
+                `${BASE_URL}/api/frmPayment/corporation-by-id`,
+                {
+                    corpId: ulbId,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${user.token}`,
+                    },
+                }
+            );
+
+            const corpData = res.data?.data?.data?.[0];
+
+            if (corpData?.CORPORATIONCODE === "JCMC") {
+                setShowAmountFields(true);
+            } else {
+                setShowAmountFields(false);
+            }
+        } catch (err) {
+            console.error("Corporation API Error:", err);
+            setShowAmountFields(false);
+        }
+    };
+
+    useEffect(() => {
+        if (!ulbId) return;
+
+        setIsLoading(true);
+
+        Swal.fire({
+            title: "Loading...",
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            },
+        });
+
+        Promise.all([
+            fetchZones(),
+            fetchTransTypes(),
+            fetchPaymentTypes(),
+            fetchPartyMaster(),
+            fetchDebtorGLList(),
+            fetchCorporationById(),
+        ])
+            .then(() => {
+                // 👉 If NOT edit mode → close here
+                if (!refNo) {
+                    setIsLoading(false);
+                    Swal.close();
+                }
+            })
+            .catch(() => {
+                Swal.close();
+                setIsLoading(false);
+            });
+
+    }, [ulbId]);
+
+
+    useEffect(() => {
+        if (entryHeadList.length && tempLedger && setFieldValueRef.current) {
+            const selected = entryHeadList.find((item) => item.value === tempLedger);
+            if (selected) {
+                setFieldValueRef.current("ledgerHead", selected.value);
+                setTempLedger(null);
+            }
+        }
+    }, [entryHeadList, tempLedger]);
+
+    useEffect(() => {
+        if (partyList.length && tempDebtorLedger && setFieldValueRef.current) {
+            const selected = partyList.find((item) => item.value === tempDebtorLedger);
+            if (selected) {
+                setFieldValueRef.current("debtorLedgerHead", selected.value);
+                setTempDebtorLedger(null);
+            }
+        }
+    }, [partyList, tempDebtorLedger]);
+
+    const deptGlOptions = deptGlList.map((g) => ({
+        label: g.GLNAME,
+        value: g.GLCODE?.toString(),
+    }));
+
+    const debtorGlOptions = debtorGlList.map((g) => ({
+        label: g.GLSEARCHNAME,
+        value: g.GLFUNCTION?.toString(),
+    }));
+
+
     const handleSubmit = async (values) => {
         try {
             const isEdit = Boolean(refNo);
@@ -416,9 +512,15 @@ const FrmPayment = () => {
                     text: result.message,
                     confirmButtonColor: "#1e3a8a",
                 }).then(async () => {
-                    debugger;
+
+                    // JCMC 
+                    if (showAmountFields) {
+                        navigate("/Transactions/FrmPaymentList");
+                        return;
+                    }
+
+
                     try {
-                        // ✅ SHOW LOADER AFTER OK CLICK
                         Swal.fire({
                             title: "Generating PDF...",
                             allowOutsideClick: false,
@@ -484,71 +586,6 @@ const FrmPayment = () => {
             });
         }
     };
-
-    useEffect(() => {
-        if (!ulbId) return;
-
-        setIsLoading(true);
-
-        Swal.fire({
-            title: "Loading...",
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            },
-        });
-
-        Promise.all([
-            fetchZones(),
-            fetchTransTypes(),
-            fetchPaymentTypes(),
-            fetchPartyMaster(),
-            fetchDebtorGLList(),
-        ])
-            .then(() => {
-                // 👉 If NOT edit mode → close here
-                if (!refNo) {
-                    setIsLoading(false);
-                    Swal.close();
-                }
-            })
-            .catch(() => {
-                Swal.close();
-                setIsLoading(false);
-            });
-
-    }, [ulbId]);
-
-
-    useEffect(() => {
-        if (entryHeadList.length && tempLedger && setFieldValueRef.current) {
-            const selected = entryHeadList.find((item) => item.value === tempLedger);
-            if (selected) {
-                setFieldValueRef.current("ledgerHead", selected.value);
-                setTempLedger(null);
-            }
-        }
-    }, [entryHeadList, tempLedger]);
-
-    useEffect(() => {
-        if (partyList.length && tempDebtorLedger && setFieldValueRef.current) {
-            const selected = partyList.find((item) => item.value === tempDebtorLedger);
-            if (selected) {
-                setFieldValueRef.current("debtorLedgerHead", selected.value);
-                setTempDebtorLedger(null);
-            }
-        }
-    }, [partyList, tempDebtorLedger]);
-
-    const deptGlOptions = deptGlList.map((g) => ({
-        label: g.GLNAME,
-        value: g.GLCODE?.toString(),
-    }));
-
-    const debtorGlOptions = debtorGlList.map((g) => ({
-        label: g.GLSEARCHNAME,
-        value: g.GLFUNCTION?.toString(),
-    }));
 
 
     return (

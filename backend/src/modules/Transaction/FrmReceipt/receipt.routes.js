@@ -33,7 +33,7 @@ router.post("/receipt-pdf", controller.getReceiptPDF);
 
 router.post(
   "/receiptdetailPdf",auth(),
-  controller.getReceiptDetails
+  controller.getReceiptDetailsReprint
 );
 
 module.exports = router;
