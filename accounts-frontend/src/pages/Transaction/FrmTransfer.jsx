@@ -370,6 +370,30 @@ const FrmTransfer = () => {
     fetchData();
   }, [location?.state?.refNo, token, ulbId, zones, transactionTypes]);
 
+
+  const getCorporationCode = async () => {
+  try {
+    const res = await axios.post(
+      `${BASE_URL}/api/frmPayment/corporation-by-id`,
+      {
+        corpId: user?.ulbId,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    console.log("res",res)
+    return (
+      res?.data?.data?.data?.[0]?.CORPORATIONCODE || null
+    );
+  } catch (err) {
+    console.error("Corporation API Error:", err);
+    return null;
+  }
+};
+
   const handleSubmit = async (values, { resetForm }) => {
     try {
       if (!values.department) return Swal.fire("प्रभाग निवडा");
@@ -483,7 +507,8 @@ const FrmTransfer = () => {
         const refNo = refMatch ? refMatch[1] : null;
 
         /* ================= PDF ================= */
-        if (refNo) {
+        const corpCode = await getCorporationCode();
+        if (refNo && corpCode?.toUpperCase() !== "JCMC") {
           try {
             Swal.fire({
               title: "PDF तयार होत आहे...",
