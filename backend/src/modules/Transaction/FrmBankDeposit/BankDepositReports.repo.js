@@ -6,7 +6,7 @@ const { withTx } = require("../../../db/tx");
 async function getDepartments(ulbId) {
   const sql = `
     SELECT deptname, deptid
-    FROM prop.vw_deptconfig
+    FROM vw_accdeptconfig
     WHERE ulbid = :ulbId
   `;
 

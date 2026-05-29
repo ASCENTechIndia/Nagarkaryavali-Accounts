@@ -84,7 +84,7 @@ const BindGrantsGrid = async (corpId) => {
       ON num_grant_grantgl = glcode 
      AND num_grant_grantacc = accno 
      AND ulbid = num_grant_ulbid
-    INNER JOIN prop.vw_deptconfig dept 
+    INNER JOIN vw_accdeptconfig dept 
       ON dept.deptid = num_grant_nidhi_id 
      AND dept.ulbid = num_grant_ulbid
     WHERE num_grant_ulbid = :corpId

@@ -59,7 +59,7 @@ async function getConsolidatedReceiptRepo(payload) {
           AND a.num_accrec_recno = t.var_depttrns_receiptno
           AND a.num_accrec_ulbid = t.num_depttrns_ulbid
 
-      INNER JOIN prop.vw_deptconfig d
+      INNER JOIN vw_accdeptconfig d
           ON d.deptid = t.num_depttrns_deptid
           AND d.ulbid = t.num_depttrns_ulbid
 
@@ -137,7 +137,7 @@ async function getConsolidatedReceiptRepo(payload) {
           AND a.num_accrec_recno = t.var_depttrns_receiptno
           AND a.num_accrec_ulbid = t.num_depttrns_ulbid
 
-      INNER JOIN prop.vw_deptconfig d
+      INNER JOIN vw_accdeptconfig d
           ON d.deptid = t.num_depttrns_deptid
           AND d.ulbid = t.num_depttrns_ulbid
 

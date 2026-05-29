@@ -64,7 +64,7 @@ const getCorporationRepo = (corp_id) =>
 const getDepartmentsRepo = (ulbid) =>
   executeQuery(
     `SELECT deptname, deptid 
-     FROM prop.vw_deptconfig 
+     FROM vw_accdeptconfig 
      WHERE ulbid = :ulbid`,
     { ulbid },
   );

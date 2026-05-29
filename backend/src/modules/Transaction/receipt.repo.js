@@ -51,7 +51,7 @@ const getCorporationRepo = (corp_id) =>
                   WHERE num_corporation_id=:corp_id`, { corp_id });
 
 const getDepartmentsRepo = (ulbid) =>
-    executeQuery(`select deptname,deptid from prop.vw_deptconfig where ulbid=:ulbid`, { ulbid });
+    executeQuery(`select deptname,deptid from vw_accdeptconfig where ulbid=:ulbid`, { ulbid });
 
 const getBudgetHeadsRepo = () =>
     executeQuery(`select var_budgetconfig_budgetname,
