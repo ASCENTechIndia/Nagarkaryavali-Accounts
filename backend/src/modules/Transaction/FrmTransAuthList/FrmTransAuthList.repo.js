@@ -398,6 +398,8 @@ const getTransactionDetails = async (refNo, trnsTypeId) => {
     `;
   }
 
+  console.log(query);
+
   return await executeQuery(query, bindParams);
 };
 

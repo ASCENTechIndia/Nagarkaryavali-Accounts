@@ -227,6 +227,10 @@ const FrmTransAuthList = () => {
   }, [searchText, data]);
 
   const handleSelectVoucher = (row) => {
+    const selectedTransTypeObj = transTypeOptions.find(
+      (item) => item.value === selectedTransType
+    );
+
     navigate("/Transactions/FrmTransAuthMst", {
         state: {
         voucherData: {
@@ -241,6 +245,7 @@ const FrmTransAuthList = () => {
             username: row.USERNAME,
             datetime: row.DATETIME,
         },
+        transvalue: selectedTransTypeObj?.value,
         },
     });
   };

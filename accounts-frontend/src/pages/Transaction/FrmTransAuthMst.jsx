@@ -45,8 +45,11 @@ const FrmTransAuthMst = () => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [zones, setZones] = useState([]);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+  console.log("location.state?.voucherData", location.state?.voucherData);
 
   const headers = [
     "मेजर",
@@ -212,12 +215,11 @@ const FrmTransAuthMst = () => {
 
       if (response.data?.success || response.data?.data?.errorCode === -100) {
         const message = response.data?.data?.message || "व्यवहार यशस्वीरित्या अधिकृत करण्यात आला";
-        
         await Swal.fire({
           text: message,
           confirmButtonText: "ठीक आहे",
         });
-        
+        await generatePDF(voucherData);
         navigate("/Transactions/FrmTransAuthList");
       } else {
         const errorMsg = response?.data?.data?.message || response?.data?.message || "व्यवहार अधिकृत करताना त्रुटी आली";
@@ -243,6 +245,119 @@ const FrmTransAuthMst = () => {
       });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const generatePDF = async (voucherData) => {
+    debugger;
+    try {
+      const pdfLoader = Swal.fire({
+        title: "Generating PDF...",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => Swal.showLoading(),
+      });
+
+      let pdfUrl = null;
+      const currentUlbId = Number(user?.ulbId);
+      const transTypeId = parseInt(location.state?.transvalue);
+      const refNo = parseInt(voucherData.refno);
+
+      console.log("Generating PDF for:", { currentUlbId, transTypeId, refNo });
+
+      if (currentUlbId === 930) {
+        if (transTypeId === 1) {
+          console.log("Calling receipt-pdf API...");
+          const res = await axios.post(
+            `${BASE_URL}/api/Receipt/receipt-pdf`,
+            {
+              refno: refNo,
+              ulbid: currentUlbId,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+          
+          console.log("Receipt PDF Response:", res.data);
+          
+          if (res?.data?.success && res?.data?.pdfUrl) {
+            pdfUrl = res.data.pdfUrl;
+          } else if (res?.data?.pdfUrl) {
+            pdfUrl = res.data.pdfUrl;
+          }
+        }
+        else if (transTypeId === 2) {
+          console.log("Calling payment-pdf API...");
+          const res = await axios.post(
+            `${BASE_URL}/api/frmPayment/payment-pdf`,
+            {
+              refno: refNo,
+              ulbid: currentUlbId,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+          
+          console.log("Payment PDF Response:", res.data);
+          
+          if (res?.data?.success && res?.data?.pdfUrl) {
+            pdfUrl = res.data.pdfUrl;
+          } else if (res?.data?.pdfUrl) {
+            pdfUrl = res.data.pdfUrl;
+          }
+        }
+        else if (transTypeId === 5 || transTypeId === 8 || transTypeId === 9) {
+          console.log("Calling counter-voucher-pdf API...");
+          const res = await axios.post(
+            `${BASE_URL}/api/FrmTransfer/counter-voucher-pdf`,
+            {
+              refno: refNo,
+              ulbid: currentUlbId,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+          
+          console.log("Counter Voucher PDF Response:", res.data);
+          
+          if (res?.data?.success && res?.data?.pdfUrl) {
+            pdfUrl = res.data.pdfUrl;
+          } else if (res?.data?.pdfUrl) {
+            pdfUrl = res.data.pdfUrl;
+          }
+        }
+      }
+      
+      await pdfLoader.close();
+
+      if (pdfUrl) {
+        console.log("Opening PDF:", pdfUrl);
+        window.open(pdfUrl, "_blank");
+      } else {
+        console.warn("No PDF URL received");
+        // Optional: Show notification but don't block navigation
+        await Swal.fire({
+          text: "व्यवहार अधिकृत झाला, परंतु PDF तयार करता आला नाही.",
+          icon: "info",
+          confirmButtonText: "ठीक आहे",
+          timer: 2000,
+        });
+      }
+    } catch (error) {
+      console.error("PDF Generation Error:", error);
+      await pdfLoader?.close();
     }
   };
 
@@ -337,29 +452,60 @@ const FrmTransAuthMst = () => {
     }
   };
 
+  // useEffect(() => {
+  //   if (ulbId) {
+  //     fetchZones();
+  //   }
+
+  //   const voucherData = location.state?.voucherData;
+  //   if (voucherData) {
+  //     setRefNo(voucherData.refno?.toString() || "");
+  //     setVoucherNo(voucherData.docno?.toString() || "");
+  //     setZone(voucherData.zonename || "");
+  //     setPartyName(voucherData.partyname || "");
+  //     setTrnsDate(voucherData.trnsdate ? new Date(voucherData.trnsdate) : new Date());
+  //     setUsername(voucherData.username || "");
+  //     setDatetime(voucherData.datetime ? new Date(voucherData.datetime).toLocaleString() : "");
+  //     setAmount(voucherData.amount?.toString() || "");
+  //     setTransType(voucherData.trnstype || "");
+
+  //     if (voucherData.refno && voucherData.trnstypeid) {
+  //       fetchTransactionDetails(voucherData.refno, voucherData.trnstypeid);
+  //     }
+  //   }
+  // }, [location.state, ulbId]);
+
   useEffect(() => {
-    if (ulbId) {
-      fetchZones();
-    }
-
-    const voucherData = location.state?.voucherData;
-    if (voucherData) {
-      setRefNo(voucherData.refno?.toString() || "");
-      setVoucherNo(voucherData.docno?.toString() || "");
-      setZone(voucherData.zonename || "");
-      setPartyName(voucherData.partyname || "");
-      setTrnsDate(voucherData.trnsdate ? new Date(voucherData.trnsdate) : new Date());
-      setUsername(voucherData.username || "");
-      setDatetime(voucherData.datetime ? new Date(voucherData.datetime).toLocaleString() : "");
-      setAmount(voucherData.amount?.toString() || "");
-      setTransType(voucherData.trnstype || "");
-
-      if (voucherData.refno && voucherData.trnstypeid) {
-        fetchTransactionDetails(voucherData.refno, voucherData.trnstypeid);
+    const initializeData = async () => {
+      setInitialLoading(true);
+      
+      if (ulbId) {
+        await fetchZones();
       }
-    }
-  }, [location.state, ulbId]);
 
+      const voucherData = location.state?.voucherData;
+      if (voucherData) {
+        setRefNo(voucherData.refno?.toString() || "");
+        setVoucherNo(voucherData.docno?.toString() || "");
+        setZone(voucherData.zonename || "");
+        setPartyName(voucherData.partyname || "");
+        setTrnsDate(voucherData.trnsdate ? new Date(voucherData.trnsdate) : new Date());
+        setUsername(voucherData.username || "");
+        setDatetime(voucherData.datetime ? new Date(voucherData.datetime).toLocaleString() : "");
+        setAmount(voucherData.amount?.toString() || "");
+        setTransType(voucherData.trnstype || "");
+
+        if (voucherData.refno && voucherData.trnstypeid) {
+          await fetchTransactionDetails(voucherData.refno, voucherData.trnstypeid);
+        }
+      }
+      
+      setInitialLoading(false);
+    };
+    
+    initializeData();
+  }, [location.state, ulbId]);
+  
   const zoneOptions = zones.map((z) => ({
     value: z.ZONEID?.toString(),
     label: z.ZONEENAME,
@@ -375,153 +521,163 @@ const FrmTransAuthMst = () => {
         </CardHeader>
 
         <CardContent className="p-4 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-              <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
-                <Label text="झोन" />
-                <span>:</span>
-              </div>
-              <Select
-                value={zone}
-                onValueChange={setZone}
-                disabled
-              >
-                <SelectTrigger className="w-full h-9">
-                  <SelectValue placeholder="-- विकल्प निवडा --" />
-                </SelectTrigger>
-                <SelectContent>
-                  {zoneOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.label}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+
+          {initialLoading ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+              <span className="ml-3 text-gray-600">व्यवहार तपशील लोड होत आहे...</span>
             </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
-                <Label text="रेफ. क्रमांक" />
-                <span>:</span>
-              </div>
-              <Input
-                value={refNo}
-                readOnly
-                className="w-full h-9"
-              />
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-              <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
-                <Label text="व्यवहार प्रकार" />
-                <span>:</span>
-              </div>
-              <Input
-                value={transType}
-                readOnly
-                className="w-full h-9"
-              />
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
-                <Label text="तारीख" />
-                <span>:</span>
-              </div>
-              <DatePicker
-                value={trnsDate}
-                onChange={setTrnsDate}
-                className="w-full h-9"
-              />
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
-                <Label text="व्हाउचर क्रमांक" />
-                <span>:</span>
-              </div>
-              <Input
-                value={voucherNo}
-                readOnly
-                className="w-full h-9"
-              />
-            </div>
-          </div>
-
-          <div className="border rounded-lg bg-white overflow-hidden mt-4">
-            {loading && (
-              <div className="py-10 text-center text-sm text-muted-foreground">
-                माहिती लोड होत आहे...
-              </div>
-            )}
-
-            {!loading && tableData.length === 0 && (
-              <div className="py-10 text-center text-sm text-muted-foreground">
-                कोणतीही माहिती उपलब्ध नाही
-              </div>
-            )}
-
-            {!loading && tableData.length > 0 && (
-              <>
-                <ShadCNTable
-                  headers={headers}
-                  data={tableData}
-                  keyMapping={keyMapping}
-                  className="max-md:min-w-380"
-                />
-
-                <div className="flex justify-end items-center gap-6 p-3 border-t">
-                  <div className="flex items-center gap-2">
-                    {/* <Label className="font-semibold text-base">एकूण क्रेडिट :</Label> */}
-                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
-                        <Label text="एकूण क्रेडिट" />
-                        <span>:</span>
-                    </div>
-                    <Input
-                      value={totalCredit.toLocaleString("en-IN")}
-                      readOnly
-                      className="w-40 text-right h-9"
-                    />
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                  <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                    <Label text="झोन" />
+                    <span>:</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {/* <Label className="font-semibold text-base">एकूण डेबिट :</Label> */}
-                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
-                        <Label text="एकूण डेबिट" />
-                        <span>:</span>
-                    </div>
-                    <Input
-                      value={totalDebit.toLocaleString("en-IN")}
-                      readOnly
-                      className="w-40 text-right h-9"
-                    />
-                  </div>
+                  <Select
+                    value={zone}
+                    onValueChange={setZone}
+                    disabled
+                  >
+                    <SelectTrigger className="w-full h-9">
+                      <SelectValue placeholder="-- विकल्प निवडा --" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {zoneOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.label}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-              </>
-            )}
-          </div>
 
-          <div className="flex justify-center gap-4 pt-4">
-            <Button
-              onClick={handleAccept}
-              disabled={submitting || loading}
-            >
-              स्वीकार
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleReject}
-              disabled={submitting || loading}
-            >
-              रद्द
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate(-1)}
-            >
-              बाहेर जा
-            </Button>
-            
-          </div>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                  <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                    <Label text="रेफ. क्रमांक" />
+                    <span>:</span>
+                  </div>
+                  <Input
+                    value={refNo}
+                    readOnly
+                    className="w-full h-9"
+                  />
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                  <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                    <Label text="व्यवहार प्रकार" />
+                    <span>:</span>
+                  </div>
+                  <Input
+                    value={transType}
+                    readOnly
+                    className="w-full h-9"
+                  />
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                  <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                    <Label text="तारीख" />
+                    <span>:</span>
+                  </div>
+                  <DatePicker
+                    value={trnsDate}
+                    onChange={setTrnsDate}
+                    className="w-full h-9"
+                  />
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                  <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                    <Label text="व्हाउचर क्रमांक" />
+                    <span>:</span>
+                  </div>
+                  <Input
+                    value={voucherNo}
+                    readOnly
+                    className="w-full h-9"
+                  />
+                </div>
+              </div>
+
+              <div className="border rounded-lg bg-white overflow-hidden mt-4">
+                {loading && (
+                  <div className="py-10 text-center text-sm text-muted-foreground">
+                    माहिती लोड होत आहे...
+                  </div>
+                )}
+
+                {!loading && tableData.length === 0 && (
+                  <div className="py-10 text-center text-sm text-muted-foreground">
+                    कोणतीही माहिती उपलब्ध नाही
+                  </div>
+                )}
+
+                {!loading && tableData.length > 0 && (
+                  <>
+                    <ShadCNTable
+                      headers={headers}
+                      data={tableData}
+                      keyMapping={keyMapping}
+                      className="max-md:min-w-380"
+                    />
+
+                    <div className="flex justify-end items-center gap-6 p-3 border-t">
+                      <div className="flex items-center gap-2">
+                        {/* <Label className="font-semibold text-base">एकूण क्रेडिट :</Label> */}
+                        <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                            <Label text="एकूण क्रेडिट" />
+                            <span>:</span>
+                        </div>
+                        <Input
+                          value={totalCredit.toLocaleString("en-IN")}
+                          readOnly
+                          className="w-40 text-right h-9"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {/* <Label className="font-semibold text-base">एकूण डेबिट :</Label> */}
+                        <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                            <Label text="एकूण डेबिट" />
+                            <span>:</span>
+                        </div>
+                        <Input
+                          value={totalDebit.toLocaleString("en-IN")}
+                          readOnly
+                          className="w-40 text-right h-9"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div className="flex justify-center gap-4 pt-4">
+                <Button
+                  onClick={handleAccept}
+                  disabled={submitting || loading}
+                >
+                  स्वीकार
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleReject}
+                  disabled={submitting || loading}
+                >
+                  रद्द
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => navigate(-1)}
+                >
+                  बाहेर जा
+                </Button>
+                
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
     </motion.div>
