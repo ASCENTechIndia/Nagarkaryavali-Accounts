@@ -23,13 +23,14 @@ const getTransactionDetailsService = async (body) => {
 
   const result = await repo.getTransactionDetails(refNo, trnsTypeId);
 
+  console.log("Service Result:", result);
+
   let finalRows = [];
 
   if (!result.rows.length) return result;
 
   let sum = 0;
 
-  // RECEIPT
   if ([1, 2].includes(trnsTypeId)) {
     result.rows.forEach((r) => {
       finalRows.push({
@@ -52,41 +53,60 @@ const getTransactionDetailsService = async (body) => {
       accName: result.rows[0].CRDRACCNAME,
       credit: 0,
       debit: sum,
+      narration: null,
+      party: null,
     });
   }
 
-  // PAYMENT
+  // PAYMENT (trnsTypeId 3 or 4)
   else if ([3, 4].includes(trnsTypeId)) {
     result.rows.forEach((r) => {
       finalRows.push({
         glCode: r.GLCODE,
+        glName: r.GLNAME,
+        accNo: r.ACCNO,
+        accName: r.ACCNAME,
         credit: 0,
         debit: r.AMOUNT,
+        narration: r.NARRATION,
+        party: r.PARTY,
       });
       sum += r.AMOUNT;
     });
 
+    // Add the bank/cash account as CREDIT
     finalRows.push({
       glCode: result.rows[0].CRDRGL,
+      glName: result.rows[0].CRDRGLNAME,
+      accNo: result.rows[0].CRDRACC,
+      accName: result.rows[0].CRDRACCNAME,
       credit: sum,
       debit: 0,
+      narration: null,
+      party: null,
     });
   }
 
-  // TRANSFER
   else {
     result.rows.forEach((r) => {
-      let credit = r.AMOUNT >= 0 ? r.AMOUNT : 0;
+      let credit = r.AMOUNT > 0 ? r.AMOUNT : 0;
       let debit = r.AMOUNT < 0 ? Math.abs(r.AMOUNT) : 0;
 
       finalRows.push({
         glCode: r.GLCODE,
-        credit,
-        debit,
+        glName: r.GLNAME,
+        accNo: r.ACCNO,
+        accName: r.ACCNAME,
+        credit: credit,
+        debit: debit,
+        narration: r.NARRATION,
+        party: r.PARTY,
       });
     });
   }
 
+  console.log("Service finalRows:", finalRows);
+  
   return {
     success: true,
     header: result.rows[0],
