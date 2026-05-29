@@ -250,8 +250,9 @@ const FrmTransAuthMst = () => {
 
   const generatePDF = async (voucherData) => {
     debugger;
+    let pdfLoader = null;
     try {
-      const pdfLoader = Swal.fire({
+      pdfLoader  =Swal.fire({
         title: "Generating PDF...",
         allowOutsideClick: false,
         showConfirmButton: false,
@@ -320,7 +321,7 @@ const FrmTransAuthMst = () => {
             `${BASE_URL}/api/FrmTransfer/counter-voucher-pdf`,
             {
               refno: refNo,
-              ulbid: currentUlbId,
+              ulbId: currentUlbId,
             },
             {
               headers: {
@@ -347,7 +348,6 @@ const FrmTransAuthMst = () => {
         window.open(pdfUrl, "_blank");
       } else {
         console.warn("No PDF URL received");
-        // Optional: Show notification but don't block navigation
         await Swal.fire({
           text: "व्यवहार अधिकृत झाला, परंतु PDF तयार करता आला नाही.",
           icon: "info",
@@ -357,7 +357,10 @@ const FrmTransAuthMst = () => {
       }
     } catch (error) {
       console.error("PDF Generation Error:", error);
-      await pdfLoader?.close();
+      Swal.fire({
+          icon: "error",
+          text: error?.response?.data?.message || "Failed To Fetch Branch List",
+      });
     }
   };
 
