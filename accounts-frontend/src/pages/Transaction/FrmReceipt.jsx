@@ -324,7 +324,6 @@ const FrmReceipt = () => {
 
   const fetchCreditLeasure = async (glcode, type) => {
     try {
-      debugger;
       const res = await axios.post(`${BASE_URL}/api/FrmTransfer/credit-leasure`, {
         corp_id: ulbId,
         glcode: glcode,
@@ -385,7 +384,7 @@ const FrmReceipt = () => {
       setFieldValue("remark", first.NARRATION);
 
       setFieldValue("wardCode", first.DRGL?.toString()); // for UI
-      setTempHead(first.ACCNO?.toString());
+      setTempHead(first.DRACC?.toString());
 
       fetchCreditLeasure(first.GLCODE?.toString(), "party");
 
@@ -419,7 +418,7 @@ const FrmReceipt = () => {
   };
 
   const handleSave = async (values) => {
-
+    console.log("values",values)
     if (isSubmitting) return;
 
     setIsSubmitting(true);
@@ -531,7 +530,7 @@ const FrmReceipt = () => {
         values.head,
         InMode,
         RefNo,
-        "",
+        values.department,
         "",
         1,
         1,
@@ -740,7 +739,6 @@ const FrmReceipt = () => {
           }
         }, [partyList]);
 
-        console.log("partyList:", partyList);
 
 
         useEffect(() => {
