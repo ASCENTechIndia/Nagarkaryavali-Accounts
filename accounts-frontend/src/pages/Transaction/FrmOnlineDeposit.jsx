@@ -312,7 +312,7 @@ const FrmOnlineDeposit = () => {
                 error
             );
             Swal.fire({
-                icon: "error",
+                // icon: "error",
                 title: "Error",
                 text:
                     error?.response?.data?.message ||
@@ -419,7 +419,7 @@ const FrmOnlineDeposit = () => {
             );
 
             Swal.fire({
-                icon: "error",
+                // icon: "error",
                 title: "Error",
                 text:
                     error?.response?.data?.message ||
@@ -489,7 +489,7 @@ const FrmOnlineDeposit = () => {
         try {
             if (!values.glcode) {
                 Swal.fire({
-                    icon: "warning",
+                    // icon: "warning",
                     title: "Validation",
                     text: "विभाग संकेतांक रिक्त असू शकत नाही",
                 });
@@ -497,7 +497,7 @@ const FrmOnlineDeposit = () => {
             }
             if (!values.accno) {
                 Swal.fire({
-                    icon: "warning",
+                    // icon: "warning",
                     title: "Validation",
                     text: "लेखाशीर्ष रिक्त असू शकत नाही",
                 });
@@ -505,7 +505,7 @@ const FrmOnlineDeposit = () => {
             }
             if (!values.depositDate) {
                 Swal.fire({
-                    icon: "warning",
+                    // icon: "warning",
                     title: "Validation",
                     text: "ठेव तारीख रिक्त असू शकत नाही",
                 });
@@ -515,7 +515,7 @@ const FrmOnlineDeposit = () => {
 
             if (selectedRows.length === 0) {
                 Swal.fire({
-                    icon: "warning",
+                    // icon: "warning",
                     title: "Validation",
                     text: "Please select at least one record.",
                 });
@@ -641,7 +641,7 @@ const FrmOnlineDeposit = () => {
                         pdfRes?.data?.pdfUrl || pdfRes?.data?.data?.pdfUrl;
 
                     await Swal.fire({
-                        icon: "success",
+                        // icon: "success",
                         title: "Success",
                         text:
                             result?.errorMsg ||
@@ -682,7 +682,7 @@ const FrmOnlineDeposit = () => {
                     console.error("PDF generation error:", pdfError);
 
                     await Swal.fire({
-                        icon: "success",
+                        // icon: "success",
                         title: "Transaction Saved",
                         text: result?.errorMsg || `Transaction saved successfully. Reference No: ${refNo}`,
                     });
@@ -691,7 +691,7 @@ const FrmOnlineDeposit = () => {
                 Swal.close();
 
                 Swal.fire({
-                    icon: "warning",
+                    // icon: "warning",
                     title: "Warning",
                     text: result?.errorMsg || "Unable to save transaction.",
                 });
@@ -702,7 +702,7 @@ const FrmOnlineDeposit = () => {
             console.error("Save error:", error);
 
             Swal.fire({
-                icon: "error",
+                // icon: "error",
                 title: "Error",
                 text: error?.response?.data?.error || error?.response?.data?.message || "Failed to save transaction.",
             });

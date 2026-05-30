@@ -111,7 +111,7 @@ const FrmPaymentReprint = () => {
       setTableData([]);
 
       Swal.fire({
-        icon: "error",
+        // icon: "error",
         title: "Error",
         text:
           error?.response?.data?.message ||
@@ -156,7 +156,7 @@ const FrmPaymentReprint = () => {
       Swal.close();
 
       Swal.fire({
-        icon: "error",
+        // icon: "error",
         title: "Error",
         text:
           error?.response?.data?.message ||

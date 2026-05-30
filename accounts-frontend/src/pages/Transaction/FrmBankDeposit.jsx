@@ -309,7 +309,7 @@ const BankDeposit = () => {
         setShowTable(false);
 
         Swal.fire({
-          icon: "warning",
+          // icon: "warning",
           title: "No Data Found",
           text: message,
         });
@@ -348,7 +348,7 @@ const BankDeposit = () => {
       setShowTable(true);
 
       Swal.fire({
-        icon: "success",
+        // icon: "success",
         title: "Success",
         text: `${mapped.length} record(s) found.`,
         timer: 1500,
@@ -368,7 +368,7 @@ const BankDeposit = () => {
         "Failed to fetch data";
 
       Swal.fire({
-        icon: "error",
+        // icon: "error",
         title: "Error",
         text: message,
       });
@@ -610,7 +610,7 @@ const BankDeposit = () => {
       setPavatiData([]);
 
       Swal.fire({
-        icon: "error",
+        // icon: "error",
         title: "Error",
         text: err?.response?.data?.message || "Failed to fetch challan details",
       });
@@ -639,7 +639,7 @@ const BankDeposit = () => {
 
     if (selectedRows.length === 0) {
       Swal.fire({
-        icon: "warning",
+        // icon: "warning",
         title: "No rows selected",
         text: "Please select at least one record",
       });
@@ -648,7 +648,7 @@ const BankDeposit = () => {
 
     if (!values.fromDate || !values.toDate) {
       Swal.fire({
-        icon: "warning",
+        // icon: "warning",
         title: "Missing Dates",
         text: "Please select From Date and To Date",
       });
@@ -726,7 +726,7 @@ const BankDeposit = () => {
       // ================= RESPONSE =================
       if (res.data?.ok) {
         Swal.fire({
-          icon: "success",
+          // icon: "success",
           title: "Success",
           text: res.data?.data?.message,
         });
@@ -735,7 +735,7 @@ const BankDeposit = () => {
         setShowTable(false);
       } else {
         Swal.fire({
-          icon: "error",
+          // icon: "error",
           title: "Error",
           text: res.data?.message || "Insert failed",
         });
@@ -744,7 +744,7 @@ const BankDeposit = () => {
       console.error("SAVE ERROR:", err);
 
       Swal.fire({
-        icon: "error",
+        // icon: "error",
         title: "Error",
         text: err?.response?.data?.message || "Insert failed",
       });

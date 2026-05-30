@@ -134,7 +134,7 @@ const RptPaymentRegisterDetails = () => {
     if (!values.fromDate || !values.toDate) {
       Swal.fire({
         text: "Please select date",
-        icon: "warning",
+        // icon: "warning",
         confirmButtonColor: "#1e3a8a",
       });
       return;
@@ -189,7 +189,7 @@ const RptPaymentRegisterDetails = () => {
         } else {
           Swal.fire({
             text: "PDF generation failed",
-            icon: "error",
+            // icon: "error",
           });
         }
         return;
@@ -201,7 +201,7 @@ const RptPaymentRegisterDetails = () => {
       if (!rows.length) {
         Swal.fire({
           text: "No data found",
-          icon: "info",
+          // icon: "info",
         });
         return;
       }
@@ -256,7 +256,7 @@ const RptPaymentRegisterDetails = () => {
         text:
           err?.response?.data?.message ||
           "Server is taking too long. Try again.",
-        icon: "error",
+        // icon: "error",
       });
     }
   };

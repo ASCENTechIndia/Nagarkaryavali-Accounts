@@ -610,7 +610,7 @@ const FrmReceipt = () => {
           } else {
             Swal.fire({
               text: "PDF generation failed",
-              icon: "error",
+              // icon: "error",
             });
           }
 
@@ -618,7 +618,7 @@ const FrmReceipt = () => {
           console.error("PDF ERROR:", pdfErr);
           Swal.fire({
             text: "PDF generation failed",
-            icon: "error",
+            // icon: "error",
           });
         }
 

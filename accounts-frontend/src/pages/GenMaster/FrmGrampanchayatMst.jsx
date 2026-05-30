@@ -149,7 +149,7 @@ const FrmGrampanchayatMst = () => {
 
       if (res.data?.ok) {
         await Swal.fire({
-          icon: "success",
+          // icon: "success",
           title: res.data.message || "Saved Successfully",
         });
 

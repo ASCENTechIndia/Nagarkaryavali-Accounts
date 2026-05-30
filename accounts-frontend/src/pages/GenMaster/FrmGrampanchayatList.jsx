@@ -68,7 +68,7 @@ const FrmGramPanchayatList = () => {
       setZones([]);
 
       Swal.fire({
-        icon: "error",
+        // icon: "error",
         title: "Error loading zones",
       });
     }
@@ -106,7 +106,7 @@ const FrmGramPanchayatList = () => {
       setList([]);
 
       Swal.fire({
-        icon: "error",
+        // icon: "error",
         title: "Error loading list",
       });
     }

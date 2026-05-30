@@ -361,7 +361,7 @@ const FrmTransfer = () => {
         Swal.close();
 
         Swal.fire({
-          icon: "error",
+          // icon: "error",
           text: "डेटा लोड करण्यात अडचण आली",
         });
       }
@@ -496,7 +496,7 @@ const FrmTransfer = () => {
       /* ================= SUCCESS ================= */
       if (response?.ok && response?.data?.success) {
         await Swal.fire({
-          icon: "success",
+          // icon: "success",
           title: "Success",
           text: response.data.message,
         });
@@ -550,7 +550,7 @@ const FrmTransfer = () => {
         }, 800);
       } else {
         Swal.fire({
-          icon: "error",
+          // icon: "error",
           title: "Error",
           text:
             response?.data?.message ||
@@ -563,7 +563,7 @@ const FrmTransfer = () => {
       console.error(err);
 
       Swal.fire({
-        icon: "error",
+        // icon: "error",
         title: "Server Error",
         text: "Something went wrong",
       });

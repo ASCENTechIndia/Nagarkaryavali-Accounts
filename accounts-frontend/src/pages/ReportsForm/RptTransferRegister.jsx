@@ -83,7 +83,7 @@ const RptTransferRegister = () => {
     if (!values.fromDate || !values.toDate) {
       Swal.fire({
         text: "Please select date",
-        icon: "warning",
+        // icon: "warning",
       });
       return;
     }
@@ -211,7 +211,7 @@ const RptTransferRegister = () => {
         text:
           err?.response?.data?.message ||
           "Something went wrong.",
-        icon: "error",
+        // icon: "error",
       });
     }
   };

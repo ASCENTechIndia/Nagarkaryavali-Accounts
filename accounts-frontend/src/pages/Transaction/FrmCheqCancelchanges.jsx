@@ -364,7 +364,7 @@ const FrmCheqCancelchanges = () => {
             console.error("Update API Error:", err);
 
             Swal.fire({
-                icon: "error",
+                // icon: "error",
                 text: "Failed to update cheque",
             });
         }

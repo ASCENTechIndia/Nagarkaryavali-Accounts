@@ -223,7 +223,7 @@ const FrmChequeBookMst = () => {
 
       if (res?.data?.ok && res?.data?.data?.success) {
         Swal.fire({
-          icon: "success",
+          // icon: "success",
           text: res.data.data.message || "Cheque book saved successfully",
           confirmButtonColor: "#1e3a8a",
         });
@@ -231,7 +231,7 @@ const FrmChequeBookMst = () => {
         resetForm();
       } else {
         Swal.fire({
-          icon: "error",
+          // icon: "error",
           text: res?.data?.data?.message || "Something went wrong",
           confirmButtonColor: "#1e3a8a",
         });
@@ -239,8 +239,8 @@ const FrmChequeBookMst = () => {
     } catch (err) {
       console.error("Error saving cheque book:", err);
       Swal.fire({
-        icon: "error",
-        text: "Error saving data",
+        // icon: "error",
+        text: err?.response?.data?.message ||  err?.response?.data?.error ||  "Error saving data",
         confirmButtonColor: "#1e3a8a",
       });
     } finally {

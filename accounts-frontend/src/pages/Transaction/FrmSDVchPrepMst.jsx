@@ -460,7 +460,7 @@ const FrmSDVchPrepMst = () => {
 
             if (balanceAmount === 0) {
                 Swal.fire({
-                    icon: "warning",
+                    // icon: "warning",
                     text: "Full amount is already refunded",
                 }).then(() => {
                     navigate("/Transactions/FrmSDRefund");
@@ -470,7 +470,7 @@ const FrmSDVchPrepMst = () => {
 
             if (Number(data.PAYAMT || 0) > 0) {
                 Swal.fire({
-                    icon: "info",
+                    // icon: "info",
                     text: "Partial payment done for the security deposit. Kindly pay the remaining balance",
                 });
             }
@@ -526,34 +526,34 @@ const FrmSDVchPrepMst = () => {
     // const handleSubmit = async (values) => {
     //     try {
     //         if (!values.prabhag) {
-    //             return Swal.fire({ icon: "warning", text: "प्रभाग निवडा" });
+                // return Swal.fire({ icon: "warning", text: "प्रभाग निवडा" });
     //         }
     //         if (!values.department) {
-    //             return Swal.fire({ icon: "warning", text: "विभाग निवडा" });
+                // return Swal.fire({ icon: "warning", text: "विभाग निवडा" });
     //         }
     //         if (!values.voucherDate) {
-    //             return Swal.fire({ icon: "warning", text: "तारीख निवडा" });
+                // return Swal.fire({ icon: "warning", text: "तारीख निवडा" });
     //         }
     //         if (!values.refundVoucherNo) {
     //             return Swal.fire({
-    //                 icon: "warning",
+                    // icon: "warning",
     //                 text: "सु.अ.परतावा प्रमाणक क्र रिक्त असू शकत नाही",
     //             });
     //         }
     //         if (!values.functionCode) {
-    //             return Swal.fire({ icon: "warning", text: "फंक्शन कोड निवडा" });
+                // return Swal.fire({ icon: "warning", text: "फंक्शन कोड निवडा" });
     //         }
     //         if (!values.objectCode) {
-    //             return Swal.fire({ icon: "warning", text: "ऑब्जेक्ट कोड रिक्त आहे" });
+                // return Swal.fire({ icon: "warning", text: "ऑब्जेक्ट कोड रिक्त आहे" });
     //         }
     //         if (!values.totalAmount) {
-    //             return Swal.fire({ icon: "warning", text: "एकूण रक्कम रिक्त आहे" });
+                // return Swal.fire({ icon: "warning", text: "एकूण रक्कम रिक्त आहे" });
     //         }
     //         if (!values.details) {
-    //             return Swal.fire({ icon: "warning", text: "तपशील भरा" });
+                // return Swal.fire({ icon: "warning", text: "तपशील भरा" });
     //         }
     //         if (!values.bankName || !values.accountNo) {
-    //             return Swal.fire({ icon: "warning", text: "कृपया पार्टी बँक निवडा" });
+                // return Swal.fire({ icon: "warning", text: "कृपया पार्टी बँक निवडा" });
     //         }
 
     //         const voucherDate = formatDate(values.voucherDate)
@@ -580,7 +580,7 @@ const FrmSDVchPrepMst = () => {
 
     //         if (!partyBankId) {
     //             return Swal.fire({
-    //                 icon: "warning",
+                    // icon: "warning",
     //                 text: "Party Bank ID मिळाला नाही",
     //             });
     //         }
@@ -677,7 +677,7 @@ const FrmSDVchPrepMst = () => {
 
     //                     window.open(pdfRes.data.pdfUrl, "_blank");
     //                     await Swal.fire({
-    //                         icon: "success",
+                            // icon: "success",
     //                         title: "Success",
     //                         text: res.data?.data?.message || "SD Refund voucher saved successfully",
     //                         confirmButtonColor: "#1e3a8a",
@@ -686,7 +686,7 @@ const FrmSDVchPrepMst = () => {
     //                     navigate("/Transactions/FrmSDRefund");
     //                 } else {
     //                     Swal.fire({
-    //                         icon: "success",
+                            // icon: "success",
     //                         title: "Success",
     //                         text: "Voucher saved but PDF generation failed",
     //                         confirmButtonColor: "#1e3a8a",
@@ -698,7 +698,7 @@ const FrmSDVchPrepMst = () => {
     //                 console.error("PDF API ERROR:", pdfErr);
     //                 Swal.close();
     //                 Swal.fire({
-    //                     icon: "success",
+                        // icon: "success",
     //                     title: "Success",
     //                     text: "Voucher saved but PDF generation failed",
     //                     confirmButtonColor: "#1e3a8a",
@@ -709,7 +709,7 @@ const FrmSDVchPrepMst = () => {
     //         } else {
     //             Swal.close();
     //             Swal.fire({
-    //                 icon: "error",
+                    // icon: "error",
     //                 text: res.data?.message || "Failed to save",
     //                 confirmButtonColor: "#1e3a8a",
     //             });
@@ -718,7 +718,7 @@ const FrmSDVchPrepMst = () => {
     //         console.error("SAVE API ERROR:", err);
     //         Swal.close();
     //         Swal.fire({
-    //             icon: "error",
+                // icon: "error",
     //             text: err.response?.data?.message || "Failed to save SD Refund Voucher",
     //             confirmButtonColor: "#1e3a8a",
     //         });
@@ -730,34 +730,34 @@ const FrmSDVchPrepMst = () => {
         try {
             // Validation checks
             if (!values.prabhag) {
-                return Swal.fire({ icon: "warning", text: "प्रभाग निवडा" });
+                return Swal.fire({  text: "प्रभाग निवडा" });
             }
             if (!values.department) {
-                return Swal.fire({ icon: "warning", text: "विभाग निवडा" });
+                return Swal.fire({  text: "विभाग निवडा" });
             }
             if (!values.voucherDate) {
-                return Swal.fire({ icon: "warning", text: "तारीख निवडा" });
+                return Swal.fire({  text: "तारीख निवडा" });
             }
             if (!values.refundVoucherNo) {
                 return Swal.fire({
-                    icon: "warning",
+                    // icon: "warning",
                     text: "सु.अ.परतावा प्रमाणक क्र रिक्त असू शकत नाही",
                 });
             }
             if (!values.functionCode) {
-                return Swal.fire({ icon: "warning", text: "फंक्शन कोड निवडा" });
+                return Swal.fire({  text: "फंक्शन कोड निवडा" });
             }
             if (!values.objectCode) {
-                return Swal.fire({ icon: "warning", text: "ऑब्जेक्ट कोड रिक्त आहे" });
+                return Swal.fire({  text: "ऑब्जेक्ट कोड रिक्त आहे" });
             }
             if (!values.totalAmount) {
-                return Swal.fire({ icon: "warning", text: "एकूण रक्कम रिक्त आहे" });
+                return Swal.fire({  text: "एकूण रक्कम रिक्त आहे" });
             }
             if (!values.details) {
-                return Swal.fire({ icon: "warning", text: "तपशील भरा" });
+                return Swal.fire({  text: "तपशील भरा" });
             }
             if (!values.bankName || !values.accountNo) {
-                return Swal.fire({ icon: "warning", text: "कृपया पार्टी बँक निवडा" });
+                return Swal.fire({  text: "कृपया पार्टी बँक निवडा" });
             }
 
             const debitGl = drglcode;
@@ -769,7 +769,7 @@ const FrmSDVchPrepMst = () => {
 
             if (accountSubtype && sdAccSubtype && accountSubtype !== sdAccSubtype) {
                 return Swal.fire({
-                    icon: "warning",
+                    // icon: "warning",
                     text: "Account subtype mismatch. Please check Function Code and Object Code."
                 });
             }
@@ -802,7 +802,7 @@ const FrmSDVchPrepMst = () => {
 
             if (!partyBankId) {
                 return Swal.fire({
-                    icon: "warning",
+                    // icon: "warning",
                     text: "Party Bank ID मिळाला नाही",
                 });
             }
@@ -895,7 +895,7 @@ const FrmSDVchPrepMst = () => {
                     if (pdfRes.data?.success && pdfRes.data?.pdfUrl) {
                         window.open(pdfRes.data.pdfUrl, "_blank");
                         await Swal.fire({
-                            icon: "success",
+                            // icon: "success",
                             title: "Success",
                             text: res.data?.data?.message || "SD Refund voucher saved successfully",
                             confirmButtonColor: "#1e3a8a",
@@ -903,7 +903,7 @@ const FrmSDVchPrepMst = () => {
                         navigate("/Transactions/FrmSDRefund");
                     } else {
                         Swal.fire({
-                            icon: "success",
+                            // icon: "success",
                             title: "Success",
                             text: "Voucher saved but PDF generation failed",
                             confirmButtonColor: "#1e3a8a",
@@ -915,7 +915,7 @@ const FrmSDVchPrepMst = () => {
                     console.error("PDF API ERROR:", pdfErr);
                     Swal.close();
                     Swal.fire({
-                        icon: "success",
+                        // icon: "success",
                         title: "Success",
                         text: "Voucher saved but PDF generation failed",
                         confirmButtonColor: "#1e3a8a",
@@ -926,7 +926,7 @@ const FrmSDVchPrepMst = () => {
             } else {
                 Swal.close();
                 Swal.fire({
-                    icon: "error",
+                    // icon: "error",
                     text: res.data?.message || "Failed to save",
                     confirmButtonColor: "#1e3a8a",
                 });
@@ -935,7 +935,7 @@ const FrmSDVchPrepMst = () => {
             console.error("SAVE API ERROR:", err);
             Swal.close();
             Swal.fire({
-                icon: "error",
+                // icon: "error",
                 text: err.response?.data?.message || "Failed to save SD Refund Voucher",
                 confirmButtonColor: "#1e3a8a",
             });
@@ -1031,7 +1031,7 @@ const FrmSDVchPrepMst = () => {
                                 Swal.close();
                                 setIsLoading(false);
                                 Swal.fire({
-                                    icon: "error",
+                                    // icon: "error",
                                     text: "Error loading data: Please try again.",
                                 });
                             }

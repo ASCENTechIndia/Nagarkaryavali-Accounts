@@ -101,7 +101,7 @@ const FrmDistrictMst = () => {
 
         if (res?.data?.ok && res?.data?.data?.success) {
         Swal.fire({
-            icon: "success",
+            // icon: "success",
             text: "Saved successfully",
             confirmButtonColor: "#1e3a8a",
         });
@@ -109,7 +109,7 @@ const FrmDistrictMst = () => {
         navigate("/Masters/FrmDistrictList");
         } else {
         Swal.fire({
-            icon: "error",
+            // icon: "error",
             text: res?.data?.message || "Something went wrong",
             confirmButtonColor: "#1e3a8a",
         });
@@ -117,7 +117,7 @@ const FrmDistrictMst = () => {
     } catch (err) {
         console.error("Save API Error:", err);
         Swal.fire({
-        icon: "error",
+        // icon: "error",
         text: "Something went wrong",
         confirmButtonColor: "#1e3a8a",
         });
@@ -145,7 +145,7 @@ const FrmDistrictMst = () => {
 
         if (res?.data?.ok && res?.data?.data?.success) {
         Swal.fire({
-            icon: "success",
+            // icon: "success",
             text: "Deleted successfully",
             confirmButtonColor: "#1e3a8a",
         });
@@ -153,7 +153,7 @@ const FrmDistrictMst = () => {
         navigate("/Masters/FrmDistrictList");
         } else {
         Swal.fire({
-            icon: "error",
+            // icon: "error",
             text: res?.data?.message || "Something went wrong",
             confirmButtonColor: "#1e3a8a",
         });
@@ -161,7 +161,7 @@ const FrmDistrictMst = () => {
     } catch (err) {
         console.error("Save API Error:", err);
         Swal.fire({
-        icon: "error",
+        // icon: "error",
         text: "Something went wrong",
         confirmButtonColor: "#1e3a8a",
         });

@@ -296,11 +296,11 @@ const FrmVoucherPreparreprint = () => {
               </div>
             )}
             
-            {!loading && hasSearched && filteredVoucherList.length === 0 && (
+            {/* {!loading && hasSearched && filteredVoucherList.length === 0 && (
               <div className="py-10 text-center text-sm text-muted-foreground">
                 कोणतीही माहिती उपलब्ध नाही
               </div>
-            )}
+            )} */}
 
             {!loading && hasSearched && filteredVoucherList.length > 0 && (
               <ShadCNTable

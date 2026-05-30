@@ -553,7 +553,7 @@ const FrmPayment = () => {
                         } else {
                             Swal.fire({
                                 text: "PDF generation failed",
-                                icon: "error",
+                                // icon: "error",
                             });
                         }
 
@@ -564,7 +564,7 @@ const FrmPayment = () => {
 
                         Swal.fire({
                             text: "PDF generation failed",
-                            icon: "error",
+                            // icon: "error",
                         });
                     }
 

@@ -101,7 +101,7 @@ const FrmNidhiMaster = () => {
 
       if (res?.data?.ok && res?.data?.data?.success) {
         Swal.fire({
-          icon: "success",
+          // icon: "success",
           text: res?.data?.data?.errorMsg || "Saved successfully",
           confirmButtonColor: "#1e3a8a",
         });
@@ -109,7 +109,7 @@ const FrmNidhiMaster = () => {
         navigate("/Masters/FrmNidhiList");
       } else {
         Swal.fire({
-          icon: "error",
+          // icon: "error",
           text: res?.data?.data?.errorMsg || "Something went wrong",
         });
       }
@@ -122,7 +122,7 @@ const FrmNidhiMaster = () => {
         "Something went wrong";
 
       Swal.fire({
-        icon: "error",
+        // icon: "error",
         text: errorMsg,
       });
     } finally {

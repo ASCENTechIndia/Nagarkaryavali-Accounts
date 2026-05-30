@@ -321,20 +321,20 @@ const FrmBudgetHeadConfig = () => {
       if (res?.data?.success || res?.data?.data?.success) {
         Swal.fire({
           text: Number(mode) === 2 ? "Data updated successfully" : "Data saved successfully",
-          icon: "success"
+          // icon: "success"
         });
         navigate("/Masters/FrmBudgetHeadConfigList");
       } else {
         Swal.fire({
           text: res?.data?.data?.message || res?.data?.message || "Error saving data",
-          icon: "error"
+          // icon: "error"
         });
       }
     } catch (err) {
       console.error("Error saving data:", err);
       Swal.fire({
         text: err?.response?.data?.data?.message || err?.response?.data?.message || "Error saving data",
-        icon: "error"
+        // icon: "error"
       });
     } finally {
       setLoading(false);

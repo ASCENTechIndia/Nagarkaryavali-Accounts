@@ -1079,7 +1079,7 @@ const FrmVoucherPreparation = () => {
     Swal.fire({
       title: 'Are you sure?',
       text: "All entered data will be cleared!",
-      icon: 'warning',
+      // icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#1e3a8a',
       cancelButtonColor: '#d33',
@@ -1119,7 +1119,7 @@ const FrmVoucherPreparation = () => {
     Swal.fire({
       title: 'Are you sure?',
       text: "This voucher will be permanently deleted!",
-      icon: 'warning',
+      // icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
       cancelButtonColor: '#1e3a8a',

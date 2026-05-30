@@ -932,7 +932,7 @@ useEffect(() => {
       Swal.close();
       if (res.data?.ok) {
         Swal.fire({
-          icon: "success",
+          // icon: "success",
           title: "Success",
           text: res.data?.message || "Party saved successfully",
         });
@@ -941,7 +941,7 @@ useEffect(() => {
         );
       } else {
         Swal.fire({
-          icon: "error",
+          // icon: "error",
           title: "Error",
           text: res.data?.message || "Failed",
         });
@@ -950,7 +950,7 @@ useEffect(() => {
       console.error(err);
       Swal.close();
       Swal.fire({
-        icon: "error",
+        // icon: "error",
         title: "Error",
         text: err?.response?.data?.message || err?.message || "Something went wrong",
       });

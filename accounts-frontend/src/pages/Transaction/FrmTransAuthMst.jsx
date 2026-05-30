@@ -146,7 +146,7 @@ const FrmTransAuthMst = () => {
     } catch (error) {
       console.error("Error fetching transaction details:", error);
       Swal.fire({
-        icon: "error",
+        // icon: "error",
         title: "त्रुटी",
         text: "व्यवहार तपशील मिळवताना त्रुटी आली",
       });
@@ -162,7 +162,7 @@ const FrmTransAuthMst = () => {
     const result = await Swal.fire({
       title: "अधिकृतता",
       text: "आपण हा व्यवहार अधिकृत करण्याची खात्री करतो का?",
-      icon: "question",
+      // icon: "question",
       showCancelButton: true,
       confirmButtonText: "होय, अधिकृत करा",
       cancelButtonText: "रद्द करा",
@@ -352,7 +352,7 @@ const FrmTransAuthMst = () => {
         console.warn("No PDF URL received");
         await Swal.fire({
           text: "व्यवहार अधिकृत झाला, परंतु PDF तयार करता आला नाही.",
-          icon: "info",
+          // icon: "info",
           confirmButtonText: "ठीक आहे",
           timer: 2000,
         });
@@ -360,7 +360,7 @@ const FrmTransAuthMst = () => {
     } catch (error) {
       console.error("PDF Generation Error:", error);
       Swal.fire({
-          icon: "error",
+          // icon: "error",
           text: error?.response?.data?.message || "Failed To Fetch Branch List",
       });
     }
@@ -370,7 +370,7 @@ const FrmTransAuthMst = () => {
     const result = await Swal.fire({
       title: "नाकारणे",
       text: "आपण हा व्यवहार नाकारण्याची खात्री करतो का?",
-      icon: "warning",
+      // icon: "warning",
       showCancelButton: true,
       confirmButtonText: "होय, नाकारा",
       cancelButtonText: "रद्द करा",

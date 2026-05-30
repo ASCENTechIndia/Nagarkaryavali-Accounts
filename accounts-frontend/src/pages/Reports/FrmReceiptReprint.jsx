@@ -120,7 +120,7 @@ const FrmReceiptReprint = () => {
       } else {
         Swal.fire({
           text: "PDF generation failed",
-          icon: "error",
+          // icon: "error",
         });
       }
     } catch (error) {
@@ -128,7 +128,7 @@ const FrmReceiptReprint = () => {
 
       Swal.fire({
         text: error.response?.data?.message || "PDF generation failed",
-        icon: "error",
+        // icon: "error",
       });
     }
   };

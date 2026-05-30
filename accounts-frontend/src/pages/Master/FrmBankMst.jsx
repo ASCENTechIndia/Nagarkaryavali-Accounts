@@ -106,7 +106,7 @@ const FrmBankMst = () => {
       console.error("Save API Error:", err);
 
       Swal.fire({
-        text: "Something went wrong",
+        text: err?.response?.data?.message ||  err?.response?.data?.error || "Something went wrong",
         confirmButtonColor: "#1e3a8a",
       });
     }

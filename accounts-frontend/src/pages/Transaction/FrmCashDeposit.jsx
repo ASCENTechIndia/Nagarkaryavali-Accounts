@@ -843,7 +843,7 @@ const FrmCashDeposit = () => {
         if (!hasDenomination) {
           Swal.fire({
             text: bankRes.data.data.errorMsg,
-            icon: "success",
+            // icon: "success",
             confirmButtonColor: "#1e3a8a",
           }).then(async (result) => {
             if (result.isConfirmed) {
@@ -917,7 +917,7 @@ const FrmCashDeposit = () => {
           if (denomRes?.data?.data?.errorCode === -100) {
             Swal.fire({
               text: bankRes.data.data.errorMsg,
-              icon: "success",
+              // icon: "success",
               confirmButtonColor: '#1e3a8a'
             })
             .then(async (result) => {

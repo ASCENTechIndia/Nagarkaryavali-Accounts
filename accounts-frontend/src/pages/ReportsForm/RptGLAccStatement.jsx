@@ -191,7 +191,7 @@ export default function RptGLAccStatement() {
           window.open(res.data.pdfUrl, "_blank");
         } else {
           Swal.fire({
-            icon: "error",
+            // icon: "error",
             text: "Failed to generate PDF",
           });
         }
@@ -217,7 +217,7 @@ export default function RptGLAccStatement() {
 
       if (!rows.length) {
         Swal.fire({
-          icon: "warning",
+          // icon: "warning",
           text: "No data found",
         });
 

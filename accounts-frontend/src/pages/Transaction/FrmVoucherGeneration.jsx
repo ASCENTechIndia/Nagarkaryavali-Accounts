@@ -1291,7 +1291,7 @@ const FrmVoucherGeneration = () => {
       console.error(err);
 
       Swal.fire({
-        icon: "error",
+        // icon: "error",
         text: "Initial data load failed",
       });
     } finally {
@@ -1689,7 +1689,7 @@ const FrmVoucherGeneration = () => {
       Swal.close();
 
       Swal.fire({
-        icon: "error",
+        // icon: "error",
         title: "PDF Error",
         text:
           error.response?.data?.message ||
@@ -1934,7 +1934,7 @@ const FrmVoucherGeneration = () => {
         Swal.fire({
           title: "Success",
           text: msg || "Voucher generated successfully",
-          icon: "success",
+          // icon: "success",
           confirmButtonColor: "#1e3a8a",
         }).then(async (result) => {
           if (result.isConfirmed) {

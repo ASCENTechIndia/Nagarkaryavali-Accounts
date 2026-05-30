@@ -57,7 +57,7 @@ const FrmStateList = () => {
       setStateList([]);
 
       Swal.fire({
-        icon: "error",
+        // icon: "error",
         title: "Error loading states",
       });
     }

@@ -28,7 +28,7 @@ const FrmTransfer = () => {
 
     if (errors && errors.length > 0) {
       Swal.fire({
-        icon: "warning",
+        // icon: "warning",
         title: errors[0].message, // ✅ फक्त पहिला error
         confirmButtonColor: "#083c76",
       });
@@ -39,7 +39,7 @@ const FrmTransfer = () => {
     console.log("Form Values:", values);
 
     Swal.fire({
-      icon: "success",
+      // icon: "success",
       title: "डेटा यशस्वीरित्या सेव झाला",
       confirmButtonColor: "#083c76",
     });

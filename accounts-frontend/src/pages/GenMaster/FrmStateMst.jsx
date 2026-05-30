@@ -120,7 +120,7 @@ const handleSubmit = async (values, { resetForm }) => {
     // Success Response
     if (res.data?.ok && res.data?.data?.success) {
       await Swal.fire({
-        icon: "success",
+        // icon: "success",
         title:
           mode === 1
             ? "Record Saved Successfully"
@@ -131,20 +131,18 @@ const handleSubmit = async (values, { resetForm }) => {
       navigate("/Masters/FrmStateList");
     } else {
       Swal.fire({
-        icon: "error",
+        // icon: "error",
         title: res.data?.message || "Something went wrong",
+        
       });
     }
-  } catch (error) {
+  } catch (err) {
     Swal.close();
-    console.error("Submit Error:", error);
+    console.error("Submit Error:", err);
 
     Swal.fire({
-      icon: "error",
-      title:
-        error?.response?.data?.message ||
-        error?.message ||
-        "Server Error",
+      // icon: "error",
+     text: err?.response?.data?.message ||  err?.response?.data?.error || "Something went wrong",
     });
   }
 };

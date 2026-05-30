@@ -254,7 +254,7 @@ const FrmAccountMaster = () => {
       Swal.close();
 
       Swal.fire({
-        text: "something went wrong",
+        text: err?.response?.data?.message ||  err?.response?.data?.error || "Failed To Fetch Branch List",
       });
     }
   };
@@ -354,7 +354,7 @@ const FrmAccountMaster = () => {
                               key={n.NUM_NIDHI_ID}
                               value={String(n.NUM_NIDHI_ID)}
                             >
-                              {n.VAR_NIDHI_NIDHINAME.trim()}
+                              {n.VAR_NIDHI_NIDHINAME}
                             </SelectItem>
                           ))}
                         </SelectContent>

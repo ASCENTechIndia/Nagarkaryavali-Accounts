@@ -116,7 +116,7 @@ const FrmContraRecReprint = () => {
             setTableData([]);
 
             Swal.fire({
-                icon: "error",
+                // icon: "error",
                 title: "Error",
                 text:
                     error?.response?.data?.message ||
@@ -161,7 +161,7 @@ const FrmContraRecReprint = () => {
             Swal.close();
 
             Swal.fire({
-                icon: "error",
+                // icon: "error",
                 title: "Error",
                 text:
                     error?.response?.data?.message ||

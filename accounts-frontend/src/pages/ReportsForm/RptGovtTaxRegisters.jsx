@@ -168,7 +168,7 @@ const RptGovtTaxRegisters = () => {
 
         // ✅ SUCCESS MESSAGE (optional)
         Swal.fire({
-          icon: "success",
+          // icon: "success",
           title: "PDF Generated!",
           timer: 1500,
           showConfirmButton: false,

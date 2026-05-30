@@ -183,7 +183,7 @@ const FrmSDRefund = () => {
                 Swal.close();
 
                 Swal.fire({
-                    icon: "info",
+                    // icon: "info",
                     text: "No data found",
                 });
 
@@ -207,7 +207,7 @@ const FrmSDRefund = () => {
                     window.open(pdfRes.data.pdfUrl, "_blank");
                 } else {
                     Swal.fire({
-                        icon: "error",
+                        // icon: "error",
                         text: "PDF URL not found",
                     });
                 }
@@ -266,7 +266,7 @@ const FrmSDRefund = () => {
             Swal.close();
 
             Swal.fire({
-                icon: "error",
+                // icon: "error",
                 text:
                     err.response?.data?.message ||
                     "Failed to export data",
@@ -355,7 +355,7 @@ const FrmSDRefund = () => {
             console.error("Refund List API Error:", err);
 
             Swal.fire({
-                icon: "error",
+                // icon: "error",
                 text: "Failed to fetch refund list",
             });
         }

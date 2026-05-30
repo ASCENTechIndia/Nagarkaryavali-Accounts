@@ -147,7 +147,7 @@ const FrmCityMst = () => {
 
       if (res?.data?.ok && res?.data?.data?.success) {
         Swal.fire({
-          icon: "success",
+          // icon: "success",
           text: "Saved successfully",
           confirmButtonColor: "#1e3a8a",
         });
@@ -155,7 +155,7 @@ const FrmCityMst = () => {
         navigate("/Masters/FrmCityList");
       } else {
         Swal.fire({
-          icon: "error",
+          // icon: "error",
           text: res?.data?.message || "Something went wrong",
         });
       }
@@ -187,7 +187,7 @@ const FrmCityMst = () => {
 
       if (res?.data?.ok && res?.data?.data?.success) {
         Swal.fire({
-          icon: "success",
+          // icon: "success",
           text: "Deleted successfully",
           confirmButtonColor: "#1e3a8a",
         });
@@ -195,7 +195,7 @@ const FrmCityMst = () => {
         navigate("/Masters/FrmCityList");
       } else {
         Swal.fire({
-          icon: "error",
+          // icon: "error",
           text: res?.data?.message || "Something went wrong",
         });
       }

@@ -357,7 +357,7 @@ const ChequeDeposit = () => {
                 setDetailData([]);
 
                 await Swal.fire({
-                    // icon: "info",
+                    icon: "info",
                     title: "No Data Found",
                     confirmButtonText: "OK",
                     allowOutsideClick: false,
@@ -381,7 +381,7 @@ const ChequeDeposit = () => {
                 error
             );
             Swal.fire({
-                icon: "error",
+                // icon: "error",
                 title: "Error",
                 text:
                     error?.response?.data?.message ||
@@ -451,7 +451,7 @@ const ChequeDeposit = () => {
                 setDetailData([]);
 
                 await Swal.fire({
-                    // icon: "info",
+                    icon: "info",
                     title: "No Data Found",
 
                     confirmButtonText: "OK",
@@ -488,7 +488,7 @@ const ChequeDeposit = () => {
             );
 
             Swal.fire({
-                icon: "error",
+                // icon: "error",
                 title: "Error",
                 text:
                     error?.response?.data?.message ||
@@ -558,7 +558,7 @@ const ChequeDeposit = () => {
         try {
             if (!values.glcode) {
                 Swal.fire({
-                    icon: "warning",
+                    // icon: "warning",
                     // title: "Validation",
                     text: "विभाग संकेतांक रिक्त असू शकत नाही",
                 });
@@ -566,7 +566,7 @@ const ChequeDeposit = () => {
             }
             if (!values.accno) {
                 Swal.fire({
-                    icon: "warning",
+                    // icon: "warning",
                     // title: "Validation",
                     text: "लेखाशीर्ष रिक्त असू शकत नाही",
                 });
@@ -574,7 +574,7 @@ const ChequeDeposit = () => {
             }
             if (!values.depositDate) {
                 Swal.fire({
-                    icon: "warning",
+                    // icon: "warning",
                     // title: "Validation",
                     text: "ठेव तारीख रिक्त असू शकत नाही",
                 });
@@ -584,7 +584,7 @@ const ChequeDeposit = () => {
 
             if (selectedRows.length === 0) {
                 Swal.fire({
-                    icon: "warning",
+                    // icon: "warning",
                     // title: "Validation",
                     text: "Please select at least one record.",
                 });
@@ -719,7 +719,7 @@ const ChequeDeposit = () => {
                         pdfRes?.data?.pdfUrl || pdfRes?.data?.data?.pdfUrl;
 
                     await Swal.fire({
-                        icon: "success",
+                        // icon: "success",
                         title: "Success",
                         text:
                             result?.errorMsg ||
@@ -760,7 +760,7 @@ const ChequeDeposit = () => {
                     console.error("PDF generation error:", pdfError);
 
                     await Swal.fire({
-                        icon: "success",
+                        // icon: "success",
                         title: "Transaction Saved",
                         text: result?.errorMsg || `Transaction saved successfully. Reference No: ${refNo}`,
                     });
@@ -769,7 +769,7 @@ const ChequeDeposit = () => {
                 Swal.close();
 
                 Swal.fire({
-                    icon: "warning",
+                    // icon: "warning",
                     title: "Warning",
                     text: result?.errorMsg || "Unable to save transaction.",
                 });
@@ -780,7 +780,7 @@ const ChequeDeposit = () => {
             console.error("Save error:", error);
 
             Swal.fire({
-                icon: "error",
+                // icon: "error",
                 title: "Error",
                 text: error?.response?.data?.error || error?.response?.data?.message || "Failed to save transaction.",
             });

@@ -297,7 +297,7 @@ const FrmContractEntry = () => {
       const result = await Swal.fire({
         title: 'निश्चिती?',
         text: mode === 2 ? "कंत्राट माहिती अद्यतनित करायची आहे का?" : "कंत्राट माहिती जतन करायची आहे का?",
-        icon: 'question',
+        // icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#1e3a8a',
         cancelButtonColor: '#6b7280',
@@ -370,7 +370,7 @@ const FrmContractEntry = () => {
 
       if (response.data?.success === true) {
         await Swal.fire({
-          icon: 'success',
+          // icon: 'success',
           title: 'यशस्वी!',
           text: response.data?.message || (mode === 2 ? "कंत्राट माहिती यशस्वीरित्या अद्यतनित झाली" : "कंत्राट माहिती यशस्वीरित्या जतन झाली"),
           confirmButtonColor: '#1e3a8a',

@@ -525,7 +525,7 @@ const FrmBulkReceipt = () => {
             ) {
                 Swal.close();
                 Swal.fire({
-                    icon: "success",
+                    // icon: "success",
                     text:
                         res?.data?.data?.message ||
                         "Receipt Saved Successfully",
@@ -539,7 +539,7 @@ const FrmBulkReceipt = () => {
             } else {
                 Swal.close();
                 Swal.fire({
-                    icon: "error",
+                    // icon: "error",
                     text:
                         res?.data?.data?.message ||
                         "Failed to save receipt",
@@ -550,7 +550,7 @@ const FrmBulkReceipt = () => {
             console.error(err);
             Swal.close();
             Swal.fire({
-                icon: "error",
+                // icon: "error",
                 text:
                     err?.response?.data?.message ||
                     "Error while saving receipt",

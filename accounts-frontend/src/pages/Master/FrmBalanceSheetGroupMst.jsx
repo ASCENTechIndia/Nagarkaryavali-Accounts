@@ -92,7 +92,7 @@ const FrmBalanceSheetGroupMst = () => {
 
       if (res.data?.ok) {
         await Swal.fire({
-          icon: "success",
+          // icon: "success",
           title: res.data.message || "Saved successfully",
         });
 
@@ -100,7 +100,7 @@ const FrmBalanceSheetGroupMst = () => {
         resetForm();
       } else {
         Swal.fire({
-          icon: "error",
+          // icon: "error",
           title: res.data?.message || "Error",
         });
       }
@@ -108,7 +108,7 @@ const FrmBalanceSheetGroupMst = () => {
       Swal.close();
 
       Swal.fire({
-        icon: "error",
+        // icon: "error",
         title: err.response?.data?.message || "Server error",
       });
     }

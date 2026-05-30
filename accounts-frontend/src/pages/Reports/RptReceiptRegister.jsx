@@ -247,9 +247,8 @@ const RptReceiptRegister = () => {
         } catch (err) {
             console.error("Error:", err);
             Swal.fire({
-                text: "Something went wrong",
-                confirmButtonColor: "#1e3a8a",
-            });
+        text: err?.response?.data?.message ||  err?.response?.data?.error || "Something Went WRONG",
+      });
         }
     };
 
