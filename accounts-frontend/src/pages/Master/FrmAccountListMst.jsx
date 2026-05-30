@@ -19,6 +19,7 @@ import {
 import SearchableSelect from "@/components/SearchableSelect";
 import ShadCNTable from "@/components/ui/table";
 import Swal from "sweetalert2";
+import { Label } from "@/components/ui/label";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -230,7 +231,7 @@ const FrmAccountList = () => {
           </Button>
         </CardHeader>
 
-        <CardContent className="p-6 space-y-8">
+        <CardContent className="p-6 space-y-8 min-h-[50vh]">
           {/* FORM GRID */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* CORPORATION */}
