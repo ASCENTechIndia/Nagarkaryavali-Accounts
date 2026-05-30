@@ -223,7 +223,7 @@ const FrmAccountList = () => {
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
       <Card className="shadow-sm border rounded-lg">
         <CardHeader className="border-b flex justify-between items-center">
-          <CardTitle>खाते मास्टर यादी</CardTitle>
+          <CardTitle className="text-lg font-semibold">खाते मास्टर यादी</CardTitle>
 
           <Button onClick={() => navigate("/Masters/FrmAccountMst")}>
             नवीन जोडा
@@ -325,6 +325,7 @@ const FrmAccountList = () => {
                 setShowTable(false);
                 setTableData([]);
               }}
+              path="/HomePage/FrmHomePage"
             >
               परत
             </Button>

@@ -17,12 +17,13 @@ import {
 import ShadCNTable from "@/components/ui/table";
 import { useAuth } from "@/context/AuthContext";
 import AsyncSearchableSelect from "@/components/AsyncSearchableSelect";
+import { DatePicker } from "@/components/ui/calendar";
 
 const initialValues = {
     deptId: "",
     challanNo: "",
     trnsType: "",
-    trnsDate: new Date().toLocaleDateString("en-CA"),
+    trnsDate: new Date(),
     receiptNo: "",
     glcode: "",
     accno: "",
@@ -606,7 +607,7 @@ const FrmBulkReceipt = () => {
                                 </CardHeader>
 
                                 <CardContent className="p-4 sm:p-6 space-y-8">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2  2xl:grid-cols-4 gap-6">
                                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 lg:mr-5">
                                             <div className="w-full sm:w-40 shrink-0 flex justify-between items-center">
                                                 <Label text="Department" />
@@ -638,7 +639,7 @@ const FrmBulkReceipt = () => {
 
                                         <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                                             <div className="w-full sm:w-40 shrink-0 flex justify-between items-center">
-                                                <Label text="Chalan Number" className="sm:w-36"/>
+                                                <Label text="Chalan Number" className="sm:w-36" />
                                                 <span>:</span>
                                             </div>
 
@@ -650,7 +651,7 @@ const FrmBulkReceipt = () => {
                                             />
                                         </div>
 
-                                        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
+                                        <div className="flex flex-col md:justify-center sm:flex-row gap-3 items-stretch sm:items-end">
                                             <Button
                                                 type="button"
                                                 className="bg-blue-900 hover:bg-blue-800 text-white"
@@ -719,12 +720,18 @@ const FrmBulkReceipt = () => {
                                                 <span>:</span>
                                             </div>
 
-                                            <Input
+                                            {/* <Input
                                                 type="date"
                                                 name="trnsDate"
                                                 value={values.trnsDate}
                                                 onChange={handleChange}
                                                 className="w-full h-9"
+                                            /> */}
+                                            <DatePicker
+                                                name="trnsDate"
+                                                value={values.trnsDate}
+                                                onChange={handleChange}
+                                                className="h-9 w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500"
                                             />
                                         </div>
 

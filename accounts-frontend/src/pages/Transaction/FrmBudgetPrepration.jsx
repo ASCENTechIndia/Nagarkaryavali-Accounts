@@ -391,7 +391,7 @@ const FrmBudgetPrepration = () => {
                         >
                             साठवा
                         </Button>
-                        <Button type="button" variant="outline" path="/">
+                        <Button type="button" variant="outline" path="/HomePage/FrmHomePage">
                             परत
                         </Button>
                     </div>

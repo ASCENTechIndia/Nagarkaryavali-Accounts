@@ -378,7 +378,7 @@ const FrmSDRefund = () => {
             {({ values, setFieldValue, handleChange, resetForm }) => (
                 <Form>
                     <motion.div className="mt-2 px-2 sm:px-4">
-                        <Card className="border border-gray-300 rounded-sm shadow-none">
+                        <Card className="rounded-sm shadow-none">
                             <CardHeader className="border-b py-4 px-4">
                                 <CardTitle className="text-[18px] font-semibold text-black">
                                     Security Deposit Refund List
@@ -387,7 +387,7 @@ const FrmSDRefund = () => {
 
                             <CardContent className="p-3 sm:p-5 space-y-6">
 
-                                <div className="border border-gray-300 rounded-sm p-4 sm:p-5 bg-white">
+                                <div >
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                                         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
                                             <Label

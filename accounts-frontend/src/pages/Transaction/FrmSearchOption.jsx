@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { Input } from "@/components/ui/input";
 
 const FrmSearchOption = () => {
     const navigate = useNavigate();
@@ -33,7 +34,8 @@ const FrmSearchOption = () => {
     const [zoneList, setZoneList] = useState([]);
     const [tableData, setTableData] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-
+    const [dataLoading, setDataLoading] = useState(true);
+    
     const formatDate = (date) => {
         if (!date) return "";
         const d = new Date(date);
@@ -96,6 +98,7 @@ const FrmSearchOption = () => {
 
     const handleSubmit = async (values) => {
         setIsLoading(true);
+        setDataLoading(true);
         try {
             const res = await axios.post(
                 `${BASE_URL}/api/FrmSearchOption/receipt-search`,
@@ -122,6 +125,7 @@ const FrmSearchOption = () => {
             setTableData([]);
         } finally {
             setIsLoading(false);
+            setDataLoading(false);
         }
     };
 
@@ -167,7 +171,7 @@ const FrmSearchOption = () => {
 
                                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                                         <Label text="व्यवहार क्र. :" />
-                                        <input
+                                        <Input
                                             type="text"
                                             className="border rounded px-2 h-9 w-full sm:flex-1"
                                             value={values.txnNo}
@@ -177,7 +181,7 @@ const FrmSearchOption = () => {
 
                                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                                         <Label text="चलन/पावती क्र. :" />
-                                        <input
+                                        <Input
                                             type="text"
                                             className="border rounded px-2 h-9 w-full sm:flex-1"
                                             value={values.receiptNo}
@@ -207,7 +211,7 @@ const FrmSearchOption = () => {
 
                                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                                         <Label text="कंत्राटीचे नाव :" />
-                                        <input
+                                        <Input
                                             type="text"
                                             className="border rounded px-2 h-9 w-full sm:flex-1"
                                             value={values.contractorName}
@@ -217,7 +221,7 @@ const FrmSearchOption = () => {
 
                                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                                         <Label text="रक्कम पासून :" />
-                                        <input
+                                        <Input
                                             type="number"
                                             className="border rounded px-2 h-9 w-full sm:flex-1"
                                             value={values.amountFrom}
@@ -227,7 +231,7 @@ const FrmSearchOption = () => {
 
                                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                                         <Label text="रक्कम पर्यंत :" />
-                                        <input
+                                        <Input
                                             type="number"
                                             className="border rounded px-2 h-9 w-full sm:flex-1"
                                             value={values.amountTo}
@@ -249,7 +253,7 @@ const FrmSearchOption = () => {
                                     <p className="text-center text-sm text-gray-500 mt-4">लोड होत आहे...</p>
                                 )}
 
-                                {!isLoading && tableData.length === 0 && (
+                                {!dataLoading && tableData.length === 0 && (
                                     <p className="text-center text-sm text-gray-400 mt-4">कोणताही डेटा आढळला नाही.</p>
                                 )}
 

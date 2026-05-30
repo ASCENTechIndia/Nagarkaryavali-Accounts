@@ -1067,7 +1067,7 @@ useEffect(() => {
                         await getDistricts(v);
                       }}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="निवडा" />
                       </SelectTrigger>
 
@@ -1094,7 +1094,7 @@ useEffect(() => {
                         await getCities(v);
                       }}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="निवडा" />
                       </SelectTrigger>
 
@@ -1119,7 +1119,7 @@ useEffect(() => {
                         setFieldValue("city", v)
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="निवडा" />
                       </SelectTrigger>
 
@@ -1236,7 +1236,7 @@ useEffect(() => {
                         await getBranches(v);
                       }}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="निवडा" />
                       </SelectTrigger>
 
@@ -1263,7 +1263,7 @@ useEffect(() => {
                         await getIFSC(v);
                       }}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="निवडा" />
                       </SelectTrigger>
 
@@ -1288,7 +1288,7 @@ useEffect(() => {
                         setFieldValue("status", v)
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue />
                       </SelectTrigger>
 
@@ -1327,7 +1327,7 @@ useEffect(() => {
 
                   <Button
                     type="button"
-                    className="mt-1"
+                    // className="mt-1"
                     onClick={() => {
 
                       if (!values.bank) {
@@ -1455,6 +1455,7 @@ useEffect(() => {
                     बदल करा
                   </Button> */}
                   <Button
+                  type="button"
                     variant="destructive"
                     onClick={() =>
                       navigate(
