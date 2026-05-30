@@ -307,9 +307,8 @@ const FrmAccountMaster = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* CORPORATION */}
                     <div className="flex items-center gap-3">
-                      <label className="w-40 text-right text-sm font-medium">
-                        महानगरपालिका :
-                      </label>
+                    
+                      <Label text=" महानगरपालिका :" />
 
                       <Select
                         value={values.corp || ""}
@@ -339,6 +338,7 @@ const FrmAccountMaster = () => {
                       <label className="w-40 text-right text-sm font-medium">
                         निधी :
                       </label>
+                      
 
                       <Select
                         value={values.fund || ""}

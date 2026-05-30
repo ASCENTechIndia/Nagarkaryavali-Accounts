@@ -33,9 +33,7 @@ const ModalWrapper = ({ title, onClose, onConfirm, children }) => (
       <div className="max-h-100 overflow-auto p-3 no-scrollbar">{children}</div>
 
       <div className="flex justify-center gap-3 p-3 border-t">
-        <Button onClick={onConfirm}>
-          Add Selected
-        </Button>
+        <Button onClick={onConfirm}>Add Selected</Button>
 
         <Button variant="destructive" onClick={onClose}>
           Close
@@ -143,7 +141,6 @@ const BankDeposit = () => {
       setDepartmentList([]);
     }
     Swal.close();
-
   };
 
   const fetchZones = async (departmentId) => {
@@ -295,7 +292,6 @@ const BankDeposit = () => {
         },
       );
 
-
       Swal.close();
 
       // API failed
@@ -436,7 +432,6 @@ const BankDeposit = () => {
     //   accountHead: r.accountName,
     //   amount: r.amount,
 
-
     //   glcodeg: r.glcodeg || "",
     //   accnog: r.accnog || "",
 
@@ -447,9 +442,7 @@ const BankDeposit = () => {
       id: `L-${r.id}`,
 
       department:
-        departmentList.find(
-          (d) => d.value === values.department
-        )?.label || "",
+        departmentList.find((d) => d.value === values.department)?.label || "",
 
       departmentId: values.department || "-",
 
@@ -488,7 +481,6 @@ const BankDeposit = () => {
     try {
       setLekhaLoading(true);
 
-
       const formatDate = (date) => {
         if (!date) return "";
 
@@ -510,8 +502,7 @@ const BankDeposit = () => {
 
           zoneId: values.zone || null,
           deptId: values.department || null,
-          collId:
-            values.department === "7" ? values.collection || null : null,
+          collId: values.department === "7" ? values.collection || null : null,
 
           // rmode: [],
         },
@@ -575,8 +566,7 @@ const BankDeposit = () => {
 
           deptId: values.department || null,
           zoneId: values.zone || null,
-          collId:
-            values.department === "7" ? values.collection || null : null,
+          collId: values.department === "7" ? values.collection || null : null,
 
           rmode: [],
         },
@@ -589,7 +579,6 @@ const BankDeposit = () => {
 
       if (res.data?.ok && res.data?.data?.success) {
         const list = res.data?.data?.list || [];
-
 
         const mapped = list.map((item, index) => ({
           id: index + 1,
@@ -781,8 +770,6 @@ const BankDeposit = () => {
     >
       {({ values, setFieldValue }) => (
         <Form>
-
-
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -962,7 +949,11 @@ const BankDeposit = () => {
                     type="button"
                     onClick={() => {
                       if (!values.fromDate || !values.toDate) {
-                        alert("Select dates first");
+                        Swal.fire({
+                          // icon: "warning",
+                          title: "Warning",
+                          text: "Please select From Date and To Date first.",
+                        });
                         return;
                       }
 
@@ -977,7 +968,11 @@ const BankDeposit = () => {
                     type="button"
                     onClick={() => {
                       if (!values.fromDate || !values.toDate) {
-                        alert("Select dates first");
+                        Swal.fire({
+                          // icon: "warning",
+                          title: "Warning",
+                          text: "Please select From Date and To Date first.",
+                        });
                         return;
                       }
 
@@ -997,7 +992,7 @@ const BankDeposit = () => {
                 onClose={() => setShowPavatiModal(false)}
                 onConfirm={handleAddPavati}
               >
-                <div >
+                <div>
                   {pavatiLoading ? (
                     <div className="flex items-center justify-center py-10 text-sm font-medium">
                       Loading...
@@ -1052,7 +1047,7 @@ const BankDeposit = () => {
                 // onConfirm={handleAddLekha}
                 onConfirm={() => handleAddLekha(values)}
               >
-                <div >
+                <div>
                   {lekhaLoading ? (
                     <div className="flex items-center justify-center py-10 text-sm font-medium">
                       Loading...
@@ -1169,7 +1164,7 @@ const BankDeposit = () => {
                   </div>
 
                   {/* TABLE */}
-                  <div >
+                  <div>
                     <>
                       <ShadCNTable
                         headers={[
@@ -1212,7 +1207,7 @@ const BankDeposit = () => {
                   {/* ACTION BUTTONS */}
                   <div className="flex justify-center gap-4 mt-6">
                     <Button
-                    type="button"
+                      type="button"
                       onClick={() => handleSave(values)}
                       disabled={loading}
                     >

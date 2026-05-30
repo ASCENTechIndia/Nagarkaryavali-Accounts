@@ -189,89 +189,94 @@ const FrmTransferList = () => {
 
   /* ================= UI ================= */
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-      <Card className="shadow-sm border rounded-lg">
-        <CardHeader className="border-b flex justify-between items-center">
-          <CardTitle className="text-lg font-semibold">
-            हस्तांतरण करार यादी
-          </CardTitle>
+<motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+  <Card className="shadow-sm border rounded-lg">
+    <CardHeader className="border-b">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <CardTitle className="text-lg font-semibold">
+          हस्तांतरण करार यादी
+        </CardTitle>
 
-          <Button
-            className="bg-blue-900 hover:bg-blue-800 text-white"
-            onClick={() => navigate("/Transactions/FrmTransfer")}
-          >
-            नवीन जोडा
-          </Button>
-        </CardHeader>
+        <Button
+          className="bg-blue-900 hover:bg-blue-800 text-white w-full sm:w-auto"
+          onClick={() => navigate("/Transactions/FrmTransfer")}
+        >
+          नवीन जोडा
+        </Button>
+      </div>
+    </CardHeader>
 
-        <CardContent className="p-4">
-          <div className="bg-white border rounded-md p-4">
-            <div className="space-y-2">
-              {/* Corporation */}
-              <div className="grid grid-cols-[120px_300px] items-center gap-3">
-                <Label>महानगरपालिका :</Label>
+    <CardContent className="p-4">
+      <div className="bg-white">
+        {/* Filters */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Corporation */}
+          <div className="grid grid-cols-1 sm:grid-cols-[120px_1fr] items-center gap-2 sm:gap-3">
+            <Label text="महानगरपालिका :" />
 
-                <Select
-                  value={selectedCorp}
-                  onValueChange={setSelectedCorp}
-                  disabled={!!user?.ulbId}
-                >
-                  <SelectTrigger className="h-8 w-full">
-                    {" "}
-                    {/* ✅ FIX */}
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
+            <Select
+              value={selectedCorp}
+              onValueChange={setSelectedCorp}
+              disabled={!!user?.ulbId}
+            >
+              <SelectTrigger className="h-9 w-full">
+                <SelectValue placeholder="Select" />
+              </SelectTrigger>
 
-                  <SelectContent>
-                    {corporations.map((c) => (
-                      <SelectItem
-                        key={c.NUM_CORPORATION_ID}
-                        value={c.NUM_CORPORATION_ID.toString()}
-                      >
-                        {c.VAR_CORPORATION_NAME}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Zone */}
-              <div className="grid grid-cols-[120px_300px] items-center gap-3">
-                <Label>झोन :</Label>
-
-                <Select value={selectedZone} onValueChange={setSelectedZone}>
-                  <SelectTrigger className="h-8 w-full">
-                    {" "}
-                    {/* ✅ FIX */}
-                    <SelectValue placeholder="Select Zone" />
-                  </SelectTrigger>
-
-                  <SelectContent>
-                    {zones.map((z) => (
-                      <SelectItem key={z.ZONEID} value={z.ZONEID.toString()}>
-                        {z.ZONEENAME}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Table */}
-            {selectedZone && list.length > 0 && (
-              <div className="mt-4 border rounded-md overflow-hidden">
-                <ShadCNTable
-                  headers={headers}
-                  data={tableData}
-                  keyMapping={keyMapping}
-                  pagination={true}
-                />
-              </div>
-            )}
+              <SelectContent>
+                {corporations.map((c) => (
+                  <SelectItem
+                    key={c.NUM_CORPORATION_ID}
+                    value={c.NUM_CORPORATION_ID.toString()}
+                  >
+                    {c.VAR_CORPORATION_NAME}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+
+          {/* Zone */}
+          <div className="grid grid-cols-1 sm:grid-cols-[120px_1fr] items-center gap-2 sm:gap-3">
+            <Label text="झोन :" />
+
+            <Select
+              value={selectedZone}
+              onValueChange={setSelectedZone}
+            >
+              <SelectTrigger className="h-9 w-full">
+                <SelectValue placeholder="Select Zone" />
+              </SelectTrigger>
+
+              <SelectContent>
+                {zones.map((z) => (
+                  <SelectItem
+                    key={z.ZONEID}
+                    value={z.ZONEID.toString()}
+                  >
+                    {z.ZONEENAME}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Table */}
+        {selectedZone && list.length > 0 && (
+          <div className="mt-4 border rounded-md overflow-x-auto">
+            <ShadCNTable
+              headers={headers}
+              data={tableData}
+              keyMapping={keyMapping}
+              pagination={true}
+            />
+          </div>
+        )}
+      </div>
+    </CardContent>
+  </Card>
+</motion.div>
   );
 };
 
