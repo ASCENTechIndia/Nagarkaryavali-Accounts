@@ -219,7 +219,9 @@ const FrmTransAuthMst = () => {
           text: message,
           confirmButtonText: "ठीक आहे",
         });
-        await generatePDF(voucherData);
+        if(ulbId === 930) {
+          await generatePDF(voucherData);
+        }
         navigate("/Transactions/FrmTransAuthList");
       } else {
         const errorMsg = response?.data?.data?.message || response?.data?.message || "व्यवहार अधिकृत करताना त्रुटी आली";
