@@ -45,9 +45,8 @@ const FrmReceiptReprint = () => {
     "प्रभाग",
     "बँक नाव",
     "खाते क्रमांक",
-    "कर नाव",
-    "कर खाते",
-    "शेरा",
+  
+  
     "रक्कम",
     "प्रिंट",
   ];
@@ -59,10 +58,9 @@ const FrmReceiptReprint = () => {
     प्रभाग: "ZONEENAME",
     "बँक नाव": "ACCNAME",
     "खाते क्रमांक": "ACCNO",
-    "कर नाव": "TAXNAME",
-    "कर खाते": "TAXAC",
-    शेरा: "REMARKS",
-    रक्कम: "AMOUNT",
+ 
+ 
+    रक्कम: "TOTAL_AMOUNT",
     प्रिंट: "PRINT",
   };
 

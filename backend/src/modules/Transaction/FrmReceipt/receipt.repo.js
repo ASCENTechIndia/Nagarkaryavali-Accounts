@@ -237,36 +237,47 @@ const getReceiptDetailsPdfRepo = (refno, ulbid) =>
 
 async function getReceiptPDF(payload) {
   try {
+
     const query = `
       SELECT
           REFNO,
-          TRANSDATE,
+          MIN(TRANSDATE) AS TRANSDATE,
           TRANSTYPE,
           ZONEENAME,
           ACCNAME,
           ACCNO,
-          TAXNAME,
-          TAXAC,
-          REMARKS,
-          AMOUNT,
           PARTYNAME,
           ULBID,
-          partycode
+          PARTYCODE,
+          SUM(AMOUNT) AS TOTAL_AMOUNT
       FROM VW_Receiptdetails
-      WHERE ulbid = :ulbid
-        AND TRANSDATE BETWEEN :fromDate AND :toDate
+      WHERE ULBID = :ulbid
+        AND TRUNC(TRANSDATE)
+            BETWEEN TO_DATE(:fromDate,'DD-MM-YYYY')
+                AND TO_DATE(:toDate,'DD-MM-YYYY')
+      GROUP BY
+          REFNO,
+          TRANSTYPE,
+          ZONEENAME,
+          ACCNAME,
+          ACCNO,
+          PARTYNAME,
+          ULBID,
+          PARTYCODE
+      ORDER BY REFNO DESC
     `;
 
     const result = await executeQuery(
       query,
       {
         ulbid: payload.ulbid,
-        fromDate: payload.fromDate, 
-        toDate: payload.toDate      
+        fromDate: payload.fromDate,
+        toDate: payload.toDate
       }
     );
 
     return result.rows;
+
   } catch (err) {
     throw err;
   }
