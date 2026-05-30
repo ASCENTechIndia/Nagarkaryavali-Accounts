@@ -57,7 +57,7 @@ const FrmReceiptReprint = () => {
     "व्यवहार प्रकार": "TRANSTYPE",
     प्रभाग: "ZONEENAME",
     "बँक नाव": "ACCNAME",
-    "खाते क्रमांक": "ACCNO",
+    "खाते क्रमांक": "ACCCNO",
  
  
     रक्कम: "TOTAL_AMOUNT",
@@ -217,7 +217,7 @@ const FrmReceiptReprint = () => {
     PRINT: (
       <button
         type="button"
-        className="text-blue-700 hover:underline"
+        className="text-blue-700 hover:underline hover:cursor-pointer"
         onClick={() => handlePrint(item)}
       >
         Print

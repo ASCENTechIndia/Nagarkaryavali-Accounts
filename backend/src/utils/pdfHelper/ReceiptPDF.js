@@ -39,7 +39,7 @@ const generateReceiptPDF = async ({ data, corporationName, corporationLogo }) =>
 
       return {
         sr: i + 1,
-        accno: row.ACCNO,
+        accno: row.ACCCNO,
         accname: row.ACCNAME,
         // Ensure party is empty string if null to match visual design
         party: row.PARTYNAME || "",
