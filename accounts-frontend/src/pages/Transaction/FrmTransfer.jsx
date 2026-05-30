@@ -13,6 +13,7 @@ import { Label } from "@/Components/ui/label";
 import { Button } from "@/Components/ui/button";
 import { Textarea } from "@/Components/ui/textarea";
 import SearchableSelect from "@/components/SearchableSelect";
+import { DatePicker } from "@/components/ui/calendar";
 
 import {
   Select,
@@ -667,10 +668,11 @@ const FrmTransfer = () => {
                       <Label className="sm:w-20 sm:text-right whitespace-nowrap">
                         दिनांक :
                       </Label>
-                      <Input
-                        className="w-full sm:w-[150px] h-9"
-                        value={formatDate(values.date)}
-                        readOnly
+
+                      <DatePicker
+                        value={values.date}
+                        onChange={(date) => setFieldValue("date", date)}
+                        disabled={isEditMode}
                       />
                     </div>
 
@@ -771,10 +773,11 @@ const FrmTransfer = () => {
                             </Row>
 
                             <Row label="धनादेश तारीख">
-                              <Input
-                                className="w-full h-9"
-                                value={formatDate(values.chequeDate)}
-                                readOnly
+                              <DatePicker
+                                value={values.chequeDate}
+                                onChange={(date) =>
+                                  setFieldValue("chequeDate", date)
+                                }
                               />
                             </Row>
 

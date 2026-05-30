@@ -235,7 +235,8 @@ const FrmAccountList = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* CORPORATION */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">महानगरपालिका</label>
+            
+              <Label text="महानगरपालिका" />
               <Select
                 value={filters.ulbId}
                 onValueChange={(v) => setFilters({ ...filters, ulbId: v })}
@@ -260,7 +261,8 @@ const FrmAccountList = () => {
 
             {/* GL */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">जी.एल. नांव</label>
+             
+              <Label text="जी.एल. नांव" />
               <SearchableSelect
                 className="w-full"
                 options={glList.map((g) => ({
@@ -282,7 +284,8 @@ const FrmAccountList = () => {
 
             {/* LEDGER */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">खाते नांव</label>
+             
+              <Label text="खाते नांव" />
               <SearchableSelect
                 className="w-full"
                 options={ledgerOptions.map((l) => ({
