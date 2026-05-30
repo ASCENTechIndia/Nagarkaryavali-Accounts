@@ -173,7 +173,9 @@ const RptReceiptRegisterDetails = () => {
       setTableData(list);
     } catch (err) {
       console.error(err);
-      Swal.fire("Error", "Something went wrong", "error");
+      Swal.fire({
+              text: err?.response?.data?.message ,
+            });
     } finally {
       setLoading(false);
     }

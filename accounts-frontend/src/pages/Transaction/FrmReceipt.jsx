@@ -1079,22 +1079,15 @@ const FrmReceipt = () => {
                       data={dummyData}
                       keyMapping={keyMapping}
                       pagination={false}
+                      className="max-md:min-w-180"
                     />
                   </div>
 
-                  <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-4">
+                  <div className="flex w-full flex-col-reverse lg:flex-row  items-center gap-4 pt-4">
 
-                    <div className="flex items-center gap-2">
-                      <Label text="एकूण रक्कम :" />
-                      <Input
-                        className="w-50"
-                        name="finalTotal"
-                        value={values.finalTotal || 0}
-                        readOnly
-                      />
-                    </div>
+                    
 
-                    <div className="flex gap-3">
+                    <div className="flex gap-3 sm:w-[50%] max-lg:justify-center items-center justify-end">
                       <Button
                         type="submit"
                         className="bg-blue-900 text-white"
@@ -1105,6 +1098,17 @@ const FrmReceipt = () => {
                       <Button type="button" variant="destructive" onClick={() => navigate("/Transactions/FrmReceiptList")}>
                         रद्द
                       </Button>
+                    </div>
+
+
+                    <div className="flex items-center max-sm:w-full max-sm:justify-center gap-2 w-[50%] justify-end">
+                      <Label text="एकूण रक्कम :" />
+                      <Input
+                        className="w-50"
+                        name="finalTotal"
+                        value={values.finalTotal || 0}
+                        readOnly
+                      />
                     </div>
                   </div>
 
