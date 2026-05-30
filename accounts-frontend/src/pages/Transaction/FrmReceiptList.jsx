@@ -3,7 +3,7 @@ import { Formik, Form } from "formik";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 import {
@@ -17,6 +17,7 @@ import {
 import ShadCNTable from "@/components/ui/table";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
+import Swal from "sweetalert2";
 
 const container = {
   hidden: { opacity: 0, y: 20 },
@@ -34,6 +35,7 @@ const FrmReceiptList = () => {
   const [zones, setZones] = useState([]);
   const { user } = useAuth();
   const [defaultMunicipality, setDefaultMunicipality] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const ulbId = user?.ulbId;
@@ -45,6 +47,14 @@ const FrmReceiptList = () => {
 
   const fetchCorporations = async () => {
     try {
+      Swal.fire({
+        title: "Loading...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+      
       const res = await axios.post(
         `${BASE_URL}/api/Receipt/corporation`,
         {
@@ -67,6 +77,8 @@ const FrmReceiptList = () => {
       }
     } catch (err) {
       console.error("Corporation API Error:", err);
+    } finally {
+      Swal.close();
     }
   };
 
@@ -90,6 +102,7 @@ const FrmReceiptList = () => {
 
   const fetchReceiptList = async (zoneId, corpId) => {
     try {
+      setLoading(true);
       const res = await axios.post(`${BASE_URL}/api/Receipt/receiptList`, {
         ddl_ZoneID: zoneId,
         ddl_ULB_ID: corpId,
@@ -116,6 +129,9 @@ const FrmReceiptList = () => {
     } catch (err) {
       console.error("Receipt API Error:", err);
       setTableData([]);
+    }
+    finally {
+      setLoading(false);
     }
   };
 
@@ -188,95 +204,105 @@ const FrmReceiptList = () => {
             // className="min-h-screen bg-gray-100 p-4 sm:p-6"
             >
               <Card className="shadow-sm border">
-                <CardContent className="p-4 sm:p-6 space-y-4">
-
-                  <motion.h2 variants={item} className="text-lg font-semibold">
+                <CardHeader className="border-b flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                  <CardTitle className="text-lg font-semibold">
                     पावतीची यादी
-                  </motion.h2>
+                  </CardTitle>
 
-                  <hr className="mb-2" />
-
-                  <motion.div variants={item}>
-                    <Button
-                      className="bg-blue-900 text-white text-sm"
-                      onClick={() => navigate("/Transactions/FrmReceipt")}
-                    >
-                      नवीन जोडा
-                    </Button>
-                  </motion.div>
+                  <Button
+                    className="bg-blue-900 text-white w-full sm:w-auto"
+                    onClick={() => navigate("/Transactions/FrmReceipt")}
+                  >
+                    नवीन जोडा
+                  </Button>
+                </CardHeader>
+                <CardContent className="p-3 sm:p-4 md:p-6 space-y-4">
 
                   <motion.div
                     variants={item}
-                    className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm"
+                    className="grid grid-cols-1 lg:grid-cols-2 gap-4 text-sm"
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="w-32">महानगरपालिका</span>
-                      <span>:</span>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span className="sm:w-32 font-medium">महानगरपालिका</span>
 
-                      <Select
-                        value={values.municipality}
-                        onValueChange={(val) => {
-                          setFieldValue("municipality", val);
-                          fetchZones(val);
-                        }}
-                        disabled
-                      >
-                        <SelectTrigger className="w-full h-8">
-                          <SelectValue placeholder="-- निवडा --" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {corporations.map((c) => (
-                            <SelectItem
-                              key={c.CORPORATIONID}
-                              value={c.CORPORATIONID.toString()}
-                            >
-                              {c.CORPORATIONNAME}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center gap-2 flex-1">
+                        <span className="hidden sm:block">:</span>
+
+                        <Select
+                          value={values.municipality}
+                          onValueChange={(val) => {
+                            setFieldValue("municipality", val);
+                            fetchZones(val);
+                          }}
+                          disabled
+                        >
+                          <SelectTrigger className="w-full h-9">
+                            <SelectValue placeholder="-- निवडा --" />
+                          </SelectTrigger>
+
+                          <SelectContent>
+                            {corporations.map((c) => (
+                              <SelectItem
+                                key={c.CORPORATIONID}
+                                value={c.CORPORATIONID.toString()}
+                              >
+                                {c.CORPORATIONNAME}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <span className="w-32">प्रभाग</span>
-                      <span>:</span>
-
-                      <Select
-                        value={values.prabhag}
-                        onValueChange={(val) => {
-                          setFieldValue("prabhag", val);
-                          fetchReceiptList(val, values.municipality);
-                        }}
-                      >
-                        <SelectTrigger className="w-full h-8">
-                          <SelectValue placeholder="-- विकल्प निवडा --" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {zones.map((z) => (
-                            <SelectItem
-                              key={z.ZONEID}
-                              value={z.ZONEID.toString()}
-                            >
-                              {z.ZONEENAME}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span className="sm:w-32 font-medium">प्रभाग</span>
+                      <div className="flex items-center gap-2 flex-1">
+                        <span className="hidden sm:block">:</span>
+                        <Select
+                          value={values.prabhag}
+                          onValueChange={(val) => {
+                            setFieldValue("prabhag", val);
+                            fetchReceiptList(val, values.municipality);
+                          }}
+                        >
+                          <SelectTrigger className="w-full h-8">
+                            <SelectValue placeholder="-- विकल्प निवडा --" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {zones.map((z) => (
+                              <SelectItem
+                                key={z.ZONEID}
+                                value={z.ZONEID.toString()}
+                              >
+                                {z.ZONEENAME}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   </motion.div>
 
-                  {values.prabhag && tableData.length > 0 && (
-                    <div className="w-full overflow-x-auto border mt-4">
+                  {loading && (
+                    <div className="flex justify-center items-center py-10">
+                      <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-900 border-t-transparent" />
+                    </div>
+                  )}
+
+
+                  {!loading && values.prabhag && tableData.length > 0 && (
+                    <div className="w-full overflow-x-auto rounded-md border mt-4">
                       <ShadCNTable
                         headers={headers}
                         data={tableRows}
                         keyMapping={keyMapping}
                         pagination={false}
+                        className="min-w-[900px]"
                       />
                     </div>
                   )}
 
-                  {values.prabhag && tableData.length === 0 && (
+                  {!loading && values.prabhag && tableData.length === 0 && (
                     <p className="text-center text-gray-500 mt-4">
                       डेटा उपलब्ध नाही
                     </p>
