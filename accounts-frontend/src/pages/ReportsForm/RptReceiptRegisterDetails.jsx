@@ -310,7 +310,7 @@ const RptReceiptRegisterDetails = () => {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => navigate("/dashboard")}
+                    onClick={() => navigate("/HomePage/FrmHomePage")}
                   >
                     बाहेर जा
                   </Button>

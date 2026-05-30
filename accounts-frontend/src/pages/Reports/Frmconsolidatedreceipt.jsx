@@ -816,7 +816,7 @@ const Frmconsolidatedreceipt = () => {
                     >
                       हटवा
                     </Button>
-                    <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+                    <Button type="button" variant="outline" onClick={() => navigate("/HomePage/FrmHomePage")}>
                       बाहेर
                     </Button>
                   </div>

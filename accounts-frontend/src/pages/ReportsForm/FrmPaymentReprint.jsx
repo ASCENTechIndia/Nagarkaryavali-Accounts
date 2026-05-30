@@ -243,6 +243,7 @@ const FrmPaymentReprint = () => {
                       resetForm();
                       setTableData([]);
                     }}
+                    path={"/HomePage/FrmHomePage"}
                   >
                     बाहेर
                   </Button>

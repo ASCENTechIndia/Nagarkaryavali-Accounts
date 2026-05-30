@@ -158,7 +158,7 @@ const FrmBudgetMst = () => {
                     type="button"
                     variant="destructive"
                     className="px-6"
-                    onClick={() => navigate(-1)}
+                    onClick={() => navigate("/HomePage/FrmHomePage")}
                   >
                     परत
                   </Button>

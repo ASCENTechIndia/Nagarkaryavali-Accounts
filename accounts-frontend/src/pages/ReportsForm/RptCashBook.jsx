@@ -850,7 +850,7 @@ const RptCashBook = () => {
                   हटवा
                 </Button>
 
-                <Button type="button" variant="outline" path="/">
+                <Button type="button" variant="outline" path="/HomePage/FrmHomePage">
                   बाहेर जा
                 </Button>
               </div>

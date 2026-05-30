@@ -437,7 +437,7 @@ const FrmBudgetHeadConfigList = () => {
               type="button"
               variant="outline"
               className="px-8"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate("/HomePage/FrmHomePage")}
             >
               Back
             </Button>

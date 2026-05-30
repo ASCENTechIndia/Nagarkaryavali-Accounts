@@ -675,7 +675,7 @@ const FrmTransAuthMst = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => navigate(-1)}
+                  onClick={() => navigate("/HomePage/FrmHomePage")}
                 >
                   बाहेर जा
                 </Button>

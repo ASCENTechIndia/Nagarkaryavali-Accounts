@@ -276,7 +276,7 @@ const FrmReceiptReprint = () => {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => navigate(-1)}
+                    onClick={() => navigate("/HomePage/FrmHomePage")}
                   >
                     बाहेर
                   </Button>
