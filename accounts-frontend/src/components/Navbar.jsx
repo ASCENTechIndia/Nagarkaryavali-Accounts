@@ -30,48 +30,6 @@ const Navbar = () => {
 
   const MENU_KEY = `ACCOUNTS_MENU_${user?.userId}`;
 
-  // const fetchMenus = async () => {
-  //   try {
-  //     Swal.fire({
-  //       title: "Loading Menu...",
-  //       allowOutsideClick: false,
-  //       didOpen: () => {
-  //         Swal.showLoading();
-  //       },
-  //     });
-
-  //     const res = await axios.post(`${BASE_URL}/api/menu-access/AccountMenus`,
-  //       {
-  //         ulbId: user?.ulbId,
-  //         userId: user?.userId,
-  //         deptId: config.deptId,
-  //       },
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       }
-  //     );
-
-  //     console.log("Menu Response: ", res);
-
-  //     if (res.data.data?.success) {
-  //       setMenus(res.data.data.data);
-  //     }
-
-  //     Swal.close();
-  //   } catch (err) {
-  //     Swal.close();
-  //     console.error("❌ Menu fetch error:", err);
-
-  //     Swal.fire({
-  //       icon: "error",
-  //       title: "Error",
-  //       text: "Failed to load menu",
-  //     });
-  //   }
-  // };
-
   const fetchMenus = async () => {
     try {
       // 🔹 CHECK CACHE FIRST
@@ -104,10 +62,16 @@ const Navbar = () => {
 
       if (res.data.data?.success) {
         const menuData = res.data.data.data;
+        const HOME = {
+          MENUTITLE: "HOME",
+          PAGEPATH: "/HomePage/FrmHomePage",
+          PARENTID: 0,
+        }
+        const finalMenus = [HOME, ...menuData];
 
-        setMenus(menuData);
+        setMenus(finalMenus);
 
-        sessionStorage.setItem(MENU_KEY, JSON.stringify(menuData));
+        sessionStorage.setItem(MENU_KEY, JSON.stringify(finalMenus));
       }
 
       Swal.close();
@@ -124,31 +88,31 @@ const Navbar = () => {
   };
 
   const fetchCorporationInfo = async () => {
-  try {
-    const res = await axios.post(
-      `${BASE_URL}/api/menu-access/CorporationInfo`,
-      {
-        ulbId: ulbId,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/api/menu-access/CorporationInfo`,
+        {
+          ulbId: ulbId,
         },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (res.data.ok) {
+        const data = res.data.data;
+
+        setCorpInfo({
+          name: data.ABC_MUNICIPAL_TEXT,
+          logo: data.ULBLOGO,
+        });
       }
-    );
-
-    if (res.data.ok) {
-      const data = res.data.data;
-
-      setCorpInfo({
-        name: data.ABC_MUNICIPAL_TEXT,
-        logo: data.ULBLOGO,
-      });
+    } catch (err) {
+      console.error("❌ Corporation fetch error:", err);
     }
-  } catch (err) {
-    console.error("❌ Corporation fetch error:", err);
-  }
-};
+  };
 
   useEffect(() => {
     console.log("USER:", user);
@@ -164,17 +128,32 @@ const Navbar = () => {
   };
 
 
-  // const allMenus = [homeMenu, ...menus.filter(m => m.PARENTID === 0)];
+  // const allMenus = menus
+  //   .filter(m => m.PARENTID === 0)
+  //   .sort((a, b) => {
+  //     if (a.MENUTITLE === "Dashboard") return -1;
+  //     if (b.MENUTITLE === "Dashboard") return 1;
+  //     return a.ORDERBY - b.ORDERBY;
+  //   });
+
   const allMenus = menus
-    .filter(m => m.PARENTID === 0)
-    .sort((a, b) => {
-      if (a.MENUTITLE === "Dashboard") return -1;
-      if (b.MENUTITLE === "Dashboard") return 1;
-      return a.ORDERBY - b.ORDERBY;
-    });
+  .filter((m) => m.PARENTID === 0)
+  .sort((a, b) => {
+    // HOME always first
+    if (a.MENUTITLE === "HOME") return -1;
+    if (b.MENUTITLE === "HOME") return 1;
+
+    // Dashboard second
+    if (a.MENUTITLE === "Dashboard") return -1;
+    if (b.MENUTITLE === "Dashboard") return 1;
+
+    // Rest by ORDERBY
+    return (a.ORDERBY || 0) - (b.ORDERBY || 0);
+  });
 
   const MENU_ICONS = {
-    dashboard: "/home.png",
+    home: "/home.png",
+    dashboard: "/dashboard.png",
     "मास्टर": "/master.png",
     "जेनेरिक मास्टर": "/master.png",
     "व्यवहार": "/transaction.png",
