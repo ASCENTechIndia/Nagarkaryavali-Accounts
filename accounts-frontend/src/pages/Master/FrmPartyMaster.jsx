@@ -879,7 +879,7 @@ useEffect(() => {
           (b) =>
             `${b.bankId || 0}#${b.branchId || 0}#${b.ifsc || "-"
             }#${b.accountNo || "-"
-            }#${b.status || "0"
+            }#${b.statusLabel
             }`
         )
         .join("^");

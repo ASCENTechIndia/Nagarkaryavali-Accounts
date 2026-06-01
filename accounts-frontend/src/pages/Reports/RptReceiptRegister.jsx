@@ -138,16 +138,22 @@ const RptReceiptRegister = () => {
                 didOpen: () => Swal.showLoading(),
             });
 
-            const formatDate = (date) => {
-                if (!date) return null;
-                const d = new Date(date);
-                return d.toISOString().split("T")[0];
-            };
+          const formatDate = (date) => {
+    if (!date) return null;
 
+    const d = new Date(date);
+
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+};
             const payload = {
                 fromDate: formatDate(values.fromDate),
                 toDate: formatDate(values.toDate),
                 ulbId: ulbId?.toString(),
+                zoneId: values.zoneId || "-1",
                 rptType: values.reportType === "summary" ? "2" : "1",
                 chkGramPanchayat: false,
                 majorCode: values.wardCode ? "0" + values.wardCode : null,
@@ -282,7 +288,7 @@ const RptReceiptRegister = () => {
 
                                 <CardContent className="p-4 sm:p-5 space-y-4">
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                                       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                                             <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
                                                 <Label text="प्रभाग" />
                                                 <span>:</span>
@@ -293,10 +299,15 @@ const RptReceiptRegister = () => {
                                                 onValueChange={(v) => setFieldValue("zoneId", v)}
                                             >
                                                 <SelectTrigger className="w-full h-9">
-                                                    <SelectValue placeholder="-- निवडा --" />
+                                                    <SelectValue placeholder="-- ALL --" />
                                                 </SelectTrigger>
 
                                                 <SelectContent>
+                                                    <SelectItem
+                                                        value={"-1"}
+                                                    >
+                                                        -- ALL --
+                                                    </SelectItem>
                                                     {zoneList.map((zone) => (
                                                         <SelectItem
                                                             key={zone.ZONEID}
