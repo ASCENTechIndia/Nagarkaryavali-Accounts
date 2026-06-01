@@ -8,13 +8,13 @@ exports.getAccountDetails = asyncHandler(async (req, res) => {
   const { functionCode, ulbId, objectCode } = req.body;
 
   if (!functionCode) {
-    throw new AppError("functionCode is required", 400);
+    throw new AppError("जी.एल. नांव is required", 400);
   }
   if (!ulbId) {
     throw new AppError("ulbId is required", 400);
   }
   if (!objectCode) {
-    throw new AppError("objectCode is required", 400);
+    throw new AppError("खाते नांव is required", 400);
   }
 
   const payload = { functionCode, ulbId, objectCode };

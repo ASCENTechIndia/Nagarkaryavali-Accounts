@@ -147,8 +147,6 @@ const FrmAccountList = () => {
         }),
       };
 
-      console.log("Payload:", payload);
-
       const res = await axios.post(
         `${BASE_URL}/api/FrmAccount/account-details`,
         payload,
@@ -156,12 +154,12 @@ const FrmAccountList = () => {
           headers: { Authorization: `Bearer ${user?.token}` },
         },
       );
+      console.log("res",res)
+      if (!res.data?.ok) {
+        throw new Error(res.data?.error || res.data?.message || "Failed to fetch data");
+      }
 
-      console.log("API Response:", res.data);
-
-      // 🔥 SAFE DATA EXTRACTION
       const list = res.data?.data?.data || res.data?.data?.rows || [];
-
       const mapped = list.map((row) => ({
         select: (
           <Button
@@ -182,28 +180,24 @@ const FrmAccountList = () => {
             निवडा
           </Button>
         ),
-
         FUNCTIONCODE: row.FUNCTIONCODE,
         OBJECTCODE: row.OBJECTCODE,
-
-        // ✅ CLEANED SUBTYPE
-        SUBTYPE: row.ACCSUBTYPE
-          ? row.ACCSUBTYPE.replace(/\t/g, "")
-              .split("-")
-              .map((p) => p.trim())
-              .join(" - ")
-          : "",
-
+        SUBTYPE: row.ACCSUBTYPE ? row.ACCSUBTYPE.replace(/\t/g, "").split("-").map((p) => p.trim()).join(" - ") : "",
         name: row.VAR_ACCMASTER_ACCNAME,
       }));
 
       setTableData(mapped);
       setShowTable(true);
+      Swal.close();
     } catch (err) {
       console.error("Search Error:", err);
+      Swal.close();
+      Swal.fire({
+        text: err?.response?.data?.message ||  err?.response?.data?.error ||err?.message || "Failed To Fetch Branch List",
+      });
     } finally {
       setLoading(false);
-      Swal.close();
+      
     }
   };
 
@@ -232,7 +226,7 @@ const FrmAccountList = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* CORPORATION */}
             <div className="space-y-2">
-            
+
               <Label text="महानगरपालिका" />
               <Select
                 value={filters.ulbId}
@@ -258,7 +252,7 @@ const FrmAccountList = () => {
 
             {/* GL */}
             <div className="space-y-2">
-             
+
               <Label text="जी.एल. नांव" />
               <SearchableSelect
                 className="w-full"
@@ -281,7 +275,7 @@ const FrmAccountList = () => {
 
             {/* LEDGER */}
             <div className="space-y-2">
-             
+
               <Label text="खाते नांव" />
               <SearchableSelect
                 className="w-full"

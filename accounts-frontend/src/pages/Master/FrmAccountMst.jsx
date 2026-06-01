@@ -389,13 +389,13 @@ const FrmAccountMaster = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex items-center gap-3">
                       <label className="w-40 text-right text-sm font-medium">
-                        खाते आयडी :
+                        खाते कोड :
                       </label>
 
                       <Input
                         value={values.accId}
-                        disabled
-                        className="flex-1 h-9"
+                        readOnly
+                        className="flex-1 h-9 "
                       />
                     </div>
 
@@ -449,7 +449,7 @@ const FrmAccountMaster = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex items-center gap-3">
                       <label className="w-40 text-right text-sm font-medium">
-                        बजेट :
+                        बजट तरतूद रक्कम  :
                       </label>
 
                       <Input
