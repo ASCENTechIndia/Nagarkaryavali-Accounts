@@ -181,7 +181,7 @@ const RptLedgerReport = () => {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
+      console.log("response",response)
       if (response?.data?.ok && response?.data?.data) {
         const transactionsList = response.data.data.list || [];
         

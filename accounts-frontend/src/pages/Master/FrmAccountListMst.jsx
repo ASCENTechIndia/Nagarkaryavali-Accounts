@@ -2,12 +2,9 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
-
 import { useAuth } from "@/context/AuthContext";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 import {
   Select,
   SelectContent,
@@ -15,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
 import SearchableSelect from "@/components/SearchableSelect";
 import ShadCNTable from "@/components/ui/table";
 import Swal from "sweetalert2";
@@ -309,7 +305,7 @@ const FrmAccountList = () => {
           <div className="flex flex-col md:flex-row gap-3 justify-center pt-6 border-t">
             <Button
               size="lg"
-              className="min-w-[120px]"
+              className="min-w-30"
               onClick={handleSearch}
               disabled={loading}
             >
@@ -319,7 +315,7 @@ const FrmAccountList = () => {
             <Button
               size="lg"
               variant="destructive"
-              className="min-w-[120px]"
+              className="min-w-30"
               onClick={() => {
                 setFilters({
                   ulbId: user?.ulbId?.toString() || "",

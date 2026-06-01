@@ -1118,7 +1118,8 @@ const FrmCashDeposit = () => {
                       type="button"
                       variant="destructive"
                       onClick={() => handleResetForm(resetForm)}
-                      disabled={loading}
+                      // disabled={loading}
+                      disabled={loading || !(transactionData.length > 0)}
                     >
                       हटवा
                     </Button>
@@ -1157,6 +1158,9 @@ const FrmCashDeposit = () => {
                           <span className="ml-2">लोड करत आहे...</span>
                         </div>
                       ) : (
+                         <>
+                        {transactionData.length > 0 ? (
+
                         <>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             
@@ -1365,6 +1369,12 @@ const FrmCashDeposit = () => {
                               {loading ? "सेव्ह करत आहे..." : "Save"}
                             </Button>
                           </div>
+                        </>
+                        ): (
+                          <div className="text-center py-8 text-gray-500">
+                            कोणतीही माहिती उपलब्ध नाही
+                          </div>
+                        )}
                         </>
                       )}
                     </>

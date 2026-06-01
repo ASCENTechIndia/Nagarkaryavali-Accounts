@@ -149,62 +149,30 @@ const FrmAccountMaster = () => {
         // 🔥 SET ALL VALUES
         setInitialValues({
           corp: String(ulbId || user?.ulbId || ""),
-
-          fund: String(
-            fullData.NIDHIID ||
-            map.NUM_ACCMASTER_NIDHIID ||
-            ""
-          ),
-
+          fund: String( fullData.NIDHIID || map.NUM_ACCMASTER_NIDHIID || "" ),
           functionCode,
-
-          objectCode: String(
-            fullData.ACCSUBTYPE ||
-            map.ACCSUBTYPE ||
-            ""
-          ),
-
+          objectCode: String( fullData.ACCSUBTYPE || map.ACCSUBTYPE || "" ),
           accId: accNo,
           // accId: fullData.ACCNO,
-
           oldAcc: fullData.OLDACCNO || "",
-
-          // ✅ AUTO FILL FIELDS
-          nameMarathi:
-            fullData.ACCNAME ||
-            map.ACCNAME ||
-            "",
-
-          nameEnglish:
-            fullData.VAR_ACCMASTER_ACCNAMEENG ||
-            map.VAR_ACCMASTER_ACCNAMEENG ||
-            map.ACCNAME ||
-            "",
-
+          nameMarathi: fullData.ACCNAME || map.ACCNAME || "",
+          nameEnglish: fullData.VAR_ACCMASTER_ACCNAMEENG || map.VAR_ACCMASTER_ACCNAMEENG || map.ACCNAME || "",
           budgetAmt: String(fullData.BUDGETAMT || 0),
-
           revisedAmt: String(fullData.REVBUDGETAMT || 0),
-
           openingBal: String(fullData.OPENBAL || 0),
-
           limit: String(fullData.MAXLIMIT || 0),
         });
-        setTimeout(() => {
-          Swal.close();
-        }, 300);
-
+        setTimeout(() => { Swal.close() }, 300);
       } catch (err) {
         console.error(err);
         Swal.close();
       }
     };
-
     loadAllDetails();
   }, [location.state, glList, objectCodes, nidhiList]);
 
   const handleSubmit = async (values, { resetForm }) => {
     try {
-      // 🔄 Show loading
       Swal.fire({
         title: isEditMode ? "Updating..." : "Saving...",
         allowOutsideClick: false,
@@ -231,19 +199,13 @@ const FrmAccountMaster = () => {
       });
 
       const result = res.data?.data;
-
-      // ✅ Close loading before showing result
       Swal.close();
-
       if (result?.errorCode === -100) {
         await Swal.fire({
           text: result?.message,
         });
-
         resetForm();
-
-        // optional reset / reload
-        // window.location.reload();
+        navigate("/Masters/FrmAccountListMst")
       } else {
         Swal.fire({
           text: result?.message,
@@ -268,7 +230,8 @@ const FrmAccountMaster = () => {
     >
       {({ values, setFieldValue, resetForm }) => {
         /* 🔥 AUTO ACCOUNT NUMBER */
-        useEffect(() => {
+        if( !isEditMode ){
+          useEffect(() => {
           if (!values.functionCode || !values.objectCode || !values.corp)
             return;
 
@@ -291,6 +254,7 @@ const FrmAccountMaster = () => {
 
           generate();
         }, [values.functionCode, values.objectCode, values.corp]);
+        }
 
         return (
           <Form>
@@ -309,14 +273,15 @@ const FrmAccountMaster = () => {
                     {/* CORPORATION */}
                     <div className="flex items-center gap-3">
                     
-                      <Label text=" महानगरपालिका :" />
+                      <Label text=" नगरपालिका :" className="w-40 text-right text-sm font-medium"/>
+                      {/* <Label text=" महानगरपालिका :" /> */}
 
                       <Select
                         value={values.corp || ""}
                         onValueChange={(v) => setFieldValue("corp", v)}
                         disabled={!!user?.ulbId}
                       >
-                        <SelectTrigger className="flex-1 h-9">
+                        <SelectTrigger >
                           <SelectValue placeholder="निवडा" />
                         </SelectTrigger>
 
@@ -555,6 +520,7 @@ const FrmAccountMaster = () => {
                       type="button"
                       variant="destructive"
                       onClick={() => navigate("/Masters/FrmAccountListMst")}
+                      path={"/Masters/FrmAccountListMst"}
                     >
                       परत
                     </Button>
