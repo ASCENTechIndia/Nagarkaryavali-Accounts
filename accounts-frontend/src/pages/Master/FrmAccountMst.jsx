@@ -149,9 +149,9 @@ const FrmAccountMaster = () => {
         // 🔥 SET ALL VALUES
         setInitialValues({
           corp: String(ulbId || user?.ulbId || ""),
-          fund: String( fullData.NIDHIID || map.NUM_ACCMASTER_NIDHIID || "" ),
+          fund: String(fullData.NIDHIID || map.NUM_ACCMASTER_NIDHIID || ""),
           functionCode,
-          objectCode: String( fullData.ACCSUBTYPE || map.ACCSUBTYPE || "" ),
+          objectCode: String(fullData.ACCSUBTYPE || map.ACCSUBTYPE || ""),
           accId: accNo,
           // accId: fullData.ACCNO,
           oldAcc: fullData.OLDACCNO || "",
@@ -217,7 +217,7 @@ const FrmAccountMaster = () => {
       Swal.close();
 
       Swal.fire({
-        text: err?.response?.data?.message ||  err?.response?.data?.error || "Failed To Fetch Branch List",
+        text: err?.response?.data?.message || err?.response?.data?.error || "Failed To Fetch Branch List",
       });
     }
   };
@@ -230,30 +230,30 @@ const FrmAccountMaster = () => {
     >
       {({ values, setFieldValue, resetForm }) => {
         /* 🔥 AUTO ACCOUNT NUMBER */
-        if( !isEditMode ){
+        if (!isEditMode) {
           useEffect(() => {
-          if (!values.functionCode || !values.objectCode || !values.corp)
-            return;
+            if (!values.functionCode || !values.objectCode || !values.corp)
+              return;
 
-          const generate = async () => {
-            try {
-              const res = await api.post("/api/FrmAccount/next-accountNo", {
-                ulbId: Number(values.corp),
-                glCode: Number(values.functionCode),
-                subTypeId: Number(values.objectCode),
-              });
+            const generate = async () => {
+              try {
+                const res = await api.post("/api/FrmAccount/next-accountNo", {
+                  ulbId: Number(values.corp),
+                  glCode: Number(values.functionCode),
+                  subTypeId: Number(values.objectCode),
+                });
 
-              const next = res.data?.data?.data?.NEXTACCNO || "";
-              const map = `${values.functionCode}${values.objectCode}${next}`;
+                const next = res.data?.data?.data?.NEXTACCNO || "";
+                const map = `${values.functionCode}${values.objectCode}${next}`;
 
-              setFieldValue("accId", map);
-            } catch (err) {
-              console.error(err);
-            }
-          };
+                setFieldValue("accId", map);
+              } catch (err) {
+                console.error(err);
+              }
+            };
 
-          generate();
-        }, [values.functionCode, values.objectCode, values.corp]);
+            generate();
+          }, [values.functionCode, values.objectCode, values.corp]);
         }
 
         return (
@@ -272,16 +272,16 @@ const FrmAccountMaster = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* CORPORATION */}
                     <div className="flex items-center gap-3">
-                    
-                      <Label text=" नगरपालिका :" className="w-40 text-right text-sm font-medium"/>
-                      {/* <Label text=" महानगरपालिका :" /> */}
+                      <label className="w-40 text-right text-sm font-medium">
+                        नगरपालिका :
+                      </label>
 
                       <Select
                         value={values.corp || ""}
                         onValueChange={(v) => setFieldValue("corp", v)}
                         disabled={!!user?.ulbId}
                       >
-                        <SelectTrigger >
+                        <SelectTrigger className="flex-1 h-9">
                           <SelectValue placeholder="निवडा" />
                         </SelectTrigger>
 
@@ -291,8 +291,7 @@ const FrmAccountMaster = () => {
                               key={c.NUM_CORPORATION_ID}
                               value={String(c.NUM_CORPORATION_ID)}
                             >
-                              {c.VAR_CORPORATION_MNAME ||
-                                c.VAR_CORPORATION_NAME}
+                              {c.VAR_CORPORATION_MNAME || c.VAR_CORPORATION_NAME}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -304,7 +303,7 @@ const FrmAccountMaster = () => {
                       <label className="w-40 text-right text-sm font-medium">
                         निधी :
                       </label>
-                      
+
 
                       <Select
                         value={values.fund || ""}
