@@ -54,7 +54,7 @@ const FrmReceiptList = () => {
           Swal.showLoading();
         },
       });
-      
+
       const res = await axios.post(
         `${BASE_URL}/api/Receipt/corporation`,
         {
@@ -135,6 +135,52 @@ const FrmReceiptList = () => {
     }
   };
 
+  const handleNewAdd = async () => {
+    try {
+      Swal.fire({
+        title: "Loading...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      const res = await axios.post(
+        `${BASE_URL}/api/Receipt/usermapdetails`,
+        {
+          userId: user?.userId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        }
+      );
+
+      const count = res.data?.data?.count || 0;
+
+      if (count > 0) {
+        navigate("/Transactions/FrmReceiptJcmc", {
+          state: {
+            userMapData: res.data.data.data,
+          },
+        });
+      } else {
+        navigate("/Transactions/FrmReceipt");
+      }
+    } catch (err) {
+      console.error("User Map Details Error:", err);
+
+      Swal.fire({
+        icon: "error",
+        text: "Failed to fetch user mapping details",
+        confirmButtonColor: "#1e3a8a",
+      });
+    } finally {
+      Swal.close();
+    }
+  };
+
   const headers = [
     "निवडा",
     "रि. नं.",
@@ -211,7 +257,7 @@ const FrmReceiptList = () => {
 
                   <Button
                     className="bg-blue-900 text-white w-full sm:w-auto"
-                    onClick={() => navigate("/Transactions/FrmReceipt")}
+                    onClick={handleNewAdd}
                   >
                     नवीन जोडा
                   </Button>

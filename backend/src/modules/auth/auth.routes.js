@@ -90,6 +90,10 @@ const router = express.Router();
 
 const controller = require("./auth.controller");
 
+
+const  isValidToken  = require('./isValidToken');
+
+router.post('/validate-token', isValidToken)
 router.post("/login-proc", controller.loginProc);
 
 router.post("/change-password", controller.changePassword);
