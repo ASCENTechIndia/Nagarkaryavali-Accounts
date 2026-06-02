@@ -344,12 +344,13 @@ export default function SearchableSelect({
 
   if (disabled) {
     return (
-      <div className="relative w-full opacity-50 cursor-not-allowed">
+      <div className="relative w-full">
         <Input
           ref={inputRef}
           value={query}
           placeholder={placeholder}
-          disabled={true}
+          readOnly
+          className="cursor-not-allowed"
         />
       </div>
     );
