@@ -283,6 +283,102 @@ async function getReceiptPDF(payload) {
   }
 }
 
+async function getUserMapHeaderRepo(payload) {
+
+  try {
+
+    const query = `
+      SELECT
+          num_accusermap_ward,
+          num_accusermap_transtypeid,
+          var_accusermap_recno,
+          var_accusermap_glcode,
+          var_accusermap_accno,
+          num_accusermap_deptid,
+          var_accusermap_remark
+      FROM aoms_accusermap_mas
+      WHERE num_accusermap_userid = :userId
+    `;
+
+    const result = await executeQuery(
+      query,
+      {
+        userId: payload.userId
+      }
+    );
+
+    return result.rows;
+
+  } catch (err) {
+    throw err;
+  }
+}
+
+// ======================================================
+// USER MAP MASTER + DETAIL
+// ======================================================
+
+async function getUserMapDetailsRepo(payload) {
+
+  try {
+
+    const query = `
+      SELECT *
+      FROM aoms_accusermap_mas
+      INNER JOIN aoms_accusermap_det
+        ON num_accusermap_id = num_accmpdet_mainid
+      WHERE num_accusermap_userid = :userId
+    `;
+
+    const result = await executeQuery(
+      query,
+      {
+        userId: payload.userId
+      }
+    );
+
+    return result.rows;
+
+  } catch (err) {
+    throw err;
+  }
+}
+
+// ======================================================
+// ACCOUNT MAPPING DETAIL
+// ======================================================
+
+async function getAccountMappingDetailRepo(payload) {
+
+  try {
+
+    const query = `
+      SELECT
+          var_accmpdet_glcode,
+          var_accmpdet_glname,
+          var_accmpdet_accno,
+          var_accmpdet_accnoname,
+          var_accmpdet_insby,
+          dat_accmpdet_insdate
+      FROM aoms_accusermap_mas
+      INNER JOIN aoms_accusermap_det
+        ON num_accusermap_id = num_accmpdet_mainid
+      WHERE num_accusermap_userid = :userId
+    `;
+
+    const result = await executeQuery(
+      query,
+      {
+        userId: payload.userId
+      }
+    );
+
+    return result.rows;
+
+  } catch (err) {
+    throw err;
+  }
+}
 
 
 module.exports = {
@@ -299,5 +395,8 @@ module.exports = {
   searchGLALLRepo,
   getBudgetHeadsRepo,
   getReceiptDetailsPdfRepo,
-  getReceiptPDF
+  getReceiptPDF,
+  getUserMapHeaderRepo,
+  getUserMapDetailsRepo,
+  getAccountMappingDetailRepo
 };

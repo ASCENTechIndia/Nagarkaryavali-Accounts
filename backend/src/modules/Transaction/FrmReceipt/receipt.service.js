@@ -167,7 +167,61 @@ async function getReceiptDetailsService(payload) {
     data
   };
 }
+async function getUserMapHeaderService(payload) {
 
+  if (!payload.userId) {
+    throw new AppError("User ID is required", 400);
+  }
+
+  const data =
+    await repo.getUserMapHeaderRepo(payload);
+
+  return {
+    success: true,
+    count: data.length,
+    data
+  };
+}
+
+// ======================================================
+// USER MAP DETAILS
+// ======================================================
+
+async function getUserMapDetailsService(payload) {
+
+  if (!payload.userId) {
+    throw new AppError("User ID is required", 400);
+  }
+
+  const data =
+    await repo.getUserMapDetailsRepo(payload);
+
+  return {
+    success: true,
+    count: data.length,
+    data
+  };
+}
+
+// ======================================================
+// ACCOUNT MAPPING DETAILS
+// ======================================================
+
+async function getAccountMappingDetailService(payload) {
+
+  if (!payload.userId) {
+    throw new AppError("User ID is required", 400);
+  }
+
+  const data =
+    await repo.getAccountMappingDetailRepo(payload);
+
+  return {
+    success: true,
+    count: data.length,
+    data
+  };
+}
 
 module.exports = {
   getReceiptList,
@@ -183,5 +237,8 @@ module.exports = {
   searchGLALL,
   getBudgetHeads,
   getReceiptPdfData,
-  getReceiptDetailsService
+  getReceiptDetailsService,
+  getUserMapHeaderService,
+  getUserMapDetailsService,
+  getAccountMappingDetailService
 };
