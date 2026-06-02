@@ -139,6 +139,7 @@ useEffect(() => {
         निवडा
       </Button>
     ),
+    partyCode: row.PARTYID,
     name: row.PARTYNAME,
     mobile: row.NUM_PARTYMST_MOBNO,
     city: row.VAR_PARTYMST_CITY,
@@ -222,10 +223,11 @@ if (loading) {
           <div className="mt-4 border rounded-md overflow-hidden bg-white">
 
             {tableData.length > 0 ? ( <ShadCNTable
-              headers={["निवडा", "नाव", "मोबाइल", "शहर", "PAN", "GST"]}
+              headers={["निवडा","पार्टी कोड", "नाव", "मोबाइल", "शहर", "PAN", "GST"]}
               data={tableData}
               keyMapping={{
                 निवडा: "select",
+                "पार्टी कोड": "partyCode",
                 नाव: "name",
                 मोबाइल: "mobile",
                 शहर: "city",
