@@ -3,7 +3,7 @@ const { AppError } = require("../../../libs/errors");
 
 // ================= 1. Receipt List =================
 async function getReceiptList(data) {
-  const result = await repo.getReceiptListRepo(data.ddl_ZoneID, data.ddl_ULB_ID);
+  const result = await repo.getReceiptListRepo(data.ddl_ZoneID, data.ddl_ULB_ID, data.ddl_USER_ID);
 
   if (!result) {
     throw new AppError("Failed to fetch receipt list", 500);
