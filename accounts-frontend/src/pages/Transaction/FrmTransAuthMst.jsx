@@ -219,7 +219,7 @@ const FrmTransAuthMst = () => {
           text: message,
           confirmButtonText: "ठीक आहे",
         });
-        if(ulbId === 930) {
+        if(ulbId === 930 || ulbId === 1750 ) {
           await generatePDF(voucherData);
         }
         navigate("/Transactions/FrmTransAuthList");
@@ -268,7 +268,7 @@ const FrmTransAuthMst = () => {
 
       console.log("Generating PDF for:", { currentUlbId, transTypeId, refNo });
 
-      if (currentUlbId === 930) {
+      if (currentUlbId === 930 || currentUlbId === 1750 ) {
         if (transTypeId === 1) {
           console.log("Calling receipt-pdf API...");
           const res = await axios.post(

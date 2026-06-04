@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
+const cookieParser = require("cookie-parser");
 
 const { NODE_ENV } = require("./config/env");
 const errorMiddleware = require("./middlewares/error.middleware");
@@ -21,11 +22,28 @@ const app = express();
 app.set("trust proxy", 1);
 
 // security & parsing
-app.use(cors({ origin: NODE_ENV === "production" ? ["https://yourdomain.com"] : "*", credentials: true }));
+const allowedOrigins = [
+  "https://accounts.nagarkaryavalinew.com",
+  "https://nagarkaryavalinew.com",
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
+
 
 app.use(express.json({ limit: "1mb" }));
 app.use(requestLogger);
-
+app.use(cookieParser());
 app.use(helmet({ contentSecurityPolicy: false }));
 
 // logging

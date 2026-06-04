@@ -102,18 +102,32 @@ const RptReceiptRegisterDetails = () => {
   };
 
   /* ================= 🔥 HANDLE SEARCH ================= */
+const formatDate = (date) => {
+          if (!date) return null;
+
+          const d = new Date(date);
+
+          const year = d.getFullYear();
+          const month = String(d.getMonth() + 1).padStart(2, "0");
+          const day = String(d.getDate()).padStart(2, "0");
+
+          return `${year}-${month}-${day}`;
+      };
 
   const handleSearch = async (values) => {
     try {
       setLoading(true);
-
-      const payload = {
+ const selectedZone = zones.find(
+        (z) => String(z.ZONEID) === String(values.ward)
+      );
+       const payload = {
         ulbId: ulbId,
-        fromDate: values.fromDate.toISOString().split("T")[0],
-        toDate: values.toDate.toISOString().split("T")[0],
+        fromDate: formatDate(values.fromDate),
+        toDate: formatDate(values.toDate),
         majorCode: values.deptCode || null,
         minorCode: values.ledger || null,
         zoneId: values.ward || null,
+        zoneName: selectedZone?.ZONEENAME || null,
         gramPanchayatId: null,
         corpCode: null,
         budgetId: null,
