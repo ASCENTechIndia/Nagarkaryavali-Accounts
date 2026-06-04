@@ -39,6 +39,7 @@ const FrmReceiptList = () => {
   const navigate = useNavigate();
 
   const ulbId = user?.ulbId;
+  const userId = user?.userId;
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
   console.log("usertokan :", user.token);
@@ -54,7 +55,7 @@ const FrmReceiptList = () => {
           Swal.showLoading();
         },
       });
-      
+
       const res = await axios.post(
         `${BASE_URL}/api/Receipt/corporation`,
         {
@@ -100,12 +101,13 @@ const FrmReceiptList = () => {
     }
   };
 
-  const fetchReceiptList = async (zoneId, corpId) => {
+  const fetchReceiptList = async (zoneId, corpId , userId) => {
     try {
       setLoading(true);
       const res = await axios.post(`${BASE_URL}/api/Receipt/receiptList`, {
         ddl_ZoneID: zoneId,
         ddl_ULB_ID: corpId,
+        ddl_USER_ID: userId,
       },
         {
           headers: {
@@ -134,6 +136,106 @@ const FrmReceiptList = () => {
       setLoading(false);
     }
   };
+
+  const handleNewAdd = async () => {
+    try {
+      Swal.fire({
+        title: "Loading...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      const res = await axios.post(
+        `${BASE_URL}/api/Receipt/usermapdetails`,
+        {
+          userId: user?.userId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        }
+      );
+
+      const count = res.data?.data?.count || 0;
+
+      if (count > 0) {
+        navigate("/Transactions/FrmReceiptJcmc", {
+          state: {
+            userMapData: res.data.data.data,
+          },
+        });
+      } else {
+        navigate("/Transactions/FrmReceipt");
+      }
+    } catch (err) {
+      console.error("User Map Details Error:", err);
+
+      Swal.fire({
+        icon: "error",
+        text: "Failed to fetch user mapping details",
+        confirmButtonColor: "#1e3a8a",
+      });
+    } finally {
+      Swal.close();
+    }
+  };
+
+  const handleSelect = async (receiptNo) => {
+    debugger;
+  try {
+    Swal.fire({
+      title: "Loading...",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    const res = await axios.post(
+      `${BASE_URL}/api/Receipt/usermapdetails`,
+      {
+        userId: user?.userId,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      }
+    );
+
+    const count = res.data?.data?.count || 0;
+
+    if (count > 0) {
+      navigate("/Transactions/FrmReceiptJcmc", {
+        state: {
+          mode: "EDIT",
+          receiptNo,
+          userMapData: res.data.data.data,
+        },
+      });
+    } else {
+      navigate("/Transactions/FrmReceipt", {
+        state: {
+          mode: "EDIT",
+          receiptNo,
+        },
+      });
+    }
+  } catch (err) {
+    console.error("User Map Details Error:", err);
+
+    Swal.fire({
+      icon: "error",
+      text: "Failed to fetch user mapping details",
+      confirmButtonColor: "#1e3a8a",
+    });
+  } finally {
+    Swal.close();
+  }
+};
 
   const headers = [
     "निवडा",
@@ -174,26 +276,22 @@ const FrmReceiptList = () => {
     <Formik enableReinitialize initialValues={initialValues} onSubmit={() => { }}>
       {({ values, setFieldValue }) => {
 
-        const tableRows = tableData.map((row) => ({
+        const tableRows = tableData.map((row) => {
+          console.log("row: ", row);
+          return ({
           select: (
             <Button
               variant="link"
               size="sm"
               className="text-blue-700 px-0"
-              onClick={() =>
-                navigate("/Transactions/FrmReceipt", {
-                  state: {
-                    mode: "EDIT",
-                    receiptNo: row.receiptNo,
-                  },
-                })
-              }
+               onClick={() => handleSelect(row.receiptNo)}
+              // onClick={handleNewAdd}
             >
               निवडा
             </Button>
           ),
           ...row,
-        }));
+        })});
 
         return (
           <Form>
@@ -211,7 +309,7 @@ const FrmReceiptList = () => {
 
                   <Button
                     className="bg-blue-900 text-white w-full sm:w-auto"
-                    onClick={() => navigate("/Transactions/FrmReceipt")}
+                    onClick={handleNewAdd}
                   >
                     नवीन जोडा
                   </Button>
@@ -262,7 +360,7 @@ const FrmReceiptList = () => {
                           value={values.prabhag}
                           onValueChange={(val) => {
                             setFieldValue("prabhag", val);
-                            fetchReceiptList(val, values.municipality);
+                            fetchReceiptList(val, values.municipality, userId);
                           }}
                         >
                           <SelectTrigger className="w-full h-8">

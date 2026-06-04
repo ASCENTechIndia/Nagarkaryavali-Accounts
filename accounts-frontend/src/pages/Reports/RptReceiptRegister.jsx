@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Formik, Form } from "formik";
 import { motion } from "framer-motion";
@@ -132,49 +131,90 @@ const RptReceiptRegister = () => {
 
     const handleSubmit = async (values) => {
         try {
+
+            // JCMC Validation
+            if (values.reportType === "JCMC") {
+                if (!values.zoneId || values.zoneId === "-1") {
+                    Swal.fire({
+                        text: "कृपया प्रभाग निवडा.",
+                        confirmButtonColor: "#1e3a8a",
+                    });
+                    return;
+                }
+
+                if (!values.wardCode) {
+                    Swal.fire({
+                        text: "कृपया विभाग संकेतांक निवडा.",
+                        confirmButtonColor: "#1e3a8a",
+                    });
+                    return;
+                }
+
+                if (!values.head) {
+                    Swal.fire({
+                        text: "कृपया लेखाशीर्ष निवडा.",
+                        confirmButtonColor: "#1e3a8a",
+                    });
+                    return;
+                }
+            }
+
             Swal.fire({
                 title: "Processing...",
                 allowOutsideClick: false,
                 didOpen: () => Swal.showLoading(),
             });
 
-          const formatDate = (date) => {
-    if (!date) return null;
+            const formatDate = (date) => {
+                if (!date) return null;
 
-    const d = new Date(date);
+                const d = new Date(date);
 
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, "0");
+                const day = String(d.getDate()).padStart(2, "0");
 
-    return `${year}-${month}-${day}`;
-};
+                return `${year}-${month}-${day}`;
+            };
+
             const payload = {
                 fromDate: formatDate(values.fromDate),
                 toDate: formatDate(values.toDate),
                 ulbId: ulbId?.toString(),
                 zoneId: values.zoneId || "-1",
-                rptType: values.reportType === "summary" ? "2" : "1",
+                rptType:
+                    values.reportType === "summary"
+                        ? "2"
+                        : values.reportType === "detail"
+                            ? "1"
+                            : "3",
                 chkGramPanchayat: false,
-                majorCode: values.wardCode ? "0" + values.wardCode : null,
+                majorCode: values.wardCode
+                    ? values.wardCode.padStart(3, "0")
+                    : null,
                 minorCode: values.head || null,
             };
 
+
             if (values.exportType === "pdf") {
+
+                const pdfUrl =
+                    values.reportType === "JCMC"
+                        ? `${BASE_URL}/api/RptReceiptRegister/receipt-register-user-wise-pdf`
+                        : `${BASE_URL}/api/RptReceiptRegister/receipt-register-report-pdf`;
+
                 const res = await axios.post(
-                    `${BASE_URL}/api/RptReceiptRegister/receipt-register-report-pdf`,
+                    pdfUrl,
                     payload,
                     {
                         headers: { Authorization: `Bearer ${token}` },
-                    },
+                    }
                 );
 
                 Swal.close();
 
                 if (res.data?.success) {
-                    const pdfUrl = res.data.pdfUrl;
-
-                    window.open(pdfUrl, "_blank");
+                    window.open(res.data.pdfUrl, "_blank");
                 } else {
                     Swal.fire({
                         text: "Failed to generate PDF",
@@ -185,12 +225,18 @@ const RptReceiptRegister = () => {
                 return;
             }
 
+
+            const excelApi =
+                values.reportType === "JCMC"
+                    ? `${BASE_URL}/api/RptReceiptRegister/receipt-register-user-wise`
+                    : `${BASE_URL}/api/RptReceiptRegister/receipt-register`;
+
             const res = await axios.post(
-                `${BASE_URL}/api/RptReceiptRegister/receipt-register`,
+                excelApi,
                 payload,
                 {
                     headers: { Authorization: `Bearer ${token}` },
-                },
+                }
             );
 
             Swal.close();
@@ -213,33 +259,62 @@ const RptReceiptRegister = () => {
                 ).padStart(2, "0")}-${d.getFullYear()}`;
             };
 
-            const formattedData = rows.map((item) => ({
-                TRNSDATE: formatDateDisplay(item.TRNSDATE),
-                GLCODE: item.GLCODE,
-                GLNAME: item.GLNAME,
-                ACCNO: item.ACCNO,
-                ACCNAME: item.ACCNAME,
-                ZONEENAME: item.ZONEENAME,
-                FUNCTIONCODE: item.FUNCTIONCODE,
-                OBJECTCODE: item.OBJECTCODE,
-                AMOUNT: item.AMOUNT,
-                BUDGETCODE: item.BUDGETCODE,
-            }));
+            const formattedData =
+                values.reportType === "JCMC"
+                    ? rows.map((item) => ({
+                        TRNSDATE: formatDateDisplay(item.TRNSDATE),
+                        USERID: item.USERID || "",
+                        GLCODE: item.GLCODE,
+                        GLNAME: item.GLNAME,
+                        ACCNO: item.ACCNO,
+                        ACCNAME: item.ACCNAME,
+                        ZONEENAME: item.ZONEENAME,
+                        FUNCTIONCODE: item.FUNCTIONCODE,
+                        OBJECTCODE: item.OBJECTCODE,
+                        AMOUNT: item.AMOUNT,
+                    }))
+                    : rows.map((item) => ({
+                        TRNSDATE: formatDateDisplay(item.TRNSDATE),
+                        GLCODE: item.GLCODE,
+                        GLNAME: item.GLNAME,
+                        ACCNO: item.ACCNO,
+                        ACCNAME: item.ACCNAME,
+                        ZONEENAME: item.ZONEENAME,
+                        FUNCTIONCODE: item.FUNCTIONCODE,
+                        OBJECTCODE: item.OBJECTCODE,
+                        AMOUNT: item.AMOUNT,
+                        BUDGETCODE: item.BUDGETCODE,
+                    }));
 
             const worksheet = XLSX.utils.json_to_sheet(formattedData);
 
-            const wscols = [
-                { wch: 15 }, // TRNSDATE
-                { wch: 10 }, // GLCODE
-                { wch: 30 }, // GLNAME
-                { wch: 15 }, // ACCNO
-                { wch: 30 }, // ACCNAME
-                { wch: 15 }, // ZONEENAME
-                { wch: 15 }, // FUNCTIONCODE
-                { wch: 20 }, // OBJECTCODE
-                { wch: 12 }, // AMOUNT
-                { wch: 15 }, // BUDGETCODE
-            ];
+            const wscols =
+                values.reportType === "JCMC"
+                    ? [
+                        { wch: 15 }, // TRNSDATE
+                        { wch: 15 }, // USERID
+                        { wch: 10 }, // GLCODE
+                        { wch: 35 }, // GLNAME
+                        { wch: 15 }, // ACCNO
+                        { wch: 35 }, // ACCNAME
+                        { wch: 15 }, // ZONEENAME
+                        { wch: 15 }, // FUNCTIONCODE
+                        { wch: 20 }, // OBJECTCODE
+                        { wch: 15 }, // AMOUNT
+                    ]
+                    : [
+                        { wch: 15 }, // TRNSDATE
+                        { wch: 10 }, // GLCODE
+                        { wch: 30 }, // GLNAME
+                        { wch: 15 }, // ACCNO
+                        { wch: 30 }, // ACCNAME
+                        { wch: 15 }, // ZONEENAME
+                        { wch: 15 }, // FUNCTIONCODE
+                        { wch: 20 }, // OBJECTCODE
+                        { wch: 12 }, // AMOUNT
+                        { wch: 15 }, // BUDGETCODE
+                    ];
+
             worksheet["!cols"] = wscols;
 
             const workbook = XLSX.utils.book_new();
@@ -253,8 +328,8 @@ const RptReceiptRegister = () => {
         } catch (err) {
             console.error("Error:", err);
             Swal.fire({
-        text: err?.response?.data?.message ||  err?.response?.data?.error || "Something Went WRONG",
-      });
+                text: err?.response?.data?.message || err?.response?.data?.error || "Something Went WRONG",
+            });
         }
     };
 
@@ -288,7 +363,7 @@ const RptReceiptRegister = () => {
 
                                 <CardContent className="p-4 sm:p-5 space-y-4">
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                                             <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
                                                 <Label text="प्रभाग" />
                                                 <span>:</span>
@@ -454,6 +529,19 @@ const RptReceiptRegister = () => {
                                                     className="h-4 w-4"
                                                 />
                                                 तपशील
+                                            </label>
+
+                                            <label className="flex items-center gap-2 text-sm">
+                                                <Input
+                                                    type="radio"
+                                                    name="reportType"
+                                                    checked={values.reportType === "JCMC"}
+                                                    onChange={() =>
+                                                        setFieldValue("reportType", "JCMC")
+                                                    }
+                                                    className="h-4 w-4"
+                                                />
+                                                चलान 
                                             </label>
                                         </div>
                                     </div>

@@ -23,8 +23,6 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
 
-
-
 /* ---------------- ZOD VALIDATOR ---------------- */
 // const validateWithZod = (values) => {
 //   const result = ReceiptSchema.safeParse(values);
@@ -39,12 +37,15 @@ import { useLocation } from "react-router-dom";
 //   return errors;
 // };
 
-const FrmReceipt = () => {
+const FrmReceiptJcmc = () => {
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const refNo = location.state?.receiptNo;
   const ulbId = user?.ulbId;
+
+  console.log("refNo", refNo);
+  console.log("ocation.state", location.state);
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -62,7 +63,7 @@ const FrmReceipt = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showAmountFields, setShowAmountFields] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const handleAddRow = (values, setFieldValue) => {
     if (!values.entryDeptCode || !values.entryHead || !values.entryAmount) {
@@ -75,8 +76,7 @@ const FrmReceipt = () => {
 
     const isDuplicate = tableData.some(
       (row) =>
-        row.deptCode === values.entryDeptCode &&
-        row.head === values.entryHead
+        row.deptCode === values.entryDeptCode && row.head === values.entryHead,
     );
 
     if (isDuplicate) {
@@ -88,11 +88,11 @@ const FrmReceipt = () => {
     }
 
     const selectedDept = glAllList.find(
-      (g) => g.value === values.entryDeptCode
+      (g) => g.value === values.entryDeptCode,
     );
 
     const selectedHead = entryHeadList.find(
-      (h) => h.value === values.entryHead
+      (h) => h.value === values.entryHead,
     );
 
     const newRow = {
@@ -110,7 +110,11 @@ const FrmReceipt = () => {
       head: values.entryHead,
       headName: selectedHead?.label || "",
       remark: values.remark,
-      amount: values.entryAmount,
+      prevAmount: values.PrevAmount || 0,
+  currentAmount: values.CurrentAmount || 0,
+  amount:
+    Number(values.PrevAmount || 0) +
+    Number(values.CurrentAmount || 0),
       partyId: values.partyId || 0,
     };
 
@@ -121,15 +125,25 @@ const FrmReceipt = () => {
 
     // setFieldValue("totalAmount", updatedTotal);
 
+    // setFieldValue("entryDeptCode", "");
+    // setFieldValue("entryHead", "");
+    // setFieldValue("entryAmount", "");
+    // setFieldValue("remark", "");
+    // setFieldValue("PrevAmount", "");
+    // setFieldValue("CurrentAmount", "");
+
     setFieldValue("entryDeptCode", "");
     setFieldValue("entryHead", "");
-    setFieldValue("entryAmount", "");
+    setFieldValue("partyId", "");
+    setFieldValue("selectedRemark", "");
     setFieldValue("remark", "");
+    setFieldValue("entryAmount", "");
     setFieldValue("PrevAmount", "");
     setFieldValue("CurrentAmount", "");
 
+    setEntryHeadList([]);
 
-
+    return true;
   };
 
   const handleDeleteRow = (index) => {
@@ -142,14 +156,17 @@ const FrmReceipt = () => {
 
   const fetchZones = async () => {
     try {
-      const res = await axios.post(`${BASE_URL}/api/Receipt/zones`, {
-        corp_id: ulbId,
-      },
+      const res = await axios.post(
+        `${BASE_URL}/api/Receipt/zones`,
+        {
+          corp_id: ulbId,
+        },
         {
           headers: {
             Authorization: `Bearer ${user.token}`,
           },
-        });
+        },
+      );
       setZones(res.data.data || []);
     } catch (err) {
       console.error("Zones API Error:", err);
@@ -158,12 +175,11 @@ const FrmReceipt = () => {
 
   const fetchTransTypes = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/Receipt/transType`,
-        {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        });
+      const res = await axios.get(`${BASE_URL}/api/Receipt/transType`, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
       setTransTypes(res.data.data || []);
     } catch (err) {
       console.error("Transaction Type API Error:", err);
@@ -172,14 +188,17 @@ const FrmReceipt = () => {
 
   const fetchDepartments = async () => {
     try {
-      const res = await axios.post(`${BASE_URL}/api/Receipt/departments`, {
-        ulbid: ulbId,
-      },
+      const res = await axios.post(
+        `${BASE_URL}/api/Receipt/departments`,
+        {
+          ulbid: ulbId,
+        },
         {
           headers: {
             Authorization: `Bearer ${user.token}`,
           },
-        });
+        },
+      );
       setDepartments(res.data.data || []);
     } catch (err) {
       console.error("Department API Error:", err);
@@ -188,12 +207,11 @@ const FrmReceipt = () => {
 
   const fetchRemarks = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/Receipt/narration`,
-        {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        });
+      const res = await axios.get(`${BASE_URL}/api/Receipt/narration`, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
       setRemarks(res.data.data || []);
     } catch (err) {
       console.error("Remarks API Error:", err);
@@ -202,14 +220,17 @@ const FrmReceipt = () => {
 
   const fetchPartyMaster = async () => {
     try {
-      const res = await axios.post(`${BASE_URL}/api/Receipt/party`, {
-        ulbid: ulbId,
-      },
+      const res = await axios.post(
+        `${BASE_URL}/api/Receipt/party`,
+        {
+          ulbid: ulbId,
+        },
         {
           headers: {
             Authorization: `Bearer ${user.token}`,
           },
-        });
+        },
+      );
 
       const data = res.data.data || [];
 
@@ -226,12 +247,11 @@ const FrmReceipt = () => {
 
   const fetchGLAll = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/Receipt/searchGLALL`,
-        {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        });
+      const res = await axios.get(`${BASE_URL}/api/Receipt/searchGLALL`, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
 
       const data = res.data.data || [];
 
@@ -258,7 +278,7 @@ const FrmReceipt = () => {
           headers: {
             Authorization: `Bearer ${user.token}`,
           },
-        }
+        },
       );
 
       const corpData = res.data?.data?.data?.[0];
@@ -293,6 +313,7 @@ const FrmReceipt = () => {
       fetchPartyMaster(),
       fetchGLAll(),
       fetchCorporationById(),
+      //   fetchUserMapHeader(setFieldValue),
     ])
       .then(() => {
         if (!refNo) {
@@ -304,18 +325,15 @@ const FrmReceipt = () => {
         Swal.close();
         setIsLoading(false);
       });
-
   }, [ulbId]);
-
 
   const fetchGLList = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/Receipt/searchGL`,
-        {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        });
+      const res = await axios.get(`${BASE_URL}/api/Receipt/searchGL`, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
       setGlList(res.data.data || []);
     } catch (err) {
       console.error("GL API Error:", err);
@@ -324,15 +342,18 @@ const FrmReceipt = () => {
 
   const fetchCreditLeasure = async (glcode, type) => {
     try {
-      const res = await axios.post(`${BASE_URL}/api/FrmTransfer/credit-leasure`, {
-        corp_id: ulbId,
-        glcode: glcode,
-      },
+      const res = await axios.post(
+        `${BASE_URL}/api/FrmTransfer/credit-leasure`,
+        {
+          corp_id: ulbId,
+          glcode: glcode,
+        },
         {
           headers: {
             Authorization: `Bearer ${user.token}`,
           },
-        });
+        },
+      );
 
       const data = res.data?.data?.rows || [];
 
@@ -351,7 +372,6 @@ const FrmReceipt = () => {
     }
   };
 
-
   const fetchReceiptDetails = async (refNo, setFieldValue) => {
     try {
       Swal.fire({
@@ -361,14 +381,17 @@ const FrmReceipt = () => {
           Swal.showLoading();
         },
       });
-      const res = await axios.post(`${BASE_URL}/api/Receipt/receiptDetails`, {
-        RefNo: refNo,
-      },
+      const res = await axios.post(
+        `${BASE_URL}/api/Receipt/receiptDetails`,
+        {
+          RefNo: refNo,
+        },
         {
           headers: {
             Authorization: `Bearer ${user.token}`,
           },
-        });
+        },
+      );
 
       const data = res.data.data || [];
 
@@ -388,7 +411,10 @@ const FrmReceipt = () => {
 
       fetchCreditLeasure(first.GLCODE?.toString(), "party");
 
-      const total = data.reduce((sum, item) => sum + Number(item.CREDIT || 0), 0);
+      const total = data.reduce(
+        (sum, item) => sum + Number(item.CREDIT || 0),
+        0,
+      );
       setFieldValue("totalAmount", total);
 
       const tableFormatted = data.map((item, index) => ({
@@ -405,11 +431,12 @@ const FrmReceipt = () => {
         head: item.ACCNO,
         headName: item.ACCOUNTNAME,
         remark: item.NARRATION,
+        prevAmount: item.NUM_RECEIPTDET_ARRAMOUNT,
+        currentAmount: item.NUM_RECEIPTDET_CURRAMOUNT,
         amount: item.CREDIT,
       }));
 
       setTableData(tableFormatted);
-
     } catch (err) {
       console.error("Receipt Details API Error:", err);
     } finally {
@@ -417,13 +444,102 @@ const FrmReceipt = () => {
     }
   };
 
+  // for jcmc
+
+  const fetchUserMapHeader = async (setFieldValue) => {
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/api/Receipt/usermapheader`,
+        {
+          userId: user?.userId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        },
+      );
+
+      const headerData = res.data?.data?.data?.[0];
+
+      if (!headerData) return;
+
+      // Auto fill form fields
+      setFieldValue("zoneId", headerData.NUM_ACCUSERMAP_WARD?.toString() || "");
+
+      // setFieldValue(
+      //   "transactionType",
+      //   headerData.NUM_ACCUSERMAP_TRANSTYPEID?.toString() || "",
+      // );
+
+      setFieldValue("reciptNo", headerData.VAR_ACCUSERMAP_RECNO || "");
+
+      setFieldValue(
+        "department",
+        headerData.NUM_ACCUSERMAP_DEPTID?.toString() || "",
+      );
+
+      // setFieldValue("wardCode", headerData.VAR_ACCUSERMAP_GLCODE || "");
+
+      setFieldValue("remark", headerData.VAR_ACCUSERMAP_REMARK || "");
+
+      // Load head dropdown
+      await fetchCreditLeasure(headerData.VAR_ACCUSERMAP_GLCODE, "party");
+
+      // Store account no temporarily
+      // setTempHead(headerData.VAR_ACCUSERMAP_ACCNO?.trim());
+    } catch (err) {
+      console.error("User Map Header API Error:", err);
+    }
+  };
+
+  const fetchAccountMappingDetails = async () => {
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/api/Receipt/accountmappingdetails`,
+        {
+          userId: user?.userId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        },
+      );
+
+      const data = res.data?.data?.data || [];
+
+      const formattedData = data.map((item, index) => ({
+        delete: (
+          <button
+            type="button"
+            onClick={() => handleDeleteRow(index)}
+            className="text-red-600 font-semibold"
+          >
+            Delete
+          </button>
+        ),
+        deptCode: item.VAR_ACCMPDET_GLCODE,
+        deptName: item.VAR_ACCMPDET_GLNAME,
+        head: item.VAR_ACCMPDET_ACCNO,
+        headName: item.VAR_ACCMPDET_ACCNONAME,
+        remark: "",
+        amount: "0",
+        partyId: 0,
+      }));
+
+      setTableData(formattedData);
+    } catch (err) {
+      console.error("Account Mapping Details API Error:", err);
+    }
+  };
+
   const handleSave = async (values) => {
-    console.log("values",values)
+    console.log("values", values);
     if (isSubmitting) return;
 
     setIsSubmitting(true);
     try {
-
       if (!values.zoneId || values.zoneId === "0") {
         Swal.fire({
           text: "प्रभाग रिक्त असू शकत नाही",
@@ -496,7 +612,6 @@ const FrmReceipt = () => {
         return;
       }
 
-
       if (values.totalAmount != values.finalTotal) {
         Swal.fire({
           text: "एकूण रक्कम आणि यादीतील एकूण रक्कम जुळत नाही",
@@ -508,11 +623,13 @@ const FrmReceipt = () => {
 
       const formatDate = (date) => {
         const d = new Date(date);
-        return d.toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        }).replace(/ /g, "-");
+        return d
+          .toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })
+          .replace(/ /g, "-");
       };
 
       const TransDate = formatDate(values.date);
@@ -546,27 +663,29 @@ const FrmReceipt = () => {
             row.amount,
             row.remark || "",
             row.partyId || 0,
+            row.prevAmount || 0,
+            row.currentAmount || 0,
           ].join("#");
         })
         .join("$");
 
-
-      const res = await axios.post(`${BASE_URL}/api/Receipt/receiptInsertUpdate`, {
-        In_UserId: user?.userId,
-        In_ParamStr: paramStr,
-        In_ParamStr2: paramStr2,
-        In_ParamStr3: "",
-        In_ParamStr4: "",
-        In_ParamStr5: "",
-        In_ParamStr6: "",
-      
-     
-      },
+      const res = await axios.post(
+        `${BASE_URL}/api/Receipt/receiptInsertUpdate`,
+        {
+          In_UserId: user?.userId,
+          In_ParamStr: paramStr,
+          In_ParamStr2: paramStr2,
+          In_ParamStr3: "",
+          In_ParamStr4: "",
+          In_ParamStr5: "",
+          In_ParamStr6: "",
+        },
         {
           headers: {
             Authorization: `Bearer ${user.token}`,
           },
-        });
+        },
+      );
 
       console.log("API RESPONSE:", res.data);
 
@@ -574,7 +693,6 @@ const FrmReceipt = () => {
         text: res.data?.data?.message,
         confirmButtonColor: "#1e3a8a",
       }).then(async () => {
-
         // JCMC -> do not generate PDF
         if (showAmountFields) {
           navigate("/Transactions/FrmReceiptList");
@@ -589,7 +707,6 @@ const FrmReceipt = () => {
           },
         });
 
-
         try {
           const generatedRefNo = res.data?.data?.refNo || RefNo;
           const pdfRes = await axios.post(
@@ -602,7 +719,7 @@ const FrmReceipt = () => {
               headers: {
                 Authorization: `Bearer ${user.token}`,
               },
-            }
+            },
           );
 
           Swal.close();
@@ -615,7 +732,6 @@ const FrmReceipt = () => {
               // icon: "error",
             });
           }
-
         } catch (pdfErr) {
           console.error("PDF ERROR:", pdfErr);
           Swal.fire({
@@ -626,7 +742,6 @@ const FrmReceipt = () => {
 
         navigate("/Transactions/FrmReceiptList");
       });
-
     } catch (err) {
       console.error("SAVE ERROR:", err);
       Swal.fire({
@@ -645,6 +760,8 @@ const FrmReceipt = () => {
     "लेखाशीर्ष",
     "लेखाशीर्ष नाव",
     "तपशील",
+    "मागील रक्कम",
+    "चालू रक्कम",
     "रक्कम",
   ];
 
@@ -655,10 +772,83 @@ const FrmReceipt = () => {
     लेखाशीर्ष: "head",
     "लेखाशीर्ष नाव": "headName",
     तपशील: "remark",
+    "मागील रक्कम": "prevAmount",
+    "चालू रक्कम": "currentAmount",
     रक्कम: "amount",
   };
 
-  const dummyData = tableData;
+  //   const dummyData = tableData;
+  const dummyData = tableData.map((row, index) => ({
+    ...row,
+
+    delete: (
+      <button
+        type="button"
+        onClick={() => handleDeleteRow(index)}
+        className="text-red-600 font-semibold"
+      >
+        Delete
+      </button>
+    ),
+
+    prevAmount: (
+      <Input
+        type="number"
+        value={row.prevAmount || ""}
+        onChange={(e) => {
+          const prevValue = Number(e.target.value || 0);
+
+          setTableData((prev) =>
+            prev.map((r, i) =>
+              i === index
+                ? {
+                    ...r,
+                    prevAmount: prevValue,
+                    amount: prevValue + Number(r.currentAmount || 0),
+                  }
+                : r,
+            ),
+          );
+        }}
+      />
+    ),
+
+    currentAmount: (
+      <Input
+        type="number"
+        value={row.currentAmount || ""}
+        onChange={(e) => {
+          const currentValue = Number(e.target.value || 0);
+
+          setTableData((prev) =>
+            prev.map((r, i) =>
+              i === index
+                ? {
+                    ...r,
+                    currentAmount: currentValue,
+                    amount: Number(r.prevAmount || 0) + currentValue,
+                  }
+                : r,
+            ),
+          );
+        }}
+      />
+    ),
+
+    amount: (
+      <Input
+        type="number"
+        value={row.amount}
+        onChange={(e) => {
+          const value = e.target.value;
+
+          setTableData((prev) =>
+            prev.map((r, i) => (i === index ? { ...r, amount: value } : r)),
+          );
+        }}
+      />
+    ),
+  }));
 
   const initialValues = {
     zoneId: "",
@@ -678,8 +868,6 @@ const FrmReceipt = () => {
     CurrentAmount: "",
   };
 
-
-
   return (
     <Formik
       initialValues={initialValues}
@@ -688,30 +876,45 @@ const FrmReceipt = () => {
         handleSave(values);
       }}
     >
-      {({
-        values,
-        handleChange,
-        setFieldValue,
-        errors,
-        touched,
-      }) => {
+      {({ values, handleChange, setFieldValue, errors, touched }) => {
         useEffect(() => {
           const allLoaded =
-            refNo &&
-            ulbId &&
-            zones.length &&
-            transTypes.length &&
-            departments.length &&
-            remarks.length &&
-            glAllList.length;
+            zones.length > 0 &&
+            transTypes.length > 0 &&
+            departments.length > 0 &&
+            remarks.length > 0 &&
+            glAllList.length > 0;
 
-          if (allLoaded) {
+          if (!allLoaded) return;
+
+          if (refNo) {
+            // EDIT MODE
             fetchReceiptDetails(refNo, setFieldValue).finally(() => {
               setIsLoading(false);
               Swal.close();
             });
+          } else {
+            // NEW MODE
+            fetchUserMapHeader(setFieldValue);
+            fetchAccountMappingDetails();
+
+            setIsLoading(false);
+            Swal.close();
           }
-        }, [refNo, ulbId, zones, transTypes, departments, remarks, glAllList]);
+        }, [refNo, zones, transTypes, departments, remarks, glAllList]);
+
+        // useEffect(() => {
+        //   if (
+        //     !refNo &&
+        //     zones.length > 0 &&
+        //     transTypes.length > 0 &&
+        //     departments.length > 0
+        //   ) {
+        //     fetchUserMapHeader(setFieldValue);
+        //     fetchAccountMappingDetails();
+        //   }
+        // }, [refNo, zones, transTypes, departments]);
+
         useEffect(() => {
           if (values.transactionType) {
             fetchGLList();
@@ -731,7 +934,7 @@ const FrmReceipt = () => {
         useEffect(() => {
           if (partyList.length > 0 && tempHead) {
             const exists = partyList.find(
-              (item) => item.value?.trim() === tempHead?.trim()
+              (item) => item.value?.trim() === tempHead?.trim(),
             );
 
             if (exists) {
@@ -740,8 +943,6 @@ const FrmReceipt = () => {
             }
           }
         }, [partyList]);
-
-
 
         useEffect(() => {
           if (values.entryDeptCode) {
@@ -753,7 +954,7 @@ const FrmReceipt = () => {
 
         const finalTotal = tableData.reduce(
           (sum, row) => sum + Number(row.amount || 0),
-          0
+          0,
         );
 
         useEffect(() => {
@@ -772,29 +973,22 @@ const FrmReceipt = () => {
           }
         }, [values.PrevAmount, values.CurrentAmount, showAmountFields]);
 
-
         return (
-
           <Form>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <Card className="border shadow-sm">
                 <CardHeader className="border-b">
-                  <CardTitle className="text-lg font-semibold">
-                    पावती
-                  </CardTitle>
+                  <CardTitle className="text-lg font-semibold">पावती</CardTitle>
                 </CardHeader>
 
                 <CardContent className="px-4 sm:px-6 space-y-3">
-
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                       <Label text="प्रभाग :" />
                       <Select
                         value={values.zoneId}
                         onValueChange={(v) => setFieldValue("zoneId", v)}
+                        disabled
                       >
                         <SelectTrigger className="w-full border rounded-md">
                           <SelectValue placeholder="-- विकल्प निवडा --" />
@@ -812,7 +1006,9 @@ const FrmReceipt = () => {
                         </SelectContent>
                       </Select>
                       {errors.zoneId && touched.zoneId && (
-                        <p className="mt-1 text-sm text-red-500">{errors.zoneId}</p>
+                        <p className="mt-1 text-sm text-red-500">
+                          {errors.zoneId}
+                        </p>
                       )}
                     </div>
 
@@ -820,7 +1016,10 @@ const FrmReceipt = () => {
                       <Label text="व्यवहार प्रकार :" />
                       <Select
                         value={values.transactionType}
-                        onValueChange={(v) => setFieldValue("transactionType", v)}
+                        onValueChange={(v) =>
+                          setFieldValue("transactionType", v)
+                        }
+                        
                       >
                         <SelectTrigger className="w-full border rounded-md">
                           <SelectValue placeholder="-- विकल्प निवडा --" />
@@ -855,7 +1054,9 @@ const FrmReceipt = () => {
                         onChange={handleChange}
                       />
                       {errors.reciptNo && touched.reciptNo && (
-                        <p className="mt-1 text-sm text-red-500">{errors.reciptNo}</p>
+                        <p className="mt-1 text-sm text-red-500">
+                          {errors.reciptNo}
+                        </p>
                       )}
                     </div>
 
@@ -869,9 +1070,12 @@ const FrmReceipt = () => {
                         name="wardCode"
                         value={values.wardCode}
                         onChange={(val) => setFieldValue("wardCode", val.value)}
+                     
                       />
                       {errors.wardCode && touched.wardCode && (
-                        <p className="mt-1 text-sm text-red-500">{errors.wardCode}</p>
+                        <p className="mt-1 text-sm text-red-500">
+                          {errors.wardCode}
+                        </p>
                       )}
                     </div>
 
@@ -883,12 +1087,19 @@ const FrmReceipt = () => {
                         name="head"
                         value={values.head}
                         onChange={(val) => setFieldValue("head", val.value)}
+                        
                       />
                     </div>
 
                     <div>
                       <Label text="एकूण रक्कम :" />
-                      <Input name="totalAmount" value={values.totalAmount} onChange={handleChange} autoComplete="off" />
+                      <Input
+                      type="number"
+                        name="totalAmount"
+                        value={values.totalAmount}
+                        onChange={handleChange}
+                        autoComplete="off"
+                      />
                     </div>
 
                     <div>
@@ -896,6 +1107,7 @@ const FrmReceipt = () => {
                       <Select
                         value={values.department}
                         onValueChange={(v) => setFieldValue("department", v)}
+                        disabled
                       >
                         <SelectTrigger className="w-full border rounded-md">
                           <SelectValue placeholder="-- विकल्प निवडा --" />
@@ -917,28 +1129,99 @@ const FrmReceipt = () => {
 
                   <hr />
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <Button type="button" onClick={() => setShowAddModal(true)}>
+                      यादीत जोडा
+                    </Button>
+                  </div>
 
+                  <hr />
+
+                  <div className="w-full overflow-x-auto">
+                    <ShadCNTable
+                      headers={headers}
+                      data={dummyData}
+                      keyMapping={keyMapping}
+                      pagination={false}
+                      className="max-md:min-w-180"
+                    />
+                  </div>
+
+                  <div className="flex w-full flex-col-reverse lg:flex-row  items-center gap-4 pt-4">
+                    <div className="flex gap-3 sm:w-[50%] max-lg:justify-center items-center justify-end">
+                      <Button
+                        type="submit"
+                        className="bg-blue-900 text-white"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? "Saving..." : "साठवा"}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        onClick={() => navigate("/Transactions/FrmReceiptList")}
+                      >
+                        रद्द
+                      </Button>
+                    </div>
+
+                    <div className="flex items-center max-sm:w-full max-sm:justify-center gap-2 w-[50%] justify-end">
+                      <Label text="एकूण रक्कम :" />
+                      <Input
+                        className="w-50"
+                        name="finalTotal"
+                        value={values.finalTotal || 0}
+                        readOnly
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {showAddModal && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg p-6 w-[900px] max-h-[90vh] overflow-auto">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-lg font-semibold">व्यवहार तपशील</h2>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowAddModal(false)}
+                      className="text-red-600 text-xl"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* विभाग संकेतांक */}
                     <div>
                       <Label text="विभाग संकेतांक :" />
                       <SearchableSelect
                         options={glAllList}
                         name="entryDeptCode"
                         value={values.entryDeptCode}
-                        onChange={(val) => setFieldValue("entryDeptCode", val.value)}
+                        onChange={(val) =>
+                          setFieldValue("entryDeptCode", val.value)
+                        }
                       />
                     </div>
 
+                    {/* लेखाशीर्ष */}
                     <div>
                       <Label text="लेखाशीर्ष :" />
                       <SearchableSelect
                         options={entryHeadList}
                         name="entryHead"
                         value={values.entryHead}
-                        onChange={(val) => setFieldValue("entryHead", val.value)}
+                        onChange={(val) =>
+                          setFieldValue("entryHead", val.value)
+                        }
                       />
                     </div>
 
+                    {/* Select Remark */}
                     <div>
                       <Label text="Select Remark :" />
 
@@ -966,71 +1249,43 @@ const FrmReceipt = () => {
                       </Select>
                     </div>
 
+                    {/* Previous Amount */}
                     {showAmountFields && (
                       <>
                         <div>
                           <Label text="मागील रक्कम :" />
-                          <div className="flex gap-2">
-                            <Input
-                              name="PrevAmount"
-                              value={values.PrevAmount || ""}
-                              onChange={handleChange}
-                            />
-
-                            <Select defaultValue="credit">
-                              <SelectTrigger className="w-30 border rounded-md">
-                                <SelectValue />
-                              </SelectTrigger>
-
-                              <SelectContent>
-                                <SelectItem value="credit">Credit</SelectItem>
-                                <SelectItem value="debit">Debit</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
+                          <Input
+                          type="number"
+                            name="PrevAmount"
+                            value={values.PrevAmount || ""}
+                            onChange={handleChange}
+                          />
                         </div>
 
                         <div>
                           <Label text="चालू रक्कम :" />
-                          <div className="flex gap-2">
-                            <Input
-                              name="CurrentAmount"
-                              value={values.CurrentAmount || ""}
-                              onChange={handleChange}
-                            />
-
-                            <Select defaultValue="credit">
-                              <SelectTrigger className="w-30 border rounded-md">
-                                <SelectValue />
-                              </SelectTrigger>
-
-                              <SelectContent>
-                                <SelectItem value="credit">Credit</SelectItem>
-                                <SelectItem value="debit">Debit</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
+                          <Input
+                          type="number"
+                            name="CurrentAmount"
+                            value={values.CurrentAmount || ""}
+                            onChange={handleChange}
+                          />
                         </div>
                       </>
                     )}
 
+                    {/* Entry Amount */}
                     <div>
                       <Label text="एकूण रक्कम :" />
-                      <div className="flex gap-2">
-                        <Input name="entryAmount" value={values.entryAmount || ""} onChange={handleChange} />
-                        <Select defaultValue="credit">
-                          <SelectTrigger className="w-30 border rounded-md">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="credit">Credit</SelectItem>
-                            <SelectItem value="debit">Debit</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                      <Input
+                        type="number"
+                        name="entryAmount"
+                        value={values.entryAmount || ""}
+                        onChange={handleChange}
+                      />
                     </div>
 
-
+                    {/* Remark */}
                     <div>
                       <Label text="तपशील :" />
                       <Input
@@ -1038,13 +1293,12 @@ const FrmReceipt = () => {
                         value={values.remark}
                         onChange={handleChange}
                       />
-                      {errors.remark && touched.remark && (
-                        <p className="mt-1 text-sm text-red-500">{errors.remark}</p>
-                      )}
                     </div>
 
+                    {/* Party */}
                     <div>
                       <Label text="पार्टी संकेतांक :" />
+
                       <Select
                         value={values.partyId}
                         onValueChange={(v) => setFieldValue("partyId", v)}
@@ -1064,64 +1318,33 @@ const FrmReceipt = () => {
                     </div>
                   </div>
 
-                  <div>
+                  <div className="flex justify-end gap-3 mt-6">
                     <Button
                       type="button"
-                      onClick={() => handleAddRow(values, setFieldValue)}
+                      variant="outline"
+                      onClick={() => setShowAddModal(false)}
                     >
-                      यादीत जोडा
+                      Cancel
+                    </Button>
+
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        handleAddRow(values, setFieldValue);
+                        setShowAddModal(false);
+                      }}
+                    >
+                      Add
                     </Button>
                   </div>
-
-                  <hr />
-
-                  <div className="w-full overflow-x-auto">
-                    <ShadCNTable
-                      headers={headers}
-                      data={dummyData}
-                      keyMapping={keyMapping}
-                      pagination={false}
-                      className="max-md:min-w-180"
-                    />
-                  </div>
-
-                  <div className="flex w-full flex-col-reverse lg:flex-row  items-center gap-4 pt-4">
-
-                    
-
-                    <div className="flex gap-3 sm:w-[50%] max-lg:justify-center items-center justify-end">
-                      <Button
-                        type="submit"
-                        className="bg-blue-900 text-white"
-                        disabled={isSubmitting}
-                      >
-                        {isSubmitting ? "Saving..." : "साठवा"}
-                      </Button>
-                      <Button type="button" variant="destructive" onClick={() => navigate("/Transactions/FrmReceiptList")}>
-                        रद्द
-                      </Button>
-                    </div>
-
-
-                    <div className="flex items-center max-sm:w-full max-sm:justify-center gap-2 w-[50%] justify-end">
-                      <Label text="एकूण रक्कम :" />
-                      <Input
-                        className="w-50"
-                        name="finalTotal"
-                        value={values.finalTotal || 0}
-                        readOnly
-                      />
-                    </div>
-                  </div>
-
-                </CardContent>
-              </Card>
-            </motion.div>
+                </div>
+              </div>
+            )}
           </Form>
-        )
+        );
       }}
     </Formik>
   );
 };
 
-export default FrmReceipt;
+export default FrmReceiptJcmc;

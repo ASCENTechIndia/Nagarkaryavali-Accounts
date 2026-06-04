@@ -187,5 +187,82 @@ const getReceiptRegister = async (params) => {
     throw err;
   }
 };
+const getReceiptRegisterUserWise = async (params) => {
+  try {
+    const bindParams = {
+      FromDate: params.fromDate,
+      ToDate: params.toDate,
+      UlbId: params.ulbId
+    };
 
-module.exports = { getReceiptRegister };
+    let query = `
+      SELECT
+          a.trnsdate,
+          a.insby AS userid,
+          a.glcode,
+          acc.glname,
+          a.accno,
+          acc.accname,
+          vz.zoneename,
+          acc.functioncode,
+          acc.objectcode,
+          SUM(a.amount) amount
+      FROM transview a
+      INNER JOIN accountview_web acc
+          ON a.glcode = acc.glcode
+         AND a.accno = acc.accno
+         AND acc.ulbid = a.ulbid
+      LEFT JOIN view_zone vz
+          ON vz.zoneid = a.zoneid
+      WHERE a.trnsdate >= TO_DATE(:FromDate,'YYYY-MM-DD')
+        AND a.trnsdate < TO_DATE(:ToDate,'YYYY-MM-DD') + 1
+        AND a.amount > 0
+        AND a.trnstypeid IN (1,2)
+        AND a.ulbid = :UlbId
+    `;
+
+    if (params.userId && params.userId !== "0") {
+      query += ` AND a.insby = :UserId `;
+      bindParams.UserId = params.userId;
+    }
+
+    if (params.zoneId && params.zoneId !== "-1") {
+      query += ` AND a.zoneid = :ZoneId `;
+      bindParams.ZoneId = params.zoneId;
+    }
+
+    if (params.budgetId && params.budgetId !== "-1") {
+      query += ` AND a.budgetid = :BudgetId `;
+      bindParams.BudgetId = params.budgetId;
+    }
+
+    if (params.nidhiId && params.nidhiId !== "-1") {
+      query += ` AND a.nidhi_id = :NidhiId `;
+      bindParams.NidhiId = params.nidhiId;
+    }
+
+    query += `
+      GROUP BY
+          a.trnsdate,
+          a.insby,
+          a.glcode,
+          acc.glname,
+          a.accno,
+          acc.accname,
+          vz.zoneename,
+          acc.functioncode,
+          acc.objectcode
+      ORDER BY
+          a.trnsdate,
+          a.insby,
+          a.glcode,
+           a.accno
+    `;
+
+    return await executeQuery(query, bindParams);
+
+  } catch (err) {
+    throw err;
+  }
+};
+module.exports = { getReceiptRegister , getReceiptRegisterUserWise};

@@ -3,7 +3,7 @@ const { AppError } = require("../../../libs/errors");
 
 // ================= 1. Receipt List =================
 async function getReceiptList(data) {
-  const result = await repo.getReceiptListRepo(data.ddl_ZoneID, data.ddl_ULB_ID);
+  const result = await repo.getReceiptListRepo(data.ddl_ZoneID, data.ddl_ULB_ID, data.ddl_USER_ID);
 
   if (!result) {
     throw new AppError("Failed to fetch receipt list", 500);
@@ -167,7 +167,61 @@ async function getReceiptDetailsService(payload) {
     data
   };
 }
+async function getUserMapHeaderService(payload) {
 
+  if (!payload.userId) {
+    throw new AppError("User ID is required", 400);
+  }
+
+  const data =
+    await repo.getUserMapHeaderRepo(payload);
+
+  return {
+    success: true,
+    count: data.length,
+    data
+  };
+}
+
+// ======================================================
+// USER MAP DETAILS
+// ======================================================
+
+async function getUserMapDetailsService(payload) {
+
+  if (!payload.userId) {
+    throw new AppError("User ID is required", 400);
+  }
+
+  const data =
+    await repo.getUserMapDetailsRepo(payload);
+
+  return {
+    success: true,
+    count: data.length,
+    data
+  };
+}
+
+// ======================================================
+// ACCOUNT MAPPING DETAILS
+// ======================================================
+
+async function getAccountMappingDetailService(payload) {
+
+  if (!payload.userId) {
+    throw new AppError("User ID is required", 400);
+  }
+
+  const data =
+    await repo.getAccountMappingDetailRepo(payload);
+
+  return {
+    success: true,
+    count: data.length,
+    data
+  };
+}
 
 module.exports = {
   getReceiptList,
@@ -183,5 +237,8 @@ module.exports = {
   searchGLALL,
   getBudgetHeads,
   getReceiptPdfData,
-  getReceiptDetailsService
+  getReceiptDetailsService,
+  getUserMapHeaderService,
+  getUserMapDetailsService,
+  getAccountMappingDetailService
 };

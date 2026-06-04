@@ -118,5 +118,39 @@ exports.getReceiptDetailsReprint = asyncHandler(async (req, res) => {
   return ok(res, data, "Receipt details fetched successfully");
 });
 
+exports.getUserMapHeader = asyncHandler(async (req, res) => {
 
+  const data =
+    await service.getUserMapHeaderService(req.body);
+
+  return ok(
+    res,
+    data,
+    "User map header fetched successfully"
+  );
+});
+
+exports.getUserMapDetails = asyncHandler(async (req, res) => {
+
+  const data =
+    await service.getUserMapDetailsService(req.body);
+
+  return ok(
+    res,
+    data,
+    "User map details fetched successfully"
+  );
+});
+
+exports.getAccountMappingDetail = asyncHandler(async (req, res) => {
+
+  const data =
+    await service.getAccountMappingDetailService(req.body);
+
+  return ok(
+    res,
+    data,
+    "Account mapping details fetched successfully"
+  );
+});
 
