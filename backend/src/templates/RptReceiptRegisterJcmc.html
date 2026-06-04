@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="mr">
+
+<head>
+    <meta charset="UTF-8">
+
+    <title>
+        मालमत्ता कर वसुली रक्कमा जमा करायचे चलन
+    </title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            color: #000;
+            padding: 10px 15px;
+        }
+
+        .page {
+            width: 100%;
+        }
+
+        .header {
+            position: relative;
+            margin-bottom: 15px;
+            min-height: 80px;
+        }
+
+        .logo {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+
+        .report-date {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+
+        .collection-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        .collection-table th,
+        .collection-table td {
+            border: 1px solid #000;
+            padding: 4px 6px;
+            vertical-align: middle;
+        }
+
+        .collection-table th {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .srno {
+            width: 8%;
+            text-align: center;
+        }
+
+        .ledger {
+            width: 18%;
+            text-align: center;
+        }
+
+        .particular {
+            width: 49%;
+        }
+
+        .amount {
+            width: 25%;
+            text-align: right;
+        }
+
+        .summary-row {
+            font-weight: bold;
+        }
+
+        .summary-label {
+            text-align: right;
+            padding-right: 10px;
+        }
+
+        .amount-words {
+            font-weight: bold;
+        }
+
+
+        .remarks-section {
+            margin-top: 15px;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .signature {
+            text-align: right;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 20px;
+            padding-right: 20px;
+        }
+
+
+        .footer {
+            margin-top: 30px;
+            border-top: 1px solid #000;
+            padding-top: 6px;
+
+            display: flex;
+            justify-content: space-between;
+
+            font-size: 11px;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="page">
+
+        <div class="header">
+
+            <img src="{{corporationLogo}}" class="logo" />
+
+            <div class="title">
+                {{corporationName}}
+            </div>
+
+            <div class="subtitle">
+                मालमत्ता कर संकलन विभाग
+            </div>
+
+            <div class="subtitle">
+                मालमत्ता कर वसुली रक्कमा जमा करायचे चलन
+            </div>
+
+            <div class="subtitle">
+                प्रभाग समिती क्र. १ ते ४ (खुला भूकंड)
+            </div>
+
+            <div class="report-date">
+                दिनांक : {{reportDate}}
+            </div>
+
+        </div>
+
+
+        <table class="collection-table">
+
+            <thead>
+                <tr>
+                    <th class="srno">अ.</th>
+                    <th class="ledger">लेखा कोड</th>
+                    <th class="particular">कराचे नाव</th>
+                    <th class="amount">रक्कम रुपये</th>
+                </tr>
+            </thead>
+
+            <tbody>
+    <tr>
+        <td class="srno">१</td>
+        <td class="ledger">91111170001</td>
+        <td class="particular">सामान्य कर (खुला भूखंड) K001</td>
+        <td class="amount">{{amount1}}</td>
+    </tr>
+
+    <tr>
+        <td class="srno">२</td>
+        <td class="ledger">31615210003</td>
+        <td class="particular">पा. पु. लाभ कर (खुला भुखंड) K001</td>
+        <td class="amount">{{amount2}}</td>
+    </tr>
+
+    <tr>
+        <td class="srno">३</td>
+        <td class="ledger">94311400001</td>
+        <td class="particular">साफसफाई कर (खुलाभुखंड) K001</td>
+        <td class="amount">{{amount3}}</td>
+    </tr>
+
+    <tr>
+        <td class="srno">४</td>
+        <td class="ledger">91011900002</td>
+        <td class="particular">मल प्रवाह सुविधा लाभ कर (खुलाभुखंड) K001</td>
+        <td class="amount">{{amount4}}</td>
+    </tr>
+
+    <tr>
+        <td class="srno">५</td>
+        <td class="ledger">81111400002</td>
+        <td class="particular">अग्निशमन कर (खुलाभुखंड) K001</td>
+        <td class="amount">{{amount5}}</td>
+    </tr>
+
+    <tr>
+        <td class="srno">६</td>
+        <td class="ledger">94713130001</td>
+        <td class="particular">मनपा शिक्षण उपकर (खुलाभुखंड) K001</td>
+        <td class="amount">{{amount6}}</td>
+    </tr>
+
+    <tr>
+        <td class="srno">७</td>
+        <td class="ledger">97111710001</td>
+        <td class="particular">रस्ता कर (खुलाभूखंड) K001</td>
+        <td class="amount">{{amount7}}</td>
+    </tr>
+
+    <tr class="summary-row">
+        <td></td>
+        <td></td>
+        <td>एकूण अ.क्र. ( १ ते ७ )</td>
+        <td class="amount">{{total1to7}}</td>
+    </tr>
+
+    <tr>
+        <td class="srno"></td>
+        <td class="ledger">91028290003</td>
+        <td class="particular">सुट रक्कम </td>
+        <td class="amount">{{amount8}}</td>
+    </tr>
+
+    <tr class="summary-row">
+        <td></td>
+        <td></td>
+        <td>एकुण अ.क्र. ( १ ते ७ )</td>
+        <td class="amount">{{total7to8}}</td>
+    </tr>
+
+    <tr>
+        <td class="srno">८</td>
+        <td class="ledger">...</td>
+        <td class="particular">विशेष पाणीपट्टी</td>
+        <td class="amount">{{amount9}}</td>
+    </tr>
+
+    <tr>
+        <td class="srno">९</td>
+        <td class="ledger">...</td>
+        <td class="particular">विशेष साफसफाई कर</td>
+        <td class="amount">{{amount10}}</td>
+    </tr>
+
+    <tr>
+        <td class="srno">१०</td>
+        <td class="ledger">94811400001</td>
+        <td class="particular">वृक्षकर (खुलाभुखंड) K001</td>
+        <td class="amount">{{amount11}}</td>
+    </tr>
+
+    <tr>
+        <td class="srno">११</td>
+        <td class="ledger">98138110001</td>
+        <td class="particular">महाराष्ट्र शिक्षण कर (खुलाभूखंड) K001</td>
+        <td class="amount">{{amount12}}</td>
+    </tr>
+
+    <tr>
+        <td class="srno">१२</td>
+        <td class="ledger">98238120001</td>
+        <td class="particular">रोजगार हमी उपकर (खुलाभूखंड) K001</td>
+        <td class="amount">{{amount13}}</td>
+    </tr>
+
+    <tr>
+        <td class="srno">१३</td>
+        <td class="ledger">...</td>
+        <td class="particular">संडासपट्टी</td>
+        <td class="amount">{{amount14}}</td>
+    </tr>
+
+    <tr>
+        <td class="srno">१४</td>
+        <td class="ledger">...</td>
+        <td class="particular">प्रोजेक्शन फी</td>
+        <td class="amount">{{amount15}}</td>
+    </tr>
+
+    <tr>
+        <td class="srno">१५</td>
+        <td class="ledger">...</td>
+        <td class="particular">नोटीस फी</td>
+        <td class="amount">{{amount16}}</td>
+    </tr>
+
+    <tr>
+        <td class="srno">१६</td>
+        <td class="ledger">...</td>
+        <td class="particular">वारंट फी </td>
+        <td class="amount">{{amount17}}</td>
+    </tr>
+
+    <tr>
+        <td class="srno">१७</td>
+        <td class="ledger">91915800001</td>
+        <td class="particular">इतर दंड व्याज , वसूली खर्च इ (खुलाभूखंड) K001</td>
+        <td class="amount">{{amount18}}</td>
+    </tr>
+
+    <tr class="summary-row">
+        <td></td>
+        <td></td>
+        <td>एकुण अ.क्र. ( ८ ते १७  )</td>
+        <td class="amount">{{total9to18}}</td>
+    </tr>
+
+    <tr class="summary-row">
+        <td></td>
+        <td></td>
+        <td>एकूण अ.क्र. ( १ ते १७ )</td>
+        <td class="amount">{{grandTotal}}</td>
+    </tr>
+
+    <tr class="summary-row">
+        <td></td>
+        <td></td>
+        <td>एकूण अक्षरी रक्कम रुपये</td>
+        <td class="amount-words">{{amountInWords}}</td>
+    </tr>
+</tbody>
+
+
+        </table>
+
+        <div class="remarks-section">
+            वरिष्ठ लिपिक यांचेकादेस तपासणीसाठी व म.न.पा. खजिन्यात
+            जमा करण्याची रुपये {{grandTotal}}/- मात्र
+            जमा करण्यात येत आहे.
+
+        </div>
+
+        <div class="signature">
+            कर वसुली लिपिक
+        </div>
+
+        <div class="remarks-section">
+
+            वसूल पावत्याचा स्थळप्रती व कीर्द तपासून
+            जमा केलेली एकुण रक्कम बरोबर आढळली.
+
+        </div>
+
+        <div class="signature">
+            कर अधिक्षक
+        </div>
+
+    </div>
+
+</body>
+
+</html>

@@ -467,10 +467,10 @@ const FrmReceiptJcmc = () => {
       // Auto fill form fields
       setFieldValue("zoneId", headerData.NUM_ACCUSERMAP_WARD?.toString() || "");
 
-      setFieldValue(
-        "transactionType",
-        headerData.NUM_ACCUSERMAP_TRANSTYPEID?.toString() || "",
-      );
+      // setFieldValue(
+      //   "transactionType",
+      //   headerData.NUM_ACCUSERMAP_TRANSTYPEID?.toString() || "",
+      // );
 
       setFieldValue("reciptNo", headerData.VAR_ACCUSERMAP_RECNO || "");
 
@@ -479,7 +479,7 @@ const FrmReceiptJcmc = () => {
         headerData.NUM_ACCUSERMAP_DEPTID?.toString() || "",
       );
 
-      setFieldValue("wardCode", headerData.VAR_ACCUSERMAP_GLCODE || "");
+      // setFieldValue("wardCode", headerData.VAR_ACCUSERMAP_GLCODE || "");
 
       setFieldValue("remark", headerData.VAR_ACCUSERMAP_REMARK || "");
 
@@ -487,7 +487,7 @@ const FrmReceiptJcmc = () => {
       await fetchCreditLeasure(headerData.VAR_ACCUSERMAP_GLCODE, "party");
 
       // Store account no temporarily
-      setTempHead(headerData.VAR_ACCUSERMAP_ACCNO?.trim());
+      // setTempHead(headerData.VAR_ACCUSERMAP_ACCNO?.trim());
     } catch (err) {
       console.error("User Map Header API Error:", err);
     }
@@ -1019,7 +1019,7 @@ const FrmReceiptJcmc = () => {
                         onValueChange={(v) =>
                           setFieldValue("transactionType", v)
                         }
-                        disabled
+                        
                       >
                         <SelectTrigger className="w-full border rounded-md">
                           <SelectValue placeholder="-- विकल्प निवडा --" />
@@ -1070,7 +1070,7 @@ const FrmReceiptJcmc = () => {
                         name="wardCode"
                         value={values.wardCode}
                         onChange={(val) => setFieldValue("wardCode", val.value)}
-                        disabled
+                     
                       />
                       {errors.wardCode && touched.wardCode && (
                         <p className="mt-1 text-sm text-red-500">
@@ -1087,7 +1087,7 @@ const FrmReceiptJcmc = () => {
                         name="head"
                         value={values.head}
                         onChange={(val) => setFieldValue("head", val.value)}
-                        disabled
+                        
                       />
                     </div>
 
