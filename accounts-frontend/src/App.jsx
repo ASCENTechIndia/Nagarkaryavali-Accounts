@@ -101,6 +101,7 @@ import FrmReceiptPaymentRegisterRpt from "./pages/Reports/FrmReceiptPaymentRegis
 
 import RptGLAccStatement from "./pages/ReportsForm/RptGLAccStatement";
 import FrmReceiptReprint from "./pages/Reports/FrmReceiptReprint";
+import FrmReceiptJcmc from "./pages/Transaction/FrmReceiptJcmc";
 
 const Home = () => <Button>Click me</Button>;
 
@@ -515,6 +516,11 @@ export const router = createBrowserRouter([
         path: "ReportsForm/FrmReceiptReprint",
         element: <FrmReceiptReprint />,
       },
+      {
+        path: "/Transactions/FrmReceiptJcmc",
+        element: <FrmReceiptJcmc />,
+      },
+
     ],
   },
 ]);

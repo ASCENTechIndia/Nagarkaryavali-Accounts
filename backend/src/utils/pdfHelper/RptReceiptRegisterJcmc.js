@@ -1,0 +1,276 @@
+const fs = require("fs");
+const path = require("path");
+const puppeteer = require("puppeteer");
+const Handlebars = require("handlebars");
+
+const imageToBase64 = (imgPath) => {
+  try {
+    const file = fs.readFileSync(imgPath);
+    const ext = path.extname(imgPath).replace(".", "");
+    return `data:image/${ext};base64,${file.toString("base64")}`;
+  } catch {
+    return "";
+  }
+};
+
+const formatDate = (date) => {
+  return new Date(date).toLocaleDateString("en-GB");
+};
+
+const formatNumber = (num) => {
+  return Number(num || 0).toLocaleString("en-IN");
+};
+
+// Convert number to words (basic utility)
+const numberToWords = (num) => {
+  const formatter = new Intl.NumberFormat("en-IN", { style: "decimal" });
+  return formatter.format(num); // replace with full words if needed
+};
+
+const numberToMarathiWords = (num) => {
+  const units = [
+    "",
+    "एक",
+    "दोन",
+    "तीन",
+    "चार",
+    "पाच",
+    "सहा",
+    "सात",
+    "आठ",
+    "नऊ",
+    "दहा",
+    "अकरा",
+    "बारा",
+    "तेरा",
+    "चौदा",
+    "पंधरा",
+    "सोळा",
+    "सतरा",
+    "अठरा",
+    "एकोणीस",
+    "वीस",
+    "एकवीस",
+    "बावीस",
+    "तेवीस",
+    "चोवीस",
+    "पंचवीस",
+    "सव्वीस",
+    "सत्तावीस",
+    "अठ्ठावीस",
+    "एकोणतीस",
+    "तीस",
+    "एकतीस",
+    "बत्तीस",
+    "तेहेतीस",
+    "चौतीस",
+    "पस्तीस",
+    "छत्तीस",
+    "सदतीस",
+    "अडतीस",
+    "एकोणचाळीस",
+    "चाळीस",
+    "एकेचाळीस",
+    "बेचाळीस",
+    "त्रेचाळीस",
+    "चव्वेचाळीस",
+    "पंचेचाळीस",
+    "सेहेचाळीस",
+    "सत्तेचाळीस",
+    "अठ्ठेचाळीस",
+    "एकोणपन्नास",
+    "पन्नास",
+    "एकावन्न",
+    "बावन्न",
+    "त्रेपन्न",
+    "चोपन्न",
+    "पंचावन्न",
+    "छप्पन्न",
+    "सत्तावन्न",
+    "अठ्ठावन्न",
+    "एकोणसाठ",
+    "साठ",
+    "एकसष्ट",
+    "बासष्ट",
+    "त्रेसष्ट",
+    "चौसष्ट",
+    "पासष्ट",
+    "सहासष्ट",
+    "सत्तेसष्ट",
+    "अडुसष्ट",
+    "एकोणसत्तर",
+    "सत्तर",
+    "एकाहत्तर",
+    "बहात्तर",
+    "त्र्याहत्तर",
+    "चौर्‍याहत्तर",
+    "पंच्याहत्तर",
+    "शहात्तर",
+    "सत्त्याहत्तर",
+    "अठ्ठ्याहत्तर",
+    "एकोणऐंशी",
+    "ऐंशी",
+    "एक्याऐंशी",
+    "ब्याऐंशी",
+    "त्र्याऐंशी",
+    "चौर्‍याऐंशी",
+    "पंच्याऐंशी",
+    "शहाऐंशी",
+    "सत्त्याऐंशी",
+    "अठ्ठ्याऐंशी",
+    "एकोणनव्वद",
+    "नव्वद",
+    "एक्याण्णव",
+    "ब्याण्णव",
+    "त्र्याण्णव",
+    "चौर्‍याण्णव",
+    "पंच्याण्णव",
+    "शहाण्णव",
+    "सत्त्याण्णव",
+    "अठ्ठ्याण्णव",
+    "नव्व्याण्णव",
+    "शंभर",
+  ];
+  const getWords = (n) => {
+    if (n === 0) return "";
+    if (n <= 100) return units[n];
+
+    if (n < 1000) {
+      return units[Math.floor(n / 100)] + "शे " + getWords(n % 100);
+    }
+
+    if (n < 100000) {
+      return getWords(Math.floor(n / 1000)) + " हजार " + getWords(n % 1000);
+    }
+
+    if (n < 10000000) {
+      return getWords(Math.floor(n / 100000)) + " लाख " + getWords(n % 100000);
+    }
+
+    return getWords(Math.floor(n / 10000000)) + " कोटी " + getWords(n % 10000000);
+  };
+
+  if (!num || num === 0) return "शून्य रुपये";
+
+  return getWords(Math.floor(num)).trim() + " रुपये";
+
+  if (!num || num === 0) return "शून्य रुपये";
+
+  return getWords(Math.floor(num)).trim() + " रुपये";
+};
+
+const RptReceiptRegisterJcmcPDFHelper = async ({ reportData, filters, corporationName, corporationLogo }) => {
+  try {
+    if (!reportData.length) throw new Error("No data");
+
+    const templatePath = path.resolve(__dirname, "../../templates/RptReceiptRegisterJcmc.html");
+    const templateHtml = fs.readFileSync(templatePath, "utf8");
+    const template = Handlebars.compile(templateHtml);
+
+    const logo = corporationLogo
+      ? `data:image/png;base64,${corporationLogo}`
+      : imageToBase64(path.resolve(__dirname, "../../assets/logo.png"));
+
+    // 🔹 1. Group by ledger code (ACCNO or GLCODE)
+    const grouped = new Map();
+    reportData.forEach((row) => {
+      const code = String(row.ACCNO || row.GLCODE || "").trim();
+      const amt = Number(row.AMOUNT || row.amount || 0);
+      grouped.set(code, (grouped.get(code) || 0) + amt);
+    });
+
+    const getAmt = (code) => grouped.get(code) || 0;
+
+    // 🔹 2. Map template rows to ledger codes
+    const amount1 = getAmt("91111170001"); 
+    const amount2 = getAmt("31615210003"); 
+    const amount3 = getAmt("94311400001"); 
+    const amount4 = getAmt("91011900002"); 
+    const amount5 = getAmt("81111400002"); 
+    const amount6 = getAmt("94713130001"); 
+    const amount7 = getAmt("97111710001");
+    const sutRakkam = getAmt("91028290003"); 
+
+    const amount9 = getAmt("SPECIAL_WATER"); 
+    const amount10 = getAmt("SPECIAL_CLEAN"); 
+    const amount11 = getAmt("94811400001");
+    const amount12 = getAmt("98138110001"); 
+    const amount13 = getAmt("98238120001"); 
+    const amount14 = getAmt("SANGANAK"); 
+    const amount15 = getAmt("PROCESSING"); 
+    const amount16 = getAmt("NOTICE"); 
+    const amount17 = getAmt("WATER"); 
+    const amount18 = getAmt("91915800001"); 
+
+    // 🔹 3. Totals
+    const total1to7 = amount1 + amount2 + amount3 + amount4 + amount5 + amount6 + amount7;
+    const total7to8 = total1to7 - sutRakkam; 
+    const total9to18 = amount9 + amount10 + amount11 + amount12 + amount13 + amount14 + amount15 + amount16 + amount17 + amount18;
+    const grandTotal = total7to8 + total9to18;
+
+    const html = template({
+      corporationLogo: logo,
+      corporationLogo,
+      corporationName,
+      reportDate: formatDate(new Date()),
+      amount1: formatNumber(amount1),
+      amount2: formatNumber(amount2),
+      amount3: formatNumber(amount3),
+      amount4: formatNumber(amount4),
+      amount5: formatNumber(amount5),
+      amount6: formatNumber(amount6),
+      amount7: formatNumber(amount7),
+      amount8: formatNumber(sutRakkam),
+      amount9: formatNumber(amount9),
+      amount10: formatNumber(amount10),
+      amount11: formatNumber(amount11),
+      amount12: formatNumber(amount12),
+      amount13: formatNumber(amount13),
+      amount14: formatNumber(amount14),
+      amount15: formatNumber(amount15),
+      amount16: formatNumber(amount16),
+      amount17: formatNumber(amount17),
+      amount18: formatNumber(amount18),
+      total1to7: formatNumber(total1to7),
+      total7to8: formatNumber(total7to8),
+      total9to18: formatNumber(total9to18),
+      grandTotal: formatNumber(grandTotal),
+      amountInWords: numberToMarathiWords(grandTotal)
+    });
+
+    // Puppeteer PDF generation (unchanged)
+    const chromePath = path.resolve(
+      __dirname,
+      "../../../node_modules/puppeteer/.cache/puppeteer/chrome/win64-135.0.7049.84/chrome-win64/chrome.exe"
+    );
+    const launchOptions = { headless: true, args: ["--no-sandbox", "--disable-setuid-sandbox"] };
+    if (fs.existsSync(chromePath)) launchOptions.executablePath = chromePath;
+
+    const browser = await puppeteer.launch(launchOptions);
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: "domcontentloaded", timeout: 0 });
+
+    const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
+    await page.close();
+    await browser.close();
+
+    const outputDir = path.resolve(__dirname, "../../../public/pdf");
+    if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
+
+    const fileName = `Receipt_Register_UserWise_${Date.now()}.pdf`;
+    const filePath = path.join(outputDir, fileName);
+    fs.writeFileSync(filePath, pdfBuffer);
+
+    return { fileName, filePath };
+
+  } catch (error) {
+    console.error("UserWise PDF Error:", error);
+    throw error;
+  }
+};
+
+
+
+module.exports = {
+  RptReceiptRegisterJcmcPDFHelper
+};

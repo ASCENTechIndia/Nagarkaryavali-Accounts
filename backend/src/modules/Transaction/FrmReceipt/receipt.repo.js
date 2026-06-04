@@ -3,7 +3,7 @@ const { withTx } = require("../../../db/tx");
 const { executeQuery } = require("../../../db/queryExecutor");
 
 // ✅ 1. Get Receipt List
-const getReceiptListRepo = (ddl_ZoneID, ddl_ULB_ID) =>
+const getReceiptListRepo = (ddl_ZoneID, ddl_ULB_ID, ddl_USER_ID ) =>
   executeQuery(
     `SELECT num_receiptmst_refno refno,
             date_receiptmst_trnsdate trnsdate,
@@ -28,6 +28,7 @@ const getReceiptListRepo = (ddl_ZoneID, ddl_ULB_ID) =>
      WHERE var_receiptmst_authstatus IS NULL
        AND zoneid = :ddl_ZoneID
        AND num_receiptmst_ulbid = :ddl_ULB_ID
+       AND var_receiptmst_insby = :ddl_USER_ID
      GROUP BY num_receiptmst_refno,
               date_receiptmst_trnsdate,
               num_receiptmst_recno,
@@ -38,7 +39,7 @@ const getReceiptListRepo = (ddl_ZoneID, ddl_ULB_ID) =>
               date_receiptmst_insdate,
               num_receiptmst_trnstypeid
      ORDER BY num_receiptmst_refno`,
-    { ddl_ZoneID, ddl_ULB_ID },
+    { ddl_ZoneID, ddl_ULB_ID,  ddl_USER_ID },
   );
 
 // ✅ 2. Get Zones
@@ -114,15 +115,18 @@ const getReceiptDetailsRepo = (RefNo) =>
         NVL(a.num_receiptmst_deptid, 1) AS accdeptid,
         a.num_receiptmst_budget_id AS budget_id,
         a.num_receiptmst_nidhi_id AS nidhi_id,
-        a.num_receiptmst_subdeptid AS subdeptid
+        a.num_receiptmst_subdeptid AS subdeptid,
+            c.num_receiptdet_arramount,
+        c.num_receiptdet_curramount
+
      FROM aoac_receiptmst_def a
      INNER JOIN aoac_receiptdet_def c 
         ON a.num_receiptmst_refno = c.num_receiptdet_refno
-     INNER JOIN accountview_web accdr 
+     LEFT  JOIN accountview_web accdr 
         ON a.num_receiptmst_drgl = accdr.glcode 
        AND a.num_receiptmst_dracc = accdr.accno  
        AND a.num_receiptmst_ulbid = accdr.ulbid
-     INNER JOIN accountview_web acc 
+     LEFT  JOIN accountview_web acc 
         ON c.num_receiptdet_glcode = acc.glcode 
        AND c.num_receiptdet_accno = acc.accno 
        AND a.num_receiptmst_ulbid = acc.ulbid
@@ -173,7 +177,7 @@ const receiptInsertUpdateRepo = (data) =>
             :In_ParamStr3,
             :In_ParamStr4,
             :In_ParamStr5,
-        
+            
             :out_ReturnStr,
             :out_ErrorCode,
             :out_ErrorMsg
@@ -283,6 +287,102 @@ async function getReceiptPDF(payload) {
   }
 }
 
+async function getUserMapHeaderRepo(payload) {
+
+  try {
+
+    const query = `
+      SELECT
+          num_accusermap_ward,
+          num_accusermap_transtypeid,
+          var_accusermap_recno,
+          var_accusermap_glcode,
+          var_accusermap_accno,
+          num_accusermap_deptid,
+          var_accusermap_remark
+      FROM aoms_accusermap_mas
+      WHERE num_accusermap_userid = :userId
+    `;
+
+    const result = await executeQuery(
+      query,
+      {
+        userId: payload.userId
+      }
+    );
+
+    return result.rows;
+
+  } catch (err) {
+    throw err;
+  }
+}
+
+// ======================================================
+// USER MAP MASTER + DETAIL
+// ======================================================
+
+async function getUserMapDetailsRepo(payload) {
+
+  try {
+
+    const query = `
+      SELECT *
+      FROM aoms_accusermap_mas
+      INNER JOIN aoms_accusermap_det
+        ON num_accusermap_id = num_accmpdet_mainid
+      WHERE num_accusermap_userid = :userId
+    `;
+
+    const result = await executeQuery(
+      query,
+      {
+        userId: payload.userId
+      }
+    );
+
+    return result.rows;
+
+  } catch (err) {
+    throw err;
+  }
+}
+
+// ======================================================
+// ACCOUNT MAPPING DETAIL
+// ======================================================
+
+async function getAccountMappingDetailRepo(payload) {
+
+  try {
+
+    const query = `
+      SELECT
+          var_accmpdet_glcode,
+          var_accmpdet_glname,
+          var_accmpdet_accno,
+          var_accmpdet_accnoname,
+          var_accmpdet_insby,
+          dat_accmpdet_insdate
+      FROM aoms_accusermap_mas
+      INNER JOIN aoms_accusermap_det
+        ON num_accusermap_id = num_accmpdet_mainid
+      WHERE num_accusermap_userid = :userId
+    `;
+
+    const result = await executeQuery(
+      query,
+      {
+        userId: payload.userId
+      }
+    );
+
+    return result.rows;
+
+  } catch (err) {
+    throw err;
+  }
+}
 
 
 module.exports = {
@@ -299,5 +399,8 @@ module.exports = {
   searchGLALLRepo,
   getBudgetHeadsRepo,
   getReceiptDetailsPdfRepo,
-  getReceiptPDF
+  getReceiptPDF,
+  getUserMapHeaderRepo,
+  getUserMapDetailsRepo,
+  getAccountMappingDetailRepo
 };
