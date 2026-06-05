@@ -293,11 +293,11 @@ const getTransactionDetails = async (refNo, trnsTypeId) => {
         ON num_trnstype_trnstypeid = num_receiptmst_trnstypeid
       LEFT JOIN view_zone 
         ON zoneid = num_receiptmst_zoneid
-      INNER JOIN accountview_web dracc 
+      LEFT  JOIN accountview_web dracc 
         ON dracc.glcode = num_receiptmst_drgl 
         AND dracc.accno = num_receiptmst_dracc 
         AND dracc.ulbid = num_receiptmst_ulbid
-      INNER JOIN accountview_web acc  
+      LEFT  JOIN accountview_web acc  
         ON acc.glcode = num_receiptdet_glcode  
         AND acc.accno = num_receiptdet_accno  
         AND acc.ulbid = num_receiptmst_ulbid
@@ -342,11 +342,11 @@ const getTransactionDetails = async (refNo, trnsTypeId) => {
         ON num_trnstype_trnstypeid = num_payment_trnstype
       INNER JOIN view_zone 
         ON zoneid = num_payment_zoneid
-      INNER JOIN accountview_web dracc 
+      LEFT  JOIN accountview_web dracc 
         ON dracc.glcode = num_payment_crgl 
         AND dracc.accno = num_payment_cracc 
         AND dracc.ulbid = num_payment_ulbid
-      INNER JOIN accountview_web acc 
+      LEFT  JOIN accountview_web acc 
         ON acc.glcode = num_paymentdet_glcode 
         AND acc.accno = num_paymentdet_accno 
         AND acc.ulbid = num_payment_ulbid
@@ -385,7 +385,7 @@ const getTransactionDetails = async (refNo, trnsTypeId) => {
         ON num_trnstype_trnstypeid = num_transfermst_trnstypeid
       INNER JOIN view_zone 
         ON zoneid = num_transfermst_zoneid
-      INNER JOIN accountview_web acc 
+      LEFT  JOIN accountview_web acc 
         ON acc.glcode = num_transferdet_glcode 
         AND acc.accno = num_transferdet_accno 
         AND num_transfermst_ulbid = acc.ulbid

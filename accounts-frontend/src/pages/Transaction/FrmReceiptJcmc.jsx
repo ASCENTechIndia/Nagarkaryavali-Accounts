@@ -44,6 +44,9 @@ const FrmReceiptJcmc = () => {
   const refNo = location.state?.receiptNo;
   const ulbId = user?.ulbId;
 
+  console.log("refNo", refNo);
+  console.log("ocation.state", location.state);
+
   const BASE_URL = import.meta.env.VITE_BASE_URL;
 
   const [zones, setZones] = useState([]);
@@ -107,7 +110,11 @@ const FrmReceiptJcmc = () => {
       head: values.entryHead,
       headName: selectedHead?.label || "",
       remark: values.remark,
-      amount: values.entryAmount,
+      prevAmount: values.PrevAmount || 0,
+  currentAmount: values.CurrentAmount || 0,
+  amount:
+    Number(values.PrevAmount || 0) +
+    Number(values.CurrentAmount || 0),
       partyId: values.partyId || 0,
     };
 
@@ -365,81 +372,80 @@ const FrmReceiptJcmc = () => {
     }
   };
 
-//   const fetchReceiptDetails = async (refNo, setFieldValue) => {
-//     try {
-//       Swal.fire({
-//         title: "Loading ...",
-//         allowOutsideClick: false,
-//         didOpen: () => {
-//           Swal.showLoading();
-//         },
-//       });
-//       const res = await axios.post(
-//         `${BASE_URL}/api/Receipt/receiptDetails`,
-//         {
-//           RefNo: refNo,
-//         },
-//         {
-//           headers: {
-//             Authorization: `Bearer ${user.token}`,
-//           },
-//         },
-//       );
+  const fetchReceiptDetails = async (refNo, setFieldValue) => {
+    try {
+      Swal.fire({
+        title: "Loading ...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+      const res = await axios.post(
+        `${BASE_URL}/api/Receipt/receiptDetails`,
+        {
+          RefNo: refNo,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        },
+      );
 
-//       const data = res.data.data || [];
+      const data = res.data.data || [];
 
-//       if (data.length === 0) return;
+      if (data.length === 0) return;
 
-//       const first = data[0];
+      const first = data[0];
 
-//       setFieldValue("zoneId", first.ZONEID?.toString());
-//       setFieldValue("transactionType", first.TRNSTYPEID?.toString());
-//       setFieldValue("reciptNo", first.RECNO);
-//       setFieldValue("date", new Date(first.TRNSDATE));
-//       setFieldValue("department", first.ACCDEPTID?.toString());
-//       setFieldValue("remark", first.NARRATION);
+      setFieldValue("zoneId", first.ZONEID?.toString());
+      setFieldValue("transactionType", first.TRNSTYPEID?.toString());
+      setFieldValue("reciptNo", first.RECNO);
+      setFieldValue("date", new Date(first.TRNSDATE));
+      setFieldValue("department", first.ACCDEPTID?.toString());
+      setFieldValue("remark", first.NARRATION);
 
-//       setFieldValue("wardCode", first.DRGL?.toString()); // for UI
-//       setTempHead(first.DRACC?.toString());
+      setFieldValue("wardCode", first.DRGL?.toString()); // for UI
+      setTempHead(first.DRACC?.toString());
 
-//       fetchCreditLeasure(first.GLCODE?.toString(), "party");
+      fetchCreditLeasure(first.GLCODE?.toString(), "party");
 
-//       const total = data.reduce(
-//         (sum, item) => sum + Number(item.CREDIT || 0),
-//         0,
-//       );
-//       setFieldValue("totalAmount", total);
+      const total = data.reduce(
+        (sum, item) => sum + Number(item.CREDIT || 0),
+        0,
+      );
+      setFieldValue("totalAmount", total);
 
-//       const tableFormatted = data.map((item, index) => ({
-//         delete: (
-//           <button
-//             onClick={() => handleDeleteRow(index)}
-//             className="text-red-600 font-semibold"
-//           >
-//             Delete
-//           </button>
-//         ),
-//         deptCode: item.GLCODE,
-//         deptName: item.GLNAME,
-//         head: item.ACCNO,
-//         headName: item.ACCOUNTNAME,
-//         remark: item.NARRATION,
-//         amount: item.CREDIT,
-//       }));
+      const tableFormatted = data.map((item, index) => ({
+        delete: (
+          <button
+            onClick={() => handleDeleteRow(index)}
+            className="text-red-600 font-semibold"
+          >
+            Delete
+          </button>
+        ),
+        deptCode: item.GLCODE,
+        deptName: item.GLNAME,
+        head: item.ACCNO,
+        headName: item.ACCOUNTNAME,
+        remark: item.NARRATION,
+        prevAmount: item.NUM_RECEIPTDET_ARRAMOUNT,
+        currentAmount: item.NUM_RECEIPTDET_CURRAMOUNT,
+        amount: item.CREDIT,
+      }));
 
-//       setTableData(tableFormatted);
-//     } catch (err) {
-//       console.error("Receipt Details API Error:", err);
-//     } finally {
-//       Swal.close();
-//     }
-//   };
+      setTableData(tableFormatted);
+    } catch (err) {
+      console.error("Receipt Details API Error:", err);
+    } finally {
+      Swal.close();
+    }
+  };
 
+  // for jcmc
 
-
-
-  //   for jcmc
-  
   const fetchUserMapHeader = async (setFieldValue) => {
     try {
       const res = await axios.post(
@@ -461,10 +467,10 @@ const FrmReceiptJcmc = () => {
       // Auto fill form fields
       setFieldValue("zoneId", headerData.NUM_ACCUSERMAP_WARD?.toString() || "");
 
-      setFieldValue(
-        "transactionType",
-        headerData.NUM_ACCUSERMAP_TRANSTYPEID?.toString() || "",
-      );
+      // setFieldValue(
+      //   "transactionType",
+      //   headerData.NUM_ACCUSERMAP_TRANSTYPEID?.toString() || "",
+      // );
 
       setFieldValue("reciptNo", headerData.VAR_ACCUSERMAP_RECNO || "");
 
@@ -473,7 +479,7 @@ const FrmReceiptJcmc = () => {
         headerData.NUM_ACCUSERMAP_DEPTID?.toString() || "",
       );
 
-      setFieldValue("wardCode", headerData.VAR_ACCUSERMAP_GLCODE || "");
+      // setFieldValue("wardCode", headerData.VAR_ACCUSERMAP_GLCODE || "");
 
       setFieldValue("remark", headerData.VAR_ACCUSERMAP_REMARK || "");
 
@@ -481,7 +487,7 @@ const FrmReceiptJcmc = () => {
       await fetchCreditLeasure(headerData.VAR_ACCUSERMAP_GLCODE, "party");
 
       // Store account no temporarily
-      setTempHead(headerData.VAR_ACCUSERMAP_ACCNO?.trim());
+      // setTempHead(headerData.VAR_ACCUSERMAP_ACCNO?.trim());
     } catch (err) {
       console.error("User Map Header API Error:", err);
     }
@@ -657,6 +663,8 @@ const FrmReceiptJcmc = () => {
             row.amount,
             row.remark || "",
             row.partyId || 0,
+            row.prevAmount || 0,
+            row.currentAmount || 0,
           ].join("#");
         })
         .join("$");
@@ -752,6 +760,8 @@ const FrmReceiptJcmc = () => {
     "लेखाशीर्ष",
     "लेखाशीर्ष नाव",
     "तपशील",
+    "मागील रक्कम",
+    "चालू रक्कम",
     "रक्कम",
   ];
 
@@ -762,6 +772,8 @@ const FrmReceiptJcmc = () => {
     लेखाशीर्ष: "head",
     "लेखाशीर्ष नाव": "headName",
     तपशील: "remark",
+    "मागील रक्कम": "prevAmount",
+    "चालू रक्कम": "currentAmount",
     रक्कम: "amount",
   };
 
@@ -777,6 +789,50 @@ const FrmReceiptJcmc = () => {
       >
         Delete
       </button>
+    ),
+
+    prevAmount: (
+      <Input
+        type="number"
+        value={row.prevAmount || ""}
+        onChange={(e) => {
+          const prevValue = Number(e.target.value || 0);
+
+          setTableData((prev) =>
+            prev.map((r, i) =>
+              i === index
+                ? {
+                    ...r,
+                    prevAmount: prevValue,
+                    amount: prevValue + Number(r.currentAmount || 0),
+                  }
+                : r,
+            ),
+          );
+        }}
+      />
+    ),
+
+    currentAmount: (
+      <Input
+        type="number"
+        value={row.currentAmount || ""}
+        onChange={(e) => {
+          const currentValue = Number(e.target.value || 0);
+
+          setTableData((prev) =>
+            prev.map((r, i) =>
+              i === index
+                ? {
+                    ...r,
+                    currentAmount: currentValue,
+                    amount: Number(r.prevAmount || 0) + currentValue,
+                  }
+                : r,
+            ),
+          );
+        }}
+      />
     ),
 
     amount: (
@@ -821,35 +877,43 @@ const FrmReceiptJcmc = () => {
       }}
     >
       {({ values, handleChange, setFieldValue, errors, touched }) => {
-        // useEffect(() => {
-        //   const allLoaded =
-        //     refNo &&
-        //     ulbId &&
-        //     zones.length &&
-        //     transTypes.length &&
-        //     departments.length &&
-        //     remarks.length &&
-        //     glAllList.length;
-
-        //   if (allLoaded) {
-        //     fetchReceiptDetails(refNo, setFieldValue).finally(() => {
-        //       setIsLoading(false);
-        //       Swal.close();
-        //     });
-        //   }
-        // }, [refNo, ulbId, zones, transTypes, departments, remarks, glAllList]);
-
         useEffect(() => {
-          if (
-            !refNo &&
+          const allLoaded =
             zones.length > 0 &&
             transTypes.length > 0 &&
-            departments.length > 0
-          ) {
+            departments.length > 0 &&
+            remarks.length > 0 &&
+            glAllList.length > 0;
+
+          if (!allLoaded) return;
+
+          if (refNo) {
+            // EDIT MODE
+            fetchReceiptDetails(refNo, setFieldValue).finally(() => {
+              setIsLoading(false);
+              Swal.close();
+            });
+          } else {
+            // NEW MODE
             fetchUserMapHeader(setFieldValue);
             fetchAccountMappingDetails();
+
+            setIsLoading(false);
+            Swal.close();
           }
-        }, [refNo, zones, transTypes, departments]);
+        }, [refNo, zones, transTypes, departments, remarks, glAllList]);
+
+        // useEffect(() => {
+        //   if (
+        //     !refNo &&
+        //     zones.length > 0 &&
+        //     transTypes.length > 0 &&
+        //     departments.length > 0
+        //   ) {
+        //     fetchUserMapHeader(setFieldValue);
+        //     fetchAccountMappingDetails();
+        //   }
+        // }, [refNo, zones, transTypes, departments]);
 
         useEffect(() => {
           if (values.transactionType) {
@@ -955,7 +1019,7 @@ const FrmReceiptJcmc = () => {
                         onValueChange={(v) =>
                           setFieldValue("transactionType", v)
                         }
-                        disabled
+                        
                       >
                         <SelectTrigger className="w-full border rounded-md">
                           <SelectValue placeholder="-- विकल्प निवडा --" />
@@ -979,7 +1043,6 @@ const FrmReceiptJcmc = () => {
                       <DatePicker
                         value={values.date}
                         onChange={(d) => setFieldValue("date", d)}
-                        disabled
                       />
                     </div>
 
@@ -989,7 +1052,6 @@ const FrmReceiptJcmc = () => {
                         name="reciptNo"
                         value={values.reciptNo}
                         onChange={handleChange}
-                        disabled
                       />
                       {errors.reciptNo && touched.reciptNo && (
                         <p className="mt-1 text-sm text-red-500">
@@ -1008,7 +1070,7 @@ const FrmReceiptJcmc = () => {
                         name="wardCode"
                         value={values.wardCode}
                         onChange={(val) => setFieldValue("wardCode", val.value)}
-                        disabled
+                     
                       />
                       {errors.wardCode && touched.wardCode && (
                         <p className="mt-1 text-sm text-red-500">
@@ -1025,13 +1087,14 @@ const FrmReceiptJcmc = () => {
                         name="head"
                         value={values.head}
                         onChange={(val) => setFieldValue("head", val.value)}
-                        disabled
+                        
                       />
                     </div>
 
                     <div>
                       <Label text="एकूण रक्कम :" />
                       <Input
+                      type="number"
                         name="totalAmount"
                         value={values.totalAmount}
                         onChange={handleChange}
@@ -1192,6 +1255,7 @@ const FrmReceiptJcmc = () => {
                         <div>
                           <Label text="मागील रक्कम :" />
                           <Input
+                          type="number"
                             name="PrevAmount"
                             value={values.PrevAmount || ""}
                             onChange={handleChange}
@@ -1201,6 +1265,7 @@ const FrmReceiptJcmc = () => {
                         <div>
                           <Label text="चालू रक्कम :" />
                           <Input
+                          type="number"
                             name="CurrentAmount"
                             value={values.CurrentAmount || ""}
                             onChange={handleChange}
@@ -1213,6 +1278,7 @@ const FrmReceiptJcmc = () => {
                     <div>
                       <Label text="एकूण रक्कम :" />
                       <Input
+                        type="number"
                         name="entryAmount"
                         value={values.entryAmount || ""}
                         onChange={handleChange}

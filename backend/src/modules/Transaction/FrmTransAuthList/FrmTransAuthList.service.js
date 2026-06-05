@@ -46,16 +46,16 @@ const getTransactionDetailsService = async (body) => {
       sum += r.AMOUNT;
     });
 
-    finalRows.push({
-      glCode: result.rows[0].CRDRGL,
-      glName: result.rows[0].CRDRGLNAME,
-      accNo: result.rows[0].CRDRACC,
-      accName: result.rows[0].CRDRACCNAME,
-      credit: 0,
-      debit: sum,
-      narration: null,
-      party: null,
-    });
+    // finalRows.push({
+    //   glCode: result.rows[0].CRDRGL,
+    //   glName: result.rows[0].CRDRGLNAME,
+    //   accNo: result.rows[0].CRDRACC,
+    //   accName: result.rows[0].CRDRACCNAME,
+    //   credit: 0,
+    //   debit: sum,
+    //   narration: null,
+    //   party: null,
+    // });
   }
 
   // PAYMENT (trnsTypeId 3 or 4)
@@ -75,16 +75,16 @@ const getTransactionDetailsService = async (body) => {
     });
 
     // Add the bank/cash account as CREDIT
-    finalRows.push({
-      glCode: result.rows[0].CRDRGL,
-      glName: result.rows[0].CRDRGLNAME,
-      accNo: result.rows[0].CRDRACC,
-      accName: result.rows[0].CRDRACCNAME,
-      credit: sum,
-      debit: 0,
-      narration: null,
-      party: null,
-    });
+    // finalRows.push({
+    //   glCode: result.rows[0].CRDRGL,
+    //   glName: result.rows[0].CRDRGLNAME,
+    //   accNo: result.rows[0].CRDRACC,
+    //   accName: result.rows[0].CRDRACCNAME,
+    //   credit: sum,
+    //   debit: 0,
+    //   narration: null,
+    //   party: null,
+    // });
   }
 
   else {
