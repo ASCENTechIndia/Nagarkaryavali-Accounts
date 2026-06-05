@@ -240,6 +240,7 @@ const BankBalancePDFHelper = async ({
 
     const currentTime =
       now.toLocaleTimeString();
+      
 
     // ================= HTML =================
 
