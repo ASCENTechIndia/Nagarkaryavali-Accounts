@@ -526,7 +526,6 @@ export const router = createBrowserRouter([
 ]);
 
 function App() {
-  console.log("🚀 APP RENDERED");
   useDynamicFavicon();
   return <RouterProvider router={router} />;
 }

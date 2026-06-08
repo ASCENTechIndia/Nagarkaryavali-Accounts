@@ -59,11 +59,11 @@ const updateFavicon = (base64Image) => {
     link.type = "image/png";
     link.href = base64Image;
     document.head.appendChild(link);
-    console.log("🖼️ Favicon href length:", base64Image.length);
+    console.log("Favicon href length:", base64Image.length);
     const checkFavicon = document.querySelector("link[rel='icon']");
-    console.log("🔍 Current favicon element:", checkFavicon);
+    console.log("Current favicon element:", checkFavicon);
   } catch (error) {
-    console.error("❌ updateFavicon Error:", error);
+    console.error("updateFavicon Error:", error);
   }
 };
 
