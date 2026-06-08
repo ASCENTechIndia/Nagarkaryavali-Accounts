@@ -142,21 +142,21 @@ const RptReceiptRegister = () => {
                     return;
                 }
 
-                if (!values.wardCode) {
-                    Swal.fire({
-                        text: "कृपया विभाग संकेतांक निवडा.",
-                        confirmButtonColor: "#1e3a8a",
-                    });
-                    return;
-                }
+                // if (!values.wardCode) {
+                //     Swal.fire({
+                //         text: "कृपया विभाग संकेतांक निवडा.",
+                //         confirmButtonColor: "#1e3a8a",
+                //     });
+                //     return;
+                // }
 
-                if (!values.head) {
-                    Swal.fire({
-                        text: "कृपया लेखाशीर्ष निवडा.",
-                        confirmButtonColor: "#1e3a8a",
-                    });
-                    return;
-                }
+                // if (!values.head) {
+                //     Swal.fire({
+                //         text: "कृपया लेखाशीर्ष निवडा.",
+                //         confirmButtonColor: "#1e3a8a",
+                //     });
+                //     return;
+                // }
             }
 
             Swal.fire({
