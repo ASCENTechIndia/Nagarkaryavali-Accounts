@@ -98,10 +98,10 @@ import FrmVouchergenerationReprint from "./pages/Reports/FrmVouchergenerationRep
 import FrmLedgerDetailRpt from "./pages/ReportsForm/FrmLedgerDetailRpt";
 import FrmCashDepositReprint from "./pages/Reports/FrmCashDepositReprint";
 import FrmReceiptPaymentRegisterRpt from "./pages/Reports/FrmReceiptPaymentRegisterRpt";
-
 import RptGLAccStatement from "./pages/ReportsForm/RptGLAccStatement";
 import FrmReceiptReprint from "./pages/Reports/FrmReceiptReprint";
 import FrmReceiptJcmc from "./pages/Transaction/FrmReceiptJcmc";
+import useDynamicFavicon from "./utils/useDynamicFavicon";
 
 const Home = () => <Button>Click me</Button>;
 
@@ -526,6 +526,7 @@ export const router = createBrowserRouter([
 ]);
 
 function App() {
+  useDynamicFavicon();
   return <RouterProvider router={router} />;
 }
 
