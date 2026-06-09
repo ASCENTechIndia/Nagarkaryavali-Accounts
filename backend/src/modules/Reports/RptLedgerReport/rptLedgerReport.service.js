@@ -55,7 +55,17 @@ async function getLedgerTransactionsService(payload) {
     throw new AppError("fromDate and toDate are required", 400);
   }
 
-  const data = await repo.getLedgerTransactions(payload);
+  let data;
+
+  if(ulbid == 930) {
+    console.log("JCMC Repo Called")
+    data = await repo.getLedgerJCMCTransactions(payload);
+  }else {
+    console.log("Legder Repo Called")
+    data = await repo.getLedgerTransactions(payload);
+  }
+
+  
 
   return {
     success: true,

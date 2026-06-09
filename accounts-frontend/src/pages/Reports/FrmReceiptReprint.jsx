@@ -60,7 +60,7 @@ const FrmReceiptReprint = () => {
     "खाते क्रमांक": "ACCCNO",
  
  
-    रक्कम: "TOTAL_AMOUNT",
+    रक्कम: "NETAMOUNT",
     प्रिंट: "PRINT",
   };
 
@@ -182,6 +182,10 @@ const FrmReceiptReprint = () => {
         const formattedRows = apiData.map((item) => ({
           ...item,
           TRANSDATE: formatTableDate(item.TRANSDATE),
+          NETAMOUNT:
+    Math.abs(Number(item.TOTAL_AMOUNT || 0)) -
+    Number(item.DISCOUNTAMOUNT || 0),
+
         }));
 
         setTableData(formattedRows);

@@ -42,5 +42,7 @@ router.post("/usermapdetails",auth(),controller.getUserMapDetails);
 
 router.post("/accountmappingdetails",auth(),controller.getAccountMappingDetail);
 
+router.post( "/receiptdetailbyrefno",auth(),controller.getReceiptDetailByRefNo);
+
 
 module.exports = router;

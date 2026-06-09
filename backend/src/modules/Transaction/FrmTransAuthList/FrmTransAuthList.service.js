@@ -46,6 +46,23 @@ const getTransactionDetailsService = async (body) => {
       sum += r.AMOUNT;
     });
 
+    const discount = Number(result.rows[0]?.DISCOUNTAMOUNT || 0);
+
+    // if (discount > 0) {
+    //   finalRows.push({
+    //     glCode: "DISCOUNT",
+    //     glName: "Discount",
+    //     accNo: "DISCOUNT",
+    //     accName: "Discount",
+    //     credit: discount,
+    //     debit: 0,
+    //     narration: "Discount",
+    //     party: null,
+    //   });
+    // }
+
+    sum = sum - discount;
+
     // finalRows.push({
     //   glCode: result.rows[0].CRDRGL,
     //   glName: result.rows[0].CRDRGLNAME,
@@ -106,11 +123,14 @@ const getTransactionDetailsService = async (body) => {
   }
 
   console.log("Service finalRows:", finalRows);
+
+  console.log("Sum finalRows:", sum);
   
   return {
     success: true,
     header: result.rows[0],
     rows: finalRows,
+    sum: sum,
   };
 };
 

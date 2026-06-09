@@ -111,10 +111,10 @@ const FrmReceiptJcmc = () => {
       headName: selectedHead?.label || "",
       remark: values.remark,
       prevAmount: values.PrevAmount || 0,
-  currentAmount: values.CurrentAmount || 0,
-  amount:
-    Number(values.PrevAmount || 0) +
-    Number(values.CurrentAmount || 0),
+      currentAmount: values.CurrentAmount || 0,
+      amount:
+        Number(values.PrevAmount || 0) +
+        Number(values.CurrentAmount || 0),
       partyId: values.partyId || 0,
     };
 
@@ -382,9 +382,9 @@ const FrmReceiptJcmc = () => {
         },
       });
       const res = await axios.post(
-        `${BASE_URL}/api/Receipt/receiptDetails`,
+        `${BASE_URL}/api/Receipt/receiptdetailbyrefno`,
         {
-          RefNo: refNo,
+          refNo: refNo,
         },
         {
           headers: {
@@ -393,47 +393,86 @@ const FrmReceiptJcmc = () => {
         },
       );
 
-      const data = res.data.data || [];
+      const data = res.data?.data?.data || [];
 
       if (data.length === 0) return;
 
       const first = data[0];
 
-      setFieldValue("zoneId", first.ZONEID?.toString());
-      setFieldValue("transactionType", first.TRNSTYPEID?.toString());
-      setFieldValue("reciptNo", first.RECNO);
-      setFieldValue("date", new Date(first.TRNSDATE));
-      setFieldValue("department", first.ACCDEPTID?.toString());
-      setFieldValue("remark", first.NARRATION);
+      setFieldValue("zoneId", first.ZONEID?.toString() || "");
 
-      setFieldValue("wardCode", first.DRGL?.toString()); // for UI
-      setTempHead(first.DRACC?.toString());
+      setFieldValue(
+        "transactionType",
+        first.TRNSTYPEID?.toString() || ""
+      );
+
+      setFieldValue("reciptNo", first.RECNO || "");
+
+      setFieldValue(
+        "department",
+        first.ACCDEPTID?.toString() || ""
+      );
+
+      setFieldValue(
+        "date",
+        first.TRNSDATE ? new Date(first.TRNSDATE) : new Date()
+      );
+
+      setFieldValue("remark", first.NARRATION || "");
+
+      setFieldValue("wardCode", first.DRGL?.toString() || "");
+
+      setTempHead(first.DRACC?.toString() || "");
 
       fetchCreditLeasure(first.GLCODE?.toString(), "party");
 
+      const finalTotal = tableData.reduce((sum, row) => {
+        const amount = Number(row.amount || 0);
+
+        return row.isDiscount
+          ? sum - amount
+          : sum + amount;
+      }, 0);
+
       const total = data.reduce(
-        (sum, item) => sum + Number(item.CREDIT || 0),
-        0,
-      );
+        (sum, item) => {
+          const amount = Number(item.CREDIT || 0);
+
+          return item.ACCNO === "91028290003"
+            ? sum - amount
+            : sum + amount;
+        }, 0);
+
       setFieldValue("totalAmount", total);
 
       const tableFormatted = data.map((item, index) => ({
         delete: (
           <button
+            type="button"
             onClick={() => handleDeleteRow(index)}
             className="text-red-600 font-semibold"
           >
             Delete
           </button>
         ),
+
         deptCode: item.GLCODE,
         deptName: item.GLNAME,
+
         head: item.ACCNO,
         headName: item.ACCOUNTNAME,
-        remark: item.NARRATION,
-        prevAmount: item.NUM_RECEIPTDET_ARRAMOUNT,
-        currentAmount: item.NUM_RECEIPTDET_CURRAMOUNT,
-        amount: item.CREDIT,
+
+        remark: item.NARRATION || "",
+
+        prevAmount: Number(item.NUM_RECEIPTDET_ARRAMOUNT || 0),
+
+        currentAmount: Number(item.NUM_RECEIPTDET_CURRAMOUNT || 0),
+
+        amount: Number(item.CREDIT || 0),
+
+        partyId: item.PARTY || 0,
+
+        isDiscount: item.ACCNO === "91028290003",
       }));
 
       setTableData(tableFormatted);
@@ -526,6 +565,7 @@ const FrmReceiptJcmc = () => {
         remark: "",
         amount: "0",
         partyId: 0,
+        isDiscount: item.VAR_ACCMPDET_ACCNO === "91028290003",
       }));
 
       setTableData(formattedData);
@@ -802,10 +842,10 @@ const FrmReceiptJcmc = () => {
             prev.map((r, i) =>
               i === index
                 ? {
-                    ...r,
-                    prevAmount: prevValue,
-                    amount: prevValue + Number(r.currentAmount || 0),
-                  }
+                  ...r,
+                  prevAmount: prevValue,
+                  amount: prevValue + Number(r.currentAmount || 0),
+                }
                 : r,
             ),
           );
@@ -824,10 +864,10 @@ const FrmReceiptJcmc = () => {
             prev.map((r, i) =>
               i === index
                 ? {
-                    ...r,
-                    currentAmount: currentValue,
-                    amount: Number(r.prevAmount || 0) + currentValue,
-                  }
+                  ...r,
+                  currentAmount: currentValue,
+                  amount: Number(r.prevAmount || 0) + currentValue,
+                }
                 : r,
             ),
           );
@@ -952,10 +992,18 @@ const FrmReceiptJcmc = () => {
           }
         }, [values.entryDeptCode]);
 
-        const finalTotal = tableData.reduce(
-          (sum, row) => sum + Number(row.amount || 0),
-          0,
-        );
+        // const finalTotal = tableData.reduce(
+        //   (sum, row) => sum + Number(row.amount || 0),
+        //   0,
+        // );
+
+        const finalTotal = tableData.reduce((sum, row) => {
+          const amount = Number(row.amount || 0);
+
+          return row.isDiscount
+            ? sum - amount
+            : sum + amount;
+        }, 0);
 
         useEffect(() => {
           setFieldValue("finalTotal", finalTotal);
@@ -1019,7 +1067,7 @@ const FrmReceiptJcmc = () => {
                         onValueChange={(v) =>
                           setFieldValue("transactionType", v)
                         }
-                        
+
                       >
                         <SelectTrigger className="w-full border rounded-md">
                           <SelectValue placeholder="-- विकल्प निवडा --" />
@@ -1070,7 +1118,7 @@ const FrmReceiptJcmc = () => {
                         name="wardCode"
                         value={values.wardCode}
                         onChange={(val) => setFieldValue("wardCode", val.value)}
-                     
+
                       />
                       {errors.wardCode && touched.wardCode && (
                         <p className="mt-1 text-sm text-red-500">
@@ -1087,14 +1135,14 @@ const FrmReceiptJcmc = () => {
                         name="head"
                         value={values.head}
                         onChange={(val) => setFieldValue("head", val.value)}
-                        
+
                       />
                     </div>
 
                     <div>
                       <Label text="एकूण रक्कम :" />
                       <Input
-                      type="number"
+                        type="number"
                         name="totalAmount"
                         value={values.totalAmount}
                         onChange={handleChange}
@@ -1255,7 +1303,7 @@ const FrmReceiptJcmc = () => {
                         <div>
                           <Label text="मागील रक्कम :" />
                           <Input
-                          type="number"
+                            type="number"
                             name="PrevAmount"
                             value={values.PrevAmount || ""}
                             onChange={handleChange}
@@ -1265,7 +1313,7 @@ const FrmReceiptJcmc = () => {
                         <div>
                           <Label text="चालू रक्कम :" />
                           <Input
-                          type="number"
+                            type="number"
                             name="CurrentAmount"
                             value={values.CurrentAmount || ""}
                             onChange={handleChange}

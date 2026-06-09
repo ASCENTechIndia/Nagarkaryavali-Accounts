@@ -254,6 +254,12 @@ th, td {
   <td>Total Receipt</td>
   <td>{{totalReceipt}}</td>
 </tr>
+{{#if isJCMC}}
+<tr>
+  <td>Total Discount</td>
+  <td>{{discountAmount}}</td>
+</tr>
+{{/if}}
 <tr>
   <td>Total Expenses</td>
   <td>{{totalPayment}}</td>

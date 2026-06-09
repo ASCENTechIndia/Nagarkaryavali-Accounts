@@ -53,6 +53,8 @@ const RptLedgerReportPDFHelper = async ({
 
     const rows = transactions.map((t) => {
       const amount = Number(t.AMOUNT || 0);
+      const discountAmount = Number(t.DISCOUNTAMOUNT  || 0);
+      const netAmount = Math.abs(amount) - discountAmount;
 
       let row = {
         DR_ACCOUNT_CODE: "",
@@ -83,12 +85,12 @@ const RptLedgerReportPDFHelper = async ({
         row.CR_PAN = t.PANCARD || "";
         row.CR_PARTICULARS = t.NARRATION || "";
         row.CR_CHEQUE = t.CHQNO || "";
-        row.CR_AMOUNT = formatNumber(amount);
+        row.CR_AMOUNT = formatNumber(netAmount);
 
-        totalCr += amount;
+        totalCr += netAmount;
         crCount++;
       } else {
-        const abs = Math.abs(amount);
+        const abs = Math.abs(netAmount);
 
         row.DR_ACCOUNT_CODE = filters.accountCode || "";
 

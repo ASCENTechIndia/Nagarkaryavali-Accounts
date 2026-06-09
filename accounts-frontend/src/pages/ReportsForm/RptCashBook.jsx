@@ -530,6 +530,12 @@ const RptCashBook = () => {
     };
   });
 
+  const discountAmount =
+  tableData.find(
+    (row) => Number(row.RDiscountAmount || 0) > 0
+  )?.RDiscountAmount || 0;
+
+
   const lastRow = tableData[tableData.length - 1];
   const closingBalance = lastRow?.Balance || 0;
   const closingDrCr = lastRow?.DrCr || "Cr.";
@@ -805,25 +811,29 @@ const RptCashBook = () => {
                     // rowsPerPage={10}
                   />
 
-                  <div className="flex justify-end items-center gap-4 p-4 border-t">
+                <div className="flex justify-end items-center gap-4 p-4 border-t">
                     <Label className="font-semibold">एकूण :</Label>
                     <Input
-                      value={totals.totalRCash.toLocaleString("en-IN")}
+                      // value={totals.totalRCash.toLocaleString("en-IN")}
+                      value={totals.totalRCash > 0 ? (totals.totalRCash - discountAmount).toLocaleString("en-IN") : (totals.totalRCash).toLocaleString("en-IN")}
                       readOnly
                       className="w-32 text-right"
                     />
                     <Input
-                      value={totals.totalRBank.toLocaleString("en-IN")}
+                      // value={totals.totalRBank.toLocaleString("en-IN")}
+                      value={totals.totalRBank > 0 ? (totals.totalRBank - discountAmount).toLocaleString("en-IN") : (totals.totalRBank).toLocaleString("en-IN")}
                       readOnly
                       className="w-32 text-right"
                     />
                     <Input
-                      value={totals.totalPCash.toLocaleString("en-IN")}
+                      // value={totals.totalPCash.toLocaleString("en-IN")}
+                      value={totals.totalPCash > 0 ? (totals.totalPCash - discountAmount).toLocaleString("en-IN") : (totals.totalPCash).toLocaleString("en-IN")}
                       readOnly
                       className="w-32 text-right"
                     />
                     <Input
-                      value={totals.totalPBank.toLocaleString("en-IN")}
+                      // value={totals.totalPBank.toLocaleString("en-IN")}
+                      value={totals.totalPBank > 0 ? (totals.totalPBank - discountAmount).toLocaleString("en-IN") : (totals.totalPBank).toLocaleString("en-IN")}
                       readOnly
                       className="w-32 text-right"
                     />

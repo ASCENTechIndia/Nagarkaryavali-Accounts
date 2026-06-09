@@ -163,6 +163,8 @@ const RptReceiptRegisterJcmcPDFHelper = async ({ reportData, filters, corporatio
   try {
     if (!reportData.length) throw new Error("No data");
 
+    console.log("reportData", reportData);
+
     const templatePath = path.resolve(__dirname, "../../templates/RptReceiptRegisterJcmc.html");
     const templateHtml = fs.readFileSync(templatePath, "utf8");
     const template = Handlebars.compile(templateHtml);
@@ -189,7 +191,8 @@ const RptReceiptRegisterJcmcPDFHelper = async ({ reportData, filters, corporatio
     const amount5 = getAmt("81111400002"); 
     const amount6 = getAmt("94713310001"); 
     const amount7 = getAmt("97111710001");
-    const sutRakkam = getAmt("91028290003"); 
+    // const sutRakkam = getAmt("91028290003"); 
+    const sutRakkam = Number(reportData[0]?.DISCOUNTAMOUNT || 0);
 
     const amount9 = getAmt("SPECIAL_WATER"); 
     const amount10 = getAmt("SPECIAL_CLEAN"); 

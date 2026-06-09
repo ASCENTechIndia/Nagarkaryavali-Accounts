@@ -52,10 +52,15 @@ const generateReceiptPDF = async ({ data, corporationName, corporationLogo }) =>
       };
     });
 
-    const amountWords = numberToWords.toWords(total).toUpperCase() + " RUPEES ONLY";
+    const discount = Number(data?.[0]?.DISCOUNTAMOUNT || 0);
+    const netTotal = total - discount;
+
+    const amountWords = numberToWords.toWords(netTotal).toUpperCase() + " RUPEES ONLY";
     const html = template({
       rows,
       total: total.toFixed(2),
+      discount,
+      netTotal,
       amountWords,
       refno: data[0].REFNO,
       date: formatDate(data[0].TRANSDATE),

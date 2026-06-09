@@ -154,3 +154,20 @@ exports.getAccountMappingDetail = asyncHandler(async (req, res) => {
   );
 });
 
+exports.getReceiptDetailByRefNo =
+asyncHandler(async (req, res) => {
+
+  const { refNo } = req.body;
+
+  const data =
+    await service.getReceiptDetailByRefNoService({
+      refNo
+    });
+
+  return ok(
+    res,
+    data,
+    "Receipt detail fetched successfully"
+  );
+});
+
