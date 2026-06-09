@@ -223,6 +223,18 @@ async function getAccountMappingDetailService(payload) {
   };
 }
 
+async function getReceiptDetailByRefNoService(params) {
+
+  const data =
+    await repo.getReceiptDetailByRefNo(params);
+
+  return {
+    success: true,
+    count: data.length,
+    data
+  };
+}
+
 module.exports = {
   getReceiptList,
   getZones,
@@ -240,5 +252,6 @@ module.exports = {
   getReceiptDetailsService,
   getUserMapHeaderService,
   getUserMapDetailsService,
-  getAccountMappingDetailService
+  getAccountMappingDetailService,
+  getReceiptDetailByRefNoService
 };

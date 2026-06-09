@@ -5,40 +5,59 @@ const { executeQuery } = require("../../../db/queryExecutor");
 // ✅ 1. Get Receipt List
 const getReceiptListRepo = (ddl_ZoneID, ddl_ULB_ID, ddl_USER_ID ) =>
   executeQuery(
-    `SELECT num_receiptmst_refno refno,
-            date_receiptmst_trnsdate trnsdate,
-            num_receiptmst_recno docno,
-            var_trnstype_trnstypemar trnstype,
-            zoneename zonename,
-            var_grampanch_grampanch grampanch,
-            SUM(num_receiptdet_amount) amount,
-            var_receiptmst_insby username,
-            date_receiptmst_insdate datetime,
-            num_receiptmst_trnstypeid trnstypeid
-     FROM aoac_receiptmst_def
-     INNER JOIN aoac_receiptdet_def
-       ON num_receiptdet_refno = num_receiptmst_refno
-     INNER JOIN aoac_trnstype_def
-       ON num_trnstype_trnstypeid = num_receiptmst_trnstypeid
-     INNER JOIN view_zone
-       ON zoneid = num_receiptmst_zoneid
-     LEFT JOIN aoac_grampanch_def
-       ON num_grampanch_deptid = num_receiptmst_zoneid
-      AND num_grampanch_grampanchid = num_receiptmst_grampanchid
-     WHERE var_receiptmst_authstatus IS NULL
-       AND zoneid = :ddl_ZoneID
+    `SELECT
+    num_receiptmst_refno refno,
+    date_receiptmst_trnsdate trnsdate,
+    num_receiptmst_recno docno,
+    var_trnstype_trnstypemar trnstype,
+    zoneename zonename,
+    var_grampanch_grampanch grampanch,
+
+    SUM(num_receiptdet_amount) - MAX(NVL(num_receiptdesc_amount,0)) amount,
+
+    var_receiptmst_insby username,
+    date_receiptmst_insdate datetime,
+    num_receiptmst_trnstypeid trnstypeid,
+
+    0 AS BudgetCode,
+    MAX(NVL(num_receiptdesc_amount,0)) AS discountamount
+
+FROM aoac_receiptmst_def
+
+INNER JOIN aoac_receiptdet_def
+    ON num_receiptdet_refno = num_receiptmst_refno
+
+INNER JOIN aoac_trnstype_def
+    ON num_trnstype_trnstypeid = num_receiptmst_trnstypeid
+
+INNER JOIN view_zone
+    ON zoneid = num_receiptmst_zoneid
+
+LEFT JOIN aoac_grampanch_def
+    ON num_grampanch_deptid = num_receiptmst_zoneid
+   AND num_grampanch_grampanchid = num_receiptmst_grampanchid
+
+LEFT JOIN aoac_receiptdesc_def
+    ON num_receiptdesc_refno = num_receiptmst_refno
+
+WHERE var_receiptmst_authstatus IS NULL
+  AND zoneid = :ddl_ZoneID
        AND num_receiptmst_ulbid = :ddl_ULB_ID
        AND var_receiptmst_insby = :ddl_USER_ID
-     GROUP BY num_receiptmst_refno,
-              date_receiptmst_trnsdate,
-              num_receiptmst_recno,
-              var_trnstype_trnstypemar,
-              zoneename,
-              var_grampanch_grampanch,
-              var_receiptmst_insby,
-              date_receiptmst_insdate,
-              num_receiptmst_trnstypeid
-     ORDER BY num_receiptmst_refno`,
+
+GROUP BY
+    num_receiptmst_refno,
+    date_receiptmst_trnsdate,
+    num_receiptmst_recno,
+    var_trnstype_trnstypemar,
+    zoneename,
+    var_grampanch_grampanch,
+    var_receiptmst_insby,
+    date_receiptmst_insdate,
+    num_receiptmst_trnstypeid
+
+ORDER BY
+    num_receiptmst_refno`,
     { ddl_ZoneID, ddl_ULB_ID,  ddl_USER_ID },
   );
 
@@ -220,30 +239,25 @@ const getBudgetHeadsRepo = () =>
 
 const getReceiptDetailsPdfRepo = (refno, ulbid) =>
   executeQuery(
-    `SELECT REFNO,
-            TRANSDATE,
-            TRANSTYPE,
-            ZONEENAME,
-            ACCNAME,
-            ACCCNO,
-            TAXNAME,
-            TAXAC,
-            REMARKS,
-            AMOUNT,
-            PARTYNAME,
-            ULBID,
-            partycode
-     FROM VW_Receiptdetails
-     WHERE REFNO = :refno
-       AND ulbid = :ulbid`,
+    `SELECT
+        vr.*,
+        (
+            SELECT SUM(rd.num_receiptdesc_amount)
+            FROM aoac_receiptdesc_def rd
+            WHERE rd.num_receiptdesc_refno = vr.REFNO
+        ) AS DISCOUNTAMOUNT
+    FROM VW_Receiptdetails vr
+     WHERE vr.REFNO = :refno
+       AND vr.ulbid = :ulbid`,
     { refno, ulbid },
   );
+
 
 async function getReceiptPDF(payload) {
   try {
 
     const query = `
-      SELECT
+     SELECT
           REFNO,
           MIN(TRANSDATE) AS TRANSDATE,
           TRANSTYPE,
@@ -253,7 +267,12 @@ async function getReceiptPDF(payload) {
           PARTYNAME,
           ULBID,
           PARTYCODE,
-          SUM(AMOUNT) AS TOTAL_AMOUNT
+          SUM(AMOUNT) AS TOTAL_AMOUNT,
+          (
+          SELECT SUM(rd.num_receiptdesc_amount)
+          FROM aoac_receiptdesc_def rd
+          WHERE rd.num_receiptdesc_refno = VW_Receiptdetails.REFNO
+      ) AS DISCOUNTAMOUNT
       FROM VW_Receiptdetails
       WHERE ULBID = :ulbid
         AND TRUNC(TRANSDATE)
@@ -348,9 +367,7 @@ async function getUserMapDetailsRepo(payload) {
   }
 }
 
-// ======================================================
-// ACCOUNT MAPPING DETAIL
-// ======================================================
+
 
 async function getAccountMappingDetailRepo(payload) {
 
@@ -383,6 +400,110 @@ async function getAccountMappingDetailRepo(payload) {
     throw err;
   }
 }
+// ============================================
+// RECEIPT DETAIL BY REF NO
+// ============================================
+
+const getReceiptDetailByRefNo = async (params) => {
+  try {
+
+    const query = `
+      SELECT *
+      FROM (
+          SELECT
+              0 AS count,
+              a.date_receiptmst_trnsdate AS trnsdate,
+              a.num_receiptmst_recno AS recno,
+              a.num_receiptmst_trnstypeid AS trnstypeid,
+              a.num_receiptmst_zoneid AS zoneid,
+              a.num_receiptmst_grampanchid AS grampanchid,
+              accdr.functioncode AS drgl,
+              accdr.glname AS drglname,
+              accdr.objectcode AS dracc,
+              accdr.accname AS draccname,
+              acc.functioncode AS glcode,
+              acc.glname AS glname,
+              acc.objectcode AS accno,
+              acc.accname AS accountname,
+              c.num_receiptdet_amount AS credit,
+              c.var_receiptdet_narration AS narration,
+              c.num_receiptdet_partycode AS party,
+              acc.accsubtypeid,
+              NVL(a.num_receiptmst_deptid,1) AS accdeptid,
+              a.num_receiptmst_budget_id AS budget_id,
+              a.num_receiptmst_nidhi_id AS nidhi_id,
+              a.num_receiptmst_subdeptid AS subdeptid,
+              c.num_receiptdet_arramount,
+              c.num_receiptdet_curramount,
+              a.num_receiptmst_refno
+          FROM aoac_receiptmst_def a
+          INNER JOIN aoac_receiptdet_def c
+              ON a.num_receiptmst_refno = c.num_receiptdet_refno
+          LEFT JOIN accountview_web accdr
+              ON a.num_receiptmst_drgl = accdr.glcode
+             AND a.num_receiptmst_dracc = accdr.accno
+             AND a.num_receiptmst_ulbid = accdr.ulbid
+          LEFT JOIN accountview_web acc
+              ON c.num_receiptdet_glcode = acc.glcode
+             AND c.num_receiptdet_accno = acc.accno
+             AND a.num_receiptmst_ulbid = acc.ulbid
+
+          UNION ALL
+
+          SELECT
+              0 AS count,
+              a.date_receiptmst_trnsdate AS trnsdate,
+              a.num_receiptmst_recno AS recno,
+              a.num_receiptmst_trnstypeid AS trnstypeid,
+              a.num_receiptmst_zoneid AS zoneid,
+              a.num_receiptmst_grampanchid AS grampanchid,
+              accdr.functioncode AS drgl,
+              accdr.glname AS drglname,
+              accdr.objectcode AS dracc,
+              accdr.accname AS draccname,
+              acc.functioncode AS glcode,
+              acc.glname AS glname,
+              acc.objectcode AS accno,
+              acc.accname AS accountname,
+              c.num_receiptdesc_amount AS credit,
+              c.var_receiptdesc_narration AS narration,
+              c.num_receiptdesc_partycode AS party,
+              acc.accsubtypeid,
+              NVL(a.num_receiptmst_deptid,1) AS accdeptid,
+              a.num_receiptmst_budget_id AS budget_id,
+              a.num_receiptmst_nidhi_id AS nidhi_id,
+              a.num_receiptmst_subdeptid AS subdeptid,
+              c.num_receiptdesc_arramount AS num_receiptdet_arramount,
+              c.num_receiptdesc_curramount AS num_receiptdet_curramount,
+              a.num_receiptmst_refno
+          FROM aoac_receiptmst_def a
+          INNER JOIN aoac_receiptdesc_def c
+              ON a.num_receiptmst_refno = c.num_receiptdesc_refno
+          LEFT JOIN accountview_web accdr
+              ON a.num_receiptmst_drgl = accdr.glcode
+             AND a.num_receiptmst_dracc = accdr.accno
+             AND a.num_receiptmst_ulbid = accdr.ulbid
+          LEFT JOIN accountview_web acc
+              ON c.num_receiptdesc_glcode = acc.glcode
+             AND c.num_receiptdesc_accno = acc.accno
+             AND a.num_receiptmst_ulbid = acc.ulbid
+      )
+      WHERE num_receiptmst_refno = :RefNo
+    `;
+
+    const result = await executeQuery(
+      query,
+      {
+        RefNo: params.refNo
+      }
+    );
+
+    return result.rows;
+
+  } catch (err) {
+    throw err;
+  }
+};
 
 
 module.exports = {
@@ -402,5 +523,7 @@ module.exports = {
   getReceiptPDF,
   getUserMapHeaderRepo,
   getUserMapDetailsRepo,
-  getAccountMappingDetailRepo
+  getAccountMappingDetailRepo,
+  getReceiptDetailByRefNo
+  
 };

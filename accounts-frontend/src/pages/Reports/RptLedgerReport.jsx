@@ -167,7 +167,7 @@ const RptLedgerReport = () => {
     }
   };
 
-  const fetchLedgerTransactions = async (glcode, accno, ulbid, fromDate, toDate, zoneid) => {
+const fetchLedgerTransactions = async (glcode, accno, ulbid, fromDate, toDate, zoneid) => {
     try {
       const response = await axios.post(
         `${BASE_URL}/api/RptLedgerReport/ledger/transactions`,
@@ -181,19 +181,21 @@ const RptLedgerReport = () => {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      console.log("response",response)
+      
       if (response?.data?.ok && response?.data?.data) {
         const transactionsList = response.data.data.list || [];
         
         const transformedTransactions = transactionsList.map(transaction => {
           const amount = parseFloat(transaction.AMOUNT) || 0;
+          const discountAmount = parseFloat(transaction.DISCOUNTAMOUNT) || 0;
+          const netAmount = Math.abs(amount) - discountAmount;
           
           if (amount > 0) {
             return {
               ...transaction,
               isCredit: true,
               isDebit: false,
-              creditAmount: amount,
+              creditAmount: netAmount,
               debitAmount: 0,
               crDate: transaction.TRNSDATE,
               crAcCode: transaction.ACCNO,
@@ -209,7 +211,7 @@ const RptLedgerReport = () => {
               drPanCard: "",
             };
           } else {
-            const absAmount = Math.abs(amount);
+            const absAmount = Math.abs(netAmount);
             return {
               ...transaction,
               isCredit: false,
@@ -240,7 +242,6 @@ const RptLedgerReport = () => {
       return [];
     }
   };
-
   const fetchTransactionDetails = async (transNo) => {
     try {
       const response = await axios.post(

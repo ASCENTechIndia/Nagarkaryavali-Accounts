@@ -113,7 +113,7 @@ const FrmTransAuthMst = () => {
       );
 
       if (response?.data?.success && response?.data?.data) {
-        const { header, rows } = response.data.data;
+        const { header, rows, sum } = response.data.data;
 
         setRefNo(header.REFNO?.toString() || "");
         setVoucherNo(header.DOCNO?.toString() || "");
@@ -124,7 +124,8 @@ const FrmTransAuthMst = () => {
         setUsername(header.USERNAME || "");
         setDatetime(header.DATETIME ? new Date(header.DATETIME).toLocaleString() : "");
         
-        const totalAmount = rows.reduce((sum, row) => sum + (row.credit || row.debit || 0), 0);
+        // const totalAmount = rows.reduce((sum, row) => sum + (row.credit || row.debit || 0), 0);
+        const totalAmount= sum;
         setAmount(totalAmount.toString());
 
         const formattedRows = rows.map((row, index) => ({
@@ -637,7 +638,8 @@ const FrmTransAuthMst = () => {
                             <span>:</span>
                         </div>
                         <Input
-                          value={totalCredit.toLocaleString("en-IN")}
+                          // value={totalCredit.toLocaleString("en-IN")}
+                            value={amount.toLocaleString("en-IN")}
                           readOnly
                           className="w-40 text-right h-9"
                         />
