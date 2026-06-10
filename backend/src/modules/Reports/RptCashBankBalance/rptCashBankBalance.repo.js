@@ -166,7 +166,7 @@ async function getDailyTransactionDetailedReport(filters) {
 
   const sql = `
     -- PART 1: Receipts (Type R)
-      SELECT 
+    SELECT 
         a.transno, 
         a.trnsdate, 
         a.docno, 
@@ -179,15 +179,12 @@ async function getDailyTransactionDetailedReport(filters) {
         TO_CHAR(a.chqno, 'FM000000') AS chqno, 
         CASE WHEN a.sourceid = 6 THEN a.amount ELSE 0 END AS transamount,
         v.zoneename AS zonename, 
-        m.deptname AS grampanch,
+        m.num_accdept_name AS grampanch,
         c.objectcode || ' ' || c.accname AS accname, 
         p.var_partymst_partyname AS PartyName, 
         NULL AS DelFlag,
         c.objectcode, 
-        c.functioncode,
-        c.glname,
-MAX(NVL(rd.num_receiptdesc_amount,0)) AS discountamount
-
+        c.functioncode 
     FROM transview a 
     INNER JOIN accountview_web c 
         ON a.glcode = c.glcode 
@@ -197,39 +194,14 @@ MAX(NVL(rd.num_receiptdesc_amount,0)) AS discountamount
         ON p.num_partymst_partyid = a.partycode 
     LEFT JOIN view_zone v 
         ON v.zoneid = a.zoneid 
-    LEFT OUTER JOIN vw_accdeptconfig m 
-        ON m.deptid = a.accdept
-        LEFT JOIN aoac_receiptmst_def rm
-    ON rm.num_receiptmst_trnsno = a.transno
-   AND rm.num_receiptmst_ulbid = a.ulbid
-
-LEFT JOIN aoac_receiptdesc_def rd
-    ON rd.num_receiptdesc_refno = rm.num_receiptmst_refno
+    LEFT OUTER JOIN aoac_accdept_mst m 
+        ON m.num_accdept_id = a.accdept
     WHERE TRUNC(a.trnsdate) = TO_DATE(:reportDate, 'DD-MON-YYYY')
         AND a.amount > 0 
         AND a.trnstypeid IN (1, 2)
         AND c.ulbid = :ulbId
         ${mbmcFilter1}
         ${zoneFilter1}
- GROUP BY
-    a.transno,
-    a.trnsdate,
-    a.docno,
-    a.glcode,
-    c.glname,
-    a.accno,
-    a.narration,
-    a.trnstypeid,
-    a.amount,
-    a.chqno,
-    a.sourceid,
-    v.zoneename,
-    m.deptname,
-    c.objectcode,
-    c.accname,
-    p.var_partymst_partyname,
-    c.functioncode
-   
 
     UNION ALL 
 
@@ -254,10 +226,7 @@ LEFT JOIN aoac_receiptdesc_def rd
         p.var_partymst_partyname AS PartyName, 
         NULL AS DelFlag, 
         c.objectcode, 
-        c.functioncode,
-                NULL AS glname,
-0 AS discountamount
-
+        c.functioncode
     FROM aoac_vchprepmst_def vpm
     INNER JOIN aoac_vchgenmst_def vgm 
         ON vgm.num_vchgenmst_refno = vpm.num_vchprepmst_refno 
@@ -313,10 +282,7 @@ LEFT JOIN aoac_receiptdesc_def rd
         p.var_partymst_partyname AS PartyName, 
         NULL AS DelFlag, 
         c.objectcode, 
-        c.functioncode ,
-                c.glname,
-0 AS discountamount
-   
+        c.functioncode    
     FROM transview a    
     INNER JOIN accountview_web c 
         ON a.glcode = c.glcode 
@@ -357,10 +323,7 @@ LEFT JOIN aoac_receiptdesc_def rd
         p.var_partymst_partyname AS PartyName, 
         NULL AS DelFlag, 
         c.objectcode, 
-        c.functioncode,
-                c.glname,
-0 AS discountamount
-
+        c.functioncode
     FROM transview a    
     INNER JOIN accountview_web c 
         ON a.glcode = c.glcode 
@@ -372,283 +335,6 @@ LEFT JOIN aoac_receiptdesc_def rd
         ON v.zoneid = a.zoneid     
     LEFT OUTER JOIN aoac_accdept_mst m 
         ON m.num_accdept_id = a.accdept     
-    WHERE TRUNC(a.trnsdate) = TO_DATE(:reportDate, 'DD-MON-YYYY') 
-        AND a.amount > 0 
-        AND a.trnstypeid IN (9) 
-        AND a.sourceid <> 6    
-        AND c.ulbid = :ulbId
-        ${mbmcFilter4}
-        ${zoneFilter4}
-
-    ORDER BY TransType DESC, transno, docno, transamount
-  `;
-
-  console.log("Executing SQL with params:", params);
-  console.log("Generated SQL:", sql);
-
-  const result = await executeQuery(sql, params);
-
-  if (!result.success) {
-    console.error("SQL Error:", result.error);
-    throw new Error(result.error);
-  }
-  if (result.rows && result.rows.length > 0) {
-    console.log("First row column names:", Object.keys(result.rows[0]));
-    console.log("First row sample:", result.rows[0]);
-  }
-
-  const transformedData = transformToCashBookFormat(result.rows);
-  console.log("Transformed data count:", transformedData.length);
-
-  return transformedData;
-}
-
-
-async function getJCMCDailyTransactionDetailedReport(filters) {
-  const { date, ulbId, corpCode, budgetId, nidhiId, zone } = filters;
-
-  let params = {
-    reportDate: date,
-    ulbId: ulbId
-  };
-
-  let mbmcFilter1 = "";
-  let mbmcFilter2 = "";
-  let mbmcFilter3 = "";
-  let mbmcFilter4 = "";
-
-  if (corpCode === "MBMC") {
-    if (budgetId && budgetId !== 0 && budgetId !== "0") {
-      mbmcFilter1 += " AND a.budgetid = :budgetId ";
-      mbmcFilter2 += " AND t.num_trans_budgetid = :budgetId ";
-      mbmcFilter3 += " AND budgetid = :budgetId ";
-      mbmcFilter4 += " AND budgetid = :budgetId ";
-      params.budgetId = budgetId;
-    }
-    if (nidhiId && nidhiId !== 0 && nidhiId !== "0") {
-      mbmcFilter1 += " AND a.nidhi_id = :nidhiId ";
-      mbmcFilter2 += " AND t.num_trans_nidhiid = :nidhiId ";
-      mbmcFilter3 += " AND a.nidhi_id = :nidhiId ";
-      mbmcFilter4 += " AND a.nidhi_id = :nidhiId ";
-      params.nidhiId = nidhiId;
-    }
-  }
-
-  let zoneFilter1 = "";
-  let zoneFilter2 = "";
-  let zoneFilter3 = "";
-  let zoneFilter4 = "";
-
-  if (zone && zone !== "-1") {
-    zoneFilter1 = " AND a.zoneid = :zone ";
-    zoneFilter2 = " AND vpm.num_vchprepmst_zoneid = :zone ";
-    zoneFilter3 = " AND a.zoneid = :zone ";
-    zoneFilter4 = " AND a.zoneid = :zone ";
-    params.zone = zone;
-  }
-
-  const sql = `
-    -- PART 1: Receipts (Type R)
-    SELECT
-      a.transno,
-      a.trnsdate,
-      a.docno,
-      a.glcode,
-      c.glname,
-      a.accno,
-      a.narration,
-
-      CASE WHEN a.trnstypeid = 1 THEN a.amount ELSE 0 END AS cashamount,
-      CASE WHEN a.trnstypeid = 2 THEN a.amount ELSE 0 END AS bankamount,
-
-      'R' AS TransType,
-
-      TO_CHAR(a.chqno, 'FM000000') AS chqno,
-
-      CASE WHEN a.sourceid = 6 THEN a.amount ELSE 0 END AS transamount,
-
-      v.zoneename AS zonename,
-      m.num_accdept_name AS grampanch,
-
-      c.objectcode || ' ' || c.accname AS accname,
-
-      p.var_partymst_partyname AS PartyName,
-
-      NULL AS DelFlag,
-
-      c.objectcode,
-      c.functioncode,
-
-      (
-        SELECT NVL(SUM(num_receiptdesc_amount),0)
-        FROM aoac_receiptdesc_def
-        WHERE num_receiptdesc_refno = rm.num_receiptmst_refno
-      ) AS discountamount
-
-  FROM transview a
-
-  INNER JOIN accountview_web c
-      ON a.glcode = c.glcode
-    AND a.accno = c.accno
-    AND c.ulbid = a.ulbid
-
-  INNER JOIN aoac_receiptmst_def rm
-      ON rm.num_receiptmst_trnsno = a.transno
-    AND rm.num_receiptmst_ulbid = a.ulbid
-
-  LEFT JOIN aoac_partymst_def p
-      ON p.num_partymst_partyid = a.partycode
-
-  LEFT JOIN view_zone v
-      ON v.zoneid = a.zoneid
-
-  LEFT OUTER JOIN aoac_accdept_mst m
-      ON m.num_accdept_id = a.accdept
-    WHERE TRUNC(a.trnsdate) = TO_DATE(:reportDate, 'DD-MON-YYYY')
-        AND a.amount > 0 
-        AND a.trnstypeid IN (1, 2)
-        AND c.ulbid = :ulbId
-        ${mbmcFilter1}
-        ${zoneFilter1}
-
-    UNION ALL 
-
-    -- PART 2: Voucher Payments (Type P)
-    SELECT 
-        num_vchtransbal_transno AS transno, 
-        date_trans_trnsdate AS trnsdate, 
-        (SELECT DISTINCT TO_CHAR(num_vchtransbal_vchtransbalno) 
-         FROM aoac_vchtransbal_def 
-         WHERE num_vchtransbal_transno = t.num_trans_transno) AS docno,    
-        num_vchprepmst_drgl AS glcode, 
-        NULL AS glname,
-        num_vchprepmst_dracc AS accno, 
-        var_vchpremst_narration AS narration, 
-        0 AS cashamount,    
-        num_vchtransbal_payamt AS bankamount, 
-        'P' AS TransType, 
-        TO_CHAR(num_trans_chqno, 'FM000000') AS chqno, 
-        0 AS transamount,    
-        NULL AS zonename, 
-        NULL AS grampanch, 
-        c.objectcode || ' ' || c.accname AS accname, 
-        p.var_partymst_partyname AS PartyName, 
-        NULL AS DelFlag, 
-        c.objectcode, 
-        c.functioncode,
-        0 AS discountamount
-    FROM aoac_vchprepmst_def vpm
-    INNER JOIN aoac_vchgenmst_def vgm 
-        ON vgm.num_vchgenmst_refno = vpm.num_vchprepmst_refno 
-    INNER JOIN accountview_web c 
-        ON c.glcode = vpm.num_vchprepmst_drgl 
-        AND c.accno = vpm.num_vchprepmst_dracc 
-        AND c.ulbid = vpm.num_vchpremst_ulbid 
-    LEFT JOIN aoac_partymst_def p 
-        ON p.num_partymst_partyid = vpm.num_vchprepmst_partyid    
-    INNER JOIN aoac_vchtransbal_def vtb 
-        ON vtb.num_vchtransbal_vchrefno = vpm.num_vchprepmst_refno 
-        AND vtb.num_vchtransbal_vchtransbalno = vgm.num_vchgenmst_trnsno 
-    INNER JOIN aoac_trans_def t 
-        ON t.num_trans_transno = vtb.num_vchtransbal_transno     
-    WHERE TRUNC(t.date_trans_trnsdate) = TO_DATE(:reportDate, 'DD-MON-YYYY')
-        AND c.ulbid = :ulbId
-        ${zoneFilter2}
-        ${mbmcFilter2}
-    GROUP BY 
-        num_vchtransbal_transno, 
-        date_trans_trnsdate, 
-        num_vchprepmst_vchno, 
-        num_vchprepmst_drgl, 
-        c.functioncode, 
-        num_vchtransbal_payamt, 
-        num_vchprepmst_dracc, 
-        c.objectcode, 
-        var_vchpremst_narration, 
-        num_vchprepmst_totalamt, 
-        TO_CHAR(num_trans_chqno, 'FM000000'), 
-        c.objectcode || ' ' || c.accname, 
-        var_partymst_partyname, 
-        num_trans_transno
-
-    UNION ALL 
-
-    -- PART 3: General Payments (Type P)
-    SELECT 
-        a.transno, 
-        a.trnsdate, 
-        a.docno, 
-        a.glcode, 
-        c.glname,
-        a.accno, 
-        p.var_partymst_partyname || ' ' || c.accname || ' ' || a.narration AS narration,    
-        CASE WHEN a.trnstypeid = 3 THEN a.amount ELSE 0 END AS cashamount,    
-        CASE WHEN a.trnstypeid = 4 THEN a.amount ELSE 0 END AS bankamount, 
-        'P' AS TransType, 
-        TO_CHAR(a.chqno, 'FM000000') AS chqno,     
-        CASE WHEN a.trnstypeid = 8 THEN a.amount ELSE 0 END AS transamount, 
-        v.zoneename AS zonename, 
-        m.num_accdept_name AS grampanch,    
-        c.objectcode || ' ' || c.accname AS accname, 
-        p.var_partymst_partyname AS PartyName, 
-        NULL AS DelFlag, 
-        c.objectcode, 
-        c.functioncode,
-        0 AS discountamount
-    FROM transview a    
-    INNER JOIN accountview_web c 
-        ON a.glcode = c.glcode 
-        AND a.accno = c.accno 
-        AND c.ulbid = a.ulbid    
-    LEFT JOIN aoac_partymst_def p 
-        ON p.num_partymst_partyid = a.partycode     
-    LEFT JOIN view_zone v 
-        ON v.zoneid = a.zoneid    
-    LEFT OUTER JOIN aoac_accdept_mst m 
-        ON m.num_accdept_id = a.accdept     
-    WHERE TRUNC(a.trnsdate) = TO_DATE(:reportDate, 'DD-MON-YYYY') 
-        AND a.amount < 0 
-        AND a.trnstypeid IN (3, 4) 
-        AND a.sourceid <> 6
-        AND c.ulbid = :ulbId
-        ${mbmcFilter3}
-        ${zoneFilter3}
-
-    UNION ALL 
-
-    -- PART 4: Internal/Transfer Payments (Type P)
-    SELECT 
-        a.transno, 
-        a.trnsdate, 
-        a.docno, 
-        a.glcode, 
-        c.glname,
-        a.accno, 
-        p.var_partymst_partyname || ' ' || c.accname || ' ' || a.narration AS narration,    
-        0 AS cashamount,    
-        0 AS bankamount, 
-        'P' AS TransType, 
-        TO_CHAR(a.chqno, 'FM000000') AS chqno,     
-        CASE WHEN a.trnstypeid = 9 THEN a.amount ELSE 0 END AS transamount, 
-        v.zoneename AS zonename, 
-        m.num_accdept_name AS grampanch,    
-        c.objectcode || ' ' || c.accname AS accname, 
-        p.var_partymst_partyname AS PartyName, 
-        NULL AS DelFlag, 
-        c.objectcode, 
-        c.functioncode,
-        0 AS discountamount
-    FROM transview a    
-    INNER JOIN accountview_web c 
-        ON a.glcode = c.glcode 
-        AND a.accno = c.accno 
-        AND c.ulbid = a.ulbid 
-    LEFT JOIN aoac_partymst_def p 
-        ON p.num_partymst_partyid = a.partycode     
-    LEFT JOIN view_zone v 
-        ON v.zoneid = a.zoneid     
-    LEFT OUTER JOIN aoac_accdept_mst m 
-        ON m.num_accdept_id = a.accdept      
     WHERE TRUNC(a.trnsdate) = TO_DATE(:reportDate, 'DD-MON-YYYY') 
         AND a.amount > 0 
         AND a.trnstypeid IN (9) 
@@ -707,10 +393,7 @@ function transformToCashBookFormat(data) {
         accname: item.ACCNAME || item.accname,
         partyname: item.PARTYNAME || item.partyname,
         objectcode: item.OBJECTCODE || item.objectcode,
-        functioncode: item.FUNCTIONCODE || item.functioncode,
-        discountamount: Number(
-          item.DISCOUNTAMOUNT || item.discountamount || 0
-        )
+        functioncode: item.FUNCTIONCODE || item.functioncode
       });
     } else if (transType === 'P') {
       payments.push({
@@ -783,12 +466,9 @@ function transformToCashBookFormat(data) {
         existingRow.RBankAmount = receipt.bankamount;
         existingRow.RChqNo = receipt.chqno;
         existingRow.RTransferAmount = receipt.transamount;
-        existingRow.RDiscountAmount = receipt.discountamount || 0;
         existingRow.RZone = receipt.zonename || '';
         existingRow.RDepartment = receipt.grampanch || '';
         existingRow.RAccname = receipt.accname || '';
-        
-        
       } else {
         mergedData.push({
           RSrNo: receiptIndex++,
@@ -803,7 +483,6 @@ function transformToCashBookFormat(data) {
           RBankAmount: receipt.bankamount,
           RChqNo: receipt.chqno,
           RTransferAmount: receipt.transamount,
-          RDiscountAmount: receipt.discountamount || 0,
           RZone: receipt.zonename || '',
           RDepartment: receipt.grampanch || '',
           RAccname: receipt.accname || '',
@@ -881,7 +560,6 @@ function transformToCashBookFormat(data) {
             RBankAmount: 0,
             RChqNo: null,
             RTransferAmount: 0,
-            RDiscountAmount: 0,
             RZone: '',
             RDepartment: '',
             RAccname: '',
@@ -912,9 +590,9 @@ function transformToCashBookFormat(data) {
 // async function getOpeningBalance(filters) {
 //   console.log("Repo: Fetch Opening Balance", filters);
 //   const cashBankSubTypes = [4810, 4820, 4821, 4822, 4823, 4830];
-
+  
 //   console.log(`Opening Balance As On: ${filters.date}`);
-
+  
 //   let sql = `
 //     SELECT balance + receiptamt - amount AS opening_balance 
 //     FROM (
@@ -935,7 +613,7 @@ function transformToCashBookFormat(data) {
 //         WHERE c.accsubtypeid IN (${cashBankSubTypes.join(',')})  
 //           AND c.ulbid = '${filters.ulbId}'
 //     ) balance, 
-
+    
 //     (
 //         SELECT NVL(SUM(amount), 0) AS amount 
 //         FROM transview c 
@@ -945,14 +623,14 @@ function transformToCashBookFormat(data) {
 //           AND c.ulbid = '${filters.ulbId}'  
 //           AND TRUNC(c.trnsdate) <= TO_DATE('${filters.date}', 'DD-MON-YYYY')
 //   `;
-
+  
 //   if (filters.zone && filters.zone !== "-1") {
 //     sql += `\n          AND c.zoneid = '${filters.zone}'`;
 //   }
-
+  
 //   sql += `
 //     ) amount, 
-
+    
 //     (
 //         SELECT NVL(SUM(amount), 0) AS receiptamt 
 //         FROM transview a 
@@ -961,11 +639,11 @@ function transformToCashBookFormat(data) {
 //         WHERE TRUNC(a.trnsdate) <= TO_DATE('${filters.date}', 'DD-MON-YYYY')  
 //           AND a.ulbid = '${filters.ulbId}' 
 //   `;
-
+  
 //   if (filters.zone && filters.zone !== "-1") {
 //     sql += `\n          AND a.zoneid = '${filters.zone}'`;
 //   }
-
+  
 //   sql += `
 //           AND a.transno IN (
 //               SELECT a.transno 
@@ -976,34 +654,34 @@ function transformToCashBookFormat(data) {
 //                 AND c.accsubtypeid IN (${cashBankSubTypes.join(',')})  
 //                 AND c.ulbid = '${filters.ulbId}'
 //   `;
-
+  
 //   if (filters.zone && filters.zone !== "-1") {
 //     sql += `\n                AND a.zoneid = '${filters.zone}'`;
 //   }
-
+  
 //   sql += `
 //               ) 
 //               AND a.amount > 0
 //     ) receiptamt
 //   `;
-
+  
 //   console.log(sql);
-
+  
 //   try {
 //     const result = await executeQuery(sql, {});
-
+    
 //     console.log("Query Result:", result);
-
+    
 //     if (!result.success) {
 //       console.error("SQL Error:", result.error);
 //       throw new Error(result.error);
 //     }
-
+    
 //     const openingBalance = result.rows[0]?.OPENING_BALANCE || 0;
 //     console.log(`Calculated Opening Balance: ${openingBalance}`);
-
+    
 //     return openingBalance;
-
+    
 //   } catch (error) {
 //     console.error("Error in getOpeningBalance:", error);
 //     throw error;
@@ -1012,12 +690,12 @@ function transformToCashBookFormat(data) {
 
 async function getOpeningBalance(filters) {
   console.log("Repo: Fetch Opening Balance", filters);
-
+  
   const cashBankSubTypes = [4820, 4810, 4821, 4822, 4823, 4830];
   const transferSubType = 4829;
-
+  
   console.log(`Opening Balance As On: ${filters.date}`);
-
+  
   let sql = `
     SELECT balance + receiptamt - amount AS opening_balance 
     FROM (
@@ -1040,11 +718,11 @@ async function getOpeningBalance(filters) {
           AND c.ulbid = '${filters.ulbId}'  
           AND TRUNC(c.trnsdate) <= TO_DATE('${filters.date}', 'DD-MON-YYYY')
   `;
-
+  
   if (filters.zone && filters.zone !== "-1") {
     sql += `\n          AND c.zoneid = '${filters.zone}'`;
   }
-
+  
   sql += `
     ) amount,
     
@@ -1059,11 +737,11 @@ async function getOpeningBalance(filters) {
         WHERE TRUNC(a.trnsdate) <= TO_DATE('${filters.date}', 'DD-MON-YYYY')  
           AND a.ulbid = '${filters.ulbId}'
   `;
-
+  
   if (filters.zone && filters.zone !== "-1") {
     sql += `\n          AND a.zoneid = '${filters.zone}'`;
   }
-
+  
   sql += `
           AND a.transno IN (
               -- Subquery to filter cash/bank transactions
@@ -1077,35 +755,35 @@ async function getOpeningBalance(filters) {
                 AND c.accsubtypeid IN (${cashBankSubTypes.join(',')})  
                 AND c.ulbid = '${filters.ulbId}'
   `;
-
+  
   // Add zone filter in subquery if provided and not "-1"
   if (filters.zone && filters.zone !== "-1") {
     sql += `\n                AND a.zoneid = '${filters.zone}'`;
   }
-
+  
   sql += `
               ) 
               AND a.amount > 0
     ) receiptamt
   `;
-
+  
   console.log("Generated SQL Query:", sql);
-
+  
   try {
     const result = await executeQuery(sql, {});
-
+    
     console.log("Query Result:", result);
-
+    
     if (!result.success) {
       console.error("SQL Error:", result.error);
       throw new Error(result.error);
     }
-
+    
     const openingBalance = result.rows[0]?.OPENING_BALANCE || 0;
     console.log(`Calculated Opening Balance: ${openingBalance}`);
-
+    
     return openingBalance;
-
+    
   } catch (error) {
     console.error("Error in getOpeningBalance:", error);
     throw error;
@@ -1114,7 +792,7 @@ async function getOpeningBalance(filters) {
 
 async function getReceiptTransactionDetails(transNo, ulbId) {
   console.log("📤 Repo: Fetch Receipt Transaction Details", { transNo, ulbId });
-
+  
   const sql = `
     SELECT 
       num_receiptmst_refno as refno,
@@ -1123,20 +801,20 @@ async function getReceiptTransactionDetails(transNo, ulbId) {
     WHERE num_receiptmst_trnsno = :transNo 
       AND num_receiptmst_ulbid = :ulbId
   `;
-
+  
   const params = { transNo, ulbId };
   const result = await executeQuery(sql, params);
-
+  
   if (!result.success) {
     throw new Error(result.error);
   }
-
+  
   return result.rows[0] || null;
 }
 
 async function getPaymentTransactionDetails(transNo, ulbId) {
   console.log("📤 Repo: Fetch Payment Transaction Details", { transNo, ulbId });
-
+  
   const sql = `
     SELECT 
       num_payment_refno as refno,
@@ -1145,20 +823,20 @@ async function getPaymentTransactionDetails(transNo, ulbId) {
     WHERE num_payment_trnsno = :transNo 
       AND num_payment_ulbid = :ulbId
   `;
-
+  
   const params = { transNo, ulbId };
   const result = await executeQuery(sql, params);
-
+  
   if (!result.success) {
     throw new Error(result.error);
   }
-
+  
   return result.rows[0] || null;
 }
 
 async function getTransferTransactionDetails(transNo, ulbId) {
   console.log("📤 Repo: Fetch Transfer Transaction Details", { transNo, ulbId });
-
+  
   const sql = `
     SELECT 
       num_transfer_refno as refno,
@@ -1167,14 +845,14 @@ async function getTransferTransactionDetails(transNo, ulbId) {
     WHERE num_transfer_trnsno = :transNo 
       AND num_transfer_ulbid = :ulbId
   `;
-
+  
   const params = { transNo, ulbId };
   const result = await executeQuery(sql, params);
-
+  
   if (!result.success) {
     throw new Error(result.error);
   }
-
+  
   return result.rows[0] || null;
 }
 
@@ -1185,6 +863,5 @@ module.exports = {
   getOpeningBalance,
   getReceiptTransactionDetails,
   getPaymentTransactionDetails,
-  getTransferTransactionDetails,
-  getJCMCDailyTransactionDetailedReport
+  getTransferTransactionDetails
 };

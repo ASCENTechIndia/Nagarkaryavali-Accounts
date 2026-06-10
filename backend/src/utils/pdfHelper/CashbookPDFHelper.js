@@ -28,9 +28,6 @@ const CashbookPDFHelper = async ({ reportData, openingBalanceData, filters, ulbI
     let totalPaymentAmount = 0;
     let totalPaymentTransfer = 0;
     let totalPaymentOverall = 0;
-
-    let totalDiscountAmount = 0;
-    const processedDiscountTransNos = new Set();
     
     // Counter for sequential numbering
     let receiptSrNo = 1;
@@ -40,17 +37,6 @@ const CashbookPDFHelper = async ({ reportData, openingBalanceData, filters, ulbI
     reportData.forEach((row) => {
       // Check if this row has receipt data
       const hasReceipt = row.RTransNo !== null && row.RTransNo !== undefined && row.RTransNo !== "";
-
-      if (
-        row.RTransNo &&
-        !processedDiscountTransNos.has(row.RTransNo)
-      ) {
-        totalDiscountAmount += Number(
-          row.RDiscountAmount || 0
-        );
-
-        processedDiscountTransNos.add(row.RTransNo);
-      }
       
       if (hasReceipt) {
         const receiptCash = row.RCashAmount || 0;
@@ -110,25 +96,14 @@ const CashbookPDFHelper = async ({ reportData, openingBalanceData, filters, ulbI
     // Get opening balance from API response
     const openingBalance = openingBalanceData?.balance || 0;
     const openingDrCr = openingBalanceData?.drCr || "Cr.";
-
-    const finalReceiptTotal = totalReceiptOverall - totalDiscountAmount;
-    const finalPaymentTotal = totalPaymentOverall + totalDiscountAmount;
     
     // Calculate closing balance
     let closingBalance;
     if (openingDrCr === "Dr.") {
       // If opening is debit, treat as negative
-      // closingBalance = Math.abs(openingBalance) + totalReceiptOverall - totalPaymentOverall;
-      closingBalance =
-      Math.abs(openingBalance) +
-      totalReceiptOverall -
-      finalPaymentTotal;
+      closingBalance = Math.abs(openingBalance) + totalReceiptOverall - totalPaymentOverall;
     } else {
-      // closingBalance = Math.abs(openingBalance) + totalReceiptOverall - totalPaymentOverall;
-      closingBalance =
-      Math.abs(openingBalance) +
-      totalReceiptOverall -
-      finalPaymentTotal;
+      closingBalance = Math.abs(openingBalance) + totalReceiptOverall - totalPaymentOverall;
     }
     
     const absClosingBalance = Math.abs(closingBalance);
@@ -197,17 +172,13 @@ const CashbookPDFHelper = async ({ reportData, openingBalanceData, filters, ulbI
       totalReceiptCash: formatNumber(totalReceiptCash),
       totalReceiptCheque: formatNumber(totalReceiptCheque),
       totalReceiptTransfer: formatNumber(totalReceiptTransfer),
-      totalReceiptOverall: formatNumber(totalReceiptOverall),
-      totalReceipt: formatNumber(finalReceiptTotal),
+      totalReceipt: formatNumber(totalReceiptOverall),
       // Payment totals - column wise
       totalPaymentAmount: formatNumber(totalPaymentAmount),
       totalPaymentTransfer: formatNumber(totalPaymentTransfer),
-      // totalPayment: formatNumber(totalPaymentOverall),
-      totalPayment: formatNumber(finalPaymentTotal),
+      totalPayment: formatNumber(totalPaymentOverall),
       closing: formatNumber(absClosingBalance),
-      closingDrCr: closingDrCr,
-      isJCMC: Number(filters.ulbId) === 930,
-      discountAmount: formatNumber(totalDiscountAmount),
+      closingDrCr: closingDrCr
     });
 
     const chromePath = path.resolve(
