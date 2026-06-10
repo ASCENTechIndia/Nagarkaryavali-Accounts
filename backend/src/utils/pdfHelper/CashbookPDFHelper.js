@@ -112,6 +112,7 @@ const CashbookPDFHelper = async ({ reportData, openingBalanceData, filters, ulbI
     const openingDrCr = openingBalanceData?.drCr || "Cr.";
 
     const finalReceiptTotal = totalReceiptOverall - totalDiscountAmount;
+    const finalPaymentTotal = totalPaymentOverall + totalDiscountAmount;
     
     // Calculate closing balance
     let closingBalance;
@@ -120,14 +121,14 @@ const CashbookPDFHelper = async ({ reportData, openingBalanceData, filters, ulbI
       // closingBalance = Math.abs(openingBalance) + totalReceiptOverall - totalPaymentOverall;
       closingBalance =
       Math.abs(openingBalance) +
-      finalReceiptTotal -
-      totalPaymentOverall;
+      totalReceiptOverall -
+      finalPaymentTotal;
     } else {
       // closingBalance = Math.abs(openingBalance) + totalReceiptOverall - totalPaymentOverall;
       closingBalance =
       Math.abs(openingBalance) +
-      finalReceiptTotal -
-      totalPaymentOverall;
+      totalReceiptOverall -
+      finalPaymentTotal;
     }
     
     const absClosingBalance = Math.abs(closingBalance);
@@ -196,12 +197,13 @@ const CashbookPDFHelper = async ({ reportData, openingBalanceData, filters, ulbI
       totalReceiptCash: formatNumber(totalReceiptCash),
       totalReceiptCheque: formatNumber(totalReceiptCheque),
       totalReceiptTransfer: formatNumber(totalReceiptTransfer),
-      // totalReceipt: formatNumber(totalReceiptOverall),
+      totalReceiptOverall: formatNumber(totalReceiptOverall),
       totalReceipt: formatNumber(finalReceiptTotal),
       // Payment totals - column wise
       totalPaymentAmount: formatNumber(totalPaymentAmount),
       totalPaymentTransfer: formatNumber(totalPaymentTransfer),
-      totalPayment: formatNumber(totalPaymentOverall),
+      // totalPayment: formatNumber(totalPaymentOverall),
+      totalPayment: formatNumber(finalPaymentTotal),
       closing: formatNumber(absClosingBalance),
       closingDrCr: closingDrCr,
       isJCMC: Number(filters.ulbId) === 930,

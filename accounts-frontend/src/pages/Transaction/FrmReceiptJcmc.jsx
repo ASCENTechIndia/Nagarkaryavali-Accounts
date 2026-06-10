@@ -1140,7 +1140,7 @@ const FrmReceiptJcmc = () => {
                     </div>
 
                     <div>
-                      <Label text="एकूण रक्कम :" />
+                      <Label text="वसूल रक्कम :" />
                       <Input
                         type="number"
                         name="totalAmount"
