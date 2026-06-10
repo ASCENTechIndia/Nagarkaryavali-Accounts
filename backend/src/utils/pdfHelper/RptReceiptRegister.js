@@ -27,7 +27,7 @@ const RptReceiptRegisterPDFHelper = async ({ reportData, filters, corporationNam
 
     const templatePath = path.resolve(
       __dirname,
-      "../../templates/RptReceiptRegister.html" 
+      "../../templates/RptReceiptRegister.html"
     );
 
     const templateHtml = fs.readFileSync(templatePath, "utf8");
@@ -35,13 +35,22 @@ const RptReceiptRegisterPDFHelper = async ({ reportData, filters, corporationNam
 
     // 🔥 Use logo from DB if provided, else fallback to local asset
     let logo = corporationLogo;
-      // ? `data:image/png;base64,${corporationLogo}`
-      // : imageToBase64(path.resolve(__dirname, "../../assets/logo.png"));
+    // ? `data:image/png;base64,${corporationLogo}`
+    // : imageToBase64(path.resolve(__dirname, "../../assets/logo.png"));
 
-    let total = 0;
+    let totalAmount = 0;
+    let sutRakkam = 0;
+
     const rows = reportData.map((row) => {
       const amt = Number(row.AMOUNT || 0);
-      total += amt;
+
+      totalAmount += amt;
+
+      // ACCNO for Discount Amount
+      if (String(row.ACCNO) === "91028290003") {
+        sutRakkam += amt;
+      }
+
       return {
         TRNSDATE: formatDate(row.TRNSDATE),
         TRANSNO: row.TRANSNO,
@@ -54,6 +63,8 @@ const RptReceiptRegisterPDFHelper = async ({ reportData, filters, corporationNam
       };
     });
 
+    const netCollectedAmount = totalAmount - sutRakkam;
+
     const subtitle =
       filters.rptType === "1"
         ? "पावती रजिस्टर तपशिल"
@@ -61,12 +72,16 @@ const RptReceiptRegisterPDFHelper = async ({ reportData, filters, corporationNam
 
     const html = template({
       logo,
-      corporationName, 
+      corporationName,
       fromDate: formatDate(filters.fromDate),
       toDate: formatDate(filters.toDate),
       zoneName: filters.zoneName || "All",
       rows,
-      totalAmount: formatNumber(total),
+
+      totalAmount: formatNumber(totalAmount),
+      sutRakkam: formatNumber(sutRakkam),
+      netCollectedAmount: formatNumber(netCollectedAmount),
+
       currentDate: new Date().toLocaleString("en-IN"),
       subtitle
     });

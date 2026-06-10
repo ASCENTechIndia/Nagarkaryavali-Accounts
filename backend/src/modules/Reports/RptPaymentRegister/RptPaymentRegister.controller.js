@@ -47,7 +47,7 @@ const getPaymentRegisterPDF = asyncHandler(async (req, res) => {
   logo: corpInfo.ULBLOGO || "",   // ✅ FIXED
   zone: filters.zone || "",
   rptType:filters.rptType,
-  zoneName:filters.zoneName || "-"
+  zoneName:filters.zoneName || "ALL"
 });
 
   const baseUrl = `${req.protocol}://${req.get("host")}`;

@@ -91,6 +91,33 @@
       margin-top: 20px;
       font-size: 10px;
     }
+
+    .summary-table {
+      width: 50%;
+      margin-top: 15px;
+      margin-bottom: 15px;
+      border-collapse: collapse;
+      margin-left: auto;
+    }
+
+    .summary-table th,
+    .summary-table td {
+      border: 1px solid #000;
+      padding: 6px 8px;
+    }
+
+    .summary-table th {
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .summary-table td:first-child {
+      text-align: left;
+    }
+
+    .summary-table td:last-child {
+      text-align: right;
+    }
   </style>
 </head>
 
@@ -138,9 +165,29 @@
     </tbody>
   </table>
 
-  <div class="total">
-    एकूण : {{totalAmount}}
-  </div>
+
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>Summary</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>एकूण रक्कम </td>
+        <td class="amount">{{totalAmount}}</td>
+      </tr>
+      <tr>
+        <td>सुट रक्कम </td>
+        <td class="amount">{{sutRakkam}}</td>
+      </tr>
+      <tr>
+        <td><strong>एकूण वसूल रक्कम </strong></td>
+        <td class="amount"><strong>{{netCollectedAmount}}</strong></td>
+      </tr>
+    </tbody>
+  </table>
 
 </body>
 
