@@ -308,6 +308,11 @@ const handleSubmit = async (values) => {
                           <SelectValue placeholder="-- निवडा --" />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem
+                                                      value="-1"
+                                                    >
+                                                      -- ALL --
+                                                    </SelectItem>
                           {zoneList.map((zone) => (
                             <SelectItem
                               key={zone.ZONEID}
