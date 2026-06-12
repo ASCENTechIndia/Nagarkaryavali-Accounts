@@ -27,7 +27,7 @@ const initialValues = {
   wardCode: "",
   head: "",
   userId: "",
-  reportType: "1",
+  reportType: "0",
   exportType: "pdf",
 };
 
@@ -292,7 +292,7 @@ const handleSubmit = async (values) => {
               <Card className="border shadow-sm">
                 <CardHeader className="border-b">
                   <CardTitle className="text-lg font-semibold">
-                    पेमेंट रजिस्टर{" "}
+                 पेमेंट रजिस्टर सारांश{" "}
                   </CardTitle>
                 </CardHeader>
 

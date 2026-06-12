@@ -108,7 +108,7 @@ const generatePaymentRegisterPDF = async ({
         minimumFractionDigits: 2,
       }),
       currentDate: new Date().toLocaleDateString("en-GB"),
-      rptType: rptType === "0" ? "सारांश" : "तपशील",
+      rptType: rptType === "0" ? "सारांश" : "सारांश",
       zoneName
     });
 

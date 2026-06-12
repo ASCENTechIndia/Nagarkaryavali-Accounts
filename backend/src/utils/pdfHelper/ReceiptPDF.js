@@ -23,7 +23,7 @@ const imageToBase64 = (imgPath) => {
   }
 };
 
-const generateReceiptPDF = async ({ data, corporationName, corporationLogo }) => {
+const generateReceiptPDF = async ({ data, corporationName, corporationLogo, transNo }) => {
   try {
     const templatePath = path.resolve(__dirname, "../../templates/Receipt.html");
 
@@ -68,6 +68,7 @@ const generateReceiptPDF = async ({ data, corporationName, corporationLogo }) =>
       zone: data[0].ZONEENAME,
       logo,
       corporationName,
+      transNo
     });
 
     // const browser = await puppeteer.launch({

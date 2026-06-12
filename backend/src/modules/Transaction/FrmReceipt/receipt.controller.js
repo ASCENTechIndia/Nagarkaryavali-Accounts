@@ -92,6 +92,7 @@ exports.getReceiptPDF = asyncHandler(async (req, res) => {
     data,
     corporationName: corpInfo.ABC_MUNICIPAL_TEXT || "",
     corporationLogo: corpInfo.ULBLOGO || "",
+    transNo: payload.transNo
   });
 
   const baseUrl = `${req.protocol}://${req.get("host")}`;

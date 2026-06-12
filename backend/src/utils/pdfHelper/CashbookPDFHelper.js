@@ -69,10 +69,10 @@ const CashbookPDFHelper = async ({ reportData, openingBalanceData, filters, ulbI
       const hasPayment = row.PTransNo !== null && row.PTransNo !== undefined && row.PTransNo !== "";
       
       if (hasPayment) {
-        const paymentAmount = row.PBankAmount || 0;
+        const paymentAmount = row.PCashAmount || 0;
         const paymentTransfer = row.PTransferAmount || 0;
-        // const paymentTotal = paymentAmount + paymentTransfer;
-        const paymentTotal = row.PaymentTotal || 0;
+        const paymentTotal = paymentAmount + paymentTransfer;
+        // const paymentTotal = row.PaymentTotal || 0;
         
         totalPaymentAmount += paymentAmount;
         totalPaymentTransfer += paymentTransfer;
@@ -162,6 +162,7 @@ const CashbookPDFHelper = async ({ reportData, openingBalanceData, filters, ulbI
     }
     
     const html = template({
+      isJCMC: filters.ulbId == 930,
       logo: ulbInfo.ULBLOGO,
       corporationName: ulbInfo.ABC_MUNICIPAL_TEXT,
       fromDate: formattedDate,

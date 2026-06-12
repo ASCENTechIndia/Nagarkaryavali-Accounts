@@ -98,11 +98,18 @@ th, td {
   <img class="logo" src="{{logo}}" />
   <div class="main-title">{{corporationName}}</div>
 </div>
-
 <!-- SUB HEADINGS -->
+
+<div class="sub-title">
+Cash Book (कॅश बुक)
+</div>
+{{#unless isJCMC}}
 <div class="sub-title">
 नमुना क्र. ११ (FORM NO. 11) / नियम ३२ (१) पहा [See Rule 32(1)]
 </div>
+{{/unless}}
+
+
 
 <div class="sub-heading">
 अहवालाचा कालावधी दिनांक : {{fromDate}}.

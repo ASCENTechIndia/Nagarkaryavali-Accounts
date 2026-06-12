@@ -159,6 +159,12 @@ const FrmTransAuthMst = () => {
   const totalCredit = tableData.reduce((sum, row) => sum + (row.creditRaw || 0), 0);
   const totalDebit = tableData.reduce((sum, row) => sum + (row.debitRaw || 0), 0);
 
+   const extractTransactionNumber = (message) => {
+    const match = message.match(/Transaction No\.?\s*:\s*(\d+)/);
+    console.log(match);
+    return match ? match[1] : null;
+  };
+
   const handleAccept = async () => {
     const result = await Swal.fire({
       title: "अधिकृतता",
@@ -221,7 +227,8 @@ const FrmTransAuthMst = () => {
           confirmButtonText: "ठीक आहे",
         });
         if(ulbId === 930 || ulbId === 1750 ) {
-          await generatePDF(voucherData);
+          const transNo = extractTransactionNumber(message);
+          await generatePDF(voucherData, transNo);
         }
         navigate("/Transactions/FrmTransAuthList");
       } else {
@@ -251,7 +258,7 @@ const FrmTransAuthMst = () => {
     }
   };
 
-  const generatePDF = async (voucherData) => {
+  const generatePDF = async (voucherData, transNo) => {
     debugger;
     let pdfLoader = null;
     try {
@@ -277,6 +284,7 @@ const FrmTransAuthMst = () => {
             {
               refno: refNo,
               ulbid: currentUlbId,
+              transNo: transNo
             },
             {
               headers: {
@@ -366,7 +374,6 @@ const FrmTransAuthMst = () => {
       });
     }
   };
-
   const handleReject = async () => {
     const result = await Swal.fire({
       title: "नाकारणे",

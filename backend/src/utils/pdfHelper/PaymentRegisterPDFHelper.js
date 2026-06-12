@@ -67,7 +67,7 @@ const PaymentRegisterPDFHelper = async ({
         glName: row.GLNAME,
         accName: row.ACCNAME,
         zone: row.DEPTNAME,
-        amount: row.AMOUNT,
+        amount: Math.abs(row.AMOUNT),
         narration: row.NARRATION,
         party: row.PARTYNAME ?? "-",
       };

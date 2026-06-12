@@ -121,6 +121,7 @@ async function getCashBankBalanceReportRepo(payload) {
   return result.rows;
 }
 
+
 async function getDailyTransactionDetailedReport(filters) {
   const { date, ulbId, corpCode, budgetId, nidhiId, zone } = filters;
 
@@ -155,12 +156,14 @@ async function getDailyTransactionDetailedReport(filters) {
   let zoneFilter2 = "";
   let zoneFilter3 = "";
   let zoneFilter4 = "";
+  let zoneFilter5 = "";
 
   if (zone && zone !== "-1") {
     zoneFilter1 = " AND a.zoneid = :zone ";
     zoneFilter2 = " AND vpm.num_vchprepmst_zoneid = :zone ";
     zoneFilter3 = " AND a.zoneid = :zone ";
     zoneFilter4 = " AND a.zoneid = :zone ";
+    zoneFilter5 = "  AND v.zoneid = :zone ";
     params.zone = zone;
   }
 
@@ -342,6 +345,49 @@ async function getDailyTransactionDetailedReport(filters) {
         AND c.ulbid = :ulbId
         ${mbmcFilter4}
         ${zoneFilter4}
+
+    UNION ALL
+
+    SELECT
+      num_receiptmst_trnsno AS transno,
+      date_receiptmst_trnsdate AS trnsdate,
+      TO_CHAR(num_receiptmst_refno) AS docno,
+      num_receiptdesc_glcode AS glcode,
+      num_receiptdesc_accno AS accno,
+      var_receiptdesc_narration AS narration,
+      CASE
+          WHEN num_receiptmst_trnstypeid = 1
+          THEN NVL(num_receiptdesc_amount,0)
+          ELSE 0
+      END AS cashamount,
+      CASE
+          WHEN num_receiptmst_trnstypeid = 2
+          THEN NVL(num_receiptdesc_amount,0)
+          ELSE 0
+      END AS bankamount,
+      'P' AS TransType,
+      CAST(NULL AS VARCHAR2(20)) AS chqno,
+      0 AS transamount,
+      v.zoneename AS zonename,
+      CAST(NULL AS VARCHAR2(200)) AS grampanch,
+      c.objectcode || ' ' || c.accname AS accname,
+      CAST(NULL AS VARCHAR2(200)) AS PartyName,
+      CAST(NULL AS VARCHAR2(1)) AS DelFlag,
+      c.objectcode,
+      c.functioncode
+      FROM aoac_receiptmst_def rm
+      INNER JOIN aoac_receiptdesc_def rd  ON rm.num_receiptmst_refno = rd.num_receiptdesc_refno
+      INNER JOIN accountview_web c  ON rd.num_receiptdesc_glcode = c.glcode AND rd.num_receiptdesc_accno = c.accno AND rm.num_receiptmst_ulbid = c.ulbid
+      LEFT JOIN view_zone v
+          ON v.zoneid = rm.num_receiptmst_zoneid
+
+      WHERE TRUNC(rm.date_receiptmst_trnsdate) =
+          TO_DATE(:reportDate, 'DD-MON-YYYY')
+      AND c.ulbid = :ulbId
+      AND rm.num_receiptmst_trnsno IS NOT NULL
+      AND rd.num_receiptdesc_amount > 0
+    ${zoneFilter5}
+
 
     ORDER BY TransType DESC, transno, docno, transamount
   `;
