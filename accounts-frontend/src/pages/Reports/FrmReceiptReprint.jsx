@@ -100,11 +100,18 @@ const FrmReceiptReprint = () => {
         didOpen: () => Swal.showLoading(),
       });
 
+      console.log({
+          refno: row.REFNO,
+          ulbid: Number(ulbId),
+          transNo: row.TRNSNO
+        })
+
       const pdfRes = await axios.post(
         `${BASE_URL}/api/Receipt/receipt-pdf`,
         {
           refno: row.REFNO,
           ulbid: Number(ulbId),
+          transNo: row.TRNSNO
         },
         {
           headers: {
@@ -187,6 +194,8 @@ const FrmReceiptReprint = () => {
     Number(item.DISCOUNTAMOUNT || 0),
 
         }));
+
+        console.log(formattedRows);
 
         setTableData(formattedRows);
 

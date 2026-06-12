@@ -196,6 +196,7 @@ const receiptInsertUpdateRepo = (data) =>
             :In_ParamStr3,
             :In_ParamStr4,
             :In_ParamStr5,
+            :In_ParamStr6,
             
             :out_ReturnStr,
             :out_ErrorCode,
@@ -258,36 +259,41 @@ async function getReceiptPDF(payload) {
 
     const query = `
      SELECT
-          REFNO,
-          MIN(TRANSDATE) AS TRANSDATE,
-          TRANSTYPE,
-          ZONEENAME,
-          ACCNAME,
-          ACCCNO,
-          PARTYNAME,
-          ULBID,
-          PARTYCODE,
-          SUM(AMOUNT) AS TOTAL_AMOUNT,
-          (
-          SELECT SUM(rd.num_receiptdesc_amount)
-          FROM aoac_receiptdesc_def rd
-          WHERE rd.num_receiptdesc_refno = VW_Receiptdetails.REFNO
-      ) AS DISCOUNTAMOUNT
-      FROM VW_Receiptdetails
+        v.REFNO,
+        r.num_receiptmst_trnsno AS TRNSNO,
+        MIN(v.TRANSDATE) AS TRANSDATE,
+        v.TRANSTYPE,
+        v.ZONEENAME,
+        v.ACCNAME,
+        v.ACCCNO,
+        v.PARTYNAME,
+        v.ULBID,
+        v.PARTYCODE,
+        SUM(v.AMOUNT) AS TOTAL_AMOUNT,
+        (
+            SELECT SUM(rd.num_receiptdesc_amount)
+            FROM aoac_receiptdesc_def rd
+            WHERE rd.num_receiptdesc_refno = v.REFNO
+        ) AS DISCOUNTAMOUNT
+    FROM VW_Receiptdetails v
+    INNER JOIN aoac_receiptmst_def r
+        ON r.num_receiptmst_refno = v.REFNO
+      AND r.num_receiptmst_ulbid = v.ULBID
       WHERE ULBID = :ulbid
         AND TRUNC(TRANSDATE)
             BETWEEN TO_DATE(:fromDate,'DD-MM-YYYY')
                 AND TO_DATE(:toDate,'DD-MM-YYYY')
       GROUP BY
-          REFNO,
-          TRANSTYPE,
-          ZONEENAME,
-          ACCNAME,
-          ACCCNO,
-          PARTYNAME,
-          ULBID,
-          PARTYCODE
-      ORDER BY REFNO DESC
+        v.REFNO,
+        r.num_receiptmst_trnsno,
+        v.TRANSTYPE,
+        v.ZONEENAME,
+        v.ACCNAME,
+        v.ACCCNO,
+        v.PARTYNAME,
+        v.ULBID,
+        v.PARTYCODE
+    ORDER BY v.REFNO DESC
     `;
 
     const result = await executeQuery(
@@ -351,6 +357,8 @@ async function getUserMapDetailsRepo(payload) {
       INNER JOIN aoms_accusermap_det
         ON num_accusermap_id = num_accmpdet_mainid
       WHERE num_accusermap_userid = :userId
+      ORDER BY num_accmpdet_id ASC
+
     `;
 
     const result = await executeQuery(
@@ -375,16 +383,21 @@ async function getAccountMappingDetailRepo(payload) {
 
     const query = `
       SELECT
-          var_accmpdet_glcode,
-          var_accmpdet_glname,
-          var_accmpdet_accno,
-          var_accmpdet_accnoname,
-          var_accmpdet_insby,
-          dat_accmpdet_insdate
-      FROM aoms_accusermap_mas
-      INNER JOIN aoms_accusermap_det
-        ON num_accusermap_id = num_accmpdet_mainid
-      WHERE num_accusermap_userid = :userId
+          d.var_accmpdet_glcode,
+          d.var_accmpdet_glname,
+          d.var_accmpdet_accno,
+          d.var_accmpdet_accnoname,
+          d.var_accmpdet_insby,
+          d.dat_accmpdet_insdate
+      FROM aoms_accusermap_mas m
+      INNER JOIN aoms_accusermap_det d
+        ON m.num_accusermap_id = d.num_accmpdet_mainid
+      WHERE m.num_accusermap_userid = :userId
+      ORDER BY
+    CASE
+        WHEN d.var_accmpdet_accno = '91028290003' THEN 999
+        ELSE d.num_accmpdet_id
+    END
     `;
 
     const result = await executeQuery(

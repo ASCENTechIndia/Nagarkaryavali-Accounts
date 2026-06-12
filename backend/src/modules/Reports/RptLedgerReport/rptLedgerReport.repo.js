@@ -160,8 +160,98 @@ async function getLedgerTransactions(payload) {
   const { glcode, accno, ulbid, fromDate, toDate, zoneid } = payload;
 
   console.log("📤 Repo → Ledger Payload:", payload);
+  let sql = "";
 
-  const sql = `
+  if(payload.ulbid == 930) {
+    sql = `
+      SELECT * FROM (
+      SELECT 
+          TO_CHAR(TRUNC(a.trnsdate), 'DD/MM/YYYY') AS trnsdate,
+          a.transno,
+          CASE 
+              WHEN a.sourceid = 6 THEN (
+                  SELECT TO_CHAR(num_vchtransbal_vchtransbalno) 
+                  FROM aoac_vchtransbal_def 
+                  WHERE num_vchtransbal_transno = a.transno 
+                    AND a.ulbid = num_vchtransbal_ulbid 
+                    AND ROWNUM = 1
+              ) 
+              ELSE a.docno 
+          END AS docno, a.accno,  acc.accname, var_partymst_pancard AS pancard, acc.objectcode || '-' || acc.accname || '-' || a.narration AS narration,
+          TO_CHAR(a.chqno, 'FM000000') AS chqno, SUM(a.amount) AS amount, acc.functioncode AS functioncode, acc.objectcode AS objectcode 
+      FROM transview a
+      LEFT JOIN accountview_web acc  ON acc.glcode = a.glcode   AND acc.accno = a.accno  AND acc.ulbid = a.ulbid
+      LEFT JOIN aoac_partymst_def  ON num_partymst_partyid = a.partycode
+        WHERE   TRUNC(a.trnsdate) >= TO_DATE(:fromDate,'DD-MM-YYYY')
+          AND TRUNC(a.trnsdate) <= TO_DATE(:toDate,'DD-MM-YYYY')
+          AND a.ulbid = :ulbid 
+          AND a.amount <> 0
+           AND acc.glcode = :glcode
+          AND acc.accno = :accno
+          
+          AND (:zoneid = '-1' OR a.zoneid =:zoneid)
+          GROUP BY   a.trnsdate,   a.accno,     acc.accname, var_partymst_pancard, a.transno,  a.sourceid,  a.docno,  a.ulbid, 
+          acc.objectcode, acc.accname, a.narration, a.chqno, acc.functioncode
+union all 
+SELECT 
+          TO_CHAR(TRUNC(a.date_receiptmst_trnsdate), 'DD/MM/YYYY') AS trnsdate,
+          a.num_receiptmst_trnsno transno,
+          to_char(num_receiptmst_recno)  docno,
+          acc.accno accno,
+          acc.accname,
+          '' AS pancard,
+          acc.objectcode || '-' || acc.accname || '-' || var_receiptdesc_narration AS narration,
+          '' AS chqno,
+          SUM(nvl(num_receiptdesc_amount,0)) AS amount,
+          acc.functioncode AS functioncode,
+          acc.objectcode AS objectcode 
+      FROM aoac_receiptmst_def a
+      inner join aoac_receiptdesc_def on num_receiptdesc_refno=num_receiptmst_refno
+      LEFT JOIN accountview_web acc  ON acc.glcode = num_receiptdesc_glcode   AND acc.accno = num_receiptdesc_accno  AND acc.ulbid = a.num_receiptmst_ulbid
+         WHERE   TRUNC(a.date_receiptmst_trnsdate) >= TO_DATE(:fromDate,'DD-MM-YYYY')
+          AND TRUNC(a.date_receiptmst_trnsdate) <= TO_DATE(:toDate,'DD-MM-YYYY')
+          AND a.num_receiptmst_ulbid = :ulbid 
+          AND nvl(num_receiptdesc_amount,0) <> 0
+          and a.num_receiptmst_drgl=:glcode
+          and a.num_receiptmst_dracc=:accno
+          AND (:zoneid = '-1' OR a.num_receiptmst_zoneid =:zoneid)
+          GROUP BY   a.date_receiptmst_trnsdate,   a.num_receiptmst_dracc,      acc.accno,acc.accname, a.num_receiptmst_trnsno,a.num_receiptmst_recno,  a.num_receiptmst_ulbid, 
+          acc.objectcode, acc.accname, var_receiptdesc_narration, acc.functioncode
+union all 
+SELECT 
+          TO_CHAR(TRUNC(a.date_receiptmst_trnsdate), 'DD/MM/YYYY') AS trnsdate,
+          a.num_receiptmst_trnsno transno,
+          to_char(num_receiptmst_recno)  docno,
+          acc.accno accno,
+          acc.accname,
+          '' AS pancard,
+          acc.objectcode || '-' || acc.accname || '-' || var_receiptdesc_narration AS narration,
+          '' AS chqno,
+          SUM(nvl(num_receiptdesc_amount,0)) AS amount,
+          acc.functioncode AS functioncode,
+          acc.objectcode AS objectcode 
+      FROM aoac_receiptmst_def a
+      inner join aoac_receiptdesc_def on num_receiptdesc_refno=num_receiptmst_refno
+      LEFT JOIN accountview_web acc  ON acc.glcode = num_receiptdesc_glcode   AND acc.accno = num_receiptdesc_accno  AND acc.ulbid = a.num_receiptmst_ulbid
+         WHERE   TRUNC(a.date_receiptmst_trnsdate) >= TO_DATE(:fromDate,'DD-MM-YYYY')
+          AND TRUNC(a.date_receiptmst_trnsdate) <=  TO_DATE(:toDate,'DD-MM-YYYY')
+          AND a.num_receiptmst_ulbid = :ulbid 
+          AND nvl(num_receiptdesc_amount,0) <> 0
+          and num_receiptdesc_glcode=:glcode
+          and num_receiptdesc_accno=:accno
+         
+          AND (:zoneid = '-1' OR a.num_receiptmst_zoneid =:zoneid)
+          GROUP BY   a.date_receiptmst_trnsdate,   a.num_receiptmst_dracc,      acc.accno,acc.accname, a.num_receiptmst_trnsno,a.num_receiptmst_recno,  a.num_receiptmst_ulbid, 
+          acc.objectcode, acc.accname, var_receiptdesc_narration, acc.functioncode
+
+ 
+    )
+    ORDER BY TO_DATE(trnsdate, 'DD/MM/YYYY') ASC
+
+    `
+  } 
+  else {
+    sql = `
     SELECT * FROM (
       SELECT 
           TO_CHAR(TRUNC(a.trnsdate), 'DD/MM/YYYY') AS trnsdate,
@@ -215,6 +305,10 @@ async function getLedgerTransactions(payload) {
     )
     ORDER BY TO_DATE(trnsdate, 'DD/MM/YYYY') ASC
   `;
+  }
+
+  
+  
 
   const binds = {
     glcode,

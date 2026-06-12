@@ -158,16 +158,15 @@ body {
 
       <div class="info-right">
         <b>पावती क्रमांक</b> : {{refno}}<br/>
-        <b>व्यवहार क्र.</b> : {{refno}}<br/>
+        <b>व्यवहार क्र.</b> : {{transNo}}<br/>
         <b>पावती दिनांक</b> : {{date}}<br/>
         <b>व्यवहार प्रकार</b> : {{trnstype}}
       </div>
     </div>
 
     <!-- ACCOUNT -->
-    <div class="account">
-      <div><b>खाते क्रमांक व नाव</b> : {{rows.[0].accno}}</div>
-      <div class="account-name">{{rows.[0].accname}}</div>
+  <div class="account">
+      <div><b>खाते क्रमांक व नाव</b> : {{rows.[0].accno}}-{{rows.[0].accname}}</div>
     </div>
   </div>
 

@@ -718,7 +718,7 @@ const FrmReceiptJcmc = () => {
           In_ParamStr3: "",
           In_ParamStr4: "",
           In_ParamStr5: "",
-          // In_ParamStr6: "",
+          In_ParamStr6: "",
         },
         {
           headers: {
