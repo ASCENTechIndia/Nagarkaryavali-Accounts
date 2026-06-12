@@ -162,7 +162,7 @@ const CashbookPDFHelper = async ({ reportData, openingBalanceData, filters, ulbI
     }
     
     const html = template({
-      isJCMC: filters.ulbId == 930,
+      isJCMC: filters.ulbId == 930 || filters.ulbId == 1750 ,
       logo: ulbInfo.ULBLOGO,
       corporationName: ulbInfo.ABC_MUNICIPAL_TEXT,
       fromDate: formattedDate,

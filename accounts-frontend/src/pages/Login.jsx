@@ -315,7 +315,7 @@ const Login = () => {
     const checkSession = async () => {
       const ok = await validateTokenAndLogin();
       if (!ok) {
-        window.location.href = "https://nagarkaryavalinewuat.com/";
+        window.location.href = "https://nagarkaryavalinew.com/";
       }
     };
     checkSession();

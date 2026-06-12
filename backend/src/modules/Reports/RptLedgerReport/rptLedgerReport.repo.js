@@ -162,7 +162,7 @@ async function getLedgerTransactions(payload) {
   console.log("📤 Repo → Ledger Payload:", payload);
   let sql = "";
 
-  if(payload.ulbid == 930) {
+  if(payload.ulbid == 930 || payload.ulbid == 1750) {
     sql = `
       SELECT * FROM (
       SELECT 
