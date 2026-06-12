@@ -160,7 +160,7 @@ const RptPaymentRegisterDetails = () => {
       toDate: formatDate(values.toDate),
 
       ulbid: Number(ulbId),
-      zoneid: Number(values.zoneId) || "",
+      zoneid: values.zoneId || "",
       glcode: Number(values.wardCode) || "",
       functioncode: Number(values.wardCode) || "",
       objectcode: Number(values.head) || "",
@@ -300,6 +300,11 @@ const RptPaymentRegisterDetails = () => {
                           <SelectValue placeholder="-- निवडा --" />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem
+                            value="-1"
+                          >
+                            -- ALL --
+                          </SelectItem>
                           {zoneList.map((zone) => (
                             <SelectItem
                               key={zone.ZONEID}

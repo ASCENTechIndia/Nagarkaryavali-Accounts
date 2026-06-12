@@ -163,6 +163,8 @@ const RptReceiptRegisterJcmcPDFHelper = async ({ reportData, filters, corporatio
   try {
     if (!reportData.length) throw new Error("No data");
 
+    console.log("reportData", reportData);
+
     const templatePath = path.resolve(__dirname, "../../templates/RptReceiptRegisterJcmc.html");
     const templateHtml = fs.readFileSync(templatePath, "utf8");
     const template = Handlebars.compile(templateHtml);
@@ -187,9 +189,10 @@ const RptReceiptRegisterJcmcPDFHelper = async ({ reportData, filters, corporatio
     const amount3 = getAmt("94311400001"); 
     const amount4 = getAmt("91011900002"); 
     const amount5 = getAmt("81111400002"); 
-    const amount6 = getAmt("94713130001"); 
+    const amount6 = getAmt("94713310001"); 
     const amount7 = getAmt("97111710001");
-    const sutRakkam = getAmt("91028290003"); 
+    // const sutRakkam = getAmt("91028290003"); 
+    const sutRakkam = Number(reportData[0]?.DISCOUNTAMOUNT || 0);
 
     const amount9 = getAmt("SPECIAL_WATER"); 
     const amount10 = getAmt("SPECIAL_CLEAN"); 
@@ -206,6 +209,8 @@ const RptReceiptRegisterJcmcPDFHelper = async ({ reportData, filters, corporatio
     const total1to7 = amount1 + amount2 + amount3 + amount4 + amount5 + amount6 + amount7;
     const total7to8 = total1to7 - sutRakkam; 
     const total9to18 = amount9 + amount10 + amount11 + amount12 + amount13 + amount14 + amount15 + amount16 + amount17 + amount18;
+    const totalWithoutDiscount = total1to7 + total9to18;
+    const totalWithDiscount = totalWithoutDiscount - sutRakkam; 
     const grandTotal = total7to8 + total9to18;
 
     const html = template({
@@ -213,6 +218,9 @@ const RptReceiptRegisterJcmcPDFHelper = async ({ reportData, filters, corporatio
       corporationLogo,
       corporationName,
       reportDate: formatDate(new Date()),
+      fromDate: formatDate(filters.fromDate),
+      toDate: formatDate(filters.toDate),
+
       amount1: formatNumber(amount1),
       amount2: formatNumber(amount2),
       amount3: formatNumber(amount3),
@@ -235,6 +243,8 @@ const RptReceiptRegisterJcmcPDFHelper = async ({ reportData, filters, corporatio
       total7to8: formatNumber(total7to8),
       total9to18: formatNumber(total9to18),
       grandTotal: formatNumber(grandTotal),
+      totalWithoutDiscount: formatNumber(totalWithoutDiscount),
+      totalWithDiscount: formatNumber(totalWithDiscount),
       amountInWords: numberToMarathiWords(grandTotal)
     });
 

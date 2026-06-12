@@ -192,33 +192,74 @@ const getReceiptRegisterUserWise = async (params) => {
     const bindParams = {
       FromDate: params.fromDate,
       ToDate: params.toDate,
-      UlbId: params.ulbId
+      UlbId: params.ulbId,
     };
 
     let query = `
       SELECT
-          a.trnsdate,
-          a.insby AS userid,
-          a.glcode,
-          acc.glname,
-          a.accno,
-          acc.accname,
-          vz.zoneename,
-          acc.functioncode,
-          acc.objectcode,
-          SUM(a.amount) amount
-      FROM transview a
-      INNER JOIN accountview_web acc
-          ON a.glcode = acc.glcode
-         AND a.accno = acc.accno
-         AND acc.ulbid = a.ulbid
-      LEFT JOIN view_zone vz
-          ON vz.zoneid = a.zoneid
-      WHERE a.trnsdate >= TO_DATE(:FromDate,'YYYY-MM-DD')
-        AND a.trnsdate < TO_DATE(:ToDate,'YYYY-MM-DD') + 1
-        AND a.amount > 0
-        AND a.trnstypeid IN (1,2)
-        AND a.ulbid = :UlbId
+          trnsdate,
+          userid,
+          glcode,
+          glname,
+          accno,
+          accname,
+          zoneename,
+          functioncode,
+          objectcode,
+          grampanch,
+          SUM(amount) amount,
+          BudgetCode,
+          SUM(discountamount) discountamount
+      FROM
+      (
+          SELECT
+              a.trnsdate,
+              a.insby AS userid,
+              a.glcode,
+              acc.glname,
+              a.accno,
+              acc.accname,
+              vz.zoneename,
+              acc.functioncode,
+              acc.objectcode,
+              NULL AS grampanch,
+              SUM(a.amount) AS amount,
+              0 AS BudgetCode,
+
+              NVL(
+                  (
+                      SELECT SUM(num_receiptdesc_amount)
+                      FROM aoac_receiptdesc_def rd
+                      WHERE rd.num_receiptdesc_refno = num_receiptmst_refno
+                  ),
+                  0
+              ) AS discountamount
+
+          FROM transview a
+
+          INNER JOIN accountview_web acc
+              ON a.glcode = acc.glcode
+             AND a.accno = acc.accno
+             AND acc.ulbid = a.ulbid
+
+          INNER JOIN aoac_receiptmst_def
+              ON num_receiptmst_trnsno = a.transno
+             AND num_receiptmst_ulbid = a.ulbid
+
+          LEFT JOIN view_zone vz
+              ON vz.zoneid = a.zoneid
+
+          LEFT JOIN aoac_grampanch_def
+              ON num_grampanch_grampanchid = a.grampanchid
+
+          LEFT JOIN aoac_partymst_def
+              ON num_partymst_partyid = a.partycode
+
+          WHERE a.trnsdate >= TO_DATE(:FromDate,'YYYY-MM-DD')
+            AND a.trnsdate < TO_DATE(:ToDate,'YYYY-MM-DD') + 1
+            AND a.amount > 0
+            AND a.trnstypeid IN (1,2)
+            AND a.ulbid = :UlbId
     `;
 
     if (params.userId && params.userId !== "0") {
@@ -242,21 +283,36 @@ const getReceiptRegisterUserWise = async (params) => {
     }
 
     query += `
+          GROUP BY
+              a.trnsdate,
+              a.insby,
+              a.glcode,
+              acc.glname,
+              a.accno,
+              acc.accname,
+              vz.zoneename,
+              acc.functioncode,
+              acc.objectcode,
+              num_receiptmst_refno
+      )
       GROUP BY
-          a.trnsdate,
-          a.insby,
-          a.glcode,
-          acc.glname,
-          a.accno,
-          acc.accname,
-          vz.zoneename,
-          acc.functioncode,
-          acc.objectcode
+          trnsdate,
+          userid,
+          glcode,
+          glname,
+          accno,
+          accname,
+          zoneename,
+          functioncode,
+          objectcode,
+          grampanch,
+          BudgetCode
+
       ORDER BY
-          a.trnsdate,
-          a.insby,
-          a.glcode,
-           a.accno
+          trnsdate,
+          userid,
+          glcode,
+          accno
     `;
 
     return await executeQuery(query, bindParams);

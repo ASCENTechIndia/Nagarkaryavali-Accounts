@@ -14,7 +14,7 @@ const imageToBase64 = (imgPath) => {
 };
 
 const formatDate = (date) => {
-  return new Date(date).toLocaleDateString("en-GB"); 
+  return new Date(date).toLocaleDateString("en-GB");
 };
 
 const formatNumber = (num) => {
@@ -38,9 +38,17 @@ const RptReceiptRegisterDetailsPDFHelper = async ({ reportData, filters, ulbInfo
 
     let total = 0;
 
+    let totalAmount = 0;
+    let sutRakkam = 0;
+
     const rows = reportData.map((row) => {
       const amt = Number(row.AMOUNT || 0);
-      total += amt;
+
+      totalAmount += amt;
+
+      if (String(row.ACCNO) === "91028290003") {
+        sutRakkam += amt;
+      }
 
       return {
         TRNSDATE: formatDate(row.TRNSDATE),
@@ -54,6 +62,8 @@ const RptReceiptRegisterDetailsPDFHelper = async ({ reportData, filters, ulbInfo
       };
     });
 
+    const netCollectedAmount = totalAmount - sutRakkam;
+
     const html = template({
       logo: ulbInfo.ULBLOGO,
       corporationName: ulbInfo.ABC_MUNICIPAL_TEXT,
@@ -61,7 +71,11 @@ const RptReceiptRegisterDetailsPDFHelper = async ({ reportData, filters, ulbInfo
       toDate: formatDate(filters.toDate),
       zoneName: filters.zoneName || "All",
       rows,
-      totalAmount: formatNumber(total),
+
+      totalAmount: formatNumber(totalAmount),
+      sutRakkam: formatNumber(sutRakkam),
+      netCollectedAmount: formatNumber(netCollectedAmount),
+
       currentDate: new Date().toLocaleString("en-IN")
     });
 

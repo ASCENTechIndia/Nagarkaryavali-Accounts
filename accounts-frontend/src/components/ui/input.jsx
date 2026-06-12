@@ -26,7 +26,10 @@ function Input({ className, type = "text", ...props }) {
   //     min="0"
   // step="1"
   onKeyDown={(e) => {
-    if (["-", "e", "+", "*","/"] .includes(e.key)) {
+    if (type === "number" && ["-", "e", "+", "*","/"] .includes(e.key)) {
+      e.preventDefault();
+    }
+    else if( ["#", "*", "$","^", "*","!","+"] .includes(e.key)) {
       e.preventDefault();
     }
   }}

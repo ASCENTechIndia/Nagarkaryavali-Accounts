@@ -134,29 +134,29 @@ const RptReceiptRegister = () => {
 
             // JCMC Validation
             if (values.reportType === "JCMC") {
-                if (!values.zoneId || values.zoneId === "-1") {
-                    Swal.fire({
-                        text: "कृपया प्रभाग निवडा.",
-                        confirmButtonColor: "#1e3a8a",
-                    });
-                    return;
-                }
+                // if (!values.zoneId || values.zoneId === "-1") {
+                //     Swal.fire({
+                //         text: "कृपया प्रभाग निवडा.",
+                //         confirmButtonColor: "#1e3a8a",
+                //     });
+                //     return;
+                // }
 
-                if (!values.wardCode) {
-                    Swal.fire({
-                        text: "कृपया विभाग संकेतांक निवडा.",
-                        confirmButtonColor: "#1e3a8a",
-                    });
-                    return;
-                }
+                // if (!values.wardCode) {
+                //     Swal.fire({
+                //         text: "कृपया विभाग संकेतांक निवडा.",
+                //         confirmButtonColor: "#1e3a8a",
+                //     });
+                //     return;
+                // }
 
-                if (!values.head) {
-                    Swal.fire({
-                        text: "कृपया लेखाशीर्ष निवडा.",
-                        confirmButtonColor: "#1e3a8a",
-                    });
-                    return;
-                }
+                // if (!values.head) {
+                //     Swal.fire({
+                //         text: "कृपया लेखाशीर्ष निवडा.",
+                //         confirmButtonColor: "#1e3a8a",
+                //     });
+                //     return;
+                // }
             }
 
             Swal.fire({
@@ -356,8 +356,8 @@ const RptReceiptRegister = () => {
                         >
                             <Card className="border shadow-sm">
                                 <CardHeader className="border-b">
-                                    <CardTitle className="text-lg font-semibold">
-                                        पावती रजिस्टर
+                                   <CardTitle className="text-lg font-semibold">
+                                        पावती रजिस्टर सारांश
                                     </CardTitle>
                                 </CardHeader>
 

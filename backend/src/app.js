@@ -25,6 +25,7 @@ app.set("trust proxy", 1);
 const allowedOrigins = [
   "https://accounts.nagarkaryavalinew.com",
   "https://nagarkaryavalinew.com",
+  "http://localhost:5173"
 ];
 
 app.use(
