@@ -438,7 +438,7 @@ const FrmReceiptJcmc = () => {
         (sum, item) => {
           const amount = Number(item.CREDIT || 0);
 
-          return item.ACCNO === "91028290003"
+          return item.ACCNO === "91028290003" || item.ACCNO === "91028290001"
             ? sum - amount
             : sum + amount;
         }, 0);
@@ -472,7 +472,7 @@ const FrmReceiptJcmc = () => {
 
         partyId: item.PARTY || 0,
 
-        isDiscount: item.ACCNO === "91028290003",
+        isDiscount: item.ACCNO === "91028290003" || item.ACCNO === "91028290001",
       }));
 
       setTableData(tableFormatted);
@@ -565,7 +565,7 @@ const FrmReceiptJcmc = () => {
         remark: "",
         amount: "0",
         partyId: 0,
-        isDiscount: item.VAR_ACCMPDET_ACCNO === "91028290003",
+        isDiscount: item.VAR_ACCMPDET_ACCNO === "91028290003" || item.VAR_ACCMPDET_ACCNO === "91028290001",
       }));
 
       setTableData(formattedData);
@@ -718,7 +718,7 @@ const FrmReceiptJcmc = () => {
           In_ParamStr3: "",
           In_ParamStr4: "",
           In_ParamStr5: "",
-          
+        
         },
         {
           headers: {

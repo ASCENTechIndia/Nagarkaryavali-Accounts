@@ -5,7 +5,8 @@ const path = require("path");
 
 const { RptReceiptRegisterPDFHelper } = require("../../../utils/pdfHelper/RptReceiptRegister");
 const { RptReceiptRegisterJcmcPDFHelper } = require("../../../utils/pdfHelper/RptReceiptRegisterJcmc");
-const { getCorporationService } = require("../../MenuAccess/MenuAccess.service");;
+const { getCorporationService } = require("../../MenuAccess/MenuAccess.service");const { RptReceiptPropertyPDFHelper } = require("../../../utils/pdfHelper/RptReceiptProperty");
+;
 
 const getReceiptRegister = asyncHandler(async (req, res) => {
   const result = await service.getReceiptRegisterService(req.body);
@@ -101,12 +102,23 @@ const generateReceiptRegUserWisePDF = asyncHandler(async (req, res) => {
     const corporationName = corpInfo.ABC_MUNICIPAL_TEXT || "";
     const corporationLogo = corpInfo.ULBLOGO || "";
 
-    const pdf = await RptReceiptRegisterJcmcPDFHelper({
-      reportData: result.rows,
-      filters,
-      corporationName,
-      corporationLogo
-    });
+    let pdf;
+
+    if(req.body.department == 7) {
+      pdf = await RptReceiptPropertyPDFHelper({
+        reportData: result.rows,
+        filters,
+        corporationName,
+        corporationLogo
+      });
+    }else {
+      pdf = await RptReceiptRegisterJcmcPDFHelper({
+        reportData: result.rows,
+        filters,
+        corporationName,
+        corporationLogo
+      });
+    }
 
     const baseUrl = `${req.protocol}://${req.get("host")}`;
     const pdfUrl = `${baseUrl}/pdf/${path.basename(pdf.filePath)}`;
@@ -117,7 +129,6 @@ const generateReceiptRegUserWisePDF = asyncHandler(async (req, res) => {
     res.status(500).json({ success: false, message: "User-wise PDF generation failed", error: error.message });
   }
 });
-
 module.exports = {
   getReceiptRegister,
   generateReceiptRegPDF,

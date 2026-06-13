@@ -5,6 +5,11 @@ const getReceiptRegisterService = async (body) => {
 };
 
 const getReceiptRegisterUserWiseService = async (body) => {
+  if(body.department == "7") {
+    const res =  await repo.getReceiptRegisterProperty(body)
+    console.log("Service Res: ", res);
+    return res;
+  }
   return await repo.getReceiptRegisterUserWise(body);
 };
 

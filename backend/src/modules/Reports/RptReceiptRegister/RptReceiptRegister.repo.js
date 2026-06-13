@@ -321,4 +321,154 @@ const getReceiptRegisterUserWise = async (params) => {
     throw err;
   }
 };
-module.exports = { getReceiptRegister , getReceiptRegisterUserWise};
+
+
+const getReceiptRegisterProperty = async (params) => {
+  try {
+    const bindParams = {
+      FromDate: params.fromDate,
+      ToDate: params.toDate,
+      UlbId: params.ulbId,
+    };
+
+    let query = `
+      SELECT
+        trnsdate,
+        userid,
+        glcode,
+        glname,
+        accno,
+        accname,
+        zoneename,
+        functioncode,
+        objectcode,
+        grampanch,
+        SUM(amount) amount,
+        BudgetCode,
+
+        SUM(discount_91028290001) discount_91028290001,
+        SUM(discount_91028290003) discount_91028290003
+
+    FROM
+    (
+        SELECT
+            a.trnsdate,
+            a.insby AS userid,
+            a.glcode,
+            acc.glname,
+            a.accno,
+            acc.accname,
+            vz.zoneename,
+            acc.functioncode,
+            acc.objectcode,
+            NULL AS grampanch,
+            SUM(a.amount) AS amount,
+            0 AS BudgetCode,
+
+            NVL(
+                (
+                    SELECT SUM(rd.num_receiptdesc_amount)
+                    FROM aoac_receiptdesc_def rd
+                    WHERE rd.num_receiptdesc_refno = num_receiptmst_refno
+                      AND rd.num_receiptdesc_accno = '91028290001'
+                ),
+                0
+            ) AS discount_91028290001,
+
+            NVL(
+                (
+                    SELECT SUM(rd.num_receiptdesc_amount)
+                    FROM aoac_receiptdesc_def rd
+                    WHERE rd.num_receiptdesc_refno = num_receiptmst_refno
+                      AND rd.num_receiptdesc_accno = '91028290003'
+                ),
+                0
+            ) AS discount_91028290003
+
+        FROM transview a
+
+        INNER JOIN accountview_web acc
+            ON a.glcode = acc.glcode
+          AND a.accno = acc.accno
+          AND acc.ulbid = a.ulbid
+
+        INNER JOIN aoac_receiptmst_def rmst
+            ON rmst.num_receiptmst_trnsno = a.transno
+          AND rmst.num_receiptmst_ulbid = a.ulbid
+
+        LEFT JOIN view_zone vz
+            ON vz.zoneid = a.zoneid
+
+        LEFT JOIN aoac_grampanch_def gp
+            ON gp.num_grampanch_grampanchid = a.grampanchid
+
+        LEFT JOIN aoac_partymst_def pm
+            ON pm.num_partymst_partyid = a.partycode
+
+          WHERE a.trnsdate >= TO_DATE(:FromDate,'YYYY-MM-DD')
+            AND a.trnsdate < TO_DATE(:ToDate,'YYYY-MM-DD') + 1
+            AND a.amount > 0
+            AND a.trnstypeid IN (1,2)
+            AND a.ulbid = :UlbId
+    `;
+
+    if (params.userId && params.userId !== "0") {
+      query += ` AND a.insby = :UserId `;
+      bindParams.UserId = params.userId;
+    }
+
+    if (params.zoneId && params.zoneId !== "-1") {
+      query += ` AND a.zoneid = :ZoneId `;
+      bindParams.ZoneId = params.zoneId;
+    }
+
+    if (params.budgetId && params.budgetId !== "-1") {
+      query += ` AND a.budgetid = :BudgetId `;
+      bindParams.BudgetId = params.budgetId;
+    }
+
+    if (params.nidhiId && params.nidhiId !== "-1") {
+      query += ` AND a.nidhi_id = :NidhiId `;
+      bindParams.NidhiId = params.nidhiId;
+    }
+
+    query += `
+          GROUP BY
+              a.trnsdate,
+              a.insby,
+              a.glcode,
+              acc.glname,
+              a.accno,
+              acc.accname,
+              vz.zoneename,
+              acc.functioncode,
+              acc.objectcode,
+              num_receiptmst_refno
+      )
+      GROUP BY
+          trnsdate,
+          userid,
+          glcode,
+          glname,
+          accno,
+          accname,
+          zoneename,
+          functioncode,
+          objectcode,
+          grampanch,
+          BudgetCode
+
+      ORDER BY
+          trnsdate,
+          userid,
+          glcode,
+          accno
+    `;
+
+    return await executeQuery(query, bindParams);
+
+  } catch (err) {
+    throw err;
+  }
+};
+module.exports = { getReceiptRegister , getReceiptRegisterUserWise, getReceiptRegisterProperty};

@@ -17,7 +17,7 @@ SELECT *
 FROM (
   SELECT
       TRUNC(a.trnsdate) trnsdate,
-      a.transno,
+      
       a.glcode,
       acc.glname,
       a.accno,
@@ -84,7 +84,7 @@ FROM (
       query += `
     GROUP BY
         a.trnsdate,
-        a.transno,
+        
         a.glcode,
         acc.functioncode,
         acc.glname,
@@ -98,7 +98,7 @@ FROM (
 
     SELECT
         TRUNC(a.date_receiptmst_trnsdate) trnsdate,
-        a.num_receiptmst_trnsno transno,
+        
         num_receiptdesc_glcode glcode,
         acc.glname,
         num_receiptdesc_accno accno,
@@ -127,6 +127,7 @@ FROM (
         AND a.date_receiptmst_trnsdate <= TO_DATE(:ToDate,'YYYY-MM-DD')
         AND num_receiptdesc_amount > 0
         AND a.num_receiptmst_ulbid = :UlbId
+        AND  a.num_receiptmst_trnsno IS NOT NULL
 `;
 
       if (params.zoneId && params.zoneId !== "-1") {
@@ -144,7 +145,7 @@ FROM (
       query += `
     GROUP BY
         a.date_receiptmst_trnsdate, 
-        a.num_receiptmst_trnsno,
+       
         d.num_receiptdesc_glcode,
         acc.functioncode,
         acc.glname,
@@ -154,7 +155,7 @@ FROM (
         zoneename
         ${params.chkGramPanchayat ? ", var_grampanch_grampanch" : ""}
 )
-WHERE transno IS NOT NULL
+
 ORDER BY trnsdate
 `;
     }
@@ -167,7 +168,7 @@ SELECT *
 FROM (
     SELECT
         NULL trnsdate,
-        a.transno,
+        
         a.glcode,
         acc.glname,
         a.accno,
@@ -185,6 +186,9 @@ FROM (
         ON a.glcode = acc.glcode
         AND a.accno = acc.accno
         AND acc.ulbid = a.ulbid
+    left outer join view_zone vz ON vz.zoneid =a.zoneid  
+left outer join aoac_grampanch_def on num_grampanch_grampanchid = a.grampanchid 
+left outer join aoac_partymst_def on num_partymst_partyid = a.partycode 
     WHERE
         a.trnsdate >= TO_DATE(:FromDate,'YYYY-MM-DD')
         AND a.trnsdate <= TO_DATE(:ToDate,'YYYY-MM-DD')
@@ -227,7 +231,7 @@ FROM (
 
       query += `
     GROUP BY
-        a.transno,
+       
         a.glcode,
         acc.functioncode,
         acc.glname,
@@ -239,7 +243,7 @@ FROM (
 
     SELECT
         NULL trnsdate,
-        a.num_receiptmst_trnsno transno,
+        
         d.num_receiptdesc_glcode glcode,
         acc.glname,
         d.num_receiptdesc_accno accno,
@@ -259,16 +263,19 @@ FROM (
         ON d.num_receiptdesc_glcode = acc.glcode
         AND d.num_receiptdesc_accno = acc.accno
         AND acc.ulbid = a.num_receiptmst_ulbid
+    left outer join view_zone vz ON vz.zoneid =a.num_receiptmst_zoneid  
+left outer join aoac_grampanch_def on num_grampanch_grampanchid = a.num_receiptmst_grampanchid 
     WHERE
         a.date_receiptmst_trnsdate >= TO_DATE(:FromDate,'YYYY-MM-DD')
         AND a.date_receiptmst_trnsdate <= TO_DATE(:ToDate,'YYYY-MM-DD')
         AND d.num_receiptdesc_amount > 0
         AND a.num_receiptmst_ulbid = :UlbId
+        AND a.num_receiptmst_trnsno is not null
 `;
 
       query += `
     GROUP BY
-        a.num_receiptmst_trnsno,
+        
         d.num_receiptdesc_glcode,
         acc.functioncode,
         acc.glname,
@@ -276,11 +283,11 @@ FROM (
         acc.objectcode,
         acc.accname
 )
-        WHERE transno IS NOT NULL
+        
 ORDER BY glcode, accno
 `;
     }
-
+    console.log("query", query)
     return await executeQuery(query, bindParams);
   } catch (err) {
     throw err;

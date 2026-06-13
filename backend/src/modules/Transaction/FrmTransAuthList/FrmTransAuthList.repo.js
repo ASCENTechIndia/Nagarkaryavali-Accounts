@@ -12,61 +12,181 @@ const getTransactionList = async (params) => {
     };
 
     // ================= RECEIPT =================
+//     if (params.transType === "1") {
+//       query = `
+//         SELECT
+//     rmst.num_receiptmst_refno AS refno,
+//     rmst.date_receiptmst_trnsdate AS trnsdate,
+//     tt.var_trnstype_trnstypemar AS trnstype,
+//     vz.zoneename AS zonename,
+//     gp.var_grampanch_marathiname AS grampanch,
+//    SUM(num_receiptdet_amount) - MAX(NVL(num_receiptdesc_amount,0)) amount,
+//     rmst.var_receiptmst_insby AS username,
+//     rmst.date_receiptmst_insdate AS datetime,
+//     rmst.num_receiptmst_trnstypeid AS trnstypeid,
+//     pmst.var_partymst_partyname AS PartyName,
+
+//     -- Extra GL details (will show values if match exists, otherwise NULL)
+//     a.glcode,
+//     acc.glname,
+//     a.accno,
+//     acc.accname,
+//     acc.functioncode,
+//     acc.objectcode,
+//     0 AS BudgetCode,
+//     MAX(NVL(rdesc.num_receiptdesc_amount, 0)) AS discountamount
+
+// FROM aoac_receiptmst_def rmst
+
+// INNER JOIN aoac_receiptdet_def det
+//     ON det.num_receiptdet_refno = rmst.num_receiptmst_refno
+
+// INNER JOIN aoac_trnstype_def tt
+//     ON tt.num_trnstype_trnstypeid = rmst.num_receiptmst_trnstypeid
+
+// LEFT JOIN view_zone vz
+//     ON vz.zoneid = rmst.num_receiptmst_zoneid
+
+// LEFT JOIN aoac_partymst_def pmst
+//     ON pmst.num_partymst_partyid = det.num_receiptdet_partycode
+
+// LEFT JOIN aoac_grampanch_def gp
+//     ON gp.num_grampanch_deptid = rmst.num_receiptmst_zoneid
+//    AND gp.num_grampanch_grampanchid = rmst.num_receiptmst_grampanchid
+
+// -- FIXED: Changed from INNER JOIN to LEFT JOIN so your core data is not dropped
+// LEFT JOIN transview a
+//     ON rmst.num_receiptmst_trnsno = a.transno
+//    AND rmst.num_receiptmst_ulbid = a.ulbid
+
+// -- FIXED: Changed to LEFT JOIN to match the transview layer safely
+// LEFT JOIN accountview_web acc
+//     ON a.glcode = acc.glcode
+//    AND a.accno = acc.accno
+//    AND acc.ulbid = a.ulbid
+
+// LEFT JOIN aoac_receiptdesc_def rdesc
+//     ON rdesc.num_receiptdesc_refno = rmst.num_receiptmst_refno
+//         WHERE 
+//           rmst.date_receiptmst_trnsdate >= TO_DATE(:FromDate,'YYYY-MM-DD')
+//           AND rmst.date_receiptmst_trnsdate < TO_DATE(:ToDate,'YYYY-MM-DD') + 1
+//           AND rmst.var_receiptmst_authstatus IS NULL
+//           AND rmst.num_receiptmst_ulbid = :UlbId
+//       `;
+
+//       if (params.zoneId && params.zoneId !== "-1") {
+//         query += ` AND rmst.num_receiptmst_zoneid = :ZoneId`;
+//         bindParams.ZoneId = params.zoneId;
+//       }
+
+//       if (params.budgetId && params.budgetId !== "0") {
+//         query += ` AND rmst.num_receiptmst_budget_id = :BudgetId`;
+//         bindParams.BudgetId = params.budgetId;
+//       }
+
+//       if (params.userId && params.userId !== "0") {
+//         query += ` AND rmst.var_receiptmst_insby = :UserId`;
+//         bindParams.UserId = params.userId;
+//       }
+
+//       if (params.nidhiId && params.nidhiId !== "0") {
+//         query += ` AND rmst.num_receiptmst_nidhi_id = :NidhiId`;
+//         bindParams.NidhiId = params.nidhiId;
+//       }
+
+//       query += `
+//         GROUP BY
+//     rmst.num_receiptmst_refno,
+//     rmst.date_receiptmst_trnsdate,
+//     tt.var_trnstype_trnstypemar,
+//     vz.zoneename,
+//     gp.var_grampanch_marathiname,
+//     rmst.var_receiptmst_insby,
+//     rmst.date_receiptmst_insdate,
+//     rmst.num_receiptmst_trnstypeid,
+//     pmst.var_partymst_partyname,
+//     a.glcode,
+//     acc.glname,
+//     a.accno,
+//     acc.accname,
+//     acc.functioncode,
+//     acc.objectcode
+
+// ORDER BY
+//     rmst.date_receiptmst_trnsdate,
+//     rmst.num_receiptmst_refno
+//       `;
+//     }
     if (params.transType === "1") {
       query = `
         SELECT
-    rmst.num_receiptmst_refno AS refno,
-    rmst.date_receiptmst_trnsdate AS trnsdate,
-    tt.var_trnstype_trnstypemar AS trnstype,
-    vz.zoneename AS zonename,
-    gp.var_grampanch_marathiname AS grampanch,
-   SUM(num_receiptdet_amount) - MAX(NVL(num_receiptdesc_amount,0)) amount,
-    rmst.var_receiptmst_insby AS username,
-    rmst.date_receiptmst_insdate AS datetime,
-    rmst.num_receiptmst_trnstypeid AS trnstypeid,
-    pmst.var_partymst_partyname AS PartyName,
+            rmst.num_receiptmst_refno AS refno,
+            rmst.date_receiptmst_trnsdate AS trnsdate,
+            tt.var_trnstype_trnstypemar AS trnstype,
+            vz.zoneename AS zonename,
+            gp.var_grampanch_marathiname AS grampanch,
 
-    -- Extra GL details (will show values if match exists, otherwise NULL)
-    a.glcode,
-    acc.glname,
-    a.accno,
-    acc.accname,
-    acc.functioncode,
-    acc.objectcode,
-    0 AS BudgetCode,
-    MAX(NVL(rdesc.num_receiptdesc_amount, 0)) AS discountamount
+            NVL(det.total_amount, 0) - NVL(rdesc.discount_amount, 0) AS amount,
 
-FROM aoac_receiptmst_def rmst
+            rmst.var_receiptmst_insby AS username,
+            rmst.date_receiptmst_insdate AS datetime,
+            rmst.num_receiptmst_trnstypeid AS trnstypeid,
+            pmst.var_partymst_partyname AS PartyName,
 
-INNER JOIN aoac_receiptdet_def det
-    ON det.num_receiptdet_refno = rmst.num_receiptmst_refno
+            a.glcode,
+            acc.glname,
+            a.accno,
+            acc.accname,
+            acc.functioncode,
+            acc.objectcode,
 
-INNER JOIN aoac_trnstype_def tt
-    ON tt.num_trnstype_trnstypeid = rmst.num_receiptmst_trnstypeid
+            0 AS BudgetCode,
 
-LEFT JOIN view_zone vz
-    ON vz.zoneid = rmst.num_receiptmst_zoneid
+            NVL(rdesc.discount_amount, 0) AS discountamount
 
-LEFT JOIN aoac_partymst_def pmst
-    ON pmst.num_partymst_partyid = det.num_receiptdet_partycode
+        FROM aoac_receiptmst_def rmst
 
-LEFT JOIN aoac_grampanch_def gp
-    ON gp.num_grampanch_deptid = rmst.num_receiptmst_zoneid
-   AND gp.num_grampanch_grampanchid = rmst.num_receiptmst_grampanchid
+        LEFT JOIN (
+            SELECT
+                num_receiptdet_refno,
+                SUM(num_receiptdet_amount) AS total_amount,
+                MAX(num_receiptdet_partycode) AS partycode
+            FROM aoac_receiptdet_def
+            GROUP BY num_receiptdet_refno
+        ) det
+            ON det.num_receiptdet_refno = rmst.num_receiptmst_refno
 
--- FIXED: Changed from INNER JOIN to LEFT JOIN so your core data is not dropped
-LEFT JOIN transview a
-    ON rmst.num_receiptmst_trnsno = a.transno
-   AND rmst.num_receiptmst_ulbid = a.ulbid
+        LEFT JOIN (
+            SELECT
+                num_receiptdesc_refno,
+                SUM(num_receiptdesc_amount) AS discount_amount
+            FROM aoac_receiptdesc_def
+            GROUP BY num_receiptdesc_refno
+        ) rdesc
+            ON rdesc.num_receiptdesc_refno = rmst.num_receiptmst_refno
 
--- FIXED: Changed to LEFT JOIN to match the transview layer safely
-LEFT JOIN accountview_web acc
-    ON a.glcode = acc.glcode
-   AND a.accno = acc.accno
-   AND acc.ulbid = a.ulbid
+        INNER JOIN aoac_trnstype_def tt
+            ON tt.num_trnstype_trnstypeid = rmst.num_receiptmst_trnstypeid
 
-LEFT JOIN aoac_receiptdesc_def rdesc
-    ON rdesc.num_receiptdesc_refno = rmst.num_receiptmst_refno
+        LEFT JOIN view_zone vz
+            ON vz.zoneid = rmst.num_receiptmst_zoneid
+
+        LEFT JOIN aoac_partymst_def pmst
+            ON pmst.num_partymst_partyid = det.partycode
+
+        LEFT JOIN aoac_grampanch_def gp
+            ON gp.num_grampanch_deptid = rmst.num_receiptmst_zoneid
+          AND gp.num_grampanch_grampanchid = rmst.num_receiptmst_grampanchid
+
+        LEFT JOIN transview a
+            ON rmst.num_receiptmst_trnsno = a.transno
+          AND rmst.num_receiptmst_ulbid = a.ulbid
+
+        LEFT JOIN accountview_web acc
+            ON a.glcode = acc.glcode
+          AND a.accno = acc.accno
+          AND acc.ulbid = a.ulbid
+
         WHERE 
           rmst.date_receiptmst_trnsdate >= TO_DATE(:FromDate,'YYYY-MM-DD')
           AND rmst.date_receiptmst_trnsdate < TO_DATE(:ToDate,'YYYY-MM-DD') + 1
@@ -95,23 +215,6 @@ LEFT JOIN aoac_receiptdesc_def rdesc
       }
 
       query += `
-        GROUP BY
-    rmst.num_receiptmst_refno,
-    rmst.date_receiptmst_trnsdate,
-    tt.var_trnstype_trnstypemar,
-    vz.zoneename,
-    gp.var_grampanch_marathiname,
-    rmst.var_receiptmst_insby,
-    rmst.date_receiptmst_insdate,
-    rmst.num_receiptmst_trnstypeid,
-    pmst.var_partymst_partyname,
-    a.glcode,
-    acc.glname,
-    a.accno,
-    acc.accname,
-    acc.functioncode,
-    acc.objectcode
-
 ORDER BY
     rmst.date_receiptmst_trnsdate,
     rmst.num_receiptmst_refno
@@ -300,6 +403,83 @@ const getTransactionDetails = async (refNo, trnsTypeId) => {
   let bindParams = { refNo };
 
   // ================= RECEIPT =================
+//   if ([1, 2].includes(trnsTypeId)) {
+//     query = `
+//       SELECT
+//     num_receiptmst_refno refno,
+//     date_receiptmst_trnsdate trnsdate,
+//     num_receiptmst_recno docno,
+//     var_trnstype_trnstypemar trnstype,
+//     zoneename zonename,
+//     var_grampanch_marathiname grampanch,
+
+//     num_receiptmst_drgl crdrgl,
+//     dracc.glname crdrglname,
+
+//     num_receiptmst_dracc crdracc,
+//     dracc.accname crdraccname,
+
+//     num_receiptdet_glcode glcode,
+//     acc.glname,
+
+//     num_receiptdet_accno accno,
+//     acc.accname,
+
+//     num_receiptdet_amount amount,
+
+//     var_receiptdet_narration narration,
+//     var_partymst_partyname party,
+
+//     acc.functioncode,
+//     acc.objectcode,
+
+//     dracc.functioncode draccfunctioncode,
+//     dracc.objectcode draccobjectcode,
+
+//     /* Added fields */
+//     0 AS BudgetCode,
+//     NVL(rdesc.discountamount,0) AS discountamount
+
+// FROM aoac_receiptmst_def
+
+// INNER JOIN aoac_receiptdet_def
+//     ON num_receiptdet_refno = num_receiptmst_refno
+
+// INNER JOIN aoac_trnstype_def
+//     ON num_trnstype_trnstypeid = num_receiptmst_trnstypeid
+
+// LEFT JOIN view_zone
+//     ON zoneid = num_receiptmst_zoneid
+
+// LEFT JOIN accountview_web dracc
+//     ON dracc.glcode = num_receiptmst_drgl
+//    AND dracc.accno = num_receiptmst_dracc
+//    AND dracc.ulbid = num_receiptmst_ulbid
+
+// LEFT JOIN accountview_web acc
+//     ON acc.glcode = num_receiptdet_glcode
+//    AND acc.accno = num_receiptdet_accno
+//    AND acc.ulbid = num_receiptmst_ulbid
+
+// LEFT JOIN aoac_grampanch_def
+//     ON num_grampanch_deptid = num_receiptmst_zoneid
+//    AND num_grampanch_grampanchid = num_receiptmst_grampanchid
+
+// LEFT JOIN aoac_partymst_def
+//     ON num_partymst_partyid = num_receiptdet_partycode
+
+// /* Added join */
+// LEFT JOIN (
+//     SELECT
+//         num_receiptdesc_refno,
+//         MAX(NVL(num_receiptdesc_amount,0)) discountamount
+//     FROM aoac_receiptdesc_def
+//     GROUP BY num_receiptdesc_refno
+// ) rdesc
+//     ON rdesc.num_receiptdesc_refno = num_receiptmst_refno
+//       WHERE num_receiptmst_refno = :refNo
+//     `;
+//   }
   if ([1, 2].includes(trnsTypeId)) {
     query = `
       SELECT
@@ -335,9 +515,9 @@ const getTransactionDetails = async (refNo, trnsTypeId) => {
 
     /* Added fields */
     0 AS BudgetCode,
-    NVL(rdesc.discountamount,0) AS discountamount
+    NVL(rdesc.discount_amount, 0) AS discountamount
 
-FROM aoac_receiptmst_def
+FROM aoac_receiptmst_def rmst
 
 INNER JOIN aoac_receiptdet_def
     ON num_receiptdet_refno = num_receiptmst_refno
@@ -369,15 +549,14 @@ LEFT JOIN aoac_partymst_def
 LEFT JOIN (
     SELECT
         num_receiptdesc_refno,
-        MAX(NVL(num_receiptdesc_amount,0)) discountamount
+        SUM(num_receiptdesc_amount) AS discount_amount
     FROM aoac_receiptdesc_def
     GROUP BY num_receiptdesc_refno
 ) rdesc
-    ON rdesc.num_receiptdesc_refno = num_receiptmst_refno
+    ON rdesc.num_receiptdesc_refno = rmst.num_receiptmst_refno
       WHERE num_receiptmst_refno = :refNo
     `;
   }
-
   // ================= PAYMENT =================
   else if ([3, 4].includes(trnsTypeId)) {
     query = `

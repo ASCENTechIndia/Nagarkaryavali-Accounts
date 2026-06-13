@@ -3,62 +3,65 @@ const { withTx } = require("../../../db/tx");
 const { executeQuery } = require("../../../db/queryExecutor");
 
 // ✅ 1. Get Receipt List
-const getReceiptListRepo = (ddl_ZoneID, ddl_ULB_ID, ddl_USER_ID ) =>
+const getReceiptListRepo = (ddl_ZoneID, ddl_ULB_ID, ddl_USER_ID) =>
   executeQuery(
     `SELECT
-    num_receiptmst_refno refno,
-    date_receiptmst_trnsdate trnsdate,
-    num_receiptmst_recno docno,
-    var_trnstype_trnstypemar trnstype,
-    zoneename zonename,
-    var_grampanch_grampanch grampanch,
+    rmst.num_receiptmst_refno AS refno,
+    rmst.date_receiptmst_trnsdate AS trnsdate,
+    rmst.num_receiptmst_recno AS docno,
+    tt.var_trnstype_trnstypemar AS trnstype,
+    vz.zoneename AS zonename,
+    gp.var_grampanch_grampanch AS grampanch,
 
-    SUM(num_receiptdet_amount) - MAX(NVL(num_receiptdesc_amount,0)) amount,
+    NVL(det.total_amount, 0) - NVL(rdesc.discount_amount, 0) AS amount,
 
-    var_receiptmst_insby username,
-    date_receiptmst_insdate datetime,
-    num_receiptmst_trnstypeid trnstypeid,
+    rmst.var_receiptmst_insby AS username,
+    rmst.date_receiptmst_insdate AS datetime,
+    rmst.num_receiptmst_trnstypeid AS trnstypeid,
 
     0 AS BudgetCode,
-    MAX(NVL(num_receiptdesc_amount,0)) AS discountamount
 
-FROM aoac_receiptmst_def
+    NVL(rdesc.discount_amount, 0) AS discountamount
 
-INNER JOIN aoac_receiptdet_def
-    ON num_receiptdet_refno = num_receiptmst_refno
+FROM aoac_receiptmst_def rmst
 
-INNER JOIN aoac_trnstype_def
-    ON num_trnstype_trnstypeid = num_receiptmst_trnstypeid
+/* Aggregate receipt details */
+LEFT JOIN (
+    SELECT
+        num_receiptdet_refno,
+        SUM(num_receiptdet_amount) AS total_amount
+    FROM aoac_receiptdet_def
+    GROUP BY num_receiptdet_refno
+) det
+    ON det.num_receiptdet_refno = rmst.num_receiptmst_refno
 
-INNER JOIN view_zone
-    ON zoneid = num_receiptmst_zoneid
+INNER JOIN aoac_trnstype_def tt
+    ON tt.num_trnstype_trnstypeid = rmst.num_receiptmst_trnstypeid
 
-LEFT JOIN aoac_grampanch_def
-    ON num_grampanch_deptid = num_receiptmst_zoneid
-   AND num_grampanch_grampanchid = num_receiptmst_grampanchid
+INNER JOIN view_zone vz
+    ON vz.zoneid = rmst.num_receiptmst_zoneid
 
-LEFT JOIN aoac_receiptdesc_def
-    ON num_receiptdesc_refno = num_receiptmst_refno
+LEFT JOIN aoac_grampanch_def gp
+    ON gp.num_grampanch_deptid = rmst.num_receiptmst_zoneid
+   AND gp.num_grampanch_grampanchid = rmst.num_receiptmst_grampanchid
 
-WHERE var_receiptmst_authstatus IS NULL
-  AND zoneid = :ddl_ZoneID
-       AND num_receiptmst_ulbid = :ddl_ULB_ID
-       AND var_receiptmst_insby = :ddl_USER_ID
+/* Aggregate discounts */
+LEFT JOIN (
+    SELECT
+        num_receiptdesc_refno,
+        SUM(num_receiptdesc_amount) AS discount_amount
+    FROM aoac_receiptdesc_def
+    GROUP BY num_receiptdesc_refno
+) rdesc
+    ON rdesc.num_receiptdesc_refno = rmst.num_receiptmst_refno
 
-GROUP BY
-    num_receiptmst_refno,
-    date_receiptmst_trnsdate,
-    num_receiptmst_recno,
-    var_trnstype_trnstypemar,
-    zoneename,
-    var_grampanch_grampanch,
-    var_receiptmst_insby,
-    date_receiptmst_insdate,
-    num_receiptmst_trnstypeid
+WHERE rmst.var_receiptmst_authstatus IS NULL
+  AND vz.zoneid = :ddl_ZoneID
+  AND rmst.num_receiptmst_ulbid = :ddl_ULB_ID
+  AND rmst.var_receiptmst_insby = :ddl_USER_ID
 
-ORDER BY
-    num_receiptmst_refno`,
-    { ddl_ZoneID, ddl_ULB_ID,  ddl_USER_ID },
+ORDER BY rmst.num_receiptmst_refno`,
+    { ddl_ZoneID, ddl_ULB_ID, ddl_USER_ID },
   );
 
 // ✅ 2. Get Zones
@@ -538,5 +541,5 @@ module.exports = {
   getUserMapDetailsRepo,
   getAccountMappingDetailRepo,
   getReceiptDetailByRefNo
-  
+
 };

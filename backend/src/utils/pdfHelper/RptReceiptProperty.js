@@ -159,13 +159,13 @@ const numberToMarathiWords = (num) => {
   return getWords(Math.floor(num)) + " रुपये";
 };
 
-const RptReceiptRegisterJcmcPDFHelper = async ({ reportData, filters, corporationName, corporationLogo }) => {
+const RptReceiptPropertyPDFHelper = async ({ reportData, filters, corporationName, corporationLogo }) => {
   try {
     if (!reportData.length) throw new Error("No data");
 
     console.log("reportData", reportData);
 
-    const templatePath = path.resolve(__dirname, "../../templates/RptReceiptRegisterJcmc.html");
+    const templatePath = path.resolve(__dirname, "../../templates/ReceiptProperty.html");
     const templateHtml = fs.readFileSync(templatePath, "utf8");
     const template = Handlebars.compile(templateHtml);
 
@@ -184,34 +184,78 @@ const RptReceiptRegisterJcmcPDFHelper = async ({ reportData, filters, corporatio
     const getAmt = (code) => grouped.get(code) || 0;
 
     // 🔹 2. Map template rows to ledger codes
-    const amount1 = getAmt("91111170001"); 
-    const amount2 = getAmt("31615210003"); 
-    const amount3 = getAmt("94311400001"); 
-    const amount4 = getAmt("91011900002"); 
-    const amount5 = getAmt("81111400002"); 
-    const amount6 = getAmt("94713310001"); 
-    const amount7 = getAmt("97111710001");
-    // const sutRakkam = getAmt("91028290003"); 
-    const sutRakkam = Number(reportData[0]?.DISCOUNTAMOUNT || 0);
+    const amount1  = getAmt("91111110001"); // सामान्य कर
+    const amount2  = getAmt("91015210001"); // पाणीपट्टी
+    const amount3  = getAmt("31615210002"); // पाणी पुरवठा लाभ कर
+    const amount4  = getAmt("91011400003"); // साफसफाई
+    const amount5  = getAmt("91011900001"); // मलप्रवाह सुविधा लाभ कर
+    const amount6  = getAmt("81111400003"); // अग्निशमन कर
+    const amount7  = getAmt("94713310002"); // मनपा शिक्षण उपकर
+    const amount8  = getAmt("97111710002"); // रस्ताकर
 
-    const amount9 = getAmt("SPECIAL_WATER"); 
-    const amount10 = getAmt("SPECIAL_CLEAN"); 
-    const amount11 = getAmt("94811400001");
-    const amount12 = getAmt("98138110001"); 
-    const amount13 = getAmt("98238120001"); 
-    const amount14 = getAmt("SANGANAK"); 
-    const amount15 = getAmt("PROCESSING"); 
-    const amount16 = getAmt("NOTICE"); 
-    const amount17 = getAmt("WATER"); 
-    const amount18 = getAmt("91915800001"); 
+    const amount9  = getAmt("34011190001"); // घनकचरा व्यवस्था (रहिवास)
+    const amount10 = getAmt("34011190002"); // घनकचरा व्यवस्था (अरहिवास)
+
+    // रिबेट
+    const rebateAmount = Number(reportData[0]?.DISCOUNT_91028290001 || 0);
+    const discountAmount = Number(reportData[0]?.DISCOUNT_91028290003 || 0);
+
+    const amount12 = getAmt("91015210004"); // विशेष पाणीपट्टी
+    const amount13 = getAmt("94311400002"); // विशेष साफसफाई कर
+    const amount14 = getAmt("94811400002"); // वृक्षकर
+    const amount15 = getAmt("98138110002"); // महाराष्ट्र शिक्षण कर
+    const amount16 = getAmt("98238120002"); // रोजगार हमी कर
+    const amount17 = getAmt("91047500001"); // प्रोजेक्शन शुल्क
+    const amount18 = getAmt("91915890002"); // शास्ती
+
+    // Row 19
+    const amount19 = discountAmount; // रिबेट/शास्ती सुट
 
     // 🔹 3. Totals
-    const total1to7 = amount1 + amount2 + amount3 + amount4 + amount5 + amount6 + amount7;
-    const total7to8 = total1to7 - sutRakkam; 
-    const total9to18 = amount9 + amount10 + amount11 + amount12 + amount13 + amount14 + amount15 + amount16 + amount17 + amount18;
-    const totalWithoutDiscount = total1to7 + total9to18;
-    const totalWithDiscount = totalWithoutDiscount - sutRakkam; 
-    const grandTotal = total7to8 + total9to18;
+    const total1to10 =
+      amount1 +
+      amount2 +
+      amount3 +
+      amount4 +
+      amount5 +
+      amount6 +
+      amount7 +
+      amount8 +
+      amount9 +
+      amount10;
+
+    // रिबेट वजा जाता
+    const totalAfterRebate = total1to10 - rebateAmount;
+
+    // 12 ते 19
+    const total11to19 =
+      amount12 +
+      amount13 +
+      amount14 +
+      amount15 +
+      amount16 +
+      amount17 +
+      amount18 -
+      amount19;
+
+    // 1 ते 19
+    const grandTotal = totalAfterRebate + total11to19;
+    const totalDiscount = rebateAmount + discountAmount;
+
+    // घरपट्टी एकुण (1-10 + 12-18)
+    const propertyTaxTotal =
+      total1to10 +
+      amount12 +
+      amount13 +
+      amount14 +
+      amount15 +
+      amount16 +
+      amount17 +
+      amount18;
+
+    // अंतिम वसूल रक्कम
+    const netAmount = propertyTaxTotal - totalDiscount;
+
 
     const html = template({
       corporationLogo: logo,
@@ -228,10 +272,10 @@ const RptReceiptRegisterJcmcPDFHelper = async ({ reportData, filters, corporatio
       amount5: formatNumber(amount5),
       amount6: formatNumber(amount6),
       amount7: formatNumber(amount7),
-      amount8: formatNumber(sutRakkam),
+      amount8: formatNumber(amount8),
       amount9: formatNumber(amount9),
       amount10: formatNumber(amount10),
-      amount11: formatNumber(amount11),
+
       amount12: formatNumber(amount12),
       amount13: formatNumber(amount13),
       amount14: formatNumber(amount14),
@@ -239,14 +283,23 @@ const RptReceiptRegisterJcmcPDFHelper = async ({ reportData, filters, corporatio
       amount16: formatNumber(amount16),
       amount17: formatNumber(amount17),
       amount18: formatNumber(amount18),
-      total1to7: formatNumber(total1to7),
-      total7to8: formatNumber(total7to8),
-      total9to18: formatNumber(total9to18),
+      amount19: formatNumber(amount19),
+
+      total1to10: formatNumber(total1to10),
+      total7to8: formatNumber(totalAfterRebate), // template variable name retained
+      total9to18: formatNumber(total11to19),     // template variable name retained
+
       grandTotal: formatNumber(grandTotal),
-      totalWithoutDiscount: formatNumber(totalWithoutDiscount),
-      totalWithDiscount: formatNumber(totalWithDiscount),
-      amountInWords: numberToMarathiWords(grandTotal)
+
+      totalWithoutDiscount: formatNumber(propertyTaxTotal),
+      totalWithDiscount: formatNumber(netAmount),
+
+      amountInWords: numberToMarathiWords(netAmount),
+      rebateAmount,
+      discountAmount,
+      totalDiscount
     });
+
 
     // Puppeteer PDF generation (unchanged)
     const chromePath = path.resolve(
@@ -279,8 +332,6 @@ const RptReceiptRegisterJcmcPDFHelper = async ({ reportData, filters, corporatio
   }
 };
 
-
-
 module.exports = {
-  RptReceiptRegisterJcmcPDFHelper
+  RptReceiptPropertyPDFHelper
 };

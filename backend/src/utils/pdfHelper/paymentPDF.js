@@ -37,6 +37,7 @@ const generatePaymentPDF = async ({ data, corporationName, corporationLogo }) =>
     return {
       sr: i + 1,
       accno: r.PACNO,
+      
       accname: r.PCACCNAME,
       partycode: r.PARTYCODE,
       party: r.PARTYNAME,

@@ -28,6 +28,7 @@ const initialValues = {
     wardCode: "",
     head: "",
     userId: "",
+    department: "",
     reportType: "summary",
     exportType: "pdf",
 };
@@ -45,6 +46,7 @@ const RptReceiptRegister = () => {
     const [userList, setUserList] = useState([]);
     const [glList, setGlList] = useState([]);
     const [partyList, setPartyList] = useState([]);
+    const [departments, setDepartments] = useState([]);
 
     const fetchZones = async () => {
         try {
@@ -124,9 +126,29 @@ const RptReceiptRegister = () => {
         }
     };
 
+    const fetchDepartments = async () => {
+        try {
+            const res = await axios.post(
+            `${BASE_URL}/api/Receipt/departments`,
+            {
+                ulbid: ulbId,
+            },
+            {
+                headers: {
+                Authorization: `Bearer ${user.token}`,
+                },
+            },
+            );
+            setDepartments(res.data.data || []);
+        } catch (err) {
+            console.error("Department API Error:", err);
+        }
+    };
+
     useEffect(() => {
         fetchZones();
         fetchUsers();
+        fetchDepartments();
     }, [ulbId]);
 
     const handleSubmit = async (values) => {
@@ -193,7 +215,10 @@ const RptReceiptRegister = () => {
                     ? values.wardCode.padStart(3, "0")
                     : null,
                 minorCode: values.head || null,
+                department: values.department,
             };
+
+            console.log("payload", payload);
 
 
             if (values.exportType === "pdf") {
@@ -493,6 +518,32 @@ const RptReceiptRegister = () => {
                                                         </SelectItem>
                                                     )}
                                                 </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                            <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                                                <Label text="विभाग" />
+                                                <span>:</span>
+                                            </div>
+                                            <Select
+                                            value={values.department}
+                                            onValueChange={(v) => setFieldValue("department", v)}
+                                            >
+                                            <SelectTrigger className="w-full border rounded-md">
+                                                <SelectValue placeholder="-- विकल्प निवडा --" />
+                                            </SelectTrigger>
+                    
+                                            <SelectContent>
+                                                {departments.map((d) => (
+                                                <SelectItem
+                                                    key={d.DEPTID}
+                                                    value={d.DEPTID.toString()}
+                                                >
+                                                    {d.DEPTNAME}
+                                                </SelectItem>
+                                                ))}
+                                            </SelectContent>
                                             </Select>
                                         </div>
                                     </div>

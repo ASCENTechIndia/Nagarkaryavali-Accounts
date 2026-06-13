@@ -73,7 +73,7 @@ const generatePaymentRegisterPDF = async ({
       total += amount;
 
       return {
-        glcode: r.GLCODE,
+        accno: r.OBJECTCODE,
         accname: r.ACCNAME,
         amountFormatted: amount.toLocaleString("en-IN", {
           minimumFractionDigits: 2,

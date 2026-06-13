@@ -226,7 +226,7 @@ const FrmTransAuthMst = () => {
           text: message,
           confirmButtonText: "ठीक आहे",
         });
-        if(ulbId === 930 || ulbId === 1750 ) {
+        if(ulbId == 930 || ulbId == 1750 ) {
           const transNo = extractTransactionNumber(message);
           await generatePDF(voucherData, transNo);
         }
