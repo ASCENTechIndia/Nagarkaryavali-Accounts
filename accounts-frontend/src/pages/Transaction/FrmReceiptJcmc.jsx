@@ -18,7 +18,7 @@ import { DatePicker } from "@/components/ui/calendar";
 import ShadCNTable from "@/components/ui/table";
 import SearchableSelect from "@/components/SearchableSelect";
 import { useAuth } from "@/context/AuthContext";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
@@ -64,6 +64,41 @@ const FrmReceiptJcmc = () => {
   const [showAmountFields, setShowAmountFields] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+
+  // New implementation for table when Department id 7
+  const [firstSevenTotal, setFirstSevenTotal] = useState(0);
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [remainingTotal, setRemainingTotal] = useState(0);
+  const [processedTableData, setProcessedTableData] = useState(null);
+
+
+  const processTableData = (apiData) => {
+    if (!apiData || apiData.length === 0) return { firstTenItems: [], discountItem: null, remainingItems: [], subtractItem: null };
+
+    const discountItem = apiData.find(
+      item => item.VAR_ACCMPDET_ACCNO === "91028290003"
+    );
+
+    const subtractItem = apiData.find(
+      item => item.VAR_ACCMPDET_ACCNO === "91028290001"
+    );
+
+    const otherItems = apiData.filter(
+      item => item.VAR_ACCMPDET_ACCNO !== "91028290003" && item.VAR_ACCMPDET_ACCNO !== "91028290001"
+    );
+
+    const firstTenItems = otherItems.slice(0, 10);
+
+    const remainingItems = otherItems.slice(10);
+
+    return {
+      firstTenItems,
+      discountItem,
+      remainingItems,
+      subtractItem,
+      allItems: apiData
+    };
+  };
 
   const handleAddRow = (values, setFieldValue) => {
     if (!values.entryDeptCode || !values.entryHead || !values.entryAmount) {
@@ -373,78 +408,245 @@ const FrmReceiptJcmc = () => {
   };
 
   const fetchReceiptDetails = async (refNo, setFieldValue) => {
-    try {
-      Swal.fire({
-        title: "Loading ...",
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
+  try {
+    Swal.fire({
+      title: "Loading ...",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+    const res = await axios.post(
+      `${BASE_URL}/api/Receipt/receiptdetailbyrefno`,
+      {
+        refNo: refNo,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
         },
+      },
+    );
+
+    const data = res.data?.data?.data || [];
+
+    if (data.length === 0) return;
+
+    const first = data[0];
+    const deptId = first.ACCDEPTID?.toString();
+
+    setFieldValue("zoneId", first.ZONEID?.toString() || "");
+    setFieldValue("transactionType", first.TRNSTYPEID?.toString() || "");
+    setFieldValue("reciptNo", first.RECNO || "");
+    setFieldValue("department", deptId || "");
+    setFieldValue("date", first.TRNSDATE ? new Date(first.TRNSDATE) : new Date());
+    setFieldValue("remark", first.NARRATION || "");
+    setFieldValue("wardCode", first.DRGL?.toString() || "");
+    setTempHead(first.DRACC?.toString() || "");
+    fetchCreditLeasure(first.GLCODE?.toString(), "party");
+
+    const total = data.reduce((sum, item) => {
+      const amount = Number(item.CREDIT || 0);
+      return item.ACCNO === "91028290003" || item.ACCNO === "91028290001"
+        ? sum - amount
+        : sum + amount;
+    }, 0);
+    setFieldValue("totalAmount", total);
+
+    if (deptId === "7") {
+      const regularItems = data.filter(
+        item => item.ACCNO !== "91028290003" && item.ACCNO !== "91028290001"
+      );
+      const discountItem = data.find(item => item.ACCNO === "91028290003");
+      const subtractItem = data.find(item => item.ACCNO === "91028290001");
+
+      const firstTenItems = regularItems.slice(0, 10);
+      const remainingItems = regularItems.slice(10);
+      const formattedData = [];
+
+      firstTenItems.forEach((item, index) => {
+        formattedData.push({
+          delete: (
+            <button
+              type="button"
+              onClick={() => handleDeleteRow(formattedData.length)}
+              className="text-red-600 font-semibold"
+            >
+              Delete
+            </button>
+          ),
+          srNo: index + 1,
+          deptCode: item.GLCODE,
+          deptName: item.GLNAME,
+          head: item.ACCNO,
+          headName: item.ACCOUNTNAME,
+          remark: item.NARRATION || "",
+          prevAmount: Number(item.NUM_RECEIPTDET_ARRAMOUNT || 0),
+          currentAmount: Number(item.NUM_RECEIPTDET_CURRAMOUNT || 0),
+          amount: Number(item.CREDIT || 0),
+          partyId: item.PARTY || 0,
+          isDiscount: false,
+          isSubtotalRow: false,
+          isDiscountRow: false,
+          isSubtractRow: false,
+          subtotalType: null
+        });
       });
-      const res = await axios.post(
-        `${BASE_URL}/api/Receipt/receiptdetailbyrefno`,
-        {
-          refNo: refNo,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        },
-      );
 
-      const data = res.data?.data?.data || [];
+      if (firstTenItems.length > 0) {
+        formattedData.push({
+          delete: "",
+          srNo: "",
+          deptCode: "",
+          deptName: "",
+          head: "",
+          headName: "",
+          remark: "एकूण (१ ते १०)",
+          prevAmount: "",
+          currentAmount: "",
+          amount: "",
+          partyId: 0,
+          isDiscount: false,
+          isSubtotalRow: true,
+          isDiscountRow: false,
+          isSubtractRow: false,
+          subtotalType: "firstTen",
+          subtotalLabel: "एकूण (१ ते १०)"
+        });
+      }
 
-      if (data.length === 0) return;
+      if (discountItem) {
+        formattedData.push({
+          delete: (
+            <button
+              type="button"
+              onClick={() => handleDeleteRow(formattedData.length)}
+              className="text-red-600 font-semibold"
+            >
+              Delete
+            </button>
+          ),
+          srNo: firstTenItems.length + 1,
+          deptCode: discountItem.GLCODE,
+          deptName: discountItem.GLNAME,
+          head: discountItem.ACCNO,
+          headName: discountItem.ACCOUNTNAME,
+          remark: discountItem.NARRATION || "",
+          prevAmount: Number(discountItem.NUM_RECEIPTDET_ARRAMOUNT || 0),
+          currentAmount: Number(discountItem.NUM_RECEIPTDET_CURRAMOUNT || 0),
+          amount: Number(discountItem.CREDIT || 0),
+          partyId: discountItem.PARTY || 0,
+          isDiscount: true,
+          isSubtotalRow: false,
+          isDiscountRow: true,
+          isSubtractRow: false,
+          subtotalType: null
+        });
+      }
 
-      const first = data[0];
+      if (discountItem) {
+        formattedData.push({
+          delete: "",
+          srNo: "",
+          deptCode: "",
+          deptName: "",
+          head: "",
+          headName: "",
+          remark: "सुट वजा रक्कम",
+          prevAmount: "",
+          currentAmount: "",
+          amount: "",
+          partyId: 0,
+          isDiscount: false,
+          isSubtotalRow: true,
+          isDiscountRow: false,
+          isSubtractRow: false,
+          subtotalType: "afterDiscount",
+          subtotalLabel: "सुट वजा रक्कम"
+        });
+      }
 
-      setFieldValue("zoneId", first.ZONEID?.toString() || "");
+      remainingItems.forEach((item, index) => {
+        const srNum = (firstTenItems.length + (discountItem ? 2 : 1)) + index;
+        formattedData.push({
+          delete: (
+            <button
+              type="button"
+              onClick={() => handleDeleteRow(formattedData.length)}
+              className="text-red-600 font-semibold"
+            >
+              Delete
+            </button>
+          ),
+          srNo: srNum,
+          deptCode: item.GLCODE,
+          deptName: item.GLNAME,
+          head: item.ACCNO,
+          headName: item.ACCOUNTNAME,
+          remark: item.NARRATION || "",
+          prevAmount: Number(item.NUM_RECEIPTDET_ARRAMOUNT || 0),
+          currentAmount: Number(item.NUM_RECEIPTDET_CURRAMOUNT || 0),
+          amount: Number(item.CREDIT || 0),
+          partyId: item.PARTY || 0,
+          isDiscount: false,
+          isSubtotalRow: false,
+          isDiscountRow: false,
+          isSubtractRow: false,
+          subtotalType: null
+        });
+      });
 
-      setFieldValue(
-        "transactionType",
-        first.TRNSTYPEID?.toString() || ""
-      );
+      if (subtractItem) {
+        formattedData.push({
+          delete: (
+            <button
+              type="button"
+              onClick={() => handleDeleteRow(formattedData.length)}
+              className="text-red-600 font-semibold"
+            >
+              Delete
+            </button>
+          ),
+          srNo: formattedData.length + 1,
+          deptCode: subtractItem.GLCODE,
+          deptName: subtractItem.GLNAME,
+          head: subtractItem.ACCNO,
+          headName: subtractItem.ACCOUNTNAME,
+          remark: subtractItem.NARRATION || "",
+          prevAmount: Number(subtractItem.NUM_RECEIPTDET_ARRAMOUNT || 0),
+          currentAmount: Number(subtractItem.NUM_RECEIPTDET_CURRAMOUNT || 0),
+          amount: Number(subtractItem.CREDIT || 0),
+          partyId: subtractItem.PARTY || 0,
+          isDiscount: true,
+          isSubtotalRow: false,
+          isDiscountRow: false,
+          isSubtractRow: true,
+          subtotalType: null
+        });
+      }
 
-      setFieldValue("reciptNo", first.RECNO || "");
+      formattedData.push({
+        delete: "",
+        srNo: "",
+        deptCode: "",
+        deptName: "",
+        head: "",
+        headName: "",
+        remark: "एकूण रक्कम",
+        prevAmount: "",
+        currentAmount: "",
+        amount: "",
+        partyId: 0,
+        isDiscount: false,
+        isSubtotalRow: true,
+        isDiscountRow: false,
+        isSubtractRow: false,
+        subtotalType: "grand",
+        subtotalLabel: "एकूण रक्कम"
+      });
 
-      setFieldValue(
-        "department",
-        first.ACCDEPTID?.toString() || ""
-      );
-
-      setFieldValue(
-        "date",
-        first.TRNSDATE ? new Date(first.TRNSDATE) : new Date()
-      );
-
-      setFieldValue("remark", first.NARRATION || "");
-
-      setFieldValue("wardCode", first.DRGL?.toString() || "");
-
-      setTempHead(first.DRACC?.toString() || "");
-
-      fetchCreditLeasure(first.GLCODE?.toString(), "party");
-
-      const finalTotal = tableData.reduce((sum, row) => {
-        const amount = Number(row.amount || 0);
-
-        return row.isDiscount
-          ? sum - amount
-          : sum + amount;
-      }, 0);
-
-      const total = data.reduce(
-        (sum, item) => {
-          const amount = Number(item.CREDIT || 0);
-
-          return item.ACCNO === "91028290003" || item.ACCNO === "91028290001"
-            ? sum - amount
-            : sum + amount;
-        }, 0);
-
-      setFieldValue("totalAmount", total);
-
+      setTableData(formattedData);
+    } else {
       const tableFormatted = data.map((item, index) => ({
         delete: (
           <button
@@ -455,33 +657,25 @@ const FrmReceiptJcmc = () => {
             Delete
           </button>
         ),
-
         deptCode: item.GLCODE,
         deptName: item.GLNAME,
-
         head: item.ACCNO,
         headName: item.ACCOUNTNAME,
-
         remark: item.NARRATION || "",
-
         prevAmount: Number(item.NUM_RECEIPTDET_ARRAMOUNT || 0),
-
         currentAmount: Number(item.NUM_RECEIPTDET_CURRAMOUNT || 0),
-
         amount: Number(item.CREDIT || 0),
-
         partyId: item.PARTY || 0,
-
         isDiscount: item.ACCNO === "91028290003" || item.ACCNO === "91028290001",
       }));
-
       setTableData(tableFormatted);
-    } catch (err) {
-      console.error("Receipt Details API Error:", err);
-    } finally {
-      Swal.close();
     }
-  };
+  } catch (err) {
+    console.error("Receipt Details API Error:", err);
+  } finally {
+    Swal.close();
+  }
+};
 
   // for jcmc
 
@@ -506,10 +700,10 @@ const FrmReceiptJcmc = () => {
       // Auto fill form fields
       setFieldValue("zoneId", headerData.NUM_ACCUSERMAP_WARD?.toString() || "");
 
-      // setFieldValue(
-      //   "transactionType",
-      //   headerData.NUM_ACCUSERMAP_TRANSTYPEID?.toString() || "",
-      // );
+      setFieldValue(
+        "transactionType",
+        headerData.NUM_ACCUSERMAP_TRANSTYPEID?.toString() || "",
+      );
 
       setFieldValue("reciptNo", headerData.VAR_ACCUSERMAP_RECNO || "");
 
@@ -518,7 +712,7 @@ const FrmReceiptJcmc = () => {
         headerData.NUM_ACCUSERMAP_DEPTID?.toString() || "",
       );
 
-      // setFieldValue("wardCode", headerData.VAR_ACCUSERMAP_GLCODE || "");
+      setFieldValue("wardCode", headerData.VAR_ACCUSERMAP_GLCODE || "");
 
       setFieldValue("remark", headerData.VAR_ACCUSERMAP_REMARK || "");
 
@@ -526,7 +720,7 @@ const FrmReceiptJcmc = () => {
       await fetchCreditLeasure(headerData.VAR_ACCUSERMAP_GLCODE, "party");
 
       // Store account no temporarily
-      // setTempHead(headerData.VAR_ACCUSERMAP_ACCNO?.trim());
+      setTempHead(headerData.VAR_ACCUSERMAP_ACCNO?.trim());
     } catch (err) {
       console.error("User Map Header API Error:", err);
     }
@@ -563,14 +757,232 @@ const FrmReceiptJcmc = () => {
         head: item.VAR_ACCMPDET_ACCNO,
         headName: item.VAR_ACCMPDET_ACCNONAME,
         remark: "",
+        prevAmount: "",
+        currentAmount: "",
         amount: "0",
         partyId: 0,
         isDiscount: item.VAR_ACCMPDET_ACCNO === "91028290003" || item.VAR_ACCMPDET_ACCNO === "91028290001",
+        isSubtotalRow: false,
+        isDiscountRow: item.VAR_ACCMPDET_ACCNO === "91028290003" || item.VAR_ACCMPDET_ACCNO === "91028290001",
       }));
 
       setTableData(formattedData);
     } catch (err) {
       console.error("Account Mapping Details API Error:", err);
+    }
+  };
+
+  // NEW TABLE API IMPLEMENTATION FOR DEPARTMENT 7
+  const fetchAccountMappingDetailsProperty = async () => {
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/api/Receipt/accountmappingdetailsProperty`,
+        {
+          userId: user?.userId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        },
+      );
+
+      const data = res.data?.data || [];
+
+      const processedData = processTableData(data);
+
+      setProcessedTableData(processedData);
+
+      setFirstSevenTotal(0);
+      setDiscountAmount(0);
+      setRemainingTotal(0);
+
+      const formattedData = [];
+
+      processedData.firstTenItems.forEach((item, index) => {
+        formattedData.push({
+          delete: (
+            <button
+              type="button"
+              onClick={() => handleDeleteRow(formattedData.length)}
+              className="text-red-600 font-semibold"
+            >
+              Delete
+            </button>
+          ),
+          srNo: index + 1,
+          deptCode: item.VAR_ACCMPDET_GLCODE,
+          deptName: item.VAR_ACCMPDET_GLNAME,
+          head: item.VAR_ACCMPDET_ACCNO,
+          headName: item.VAR_ACCMPDET_ACCNONAME,
+          remark: "",
+          prevAmount: "",
+          currentAmount: "",
+          amount: "0",
+          partyId: 0,
+          isDiscount: false,
+          isSubtotalRow: false,
+          isDiscountRow: false,
+          isSubtractRow: false,
+          subtotalType: null
+        });
+      });
+
+      if (processedData.firstTenItems.length > 0) {
+        formattedData.push({
+          delete: "",
+          srNo: "",
+          deptCode: "",
+          deptName: "",
+          head: "",
+          headName: "",
+          remark: "एकूण (१ ते १०)",
+          prevAmount: "",
+          currentAmount: "",
+          amount: "",
+          partyId: 0,
+          isDiscount: false,
+          isSubtotalRow: true,
+          isDiscountRow: false,
+          isSubtractRow: false,
+          subtotalType: "firstTen",
+          subtotalLabel: "एकूण (१ ते १०)"
+        });
+      }
+
+      if (processedData.discountItem) {
+        formattedData.push({
+          delete: (
+            <button
+              type="button"
+              onClick={() => handleDeleteRow(formattedData.length)}
+              className="text-red-600 font-semibold"
+            >
+              Delete
+            </button>
+          ),
+          srNo: processedData.firstTenItems.length + 1,
+          deptCode: processedData.discountItem.VAR_ACCMPDET_GLCODE,
+          deptName: processedData.discountItem.VAR_ACCMPDET_GLNAME,
+          head: processedData.discountItem.VAR_ACCMPDET_ACCNO,
+          headName: processedData.discountItem.VAR_ACCMPDET_ACCNONAME,
+          remark: "",
+          prevAmount: "",
+          currentAmount: "",
+          amount: "0",
+          partyId: 0,
+          isDiscount: true,
+          isSubtotalRow: false,
+          isDiscountRow: true,
+          isSubtractRow: false,
+          subtotalType: null
+        });
+      }
+
+      if (processedData.discountItem) {
+        formattedData.push({
+          delete: "",
+          srNo: "",
+          deptCode: "",
+          deptName: "",
+          head: "",
+          headName: "",
+          remark: "सुट वजा रक्कम",
+          prevAmount: "",
+          currentAmount: "",
+          amount: "",
+          partyId: 0,
+          isDiscount: false,
+          isSubtotalRow: true,
+          isDiscountRow: false,
+          isSubtractRow: false,
+          subtotalType: "afterDiscount",
+          subtotalLabel: "सुट वजा रक्कम"
+        });
+      }
+
+      processedData.remainingItems.forEach((item, index) => {
+        const srNum = (processedData.firstTenItems.length + (processedData.discountItem ? 2 : 1)) + index;
+        formattedData.push({
+          delete: (
+            <button
+              type="button"
+              onClick={() => handleDeleteRow(formattedData.length)}
+              className="text-red-600 font-semibold"
+            >
+              Delete
+            </button>
+          ),
+          srNo: srNum,
+          deptCode: item.VAR_ACCMPDET_GLCODE,
+          deptName: item.VAR_ACCMPDET_GLNAME,
+          head: item.VAR_ACCMPDET_ACCNO,
+          headName: item.VAR_ACCMPDET_ACCNONAME,
+          remark: "",
+          prevAmount: "",
+          currentAmount: "",
+          amount: "0",
+          partyId: 0,
+          isDiscount: false,
+          isSubtotalRow: false,
+          isDiscountRow: false,
+          isSubtractRow: false,
+          subtotalType: null
+        });
+      });
+
+      if (processedData.subtractItem) {
+        formattedData.push({
+          delete: (
+            <button
+              type="button"
+              onClick={() => handleDeleteRow(formattedData.length)}
+              className="text-red-600 font-semibold"
+            >
+              Delete
+            </button>
+          ),
+          srNo: formattedData.length + 1,
+          deptCode: processedData.subtractItem.VAR_ACCMPDET_GLCODE,
+          deptName: processedData.subtractItem.VAR_ACCMPDET_GLNAME,
+          head: processedData.subtractItem.VAR_ACCMPDET_ACCNO,
+          headName: processedData.subtractItem.VAR_ACCMPDET_ACCNONAME,
+          remark: "",
+          prevAmount: "",
+          currentAmount: "",
+          amount: "0",
+          partyId: 0,
+          isDiscount: true,
+          isSubtotalRow: false,
+          isDiscountRow: false,
+          isSubtractRow: true,
+          subtotalType: null
+        });
+      }
+
+      formattedData.push({
+        delete: "",
+        srNo: "",
+        deptCode: "",
+        deptName: "",
+        head: "",
+        headName: "",
+        remark: "एकूण रक्कम",
+        prevAmount: "",
+        currentAmount: "",
+        amount: "",
+        partyId: 0,
+        isDiscount: false,
+        isSubtotalRow: true,
+        isDiscountRow: false,
+        isSubtractRow: false,
+        subtotalType: "grand",
+        subtotalLabel: "एकूण रक्कम"
+      });
+
+      setTableData(formattedData);
+    } catch (err) {
+      console.error("Account Mapping Details Property API Error:", err);
     }
   };
 
@@ -695,20 +1107,44 @@ const FrmReceiptJcmc = () => {
         values.CurrentAmount || 0,
       ].join("~");
 
-      const paramStr2 = tableData
-        .map((row) => {
-          return [
-            row.deptCode,
-            row.head,
-            row.amount,
-            row.remark || "",
-            row.partyId || 0,
-            row.prevAmount || 0,
-            row.currentAmount || 0,
-          ].join("#");
-        })
-        .join("$");
+      const deptId = parseInt(values.department);
+      let paramStr2 = "";
 
+      if (deptId === 7) {
+        paramStr2 = tableData
+          .filter(
+            (row) =>
+              !row.isSubtotalRow && // Exclude subtotal rows
+              row.deptCode?.toString().trim() !== "" &&
+              row.head?.toString().trim() !== ""
+          )
+          .map((row) => {
+            return [
+              row.deptCode,
+              row.head,
+              row.amount,
+              row.remark || "",
+              row.partyId || 0,
+              row.prevAmount || 0,
+              row.currentAmount || 0,
+            ].join("#");
+          })
+          .join("$");
+      } else {
+        paramStr2 = tableData
+          .map((row) => {
+            return [
+              row.deptCode,
+              row.head,
+              row.amount,
+              row.remark || "",
+              row.partyId || 0,
+              row.prevAmount || 0,
+              row.currentAmount || 0,
+            ].join("#");
+          })
+          .join("$");
+      }
       const res = await axios.post(
         `${BASE_URL}/api/Receipt/receiptInsertUpdate`,
         {
@@ -719,7 +1155,7 @@ const FrmReceiptJcmc = () => {
           In_ParamStr4: "",
           In_ParamStr5: "",
           In_ParamStr6: "",
-        
+
         },
         {
           headers: {
@@ -770,14 +1206,12 @@ const FrmReceiptJcmc = () => {
           } else {
             Swal.fire({
               text: "PDF generation failed",
-              // icon: "error",
             });
           }
         } catch (pdfErr) {
           console.error("PDF ERROR:", pdfErr);
           Swal.fire({
             text: "PDF generation failed",
-            // icon: "error",
           });
         }
 
@@ -818,78 +1252,262 @@ const FrmReceiptJcmc = () => {
     रक्कम: "amount",
   };
 
-  //   const dummyData = tableData;
-  const dummyData = tableData.map((row, index) => ({
-    ...row,
+  const calculatedTotals = useMemo(() => {
+    const firstTenRows = tableData.filter(row =>
+      row.srNo && typeof row.srNo === 'number' && row.srNo >= 1 && row.srNo <= 10 && !row.isSubtotalRow && !row.isDiscountRow && !row.isSubtractRow
+    );
+    const newFirstTenTotal = firstTenRows.reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
 
-    delete: (
-      <button
-        type="button"
-        onClick={() => handleDeleteRow(index)}
-        className="text-red-600 font-semibold"
-      >
-        Delete
-      </button>
-    ),
+    const discountRows = tableData.filter(row => row.isDiscountRow === true);
+    const newDiscountAmount = discountRows.reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
 
-    prevAmount: (
-      <Input
-        type="number"
-        value={row.prevAmount || ""}
-        onChange={(e) => {
-          const prevValue = Number(e.target.value || 0);
+    const subtractRows = tableData.filter(row => row.isSubtractRow === true);
+    const newSubtractAmount = subtractRows.reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
 
-          setTableData((prev) =>
-            prev.map((r, i) =>
-              i === index
-                ? {
-                  ...r,
-                  prevAmount: prevValue,
-                  amount: prevValue + Number(r.currentAmount || 0),
-                }
-                : r,
-            ),
-          );
-        }}
-      />
-    ),
+    const remainingRows = tableData.filter(row =>
+      row.srNo && typeof row.srNo === 'number' && row.srNo >= 11 && !row.isSubtotalRow && !row.isDiscountRow && !row.isSubtractRow
+    );
+    const newRemainingTotal = remainingRows.reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
 
-    currentAmount: (
-      <Input
-        type="number"
-        value={row.currentAmount || ""}
-        onChange={(e) => {
-          const currentValue = Number(e.target.value || 0);
+    const regularTotal = tableData.reduce((sum, row) => {
+      if (!row.isSubtotalRow && !row.isDiscountRow && !row.isSubtractRow) {
+        return sum + (Number(row.amount) || 0);
+      }
+      return sum;
+    }, 0);
 
-          setTableData((prev) =>
-            prev.map((r, i) =>
-              i === index
-                ? {
-                  ...r,
-                  currentAmount: currentValue,
-                  amount: Number(r.prevAmount || 0) + currentValue,
-                }
-                : r,
-            ),
-          );
-        }}
-      />
-    ),
+    const afterDiscountTotal = newFirstTenTotal - newDiscountAmount;
 
-    amount: (
-      <Input
-        type="number"
-        value={row.amount}
-        onChange={(e) => {
-          const value = e.target.value;
+    const grandTotal = newFirstTenTotal - newDiscountAmount + newRemainingTotal - newSubtractAmount;
 
-          setTableData((prev) =>
-            prev.map((r, i) => (i === index ? { ...r, amount: value } : r)),
-          );
-        }}
-      />
-    ),
-  }));
+    return {
+      firstTen: newFirstTenTotal,
+      discount: newDiscountAmount,
+      subtract: newSubtractAmount,
+      remaining: newRemainingTotal,
+      afterDiscount: afterDiscountTotal,
+      grand: grandTotal,
+      regular: regularTotal
+    };
+  }, [tableData]);
+
+  useEffect(() => {
+    setFirstSevenTotal(calculatedTotals.firstTen);
+    setDiscountAmount(calculatedTotals.discount);
+    setRemainingTotal(calculatedTotals.remaining);
+  }, [calculatedTotals]);
+
+  const dummyData = tableData.map((row, index) => {
+    if (row.isSubtotalRow) {
+      let displayValue = 0;
+      if (row.subtotalType === 'firstTen') {
+        displayValue = calculatedTotals.firstTen;
+      } else if (row.subtotalType === 'afterDiscount') {
+        displayValue = calculatedTotals.afterDiscount;
+      } else if (row.subtotalType === 'remaining') {
+        displayValue = calculatedTotals.remaining;
+      } else if (row.subtotalType === 'grand') {
+        displayValue = calculatedTotals.grand;
+      }
+
+      return {
+        ...row,
+        delete: "",
+        srNo: "",
+        deptCode: "",
+        deptName: "",
+        head: "",
+        headName: "",
+        remark: row.subtotalLabel || row.remark,
+        prevAmount: "",
+        currentAmount: "",
+        amount: (
+          <Input
+            type="number"
+            value={displayValue}
+            readOnly
+            className="bg-gray-100"
+          />
+        ),
+        amountValue: displayValue
+      };
+    }
+
+    if (row.isDiscountRow) {
+      return {
+        ...row,
+        prevAmount: (
+          <Input
+            type="number"
+            value={row.prevAmount || ""}
+            onChange={(e) => {
+              const prevValue = Number(e.target.value || 0);
+              setTableData((prev) =>
+                prev.map((r, i) =>
+                  i === index
+                    ? {
+                      ...r,
+                      prevAmount: prevValue,
+                      amount: prevValue + Number(r.currentAmount || 0),
+                    }
+                    : r
+                )
+              );
+            }}
+          />
+        ),
+        currentAmount: (
+          <Input
+            type="number"
+            value={row.currentAmount || ""}
+            onChange={(e) => {
+              const currentValue = Number(e.target.value || 0);
+              setTableData((prev) =>
+                prev.map((r, i) =>
+                  i === index
+                    ? {
+                      ...r,
+                      currentAmount: currentValue,
+                      amount: Number(r.prevAmount || 0) + currentValue,
+                    }
+                    : r
+                )
+              );
+            }}
+          />
+        ),
+        remark: row.remark || "",
+        amount: (
+          <Input
+            type="number"
+            value={row.amount}
+            readOnly
+            className="bg-gray-100"
+          />
+        )
+      };
+    }
+
+    if (row.isSubtractRow) {
+      return {
+        ...row,
+        prevAmount: (
+          <Input
+            type="number"
+            value={row.prevAmount || ""}
+            onChange={(e) => {
+              const prevValue = Number(e.target.value || 0);
+              setTableData((prev) =>
+                prev.map((r, i) =>
+                  i === index
+                    ? {
+                      ...r,
+                      prevAmount: prevValue,
+                      amount: prevValue + Number(r.currentAmount || 0),
+                    }
+                    : r
+                )
+              );
+            }}
+          />
+        ),
+        currentAmount: (
+          <Input
+            type="number"
+            value={row.currentAmount || ""}
+            onChange={(e) => {
+              const currentValue = Number(e.target.value || 0);
+              setTableData((prev) =>
+                prev.map((r, i) =>
+                  i === index
+                    ? {
+                      ...r,
+                      currentAmount: currentValue,
+                      amount: Number(r.prevAmount || 0) + currentValue,
+                    }
+                    : r
+                )
+              );
+            }}
+          />
+        ),
+        remark: row.remark || "",
+        amount: (
+          <Input
+            type="number"
+            value={row.amount}
+            readOnly
+            className="bg-gray-100"
+          />
+        )
+      };
+    }
+
+    return {
+      ...row,
+      delete: (
+        <button
+          type="button"
+          onClick={() => handleDeleteRow(index)}
+          className="text-red-600 font-semibold"
+        >
+          Delete
+        </button>
+      ),
+      prevAmount: (
+        <Input
+          type="number"
+          value={row.prevAmount || ""}
+          onChange={(e) => {
+            const prevValue = Number(e.target.value || 0);
+            setTableData((prev) =>
+              prev.map((r, i) =>
+                i === index
+                  ? {
+                    ...r,
+                    prevAmount: prevValue,
+                    amount: prevValue + Number(r.currentAmount || 0),
+                  }
+                  : r
+              )
+            );
+          }}
+        />
+      ),
+      currentAmount: (
+        <Input
+          type="number"
+          value={row.currentAmount || ""}
+          onChange={(e) => {
+            const currentValue = Number(e.target.value || 0);
+            setTableData((prev) =>
+              prev.map((r, i) =>
+                i === index
+                  ? {
+                    ...r,
+                    currentAmount: currentValue,
+                    amount: Number(r.prevAmount || 0) + currentValue,
+                  }
+                  : r
+              )
+            );
+          }}
+        />
+      ),
+      amount: (
+        <Input
+          type="number"
+          value={row.amount}
+          onChange={(e) => {
+            const value = e.target.value;
+            setTableData((prev) =>
+              prev.map((r, i) => (i === index ? { ...r, amount: value } : r))
+            );
+          }}
+        />
+      ),
+    };
+  });
 
   const initialValues = {
     zoneId: "",
@@ -937,24 +1555,23 @@ const FrmReceiptJcmc = () => {
           } else {
             // NEW MODE
             fetchUserMapHeader(setFieldValue);
-            fetchAccountMappingDetails();
 
             setIsLoading(false);
             Swal.close();
           }
         }, [refNo, zones, transTypes, departments, remarks, glAllList]);
 
-        // useEffect(() => {
-        //   if (
-        //     !refNo &&
-        //     zones.length > 0 &&
-        //     transTypes.length > 0 &&
-        //     departments.length > 0
-        //   ) {
-        //     fetchUserMapHeader(setFieldValue);
-        //     fetchAccountMappingDetails();
-        //   }
-        // }, [refNo, zones, transTypes, departments]);
+        useEffect(() => {
+          if (!refNo && values.department && values.department !== "" && values.department !== "0") {
+            const deptId = parseInt(values.department);
+
+            if (deptId === 7) {
+              fetchAccountMappingDetailsProperty();
+            } else {
+              fetchAccountMappingDetails();
+            }
+          }
+        }, [values.department, refNo]);
 
         useEffect(() => {
           if (values.transactionType) {
@@ -979,7 +1596,7 @@ const FrmReceiptJcmc = () => {
             );
 
             if (exists) {
-              setFieldValue("head", exists.value); // ✅ set value
+              setFieldValue("head", exists.value); 
               setTempHead(null);
             }
           }
@@ -999,11 +1616,15 @@ const FrmReceiptJcmc = () => {
         // );
 
         const finalTotal = tableData.reduce((sum, row) => {
+          if (row.isSubtotalRow) return sum;
+
           const amount = Number(row.amount || 0);
 
-          return row.isDiscount
-            ? sum - amount
-            : sum + amount;
+          if (row.isDiscountRow || row.isDiscount) {
+            return sum - amount;
+          }
+
+          return sum + amount;
         }, 0);
 
         useEffect(() => {
@@ -1244,7 +1865,6 @@ const FrmReceiptJcmc = () => {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* विभाग संकेतांक */}
                     <div>
                       <Label text="विभाग संकेतांक :" />
                       <SearchableSelect
@@ -1257,7 +1877,6 @@ const FrmReceiptJcmc = () => {
                       />
                     </div>
 
-                    {/* लेखाशीर्ष */}
                     <div>
                       <Label text="लेखाशीर्ष :" />
                       <SearchableSelect
@@ -1270,7 +1889,6 @@ const FrmReceiptJcmc = () => {
                       />
                     </div>
 
-                    {/* Select Remark */}
                     <div>
                       <Label text="Select Remark :" />
 
@@ -1298,7 +1916,6 @@ const FrmReceiptJcmc = () => {
                       </Select>
                     </div>
 
-                    {/* Previous Amount */}
                     {showAmountFields && (
                       <>
                         <div>
@@ -1323,7 +1940,6 @@ const FrmReceiptJcmc = () => {
                       </>
                     )}
 
-                    {/* Entry Amount */}
                     <div>
                       <Label text="एकूण रक्कम :" />
                       <Input
@@ -1334,7 +1950,6 @@ const FrmReceiptJcmc = () => {
                       />
                     </div>
 
-                    {/* Remark */}
                     <div>
                       <Label text="तपशील :" />
                       <Input
@@ -1344,7 +1959,6 @@ const FrmReceiptJcmc = () => {
                       />
                     </div>
 
-                    {/* Party */}
                     <div>
                       <Label text="पार्टी संकेतांक :" />
 

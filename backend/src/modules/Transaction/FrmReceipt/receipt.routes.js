@@ -44,5 +44,5 @@ router.post("/accountmappingdetails",auth(),controller.getAccountMappingDetail);
 
 router.post( "/receiptdetailbyrefno",auth(),controller.getReceiptDetailByRefNo);
 
-
+router.post("/accountmappingdetailsProperty",auth(),controller.getAccountMappingDetailProperty);
 module.exports = router;

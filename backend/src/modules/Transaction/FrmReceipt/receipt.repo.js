@@ -416,9 +416,6 @@ async function getAccountMappingDetailRepo(payload) {
     throw err;
   }
 }
-// ============================================
-// RECEIPT DETAIL BY REF NO
-// ============================================
 
 const getReceiptDetailByRefNo = async (params) => {
   try {
@@ -520,7 +517,31 @@ const getReceiptDetailByRefNo = async (params) => {
     throw err;
   }
 };
+const getAccountMappingDetailRepoProperty = async (payload) => {
+  try {
+    const query = `
+      SELECT
+          d.var_accmpdet_glcode,
+          d.var_accmpdet_glname,
+          d.var_accmpdet_accno,
+          d.var_accmpdet_accnoname,
+          d.var_accmpdet_insby,
+          d.dat_accmpdet_insdate
+      FROM aoms_accusermap_mas m
+      INNER JOIN aoms_accusermap_det d
+          ON m.num_accusermap_id = d.num_accmpdet_mainid
+      WHERE m.num_accusermap_userid = :userId
+    `;
 
+    const result = await executeQuery(query, {
+      userId: payload.userId,
+    });
+
+    return result.rows;
+  } catch (error) {
+    throw error;
+  }
+};
 
 module.exports = {
   getReceiptListRepo,
@@ -540,6 +561,7 @@ module.exports = {
   getUserMapHeaderRepo,
   getUserMapDetailsRepo,
   getAccountMappingDetailRepo,
-  getReceiptDetailByRefNo
+  getReceiptDetailByRefNo,
+  getAccountMappingDetailRepoProperty
 
 };

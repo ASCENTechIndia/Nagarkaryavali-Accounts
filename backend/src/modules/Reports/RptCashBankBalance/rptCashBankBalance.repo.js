@@ -182,7 +182,7 @@ async function getDailyTransactionDetailedReport(filters) {
         TO_CHAR(a.chqno, 'FM000000') AS chqno, 
         CASE WHEN a.sourceid = 6 THEN a.amount ELSE 0 END AS transamount,
         v.zoneename AS zonename, 
-        m.num_accdept_name AS grampanch,
+        m.deptname AS grampanch,
         c.objectcode || ' ' || c.accname AS accname, 
         p.var_partymst_partyname AS PartyName, 
         NULL AS DelFlag,
@@ -197,8 +197,8 @@ async function getDailyTransactionDetailedReport(filters) {
         ON p.num_partymst_partyid = a.partycode 
     LEFT JOIN view_zone v 
         ON v.zoneid = a.zoneid 
-    LEFT OUTER JOIN aoac_accdept_mst m 
-        ON m.num_accdept_id = a.accdept
+    LEFT OUTER JOIN vw_accdeptconfig m 
+        ON m.deptid = a.accdept
     WHERE TRUNC(a.trnsdate) = TO_DATE(:reportDate, 'DD-MON-YYYY')
         AND a.amount > 0 
         AND a.trnstypeid IN (1, 2)
@@ -280,7 +280,7 @@ async function getDailyTransactionDetailedReport(filters) {
         TO_CHAR(a.chqno, 'FM000000') AS chqno,     
         CASE WHEN a.trnstypeid = 8 THEN a.amount ELSE 0 END AS transamount, 
         v.zoneename AS zonename, 
-        m.num_accdept_name AS grampanch,    
+        m.deptname AS grampanch,    
         c.objectcode || ' ' || c.accname AS accname, 
         p.var_partymst_partyname AS PartyName, 
         NULL AS DelFlag, 
@@ -295,8 +295,8 @@ async function getDailyTransactionDetailedReport(filters) {
         ON p.num_partymst_partyid = a.partycode     
     LEFT JOIN view_zone v 
         ON v.zoneid = a.zoneid    
-    LEFT OUTER JOIN aoac_accdept_mst m 
-        ON m.num_accdept_id = a.accdept     
+    LEFT OUTER JOIN vw_accdeptconfig m 
+        ON m.deptid = a.accdept     
     WHERE TRUNC(a.trnsdate) = TO_DATE(:reportDate, 'DD-MON-YYYY') 
         AND a.amount < 0 
         AND a.trnstypeid IN (3, 4) 
@@ -321,7 +321,7 @@ async function getDailyTransactionDetailedReport(filters) {
         TO_CHAR(a.chqno, 'FM000000') AS chqno,     
         CASE WHEN a.trnstypeid = 9 THEN a.amount ELSE 0 END AS transamount, 
         v.zoneename AS zonename, 
-        m.num_accdept_name AS grampanch,    
+        m.deptname AS grampanch,    
         c.objectcode || ' ' || c.accname AS accname, 
         p.var_partymst_partyname AS PartyName, 
         NULL AS DelFlag, 
@@ -336,8 +336,8 @@ async function getDailyTransactionDetailedReport(filters) {
         ON p.num_partymst_partyid = a.partycode     
     LEFT JOIN view_zone v 
         ON v.zoneid = a.zoneid     
-    LEFT OUTER JOIN aoac_accdept_mst m 
-        ON m.num_accdept_id = a.accdept     
+    LEFT OUTER JOIN vw_accdeptconfig m 
+        ON m.deptid = a.accdept     
     WHERE TRUNC(a.trnsdate) = TO_DATE(:reportDate, 'DD-MON-YYYY') 
         AND a.amount > 0 
         AND a.trnstypeid IN (9) 

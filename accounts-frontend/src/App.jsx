@@ -101,6 +101,9 @@ import FrmReceiptPaymentRegisterRpt from "./pages/Reports/FrmReceiptPaymentRegis
 import RptGLAccStatement from "./pages/ReportsForm/RptGLAccStatement";
 import FrmReceiptReprint from "./pages/Reports/FrmReceiptReprint";
 import FrmReceiptJcmc from "./pages/Transaction/FrmReceiptJcmc";
+import FrmReceiptNew from "./pages/Transaction/FrmReceiptNew";
+import FrmReceiptListNew from "./pages/Transaction/FrmReceiptListNew";
+
 import useDynamicFavicon from "./utils/useDynamicFavicon";
 
 const Home = () => <Button>Click me</Button>;
@@ -520,7 +523,14 @@ export const router = createBrowserRouter([
         path: "/Transactions/FrmReceiptJcmc",
         element: <FrmReceiptJcmc />,
       },
-
+      {
+        path: "/Transactions/FrmReceiptNew",
+        element: <FrmReceiptNew />,
+      },
+      {
+        path: "/Transactions/FrmReceiptListNew",
+        element: <FrmReceiptListNew />,
+      },
     ],
   },
 ]);

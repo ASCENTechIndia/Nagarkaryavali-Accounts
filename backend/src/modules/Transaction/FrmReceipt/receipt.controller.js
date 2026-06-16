@@ -172,3 +172,15 @@ asyncHandler(async (req, res) => {
   );
 });
 
+exports.getAccountMappingDetailProperty = asyncHandler(async (req, res) => {
+
+  const data =
+    await service.getAccountMappingDetailProperty(req.body);
+
+  return ok(
+    res,
+    data,
+    "Account mapping details fetched successfully"
+  );
+
+});

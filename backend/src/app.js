@@ -114,6 +114,7 @@ app.use("/api/Tranrevoke", require("./modules/Transaction/FrmTransactionUpdate/F
 app.use("/api/FrmCashDeposit", require("./modules/Transaction/FrmCashDeposit/FrmCashDeposit.routes"));
 app.use("/api/frmSDRef", require("./modules/Transaction/FrmSDRefund/FrmSDRef.route"));
 app.use("/api/ChequeDepo", require("./modules/Transaction/FrmChequeDeposit/ChequeDeposit.route"));
+app.use("/api/FrmUserTax", require("./modules/Transaction/FrmUserTax/FrmUserTax.routes"));
 
 //Reports
 app.use("/api/RptTransferRegister", require("./modules/Reports/RptTransferRegister/transferRegister.route"));

@@ -6,6 +6,7 @@ import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 import Swal from "sweetalert2";
 
+import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { DatePicker } from "@/components/ui/calendar";
@@ -114,13 +115,157 @@ const formatDate = (date) => {
           return `${year}-${month}-${day}`;
       };
 
+//   const handleSearch = async (values) => {
+//     try {
+//       setLoading(true);
+//  const selectedZone = zones.find(
+//         (z) => String(z.ZONEID) === String(values.ward)
+//       );
+//        const payload = {
+//         ulbId: ulbId,
+//         fromDate: formatDate(values.fromDate),
+//         toDate: formatDate(values.toDate),
+//         majorCode: values.deptCode || null,
+//         minorCode: values.ledger || null,
+//         zoneId: values.ward || null,
+//         zoneName: selectedZone?.ZONEENAME || null,
+//         gramPanchayatId: null,
+//         corpCode: null,
+//         budgetId: null,
+//         nidhiId: null,
+//         exportType: values.exportType, // 🔥 important
+//       };
+
+//       const res = await axios.post(
+//         `${BASE_URL}/api/RptRegister/transaction-report-pdf`,
+//         payload,
+//         {
+//           headers: { Authorization: `Bearer ${token}` },
+//           responseType: values.exportType === "Excel" ? "blob" : "json",
+//         },
+//       );
+
+//       /* ================= PDF ================= */
+//       if (values.exportType === "PDF") {
+//         const pdfUrl = res.data?.pdfUrl;
+
+//         if (pdfUrl) {
+//           window.open(pdfUrl, "_blank");
+//         } else {
+//           Swal.fire("No Data", "No records found for PDF", "warning");
+//         }
+//         return;
+//       }
+
+//       /* ================= EXCEL DOWNLOAD ================= */
+//       if (values.exportType === "Excel") {
+//         const blob = new Blob([res.data], {
+//           type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+//         });
+
+//         const url = window.URL.createObjectURL(blob);
+
+//         const link = document.createElement("a");
+//         link.href = url;
+//         link.download = `Receipt_Register_${Date.now()}.xlsx`;
+
+//         document.body.appendChild(link);
+//         link.click();
+
+//         link.remove();
+//         window.URL.revokeObjectURL(url);
+
+//         return;
+//       }
+
+//       /* ================= TABLE ================= */
+//       const list = res.data?.data?.list || [];
+
+//       if (list.length === 0) {
+//         Swal.fire("No Data", "No records found", "warning");
+//       }
+
+//       setTableData(list);
+//     } catch (err) {
+//       console.error(err);
+//       Swal.fire({
+//               text: err?.response?.data?.message ,
+//             });
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+  const exportTransactionExcel = (rows, values, zoneName) => {
+    const excelData = rows.map((item, index) => ({
+      "Sr No": index + 1,
+      "Date": item.TRNSDATE
+        ? new Date(item.TRNSDATE).toLocaleDateString("en-GB")
+        : "",
+
+      "Transaction No": item.TRANSNO || "",
+      "Document No": item.DOCNO || "",
+
+      "GL Code": item.GLCODE || "",
+      "GL Name": item.GLNAME || "",
+
+      "Account No": item.ACCNO || "",
+      "Account Name": item.ACCNAME || "",
+
+      "Zone": item.ZONEENAME || "",
+      "Gram Panchayat": item.GRAMPANCH || "",
+
+      "Function Code": item.FUNCTIONCODE || "",
+      "Object Code": item.OBJECTCODE || "",
+
+      "Party Name": item.PARTYNAME || "",
+      "Narration": item.NARRATION || "",
+
+      "Amount": Number(item.AMOUNT || 0),
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(excelData);
+
+    ws["!cols"] = [
+      { wch: 8 },
+      { wch: 15 },
+      { wch: 18 },
+      { wch: 18 },
+      { wch: 12 },
+      { wch: 30 },
+      { wch: 18 },
+      { wch: 35 },
+      { wch: 25 },
+      { wch: 25 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 30 },
+      { wch: 40 },
+      { wch: 15 },
+    ];
+
+    const wb = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+      wb,
+      ws,
+      "Receipt Register"
+    );
+
+    XLSX.writeFile(
+      wb,
+      `Receipt_Register_${Date.now()}.xlsx`
+    );
+  };
+
   const handleSearch = async (values) => {
     try {
       setLoading(true);
- const selectedZone = zones.find(
+
+      const selectedZone = zones.find(
         (z) => String(z.ZONEID) === String(values.ward)
       );
-       const payload = {
+
+      const payload = {
         ulbId: ulbId,
         fromDate: formatDate(values.fromDate),
         toDate: formatDate(values.toDate),
@@ -132,69 +277,68 @@ const formatDate = (date) => {
         corpCode: null,
         budgetId: null,
         nidhiId: null,
-        exportType: values.exportType, // 🔥 important
       };
-
-      const res = await axios.post(
-        `${BASE_URL}/api/RptRegister/transaction-report-pdf`,
-        payload,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          responseType: values.exportType === "Excel" ? "blob" : "json",
-        },
-      );
 
       /* ================= PDF ================= */
       if (values.exportType === "PDF") {
+        const res = await axios.post(
+          `${BASE_URL}/api/RptRegister/transaction-report-pdf`,
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
         const pdfUrl = res.data?.pdfUrl;
 
         if (pdfUrl) {
           window.open(pdfUrl, "_blank");
         } else {
-          Swal.fire("No Data", "No records found for PDF", "warning");
+          Swal.fire("No Data", "No records found", "warning");
         }
-        return;
-      }
-
-      /* ================= EXCEL DOWNLOAD ================= */
-      if (values.exportType === "Excel") {
-        const blob = new Blob([res.data], {
-          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        });
-
-        const url = window.URL.createObjectURL(blob);
-
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `Receipt_Register_${Date.now()}.xlsx`;
-
-        document.body.appendChild(link);
-        link.click();
-
-        link.remove();
-        window.URL.revokeObjectURL(url);
 
         return;
       }
 
-      /* ================= TABLE ================= */
-      const list = res.data?.data?.list || [];
+      /* ================= EXCEL ================= */
 
-      if (list.length === 0) {
+      const res = await axios.post(
+        `${BASE_URL}/api/RptRegister/transaction-report`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const rows = res.data?.data?.list || [];
+
+      if (!rows.length) {
         Swal.fire("No Data", "No records found", "warning");
+        return;
       }
 
-      setTableData(list);
+      exportTransactionExcel(
+        rows,
+        values,
+        selectedZone?.ZONEENAME || "ALL"
+      );
+
     } catch (err) {
       console.error(err);
+
       Swal.fire({
-              text: err?.response?.data?.message ,
-            });
+        text:
+          err?.response?.data?.message ||
+          "Unable to generate report",
+      });
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <Formik initialValues={getInitialValues()} onSubmit={handleSearch}>
       {({ values, setFieldValue, resetForm }) => (
