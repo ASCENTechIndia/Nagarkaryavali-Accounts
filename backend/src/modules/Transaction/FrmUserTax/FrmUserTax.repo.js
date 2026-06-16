@@ -76,7 +76,9 @@ async function getAccUserMapByIdRepo(payload) {
           D.VAR_ACCMPDET_GLCODE,
           D.VAR_ACCMPDET_GLNAME,
           D.VAR_ACCMPDET_ACCNO,
-          D.VAR_ACCMPDET_ACCNONAME
+          D.VAR_ACCMPDET_ACCNONAME,
+          D.NUM_ACCMPDET_SQID,
+          D.VAR_ACCMPDET_TYPE
 
       FROM AOMS_ACCUSERMAP_MAS M
       LEFT JOIN AOMS_ACCUSERMAP_DET D

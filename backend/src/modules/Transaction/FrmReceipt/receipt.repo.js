@@ -249,13 +249,23 @@ const getReceiptDetailsPdfRepo = (refno, ulbid) =>
             SELECT SUM(rd.num_receiptdesc_amount)
             FROM aoac_receiptdesc_def rd
             WHERE rd.num_receiptdesc_refno = vr.REFNO
-        ) AS DISCOUNTAMOUNT
+        ) AS DISCOUNTAMOUNT,
+        d.num_accmpdet_id
     FROM VW_Receiptdetails vr
+    INNER JOIN
+    (
+        SELECT
+            var_accmpdet_accno,
+            MIN(num_accmpdet_id) AS num_accmpdet_id
+        FROM aoms_accusermap_det
+        GROUP BY var_accmpdet_accno
+    ) d
+        ON d.var_accmpdet_accno = vr.taxac
      WHERE vr.REFNO = :refno
-       AND vr.ulbid = :ulbid`,
+       AND vr.ulbid = :ulbid
+    ORDER BY d.num_accmpdet_id`,
     { refno, ulbid },
   );
-
 
 async function getReceiptPDF(payload) {
   try {

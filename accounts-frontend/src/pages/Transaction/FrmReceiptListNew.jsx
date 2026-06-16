@@ -6,14 +6,6 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-
 import ShadCNTable from "@/components/ui/table";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
@@ -31,54 +23,12 @@ const item = {
 
 const FrmReceiptListNew = () => {
   const [tableData, setTableData] = useState([]);
-  const [corporations, setCorporations] = useState([]);
-  const [zones, setZones] = useState([]);
   const { user } = useAuth();
-  const [defaultMunicipality, setDefaultMunicipality] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const ulbId = user?.ulbId;
   const userId = user?.userId;
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
-  console.log("usertokan :", user.token);
-  console.log("BASE_URL:", BASE_URL);
-
-  const fetchCorporations = async () => {
-    try {
-      Swal.fire({
-        title: "Loading...",
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
-
-      const res = await axios.post(
-        `${BASE_URL}/api/Receipt/corporation`,
-        {
-          corp_id: ulbId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        },
-      );
-
-      const corpData = res.data.data || [];
-      setCorporations(corpData);
-
-      if (corpData.length > 0) {
-        const defaultCorp = corpData[0].CORPORATIONID.toString();
-        setDefaultMunicipality(defaultCorp);
-      }
-    } catch (err) {
-      console.error("Corporation API Error:", err);
-    } finally {
-      Swal.close();
-    }
-  };
 
   const fetchReceiptList = async () => {
     try {
@@ -120,60 +70,6 @@ const FrmReceiptListNew = () => {
     }
   };
 
-  const handleSelect = async (receiptNo) => {
-    debugger;
-    try {
-      Swal.fire({
-        title: "Loading...",
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
-
-      const res = await axios.post(
-        `${BASE_URL}/api/Receipt/usermapdetails`,
-        {
-          userId: user?.userId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        },
-      );
-
-      const count = res.data?.data?.count || 0;
-
-      if (count > 0) {
-        navigate("/Transactions/FrmReceiptNew", {
-          state: {
-            mode: "EDIT",
-            receiptNo,
-            userMapData: res.data.data.data,
-          },
-        });
-      } else {
-        navigate("/Transactions/FrmReceiptListNew", {
-          state: {
-            mode: "EDIT",
-            receiptNo,
-          },
-        });
-      }
-    } catch (err) {
-      console.error("User Map Details Error:", err);
-
-      Swal.fire({
-        icon: "error",
-        text: "Failed to fetch user mapping details",
-        confirmButtonColor: "#1e3a8a",
-      });
-    } finally {
-      Swal.close();
-    }
-  };
-
  const headers = [
   "निवडा",
   "वापरकर्ता",
@@ -200,35 +96,23 @@ const keyMapping = {
   "तयार केलेली तारीख": "createdAt",
 };
 
-  const initialValues = {
-    municipality: defaultMunicipality,
-    prabhag: "",
-  };
 
   useEffect(() => {
-    if (ulbId) {
-      fetchCorporations();
-    }
     fetchReceiptList(userId);
-  }, [ulbId]);
+  }, []);
 
   return (
     <Formik
-      enableReinitialize
-      initialValues={initialValues}
       onSubmit={() => {}}
     >
       {({ values, setFieldValue }) => {
         const tableRows = tableData.map((row) => {
-          console.log("row: ", row);
           return {
             select: (
               <Button
                 variant="link"
                 size="sm"
                 className="text-blue-700 px-0"
-                // onClick={() => handleSelect(row.receiptNo)}
-                // onClick={handleNewAdd}
                 onClick={() =>
               navigate("/Transactions/FrmReceiptNew", {
                 state: {

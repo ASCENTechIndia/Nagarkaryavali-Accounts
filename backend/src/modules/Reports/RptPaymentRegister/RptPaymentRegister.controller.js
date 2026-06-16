@@ -87,6 +87,7 @@ const getPaymentRegisterDetailPDF = asyncHandler(async (req, res) => {
     filters,
     corporationName: corpInfo.ABC_MUNICIPAL_TEXT || "",
     corporationLogo: corpInfo.ULBLOGO || "",
+    zoneName:filters.zoneName || "ALL"
   });
 
   const baseUrl = `${req.protocol}://${req.get("host")}`;

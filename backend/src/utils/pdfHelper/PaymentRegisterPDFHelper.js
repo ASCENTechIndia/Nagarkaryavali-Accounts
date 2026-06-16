@@ -39,6 +39,7 @@ const PaymentRegisterPDFHelper = async ({
   filters,
   corporationName,
   corporationLogo,
+  zoneName,
 }) => {
   try {
     let { fromDate, toDate } = filters || {};
@@ -91,6 +92,7 @@ const PaymentRegisterPDFHelper = async ({
       toDate,
       data: formattedData,
       totalAmount: formatNumber(totalAmount),
+      zoneName:filters.zoneName || "ALL"
     });
 
     // =======================

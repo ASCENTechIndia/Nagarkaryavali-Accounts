@@ -72,34 +72,71 @@ const FrmReceiptJcmc = () => {
   const [processedTableData, setProcessedTableData] = useState(null);
 
 
-  const processTableData = (apiData) => {
-    if (!apiData || apiData.length === 0) return { firstTenItems: [], discountItem: null, remainingItems: [], subtractItem: null };
+  // const processTableData = (apiData) => {
+  //   if (!apiData || apiData.length === 0) return { firstTenItems: [], discountItem: null, remainingItems: [], subtractItem: null };
 
-    const discountItem = apiData.find(
-      item => item.VAR_ACCMPDET_ACCNO === "91028290003"
-    );
+  //   const discountItem = apiData.find(
+  //     item => item.VAR_ACCMPDET_ACCNO === "91028290003"
+  //   );
 
-    const subtractItem = apiData.find(
-      item => item.VAR_ACCMPDET_ACCNO === "91028290001"
-    );
+  //   const subtractItem = apiData.find(
+  //     item => item.VAR_ACCMPDET_ACCNO === "91028290001"
+  //   );
 
-    const otherItems = apiData.filter(
-      item => item.VAR_ACCMPDET_ACCNO !== "91028290003" && item.VAR_ACCMPDET_ACCNO !== "91028290001"
-    );
+  //   const otherItems = apiData.filter(
+  //     item => item.VAR_ACCMPDET_ACCNO !== "91028290003" && item.VAR_ACCMPDET_ACCNO !== "91028290001"
+  //   );
 
-    const firstTenItems = otherItems.slice(0, 10);
+  //   const firstTenItems = otherItems.slice(0, 10);
 
-    const remainingItems = otherItems.slice(10);
+  //   const remainingItems = otherItems.slice(10);
 
+  //   return {
+  //     firstTenItems,
+  //     discountItem,
+  //     remainingItems,
+  //     subtractItem,
+  //     allItems: apiData
+  //   };
+  // };
+const processTableData = (apiData) => {
+  if (!apiData || apiData.length === 0) {
     return {
-      firstTenItems,
-      discountItem,
-      remainingItems,
-      subtractItem,
-      allItems: apiData
+      firstTenItems: [],
+      discountItem: null,
+      remainingItems: [],
+      subtractItem: null
     };
-  };
+  }
 
+  const discountItem = apiData.find(
+    item =>
+      item.VAR_ACCMPDET_ACCNO === "91028290003" ||
+      item.VAR_ACCMPDET_ACCNO === "91028290004"
+  );
+
+  const subtractItem = apiData.find(
+    item => item.VAR_ACCMPDET_ACCNO === "91028290001"
+  );
+
+  const otherItems = apiData.filter(
+    item =>
+      !["91028290003", "91028290004", "91028290001"].includes(
+        item.VAR_ACCMPDET_ACCNO
+      )
+  );
+
+  const firstTenItems = otherItems.slice(0, 10);
+  const remainingItems = otherItems.slice(10);
+
+  return {
+    firstTenItems,
+    discountItem,
+    remainingItems,
+    subtractItem,
+    allItems: apiData
+  };
+};
   const handleAddRow = (values, setFieldValue) => {
     if (!values.entryDeptCode || !values.entryHead || !values.entryAmount) {
       Swal.fire({
@@ -445,24 +482,38 @@ const FrmReceiptJcmc = () => {
     setTempHead(first.DRACC?.toString() || "");
     fetchCreditLeasure(first.GLCODE?.toString(), "party");
 
-    const total = data.reduce((sum, item) => {
-      const amount = Number(item.CREDIT || 0);
-      return item.ACCNO === "91028290003" || item.ACCNO === "91028290001"
-        ? sum - amount
-        : sum + amount;
-    }, 0);
-    setFieldValue("totalAmount", total);
+const total = data.reduce((sum, item) => {
+  const amount = Number(item.CREDIT || 0);
 
-    if (deptId === "7") {
-      const regularItems = data.filter(
-        item => item.ACCNO !== "91028290003" && item.ACCNO !== "91028290001"
-      );
-      const discountItem = data.find(item => item.ACCNO === "91028290003");
-      const subtractItem = data.find(item => item.ACCNO === "91028290001");
+  return ["91028290003", "91028290004", "91028290001"].includes(item.ACCNO)
+    ? sum - amount
+    : sum + amount;
+}, 0);
 
-      const firstTenItems = regularItems.slice(0, 10);
-      const remainingItems = regularItems.slice(10);
-      const formattedData = [];
+setFieldValue("totalAmount", total);
+
+if (deptId === "7") {
+  const regularItems = data.filter(
+    item =>
+      !["91028290003", "91028290004", "91028290001"].includes(item.ACCNO)
+  );
+
+  const discountItem = data.find(
+    item =>
+      item.ACCNO === "91028290003" ||
+      item.ACCNO === "91028290004"
+  );
+
+  const subtractItem = data.find(
+    item => item.ACCNO === "91028290001"
+  );
+
+  const firstTenItems = regularItems.slice(0, 10);
+  const remainingItems = regularItems.slice(10);
+
+  const formattedData = [];
+
+
 
       firstTenItems.forEach((item, index) => {
         formattedData.push({
@@ -657,16 +708,19 @@ const FrmReceiptJcmc = () => {
             Delete
           </button>
         ),
-        deptCode: item.GLCODE,
-        deptName: item.GLNAME,
-        head: item.ACCNO,
-        headName: item.ACCOUNTNAME,
-        remark: item.NARRATION || "",
-        prevAmount: Number(item.NUM_RECEIPTDET_ARRAMOUNT || 0),
-        currentAmount: Number(item.NUM_RECEIPTDET_CURRAMOUNT || 0),
-        amount: Number(item.CREDIT || 0),
-        partyId: item.PARTY || 0,
-        isDiscount: item.ACCNO === "91028290003" || item.ACCNO === "91028290001",
+       deptCode: item.GLCODE,
+deptName: item.GLNAME,
+head: item.ACCNO,
+headName: item.ACCOUNTNAME,
+remark: item.NARRATION || "",
+prevAmount: Number(item.NUM_RECEIPTDET_ARRAMOUNT || 0),
+currentAmount: Number(item.NUM_RECEIPTDET_CURRAMOUNT || 0),
+amount: Number(item.CREDIT || 0),
+partyId: item.PARTY || 0,
+isDiscount:
+  item.ACCNO === "91028290003" ||
+  item.ACCNO === "91028290004" ||
+  item.ACCNO === "91028290001",
       }));
       setTableData(tableFormatted);
     }
@@ -712,15 +766,15 @@ const FrmReceiptJcmc = () => {
         headerData.NUM_ACCUSERMAP_DEPTID?.toString() || "",
       );
 
-      setFieldValue("wardCode", headerData.VAR_ACCUSERMAP_GLCODE || "");
+      // setFieldValue("wardCode", headerData.VAR_ACCUSERMAP_GLCODE || "");
 
       setFieldValue("remark", headerData.VAR_ACCUSERMAP_REMARK || "");
 
       // Load head dropdown
       await fetchCreditLeasure(headerData.VAR_ACCUSERMAP_GLCODE, "party");
 
-      // Store account no temporarily
-      setTempHead(headerData.VAR_ACCUSERMAP_ACCNO?.trim());
+      // // Store account no temporarily
+      // setTempHead(headerData.VAR_ACCUSERMAP_ACCNO?.trim());
     } catch (err) {
       console.error("User Map Header API Error:", err);
     }
@@ -752,19 +806,24 @@ const FrmReceiptJcmc = () => {
             Delete
           </button>
         ),
-        deptCode: item.VAR_ACCMPDET_GLCODE,
-        deptName: item.VAR_ACCMPDET_GLNAME,
-        head: item.VAR_ACCMPDET_ACCNO,
-        headName: item.VAR_ACCMPDET_ACCNONAME,
-        remark: "",
-        prevAmount: "",
-        currentAmount: "",
-        amount: "0",
-        partyId: 0,
-        isDiscount: item.VAR_ACCMPDET_ACCNO === "91028290003" || item.VAR_ACCMPDET_ACCNO === "91028290001",
-        isSubtotalRow: false,
-        isDiscountRow: item.VAR_ACCMPDET_ACCNO === "91028290003" || item.VAR_ACCMPDET_ACCNO === "91028290001",
-      }));
+      deptCode: item.VAR_ACCMPDET_GLCODE,
+deptName: item.VAR_ACCMPDET_GLNAME,
+head: item.VAR_ACCMPDET_ACCNO,
+headName: item.VAR_ACCMPDET_ACCNONAME,
+remark: "",
+prevAmount: "",
+currentAmount: "",
+amount: "0",
+partyId: 0,
+isDiscount:
+  item.VAR_ACCMPDET_ACCNO === "91028290003" ||
+  item.VAR_ACCMPDET_ACCNO === "91028290004" ||
+  item.VAR_ACCMPDET_ACCNO === "91028290001",
+isSubtotalRow: false,
+isDiscountRow:
+  item.VAR_ACCMPDET_ACCNO === "91028290003" ||
+  item.VAR_ACCMPDET_ACCNO === "91028290004" ||
+  item.VAR_ACCMPDET_ACCNO === "91028290001",   }));
 
       setTableData(formattedData);
     } catch (err) {

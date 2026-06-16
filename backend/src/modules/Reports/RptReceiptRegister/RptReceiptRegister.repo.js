@@ -380,7 +380,7 @@ const getReceiptRegisterProperty = async (params) => {
                     SELECT SUM(rd.num_receiptdesc_amount)
                     FROM aoac_receiptdesc_def rd
                     WHERE rd.num_receiptdesc_refno = num_receiptmst_refno
-                      AND rd.num_receiptdesc_accno = '91028290003'
+                      AND rd.num_receiptdesc_accno = '91028290004'
                 ),
                 0
             ) AS discount_91028290003

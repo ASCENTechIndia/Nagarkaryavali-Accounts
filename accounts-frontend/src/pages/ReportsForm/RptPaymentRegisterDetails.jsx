@@ -154,10 +154,13 @@ const RptPaymentRegisterDetails = () => {
         d.getMonth() + 1
       ).padStart(2, "0")}-${d.getFullYear()}`;
     };
-
+    const selectedZone = zoneList.find(
+      (zone) => zone.ZONEID.toString() === values.zoneId?.toString()
+    );
     const payload = {
       fromDate: formatDate(values.fromDate),
       toDate: formatDate(values.toDate),
+      zoneName: selectedZone?.ZONEENAME || "",
 
       ulbid: Number(ulbId),
       zoneid: values.zoneId || "",

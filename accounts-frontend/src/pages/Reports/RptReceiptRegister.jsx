@@ -156,13 +156,13 @@ const RptReceiptRegister = () => {
 
             // JCMC Validation
             if (values.reportType === "JCMC") {
-                // if (!values.zoneId || values.zoneId === "-1") {
-                //     Swal.fire({
-                //         text: "कृपया प्रभाग निवडा.",
-                //         confirmButtonColor: "#1e3a8a",
-                //     });
-                //     return;
-                // }
+            if (!values.department || values.department === "-1") {
+                    Swal.fire({
+                        text: "कृपया विभाग निवडा.",
+                        confirmButtonColor: "#1e3a8a",
+                    });
+                    return;
+                }
 
                 // if (!values.wardCode) {
                 //     Swal.fire({
