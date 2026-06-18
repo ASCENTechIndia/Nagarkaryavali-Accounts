@@ -104,7 +104,7 @@ const generateReceiptRegUserWisePDF = asyncHandler(async (req, res) => {
 
     let pdf;
 
-    if(req.body.department == 7) {
+    if(req.body.department == 7 || req.body.department == 1482) {
       pdf = await RptReceiptPropertyPDFHelper({
         reportData: result.rows,
         filters,

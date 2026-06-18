@@ -459,32 +459,7 @@ const FrmReceiptNew = () => {
         return;
       }
 
-      if (!values.reciptNo) {
-        Swal.fire({
-          text: "चलन/पावती क्र रिक्त असू शकत नाही",
-          confirmButtonColor: "#1e3a8a",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      if (!values.wardCode) {
-        Swal.fire({
-          text: "GL कोड रिक्त असू शकत नाही",
-          confirmButtonColor: "#1e3a8a",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      if (!values.head) {
-        Swal.fire({
-          text: "लेखाशीर्ष/खाते क्र रिक्त असू शकत नाही",
-          confirmButtonColor: "#1e3a8a",
-        });
-        setIsSubmitting(false);
-        return;
-      }
+    
 
       if (!values.department || values.department === "0") {
         Swal.fire({
@@ -511,9 +486,9 @@ const FrmReceiptNew = () => {
         values.user, 
         values.zoneId, 
         values.transactionType, 
-        values.reciptNo, 
-        values.wardCode, 
-        values.head, 
+       values.reciptNo || null, 
+        values.wardCode || null, 
+        values.head || null,  
         values.department, 
         values.remark || "रोख जमा", 
         InMode, 
