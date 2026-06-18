@@ -5,7 +5,7 @@ const getReceiptRegisterService = async (body) => {
 };
 
 const getReceiptRegisterUserWiseService = async (body) => {
-  if(body.department == "7"  ||  body.department == "1482" ) {
+  if(body.rptType == "3" && (body.department == "7"  ||  body.department == "1482") ) {
     const res =  await repo.getReceiptRegisterProperty(body)
     console.log("Service Res: ", res);
     return res;
