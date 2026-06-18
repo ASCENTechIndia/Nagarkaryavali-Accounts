@@ -105,6 +105,7 @@ import FrmReceiptNew from "./pages/Transaction/FrmReceiptNew";
 import FrmReceiptListNew from "./pages/Transaction/FrmReceiptListNew";
 
 import useDynamicFavicon from "./utils/useDynamicFavicon";
+import FrmReceiptJcmcSC from "./pages/Transaction/FrmReceiptJcmcSC";
 
 const Home = () => <Button>Click me</Button>;
 
@@ -530,6 +531,10 @@ export const router = createBrowserRouter([
       {
         path: "/Transactions/FrmReceiptListNew",
         element: <FrmReceiptListNew />,
+      },
+      {
+        path: "/Transactions/FrmReceiptJcmcSC",
+        element: <FrmReceiptJcmcSC />,
       },
     ],
   },

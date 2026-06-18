@@ -45,7 +45,6 @@ const FrmReceiptList = () => {
   console.log("usertokan :", user.token);
   console.log("BASE_URL:", BASE_URL);
 
-
   const fetchCorporations = async () => {
     try {
       Swal.fire({
@@ -65,7 +64,7 @@ const FrmReceiptList = () => {
           headers: {
             Authorization: `Bearer ${user.token}`,
           },
-        }
+        },
       );
 
       const corpData = res.data.data || [];
@@ -85,14 +84,16 @@ const FrmReceiptList = () => {
 
   const fetchZones = async (corpId) => {
     try {
-      const res = await axios.post(`${BASE_URL}/api/Receipt/zones`, {
-        corp_id: corpId,
-      },
+      const res = await axios.post(
+        `${BASE_URL}/api/Receipt/zones`,
+        {
+          corp_id: corpId,
+        },
         {
           headers: {
             Authorization: `Bearer ${user.token}`,
           },
-        }
+        },
       );
 
       setZones(res.data.data || []);
@@ -101,19 +102,21 @@ const FrmReceiptList = () => {
     }
   };
 
-  const fetchReceiptList = async (zoneId, corpId , userId) => {
+  const fetchReceiptList = async (zoneId, corpId, userId) => {
     try {
       setLoading(true);
-      const res = await axios.post(`${BASE_URL}/api/Receipt/receiptList`, {
-        ddl_ZoneID: zoneId,
-        ddl_ULB_ID: corpId,
-        ddl_USER_ID: userId,
-      },
+      const res = await axios.post(
+        `${BASE_URL}/api/Receipt/receiptList`,
+        {
+          ddl_ZoneID: zoneId,
+          ddl_ULB_ID: corpId,
+          ddl_USER_ID: userId,
+        },
         {
           headers: {
             Authorization: `Bearer ${user.token}`,
           },
-        }
+        },
       );
 
       const formatted = (res.data.data || []).map((item) => ({
@@ -131,8 +134,7 @@ const FrmReceiptList = () => {
     } catch (err) {
       console.error("Receipt API Error:", err);
       setTableData([]);
-    }
-    finally {
+    } finally {
       setLoading(false);
     }
   };
@@ -156,12 +158,17 @@ const FrmReceiptList = () => {
           headers: {
             Authorization: `Bearer ${user.token}`,
           },
-        }
+        },
       );
 
       const count = res.data?.data?.count || 0;
-
-      if (count > 0) {
+      if (count > 0 && userId === "JCMCSC01") {
+        navigate("/Transactions/FrmReceiptJcmcSC", {
+          state: {
+            userMapData: res.data.data.data,
+          },
+        });
+      } else if (count > 0) {
         navigate("/Transactions/FrmReceiptJcmc", {
           state: {
             userMapData: res.data.data.data,
@@ -185,57 +192,64 @@ const FrmReceiptList = () => {
 
   const handleSelect = async (receiptNo) => {
     debugger;
-  try {
-    Swal.fire({
-      title: "Loading...",
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      },
-    });
-
-    const res = await axios.post(
-      `${BASE_URL}/api/Receipt/usermapdetails`,
-      {
-        userId: user?.userId,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
+    try {
+      Swal.fire({
+        title: "Loading...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
         },
+      });
+
+      const res = await axios.post(
+        `${BASE_URL}/api/Receipt/usermapdetails`,
+        {
+          userId: user?.userId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        },
+      );
+
+      const count = res.data?.data?.count || 0;
+      if (count > 0 && userId === "JCMCSC01") {
+        navigate("/Transactions/FrmReceiptJcmcSC", {
+          state: {
+            mode: "EDIT",
+            receiptNo,
+            userMapData: res.data.data.data,
+          },
+        });
+      } else if (count > 0) {
+        navigate("/Transactions/FrmReceiptJcmc", {
+          state: {
+            mode: "EDIT",
+            receiptNo,
+            userMapData: res.data.data.data,
+          },
+        });
+      } else {
+        navigate("/Transactions/FrmReceipt", {
+          state: {
+            mode: "EDIT",
+            receiptNo,
+          },
+        });
       }
-    );
+    } catch (err) {
+      console.error("User Map Details Error:", err);
 
-    const count = res.data?.data?.count || 0;
-
-    if (count > 0) {
-      navigate("/Transactions/FrmReceiptJcmc", {
-        state: {
-          mode: "EDIT",
-          receiptNo,
-          userMapData: res.data.data.data,
-        },
+      Swal.fire({
+        icon: "error",
+        text: "Failed to fetch user mapping details",
+        confirmButtonColor: "#1e3a8a",
       });
-    } else {
-      navigate("/Transactions/FrmReceipt", {
-        state: {
-          mode: "EDIT",
-          receiptNo,
-        },
-      });
+    } finally {
+      Swal.close();
     }
-  } catch (err) {
-    console.error("User Map Details Error:", err);
-
-    Swal.fire({
-      icon: "error",
-      text: "Failed to fetch user mapping details",
-      confirmButtonColor: "#1e3a8a",
-    });
-  } finally {
-    Swal.close();
-  }
-};
+  };
 
   const headers = [
     "निवडा",
@@ -273,25 +287,29 @@ const FrmReceiptList = () => {
   }, [ulbId]);
 
   return (
-    <Formik enableReinitialize initialValues={initialValues} onSubmit={() => { }}>
+    <Formik
+      enableReinitialize
+      initialValues={initialValues}
+      onSubmit={() => {}}
+    >
       {({ values, setFieldValue }) => {
-
         const tableRows = tableData.map((row) => {
           console.log("row: ", row);
-          return ({
-          select: (
-            <Button
-              variant="link"
-              size="sm"
-              className="text-blue-700 px-0"
-               onClick={() => handleSelect(row.receiptNo)}
-              // onClick={handleNewAdd}
-            >
-              निवडा
-            </Button>
-          ),
-          ...row,
-        })});
+          return {
+            select: (
+              <Button
+                variant="link"
+                size="sm"
+                className="text-blue-700 px-0"
+                onClick={() => handleSelect(row.receiptNo)}
+                // onClick={handleNewAdd}
+              >
+                निवडा
+              </Button>
+            ),
+            ...row,
+          };
+        });
 
         return (
           <Form>
@@ -299,7 +317,7 @@ const FrmReceiptList = () => {
               variants={container}
               initial="hidden"
               animate="show"
-            // className="min-h-screen bg-gray-100 p-4 sm:p-6"
+              // className="min-h-screen bg-gray-100 p-4 sm:p-6"
             >
               <Card className="shadow-sm border">
                 <CardHeader className="border-b flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
@@ -315,7 +333,6 @@ const FrmReceiptList = () => {
                   </Button>
                 </CardHeader>
                 <CardContent className="p-3 sm:p-4 md:p-6 space-y-4">
-
                   <motion.div
                     variants={item}
                     className="grid grid-cols-1 lg:grid-cols-2 gap-4 text-sm"
@@ -387,7 +404,6 @@ const FrmReceiptList = () => {
                     </div>
                   )}
 
-
                   {!loading && values.prabhag && tableData.length > 0 && (
                     <div className="w-full overflow-x-auto rounded-md border mt-4">
                       <ShadCNTable
@@ -405,7 +421,6 @@ const FrmReceiptList = () => {
                       डेटा उपलब्ध नाही
                     </p>
                   )}
-
                 </CardContent>
               </Card>
             </motion.div>
