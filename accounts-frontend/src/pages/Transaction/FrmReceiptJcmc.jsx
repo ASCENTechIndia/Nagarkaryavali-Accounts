@@ -766,7 +766,7 @@ isDiscount:
         headerData.NUM_ACCUSERMAP_DEPTID?.toString() || "",
       );
 
-      // setFieldValue("wardCode", headerData.VAR_ACCUSERMAP_GLCODE || "");
+      setFieldValue("wardCode", headerData.VAR_ACCUSERMAP_GLCODE || "");
 
       setFieldValue("remark", headerData.VAR_ACCUSERMAP_REMARK || "");
 
@@ -774,7 +774,7 @@ isDiscount:
       await fetchCreditLeasure(headerData.VAR_ACCUSERMAP_GLCODE, "party");
 
       // // Store account no temporarily
-      // setTempHead(headerData.VAR_ACCUSERMAP_ACCNO?.trim());
+      setTempHead(headerData.VAR_ACCUSERMAP_ACCNO?.trim());
     } catch (err) {
       console.error("User Map Header API Error:", err);
     }

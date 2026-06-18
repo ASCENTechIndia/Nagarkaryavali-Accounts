@@ -764,7 +764,7 @@ const FrmReceiptJcmcSC = () => {
         headerData.NUM_ACCUSERMAP_DEPTID?.toString() || "",
       );
 
-      // setFieldValue("wardCode", headerData.VAR_ACCUSERMAP_GLCODE || "");
+      setFieldValue("wardCode", headerData.VAR_ACCUSERMAP_GLCODE || "");
 
       setFieldValue("remark", headerData.VAR_ACCUSERMAP_REMARK || "");
 
@@ -772,66 +772,13 @@ const FrmReceiptJcmcSC = () => {
       await fetchCreditLeasure(headerData.VAR_ACCUSERMAP_GLCODE, "party");
 
       // // Store account no temporarily
-      // setTempHead(headerData.VAR_ACCUSERMAP_ACCNO?.trim());
+      setTempHead(headerData.VAR_ACCUSERMAP_ACCNO?.trim());
     } catch (err) {
       console.error("User Map Header API Error:", err);
     }
   };
 
-  const fetchAccountMappingDetails = async () => {
-    try {
-      const res = await axios.post(
-        `${BASE_URL}/api/Receipt/accountmappingdetails`,
-        {
-          userId: user?.userId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        },
-      );
-
-      const data = res.data?.data?.data || [];
-
-      const formattedData = data.map((item, index) => ({
-        delete: (
-          <button
-            type="button"
-            onClick={() => handleDeleteRow(index)}
-            className="text-red-600 font-semibold"
-          >
-            Delete
-          </button>
-        ),
-        deptCode: item.VAR_ACCMPDET_GLCODE,
-        deptName: item.VAR_ACCMPDET_GLNAME,
-        head: item.VAR_ACCMPDET_ACCNO,
-        headName: item.VAR_ACCMPDET_ACCNONAME,
-        remark: "",
-        prevAmount: "",
-        currentAmount: "",
-        amount: "0",
-        partyId: 0,
-        isDiscount:
-          item.VAR_ACCMPDET_ACCNO === "91028290003" ||
-          item.VAR_ACCMPDET_ACCNO === "91028290004" ||
-          item.VAR_ACCMPDET_ACCNO === "91028290001",
-        isSubtotalRow: false,
-        isDiscountRow:
-          item.VAR_ACCMPDET_ACCNO === "91028290003" ||
-          item.VAR_ACCMPDET_ACCNO === "91028290004" ||
-          item.VAR_ACCMPDET_ACCNO === "91028290001",
-      }));
-
-      setTableData(formattedData);
-    } catch (err) {
-      console.error("Account Mapping Details API Error:", err);
-    }
-  };
-
-  // NEW TABLE API IMPLEMENTATION FOR DEPARTMENT 7
-  // Add this new function after your existing fetchAccountMappingDetailsProperty function
+  // NEW TABLE API IMPLEMENTATION FOR sarvasadharan challan
   const fetchAccountMappingDetailsPropertySC = async () => {
     try {
       const res = await axios.post(
