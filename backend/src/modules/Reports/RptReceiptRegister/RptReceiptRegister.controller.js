@@ -6,6 +6,7 @@ const path = require("path");
 const { RptReceiptRegisterPDFHelper } = require("../../../utils/pdfHelper/RptReceiptRegister");
 const { RptReceiptRegisterJcmcPDFHelper } = require("../../../utils/pdfHelper/RptReceiptRegisterJcmc");
 const { getCorporationService } = require("../../MenuAccess/MenuAccess.service");const { RptReceiptPropertyPDFHelper } = require("../../../utils/pdfHelper/RptReceiptProperty");
+const { RptReceiptSCPDFHelper } = require("../../../utils/pdfHelper/RptReceiptSC");
 ;
 
 const getReceiptRegister = asyncHandler(async (req, res) => {
@@ -104,14 +105,25 @@ const generateReceiptRegUserWisePDF = asyncHandler(async (req, res) => {
 
     let pdf;
 
-    if(req.body.department == 7 || req.body.department == 1482) {
+    console.log('result.rows: ', result.rows);
+
+    if(req.body.rptType == 4 && (req.body.department == 7 || req.body.department == 1482)) {
+      pdf = await RptReceiptSCPDFHelper({
+        reportData: result.rows,
+        filters,
+        corporationName,
+        corporationLogo
+      });
+    }
+    else if(req.body.rptType == 3 && (req.body.department == 7 || req.body.department == 1482)) {
       pdf = await RptReceiptPropertyPDFHelper({
         reportData: result.rows,
         filters,
         corporationName,
         corporationLogo
       });
-    }else {
+    }
+    else {
       pdf = await RptReceiptRegisterJcmcPDFHelper({
         reportData: result.rows,
         filters,

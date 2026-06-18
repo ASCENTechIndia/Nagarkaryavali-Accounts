@@ -208,8 +208,10 @@ const RptReceiptRegister = () => {
                     values.reportType === "summary"
                         ? "2"
                         : values.reportType === "detail"
-                            ? "1"
-                            : "3",
+                            ? "1" 
+                            : values.reportType === "JCMCSC"
+                             ? "4"
+                             : "3",
                 chkGramPanchayat: false,
                 majorCode: values.wardCode
                     ? values.wardCode.padStart(3, "0")
@@ -224,7 +226,7 @@ const RptReceiptRegister = () => {
             if (values.exportType === "pdf") {
 
                 const pdfUrl =
-                    values.reportType === "JCMC"
+                    (values.reportType === "JCMC" || values.reportType === "JCMCSC")
                         ? `${BASE_URL}/api/RptReceiptRegister/receipt-register-user-wise-pdf`
                         : `${BASE_URL}/api/RptReceiptRegister/receipt-register-report-pdf`;
 
@@ -593,6 +595,19 @@ const RptReceiptRegister = () => {
                                                     className="h-4 w-4"
                                                 />
                                                 चलान 
+                                            </label>
+
+                                            <label className="flex items-center gap-2 text-sm">
+                                                <Input
+                                                    type="radio"
+                                                    name="reportType"
+                                                    checked={values.reportType === "JCMCSC"}
+                                                    onChange={() =>
+                                                        setFieldValue("reportType", "JCMCSC")
+                                                    }
+                                                    className="h-4 w-4"
+                                                />
+                                                सर्वसाधारण चलान 
                                             </label>
                                         </div>
                                     </div>
