@@ -18,6 +18,7 @@ import axios from "axios";
 import { DatePicker } from "@/components/ui/calendar";
 import config from "@/utils/config";
 import Swal from "sweetalert2";
+import SearchableSelect from "@/components/SearchableSelect";
 
 const container = {
   hidden: { opacity: 0, y: 20 },
@@ -35,12 +36,17 @@ const FrmTransAuthMst = () => {
   const [refNo, setRefNo] = useState("");
   const [transType, setTransType] = useState("");
   const [voucherNo, setVoucherNo] = useState("");
+  const [deptCode , setDeptCode] = useState("");
+  const [ledger , setLedger] = useState("");
+  const [tempDeptCode, setTempDeptCode] = useState("");
+  const [tempLedgerCode, setTempLedgerCode] = useState("");
   const [trnsDate, setTrnsDate] = useState(new Date());
   const [partyName, setPartyName] = useState("");
   const [username, setUsername] = useState("");
   const [datetime, setDatetime] = useState("");
   const [amount, setAmount] = useState("");
-
+  const [glCodes, setGlCodes] = useState([]);
+  const [ledgerOptions, setLedgerOptions] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -95,6 +101,51 @@ const FrmTransAuthMst = () => {
     }
   };
 
+  const fetchGLCodes = async () => {
+    try {
+      const res = await axios.get(`${BASE_URL}/api/Receipt/searchGLALL`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res?.data?.data) {
+        const formatted = res.data.data.map((g) => ({
+          label: g.GLSEARCHNAME,
+          value: String(g.GLFUNCTION),
+        }));
+        console.log("GL Codes: ", formatted)
+
+        setGlCodes(formatted);
+      }
+    } catch (err) {
+      console.error("Error fetching GL codes:", err);
+    }
+  };
+
+  const fetchLedger = async (glcode) => {
+    try {
+      if (!glcode || !ulbId) return;
+      console.log("Fetching ledger for GL code:", glcode);
+      
+      const res = await axios.post(
+        `${BASE_URL}/api/FrmTransfer/credit-leasure`,
+        { corp_id: Number(ulbId), glcode: Number(glcode) },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      if (res?.data?.data?.success) {
+        const formatted = res.data.data.rows.map((l) => ({
+          label: l.ACCNAME,
+          value: String(l.OBJECTCODE),
+        }));
+
+        console.log("Ledger Options: ", formatted)
+        setLedgerOptions(formatted);
+        return formatted;
+      }
+    } catch (err) {
+      console.error("Error fetching ledger:", err);
+    }
+  };
+
   const fetchTransactionDetails = async (refNoParam, trnsTypeIdParam) => {
     try {
       setLoading(true);
@@ -123,6 +174,14 @@ const FrmTransAuthMst = () => {
         setTrnsDate(header.TRNSDATE ? new Date(header.TRNSDATE) : new Date());
         setUsername(header.USERNAME || "");
         setDatetime(header.DATETIME ? new Date(header.DATETIME).toLocaleString() : "");
+
+        const functionCode = header.DRACCFUNCTIONCODE?.toString() || "";
+        const objectCode = header.DRACCOBJECTCODE?.toString() || "";
+
+        setTempDeptCode(functionCode);
+        setTempLedgerCode(objectCode);
+
+        await fetchLedger(functionCode);
         
         // const totalAmount = rows.reduce((sum, row) => sum + (row.credit || row.debit || 0), 0);
         const totalAmount= sum;
@@ -494,6 +553,7 @@ const FrmTransAuthMst = () => {
       
       if (ulbId) {
         await fetchZones();
+        await fetchGLCodes();
       }
 
       const voucherData = location.state?.voucherData;
@@ -518,11 +578,43 @@ const FrmTransAuthMst = () => {
     
     initializeData();
   }, [location.state, ulbId]);
+
+  useEffect(() => {
+    if (glCodes.length > 0 && tempDeptCode) {
+      const exists = glCodes.find((item) =>
+        Number(item.value) === Number(tempDeptCode)
+      );
+
+      console.log("API Function Code:", tempDeptCode);
+      console.log("Matched GL:", exists);
+
+      if (exists) {
+        setDeptCode(exists.label);
+      }
+    }
+  }, [glCodes, tempDeptCode]);
+
+  useEffect(() => {
+    if (ledgerOptions.length > 0 && tempLedgerCode) {
+      const exists = ledgerOptions.find(
+        (item) => item.value?.trim() === tempLedgerCode?.trim()
+      );
+
+      console.log("Ledger Exists:", exists);
+
+      if (exists) {
+        setLedger(exists.label);
+      }
+    }
+  }, [ledgerOptions, tempLedgerCode]);
   
   const zoneOptions = zones.map((z) => ({
     value: z.ZONEID?.toString(),
     label: z.ZONEENAME,
   }));
+
+  console.log("deptCode state:", deptCode);
+  console.log("ledger state:", ledger);
 
   return (
     <motion.div variants={container} initial="hidden" animate="show">
@@ -611,6 +703,28 @@ const FrmTransAuthMst = () => {
                     value={voucherNo}
                     readOnly
                     className="w-full h-9"
+                  />
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                  <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                    <Label text="विभाग संकेतांक" />
+                    <span>:</span>
+                  </div>
+                  <Input
+                    value={deptCode}
+                    readOnly
+                  />
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                  <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                    <Label text="लेखाशीर्ष" />
+                    <span>:</span>
+                  </div>
+                  <Input
+                    value={ledger}
+                    readOnly
                   />
                 </div>
               </div>

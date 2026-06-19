@@ -492,7 +492,7 @@ const total = data.reduce((sum, item) => {
 
 setFieldValue("totalAmount", total);
 
-if (deptId === "7") {
+if (deptId === "7"  || deptId === 1482 ) {
   const regularItems = data.filter(
     item =>
       !["91028290003", "91028290004", "91028290001"].includes(item.ACCNO)
@@ -1169,7 +1169,7 @@ isDiscountRow:
       const deptId = parseInt(values.department);
       let paramStr2 = "";
 
-      if (deptId === 7) {
+      if (deptId === 7 || deptId === 1482) {
         paramStr2 = tableData
           .filter(
             (row) =>
@@ -1627,7 +1627,7 @@ isDiscountRow:
           if (!refNo && values.department && values.department !== "" && values.department !== "0") {
             const deptId = parseInt(values.department);
 
-            if (deptId === 7) {
+            if (deptId === 7 || deptId === 1482 ) {
               fetchAccountMappingDetailsProperty();
             } else {
               fetchAccountMappingDetails();
