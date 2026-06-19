@@ -110,7 +110,7 @@ const receiptInsertUpdateRepo = async (data) => {
               :In_ParamStr3,
               :In_ParamStr4,
               :In_ParamStr5,
-              :In_ParamStr6,
+              
               :out_ReturnStr,
               :out_ErrorCode,
               :out_ErrorMsg
