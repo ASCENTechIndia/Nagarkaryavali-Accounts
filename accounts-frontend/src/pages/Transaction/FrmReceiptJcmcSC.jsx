@@ -495,7 +495,7 @@ const FrmReceiptJcmcSC = () => {
 
       setFieldValue("totalAmount", total);
 
-      if (deptId === "7") {
+      if (deptId === "7"  || deptId === 1482) {
         const regularItems = data.filter(
           (item) =>
             !["91028290003", "91028290004", "91028290001"].includes(item.ACCNO),
@@ -1129,7 +1129,7 @@ const FrmReceiptJcmcSC = () => {
       const deptId = parseInt(values.department);
       let paramStr2 = "";
 
-      if (deptId === 7) {
+      if (deptId === 7 || deptId === 1482) {
         paramStr2 = tableData
           .filter(
             (row) =>
@@ -1173,7 +1173,8 @@ const FrmReceiptJcmcSC = () => {
           In_ParamStr3: "",
           In_ParamStr4: "",
           In_ParamStr5: "",
-          In_ParamStr6: "",
+          In_ParamStr6:"",
+        
         },
         {
           headers: {
@@ -1687,7 +1688,7 @@ const FrmReceiptJcmcSC = () => {
           ) {
             const deptId = parseInt(values.department);
 
-            if (deptId === 7) {
+            if (deptId === 7 || deptId === 1482 ) {
               fetchAccountMappingDetailsPropertySC();
             }
           }

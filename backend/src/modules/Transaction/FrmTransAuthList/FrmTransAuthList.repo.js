@@ -482,7 +482,7 @@ const getTransactionDetails = async (refNo, trnsTypeId) => {
 //   }
   if ([1, 2].includes(trnsTypeId)) {
     query = `
-      SELECT
+SELECT
     num_receiptmst_refno refno,
     date_receiptmst_trnsdate trnsdate,
     num_receiptmst_recno docno,
@@ -515,7 +515,8 @@ const getTransactionDetails = async (refNo, trnsTypeId) => {
 
     /* Added fields */
     0 AS BudgetCode,
-    NVL(rdesc.discount_amount, 0) AS discountamount
+    NVL(rdesc.discount_amount, 0) AS discountamount,
+    d.num_accmpdet_id
 
 FROM aoac_receiptmst_def rmst
 
@@ -524,6 +525,16 @@ INNER JOIN aoac_receiptdet_def
 
 INNER JOIN aoac_trnstype_def
     ON num_trnstype_trnstypeid = num_receiptmst_trnstypeid
+    
+ INNER JOIN
+    (
+        SELECT
+            var_accmpdet_accno,
+            MIN(num_accmpdet_id) AS num_accmpdet_id
+        FROM aoms_accusermap_det
+        GROUP BY var_accmpdet_accno
+    ) d
+        ON d.var_accmpdet_accno = num_receiptdet_accno
 
 LEFT JOIN view_zone
     ON zoneid = num_receiptmst_zoneid
@@ -554,7 +565,9 @@ LEFT JOIN (
     GROUP BY num_receiptdesc_refno
 ) rdesc
     ON rdesc.num_receiptdesc_refno = rmst.num_receiptmst_refno
+
       WHERE num_receiptmst_refno = :refNo
+       ORDER BY d.num_accmpdet_id
     `;
   }
   // ================= PAYMENT =================

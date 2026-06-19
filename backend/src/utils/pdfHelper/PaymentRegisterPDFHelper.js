@@ -66,6 +66,7 @@ const PaymentRegisterPDFHelper = async ({
         transNo: row.TRANSNO,
         docNo: row.DOCNO,
         glName: row.GLNAME,
+        accNo: row.OBJECTCODE,
         accName: row.ACCNAME,
         zone: row.DEPTNAME,
         amount: Math.abs(row.AMOUNT),
@@ -91,6 +92,7 @@ const PaymentRegisterPDFHelper = async ({
       fromDate,
       toDate,
       data: formattedData,
+
       totalAmount: formatNumber(totalAmount),
       zoneName:filters.zoneName || "ALL"
     });
