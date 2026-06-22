@@ -197,8 +197,16 @@ const RptReceiptPropertyPDFHelper = async ({ reportData, filters, corporationNam
     const amount10 = getAmt("34011190002"); // घनकचरा व्यवस्था (अरहिवास)
 
     // रिबेट
-    const rebateAmount = Number(reportData[0]?.DISCOUNT_91028290001 || 0);
-    const discountAmount = Number(reportData[0]?.DISCOUNT_91028290003 || 0);
+    // const rebateAmount = Number(reportData[0]?.DISCOUNT_91028290001 || 0);
+    // const discountAmount = Number(reportData[0]?.DISCOUNT_91028290003 || 0);
+
+    const rebateAmount = Math.max(
+      ...reportData.map(row => Number(row.DISCOUNT_91028290001 || 0))
+    );
+
+    const discountAmount = Math.max(
+      ...reportData.map(row => Number(row.DISCOUNT_91028290003 || 0))
+    );
 
     const amount12 = getAmt("91015210004"); // विशेष पाणीपट्टी
     const amount13 = getAmt("94311400002"); // विशेष साफसफाई कर

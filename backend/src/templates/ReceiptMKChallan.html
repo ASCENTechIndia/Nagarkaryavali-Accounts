@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="mr">
+
+<head>
+  <meta charset="UTF-8">
+
+  <title>
+    मालमत्ता कर वसुली रक्कमा जमा करायचे चलन
+  </title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 12px;
+      color: #000;
+      padding: 10px 15px;
+    }
+
+    @page {
+      size: A4 portrait;
+      margin: 5mm;
+    }
+
+    .page {
+      width: 100%;
+    }
+
+    .header {
+      position: relative;
+      margin-bottom: 15px;
+      min-height: 80px;
+    }
+
+    .logo {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+    }
+
+    .title {
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 14px;
+      font-weight: bold;
+      margin-top: 4px;
+    }
+
+    .report-date {
+      text-align: center;
+      margin-top: 8px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+
+    .collection-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    .collection-table th,
+    .collection-table td {
+      border: 1px solid #000;
+      padding: 4px 6px;
+      vertical-align: middle;
+    }
+
+    .collection-table th {
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .srno {
+      width: 8%;
+      text-align: center;
+    }
+
+    .ledger {
+      width: 18%;
+      text-align: center;
+    }
+
+    .particular {
+      width: 49%;
+    }
+
+    .amount {
+      width: 25%;
+      text-align: right;
+    }
+
+    .summary-row {
+      font-weight: bold;
+    }
+
+    .summary-label {
+      text-align: right;
+      padding-right: 10px;
+    }
+
+    .amount-words {
+      font-weight: bold;
+    }
+
+
+    .remarks-section {
+      margin-top: 15px;
+      font-size: 14px;
+      line-height: 1.7;
+      display: flex
+    }
+    .remarks-section2 {
+      margin-top: 15px;
+      font-size: 14px;
+      line-height: 1.7;
+      display: flex;
+      justify-content: space-between
+    }
+
+    .signature {
+      font-size: 14px;
+      font-weight: bold;
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .signaturee {
+      font-size: 14px;
+      font-weight: bold;
+      display: flex;
+      flex-direction: column;
+      align-items: left;
+      justify-content: left;
+    }
+
+    .signature2 {
+      font-size: 14px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    .signature2>div {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer {
+      margin-top: 30px;
+      border-top: 1px solid #000;
+      padding-top: 6px;
+
+      display: flex;
+      justify-content: space-between;
+
+      font-size: 11px;
+    }
+
+    .summary-table {
+      width: 50%;
+      margin-top: 15px;
+      margin-bottom: 15px;
+      border-collapse: collapse;
+      margin-left: auto;
+    }
+
+    .summary-table th,
+    .summary-table td {
+      border: 1px solid #000;
+      padding: 6px 8px;
+    }
+
+    .summary-table th {
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .summary-table td:first-child {
+      text-align: left;
+    }
+
+    .summary-table td:last-child {
+      text-align: right;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div class="page">
+
+    <div class="header">
+
+      <img src="{{corporationLogo}}" class="logo" />
+
+      <div class="title">
+        {{corporationName}}
+      </div>
+
+      <div class="subtitle">
+        सरदार वल्लभ भाई पटेल टॉवर, प्रशासकीय इमारत
+      </div>
+
+      <div class="subtitle">
+        फोन:०२५७-२२२२२६१, ६२, ६३, ६४, ६५ फॅक्स: २२२२२६०
+      </div>
+
+      <div class="subtitle">
+        मार्केट वसुली विभाग - किरकोळ वसुली
+      </div>
+      <div class="subtitle">
+        जनरल भरणा चलन
+      </div>
+
+
+
+      <div class="report-date">
+        दिनांक : {{fromDate}}.
+      </div>
+
+    </div>
+
+
+    <table class="collection-table">
+
+      <thead>
+        <tr>
+          <th class="srno">अ.</th>
+          <th class="ledger">लेखा कोड</th>
+          <th class="particular">कराचे नाव</th>
+          <th class="amount">रक्कम रुपये</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr>
+          <td class="srno">१</td>
+          <td class="ledger">45114240001</td>
+          <td class="particular">गाळा भाडे</td>
+          <td class="amount">{{amount1}}</td>
+        </tr>
+
+        <tr>
+          <td class="srno">२</td>
+          <td class="ledger">41015430001</td>
+          <td class="particular">परवाना फी </td>
+          <td class="amount">{{amount2}}</td>
+        </tr>
+
+        <tr>
+          <td class="srno">३</td>
+          <td class="ledger">44015210001</td>
+          <td class="particular">सेवा शुल्क</td>
+          <td class="amount">{{amount3}}</td>
+        </tr>
+
+
+        <tr>
+          <td class="srno">४</td>
+          <td class="ledger">98938190004</td>
+          <td class="particular">जी.एस.टी.</td>
+          <td class="amount">{{amount4}}</td>
+        </tr>
+
+        <tr>
+          <td class="srno">५</td>
+          <td class="ledger">99038900001</td>
+          <td class="particular">सेवा कर (सर्व्हिस टॅक्स) </td>
+          <td class="amount">{{amount5}}</td>
+        </tr>
+
+        <tr>
+          <td class="srno">६</td>
+          <td class="ledger">44019900001</td>
+          <td class="particular">अकृषक सारा</td>
+          <td class="amount">{{amount6}}</td>
+        </tr>
+
+        <tr>
+          <td class="srno">७</td>
+          <td class="ledger">45014100002</td>
+          <td class="particular">कायम जमिन भाडे </td>
+          <td class="amount">{{amount7}}</td>
+        </tr>
+
+        <tr>
+          <td class="srno">८</td>
+          <td class="ledger">04419900001</td>
+          <td class="particular">आक्षेपित रक्कम (लेखापरिक्षण वसुली) </td>
+          <td class="amount">{{amount8}}</td>
+        </tr>
+
+        <tr>
+          <td class="srno">९</td>
+          <td class="ledger">91915890001</td>
+          <td class="particular">व्याज </td>
+          <td class="amount">{{amount9}}</td>
+        </tr>
+
+        <tr>
+          <td class="srno">१०</td>
+          <td class="ledger">44015800002</td>
+          <td class="particular">दंड </td>
+          <td class="amount">{{amount10}}</td>
+        </tr>
+
+        <tr>
+          <td class="srno">११</td>
+          <td class="ledger">45114200001</td>
+          <td class="particular">नुकसान भरपाई</td>
+          <td class="amount">{{amount11}}</td>
+        </tr>
+
+        <tr>
+          <td class="srno">१२</td>
+          <td class="ledger">92011200001</td>
+          <td class="particular">जाहिरात खर्च </td>
+          <td class="amount">{{amount12}}</td>
+        </tr>
+
+
+        <tr class="summary-row">
+          <td></td>
+          <td></td>
+          <td>एकुण (१ ते १२)</td>
+          <td class="amount">{{grandTotal}}</td>
+        </tr>
+
+        <tr class="summary-row">
+          <td></td>
+          <td></td>
+          <td>एकूण अक्षरी रक्कम रुपये</td>
+          <td class="amount-words">{{amountInWords}}</td>
+        </tr>
+      </tbody>
+
+
+    </table>
+
+    <div class="remarks-section">
+
+      <div>
+        <div>
+          एकूण अक्षरी रुपये {{amountInWords}}.
+        </div>
+        <div>
+          सदरहू चलन भरणे बुकातील नोंदणी व डुप्लीकेट पावात्यातील रकमेशी तपासले असे व एकुण रु. {{grandTotal}} म.न.पा फंडात भरणा
+          केला असे.
+        </div>
+        <div>
+          दिनांक : {{fromDate}}
+        </div>
+
+
+      </div>
+
+
+    </div>
+    <div class="remarks-section2">
+      <div class="signaturee">
+      <span>कार्यकारी कर अधिक्षक</span>
+      <span>जमाबंदी चलन प्रमाणे रक्कम मिळाली डे. बुक पा. नं.---------- येथे रू. {{grandTotal}}  जमा केले. </span>
+    </div>
+</div>
+   <div class="remarks-section2">
+    
+     <div class="signature">
+        कॅशिअर, 
+      <span>जळगाव शहर महानगरपालिका, जळगाव </span>
+    </div>
+
+    <div class="signature">
+      <div>
+        <span>प्रमुख लेखापाल</span>
+      </div>
+      <span>जळगाव शहर महानगरपालिका, जळगाव </span>
+    </div>
+   </div>
+
+
+
+  </div>
+
+</body>
+
+</html>
