@@ -217,7 +217,7 @@ const RptReceiptPropertyPDFHelper = async ({ reportData, filters, corporationNam
     const amount18 = getAmt("91915890002"); // शास्ती
 
     // Row 19
-    const amount19 = discountAmount; // रिबेट/शास्ती सुट
+    const amount19 = rebateAmount; // रिबेट/शास्ती सुट
 
     // 🔹 3. Totals
     const total1to10 =
@@ -233,7 +233,7 @@ const RptReceiptPropertyPDFHelper = async ({ reportData, filters, corporationNam
       amount10;
 
     // रिबेट वजा जाता
-    const totalAfterRebate = total1to10 - rebateAmount;
+    const totalAfterRebate = total1to10 - discountAmount;
 
     // 12 ते 19
     const total11to19 =

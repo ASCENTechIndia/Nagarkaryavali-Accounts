@@ -1,14 +1,32 @@
-const puppeteer = require("puppeteer");
 const fs = require("fs");
 const path = require("path");
+const puppeteer = require("puppeteer");
 const Handlebars = require("handlebars");
-const numberToWords = require("number-to-words");
 
-// ================= FORMAT =================
+const imageToBase64 = (imgPath) => {
+  try {
+    const file = fs.readFileSync(imgPath);
+    const ext = path.extname(imgPath).replace(".", "");
+    return `data:image/${ext};base64,${file.toString("base64")}`;
+  } catch {
+    return "";
+  }
+};
+
 const formatDate = (date) => {
-  if (!date) return "";
   return new Date(date).toLocaleDateString("en-GB");
 };
+
+const formatNumber = (num) => {
+  return Number(num || 0).toLocaleString("en-IN");
+};
+
+// Convert number to words (basic utility)
+const numberToWords = (num) => {
+  const formatter = new Intl.NumberFormat("en-IN", { style: "decimal" });
+  return formatter.format(num); // replace with full words if needed
+};
+
 const numberToMarathiWords = (num) => {
   const units = [
     "",
@@ -140,113 +158,98 @@ const numberToMarathiWords = (num) => {
 
   return getWords(Math.floor(num)) + " रुपये";
 };
-const imageToBase64 = (imgPath) => {
+
+const RptReceiptMKPDFHelper = async ({ reportData, filters, corporationName, corporationLogo }) => {
   try {
-    if (!imgPath) return "";
-    if (imgPath.startsWith("data:image")) return imgPath;
+    if (!reportData.length) throw new Error("No data");
 
-    const file = fs.readFileSync(imgPath);
-    const ext = path.extname(imgPath).replace(".", "");
-    return `data:image/${ext};base64,${file.toString("base64")}`;
-  } catch {
-    return "";
-  }
-};
+    console.log("reportData", reportData);
 
-const generateReceiptPDF = async ({ data, corporationName, corporationLogo, transNo }) => {
-  try {
-    const templatePath = path.resolve(__dirname, "../../templates/Receipt.html");
+    const templatePath = path.resolve(__dirname, "../../templates/ReceiptMK.html");
+    const templateHtml = fs.readFileSync(templatePath, "utf8");
+    const template = Handlebars.compile(templateHtml);
 
-    const htmlTemplate = fs.readFileSync(templatePath, "utf8");
-    const template = Handlebars.compile(htmlTemplate);
+    const logo = corporationLogo
+      ? `data:image/png;base64,${corporationLogo}`
+      : imageToBase64(path.resolve(__dirname, "../../assets/logo.png"));
 
-    const logo = imageToBase64(corporationLogo);
-
-    let total = 0;
-
-    const rows = data.map((row, i) => {
-      total += Number(row.AMOUNT || 0);
-
-      return {
-        sr: i + 1,
-        accno: row.ACCCNO,
-        accname: row.ACCNAME,
-        // Ensure party is empty string if null to match visual design
-        party: row.PARTYNAME || "",
-        partycode: row.PARTYCODE || "",
-        // Formatted to 2 decimal places with commas
-        amount: Number(row.AMOUNT).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-        taxac: row.TAXACCCNO,
-        taxname: row.TAXNAME,
-        remarks : row.REMARKS
-      };
+    const grouped = new Map();
+    reportData.forEach((row) => {
+      const code = String(row.ACCNO || row.GLCODE || "");
+      const amt = Number(row.AMOUNT || row.amount || 0);
+      grouped.set(code, (grouped.get(code) || 0) + amt);
     });
 
-    const discount = Number(data?.[0]?.DISCOUNTAMOUNT || 0);
-    const netTotal = total - discount;
+    const getAmt = (code) => grouped.get(code) || 0;
 
-    const amountWords = numberToMarathiWords(netTotal) ;
+   const amount1  = getAmt("45015620001") ||  getAmt("45015620002");
+    const amount2  = getAmt("1015200001"); 
+    const amount3  = getAmt("044015890001") || getAmt("4415890001"); 
+    const amount4  = getAmt("03515720001") ||  getAmt("44015720001"); 
+    const amount5  = getAmt("4319900001"); 
+    
+    const total1to5 =
+      amount1 +
+      amount2 +
+      amount3 +
+      amount4 +
+      amount5;
+
+    
+    const grandTotal = total1to5;
+
+    console.log(amount1, amount2, amount3, amount4, amount5);
+
+
     const html = template({
-      rows,
-      total: total.toFixed(2),
-      discount,
-      netTotal,
-      amountWords,
-      refno: data[0].REFNO,
-      date: formatDate(data[0].TRANSDATE),
-      trnstype: data[0].TRANSTYPE,
-      zone: data[0].ZONEENAME,
-      logo,
+      corporationLogo: logo,
+      corporationLogo,
       corporationName,
-      transNo
+      reportDate: formatDate(new Date()),
+      fromDate: formatDate(filters.fromDate),
+      toDate: formatDate(filters.toDate),
+
+      amount1: formatNumber(amount1),
+      amount2: formatNumber(amount2),
+      amount3: formatNumber(amount3),
+      amount4: formatNumber(amount4),
+      amount5: formatNumber(amount5),
+      total1to5: formatNumber(total1to5),   
+      grandTotal: formatNumber(grandTotal),
+      amountInWords: numberToMarathiWords(grandTotal),
     });
 
-    // const browser = await puppeteer.launch({
-    //   headless: true,
-    //   args: ["--no-sandbox"],
-    // });
 
-    const chromePath = path.resolve(__dirname, "../../../node_modules/puppeteer/.cache/puppeteer/chrome/win64-135.0.7049.84/chrome-win64/chrome.exe");
-
-    const launchOptions = {
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    };
-
-    if (fs.existsSync(chromePath)) {
-      launchOptions.executablePath = chromePath;
-    }
+    const chromePath = path.resolve(
+      __dirname,
+      "../../../node_modules/puppeteer/.cache/puppeteer/chrome/win64-135.0.7049.84/chrome-win64/chrome.exe"
+    );
+    const launchOptions = { headless: true, args: ["--no-sandbox", "--disable-setuid-sandbox"] };
+    if (fs.existsSync(chromePath)) launchOptions.executablePath = chromePath;
 
     const browser = await puppeteer.launch(launchOptions);
-
     const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: "domcontentloaded", timeout: 0 });
 
-    await page.setContent(html, {
-      waitUntil: "domcontentloaded",
-    });
-
-    const fileName = `Receipt_${Date.now()}.pdf`;
-    const filePath = path.resolve("public/pdf", fileName);
-
-    await page.pdf({
-      path: filePath,
-      format: "A4",
-      printBackground: true,
-      margin: {
-        top: "10px",
-        bottom: "10px",
-        left: "10px",
-        right: "10px",
-      },
-    });
-
+    const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
+    await page.close();
     await browser.close();
 
+    const outputDir = path.resolve(__dirname, "../../../public/pdf");
+    if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
+
+    const fileName = `Receipt_Register_UserWise_${Date.now()}.pdf`;
+    const filePath = path.join(outputDir, fileName);
+    fs.writeFileSync(filePath, pdfBuffer);
+
     return { fileName, filePath };
-  } catch (err) {
-    console.error("PDF ERROR:", err);
-    throw err;
+
+  } catch (error) {
+    console.error("UserWise PDF Error:", error);
+    throw error;
   }
 };
 
-module.exports = { generateReceiptPDF };
+module.exports = {
+  RptReceiptMKPDFHelper
+};
