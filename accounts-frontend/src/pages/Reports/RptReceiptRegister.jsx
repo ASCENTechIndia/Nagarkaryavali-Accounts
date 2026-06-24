@@ -129,15 +129,15 @@ const RptReceiptRegister = () => {
     const fetchDepartments = async () => {
         try {
             const res = await axios.post(
-            `${BASE_URL}/api/Receipt/departments`,
-            {
-                ulbid: ulbId,
-            },
-            {
-                headers: {
-                Authorization: `Bearer ${user.token}`,
+                `${BASE_URL}/api/Receipt/departments`,
+                {
+                    ulbid: ulbId,
                 },
-            },
+                {
+                    headers: {
+                        Authorization: `Bearer ${user.token}`,
+                    },
+                },
             );
             setDepartments(res.data.data || []);
         } catch (err) {
@@ -156,7 +156,7 @@ const RptReceiptRegister = () => {
 
             // JCMC Validation
             if (values.reportType === "JCMC") {
-            if (!values.department || values.department === "-1") {
+                if (!values.department || values.department === "-1") {
                     Swal.fire({
                         text: "कृपया विभाग निवडा.",
                         confirmButtonColor: "#1e3a8a",
@@ -199,19 +199,30 @@ const RptReceiptRegister = () => {
                 return `${year}-${month}-${day}`;
             };
 
+            const selectedZone = zoneList.find(
+                (z) => z.ZONEID.toString() === values.zoneId
+            );
+
+            const selectedDepartment = departments.find(
+                (d) => d.DEPTID.toString() === values.department
+            );
+
+
             const payload = {
                 fromDate: formatDate(values.fromDate),
                 toDate: formatDate(values.toDate),
                 ulbId: ulbId?.toString(),
                 zoneId: values.zoneId || "-1",
+                zoneName: selectedZone?.ZONEENAME || "",
+                deptName: selectedDepartment?.DEPTNAME || "",
                 rptType:
                     values.reportType === "summary"
                         ? "2"
                         : values.reportType === "detail"
-                            ? "1" 
+                            ? "1"
                             : values.reportType === "JCMCSC"
-                             ? "4"
-                             : "3",
+                                ? "4"
+                                : "3",
                 chkGramPanchayat: false,
                 majorCode: values.wardCode
                     ? values.wardCode.padStart(3, "0")
@@ -383,7 +394,7 @@ const RptReceiptRegister = () => {
                         >
                             <Card className="border shadow-sm">
                                 <CardHeader className="border-b">
-                                   <CardTitle className="text-lg font-semibold">
+                                    <CardTitle className="text-lg font-semibold">
                                         पावती रजिस्टर सारांश
                                     </CardTitle>
                                 </CardHeader>
@@ -529,23 +540,23 @@ const RptReceiptRegister = () => {
                                                 <span>:</span>
                                             </div>
                                             <Select
-                                            value={values.department}
-                                            onValueChange={(v) => setFieldValue("department", v)}
+                                                value={values.department}
+                                                onValueChange={(v) => setFieldValue("department", v)}
                                             >
-                                            <SelectTrigger className="w-full border rounded-md">
-                                                <SelectValue placeholder="-- विकल्प निवडा --" />
-                                            </SelectTrigger>
-                    
-                                            <SelectContent>
-                                                {departments.map((d) => (
-                                                <SelectItem
-                                                    key={d.DEPTID}
-                                                    value={d.DEPTID.toString()}
-                                                >
-                                                    {d.DEPTNAME}
-                                                </SelectItem>
-                                                ))}
-                                            </SelectContent>
+                                                <SelectTrigger className="w-full border rounded-md">
+                                                    <SelectValue placeholder="-- विकल्प निवडा --" />
+                                                </SelectTrigger>
+
+                                                <SelectContent>
+                                                    {departments.map((d) => (
+                                                        <SelectItem
+                                                            key={d.DEPTID}
+                                                            value={d.DEPTID.toString()}
+                                                        >
+                                                            {d.DEPTNAME}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
                                             </Select>
                                         </div>
                                     </div>
@@ -594,7 +605,7 @@ const RptReceiptRegister = () => {
                                                     }
                                                     className="h-4 w-4"
                                                 />
-                                                चलान 
+                                                चलान
                                             </label>
 
                                             <label className="flex items-center gap-2 text-sm">
@@ -607,7 +618,7 @@ const RptReceiptRegister = () => {
                                                     }
                                                     className="h-4 w-4"
                                                 />
-                                                सर्वसाधारण चलान 
+                                                सर्वसाधारण चलान
                                             </label>
                                         </div>
                                     </div>

@@ -10,6 +10,7 @@ const { RptReceiptPropertyPDFHelper } = require("../../../utils/pdfHelper/RptRec
 const { RptReceiptSCPDFHelper } = require("../../../utils/pdfHelper/RptReceiptSC");
 const { RptReceiptMKChallanPDFHelper } = require("../../../utils/pdfHelper/ReceiptMKChallan");
 const { RptReceiptMKPDFHelper } = require("../../../utils/pdfHelper/ReceiptMK");
+const { ReceiptOtherChallanPDFHelper } = require("../../../utils/pdfHelper/ReceiptOtherChallan");
 
 
 const getReceiptRegister = asyncHandler(async (req, res) => {
@@ -110,7 +111,7 @@ const generateReceiptRegUserWisePDF = asyncHandler(async (req, res) => {
 
     console.log('result.rows: ', result.rows);
 
-    if(req.body.rptType == 4 && (req.body.department == 7 || req.body.department == 1482)) {
+    if (req.body.rptType == 4 && (req.body.department == 7 || req.body.department == 1482)) {
       pdf = await RptReceiptSCPDFHelper({
         reportData: result.rows,
         filters,
@@ -118,7 +119,7 @@ const generateReceiptRegUserWisePDF = asyncHandler(async (req, res) => {
         corporationLogo
       });
     }
-    else if(req.body.rptType == 3 && (req.body.department == 7 || req.body.department == 1482)) {
+    else if (req.body.rptType == 3 && (req.body.department == 7 || req.body.department == 1482)) {
       pdf = await RptReceiptPropertyPDFHelper({
         reportData: result.rows,
         filters,
@@ -126,7 +127,7 @@ const generateReceiptRegUserWisePDF = asyncHandler(async (req, res) => {
         corporationLogo
       });
     }
-    else if(req.body.rptType == 3 && (req.body.department == 18 || req.body.department == 1270)) {
+    else if (req.body.rptType == 3 && (req.body.department == 18 || req.body.department == 1270)) {
       pdf = await RptReceiptMKChallanPDFHelper({
         reportData: result.rows,
         filters,
@@ -134,7 +135,15 @@ const generateReceiptRegUserWisePDF = asyncHandler(async (req, res) => {
         corporationLogo
       });
     }
-    else if(req.body.rptType == 4 && (req.body.department == 18 || req.body.department == 1270)) {
+    else if (req.body.rptType == 3 && (req.body.department == 1850 || req.body.department == 2762)) {
+      pdf = await RptReceiptRegisterJcmcPDFHelper({
+        reportData: result.rows,
+        filters,
+        corporationName,
+        corporationLogo
+      });
+    }
+    else if (req.body.rptType == 4 && (req.body.department == 18 || req.body.department == 1270)) {
       pdf = await RptReceiptMKPDFHelper({
         reportData: result.rows,
         filters,
@@ -143,12 +152,13 @@ const generateReceiptRegUserWisePDF = asyncHandler(async (req, res) => {
       });
     }
     else {
-      pdf = await RptReceiptRegisterJcmcPDFHelper({
+      pdf = await ReceiptOtherChallanPDFHelper({
         reportData: result.rows,
         filters,
         corporationName,
         corporationLogo
       });
+
     }
 
     const baseUrl = `${req.protocol}://${req.get("host")}`;

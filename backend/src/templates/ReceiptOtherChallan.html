@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="mr">
+
+<head>
+    <meta charset="UTF-8">
+
+    <title>
+        मालमत्ता कर वसुली रक्कमा जमा करायचे चलन
+    </title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            color: #000;
+            padding: 10px 15px;
+        }
+
+        @page {
+            size: A4 portrait;
+            margin: 5mm;
+        }
+
+        .page {
+            width: 100%;
+        }
+
+        .header {
+            position: relative;
+            margin-bottom: 15px;
+            min-height: 80px;
+        }
+
+        .logo {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+
+        .report-date {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+
+        .collection-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        .collection-table th,
+        .collection-table td {
+            border: 1px solid #000;
+            padding: 4px 6px;
+            vertical-align: middle;
+        }
+
+        .collection-table th {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .srno {
+            width: 8%;
+            text-align: center;
+        }
+
+        .ledger {
+            width: 18%;
+            text-align: center;
+        }
+
+        .particular {
+            width: 49%;
+        }
+
+        .amount {
+            width: 25%;
+            text-align: right;
+        }
+
+        .summary-row {
+            font-weight: bold;
+        }
+
+        .summary-label {
+            text-align: right;
+            padding-right: 10px;
+        }
+
+        .amount-words {
+            font-weight: bold;
+        }
+
+
+        .remarks-section {
+            margin-top: 15px;
+            font-size: 14px;
+            line-height: 1.7;
+            display: flex
+        }
+
+        .signature {
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .signature2 {
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .signature2>div {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            border-top: 1px solid #000;
+            padding-top: 6px;
+
+            display: flex;
+            justify-content: space-between;
+
+            font-size: 11px;
+        }
+
+        .summary-table {
+            width: 50%;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            border-collapse: collapse;
+            margin-left: auto;
+        }
+
+        .summary-table th,
+        .summary-table td {
+            border: 1px solid #000;
+            padding: 6px 8px;
+        }
+
+        .summary-table th {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .summary-table td:first-child {
+            text-align: left;
+        }
+
+        .summary-table td:last-child {
+            text-align: right;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="page">
+
+        <div class="header">
+
+            <img src="{{corporationLogo}}" class="logo" />
+
+            <div class="title">
+                {{corporationName}}
+            </div>
+
+            <div class="subtitle">
+                सरदार वल्लभ भाई पटेल टॉवर, प्रशासकीय इमारत
+            </div>
+
+            <div class="subtitle">
+                फोन:०२५७-२२२२२६१, ६२, ६३, ६४, ६५ फॅक्स: २२२२२६०
+            </div>
+
+            <div class="subtitle">
+                विभागाचे नाव : {{deptName}}
+            </div>
+            <div class="subtitle">
+                प्रभाग : {{zoneName}} चलन
+            </div>
+
+            <div class="report-date">
+                चलन दिनांक : {{fromDate}}
+            </div>
+
+        </div>
+
+
+        <table class="collection-table">
+
+            <thead>
+                <tr>
+                    <th class="srno">अ.</th>
+                    <th class="ledger">लेखा कोड</th>
+                    <th class="particular">कराचे नाव</th>
+                    <th class="amount">रक्कम रुपये</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {{#each rows}}
+                <tr>
+                    <td class="srno">{{srNo}}</td>
+                    <td class="ledger">{{ledgerCode}}</td>
+                    <td class="particular">{{particular}}</td>
+                    <td class="amount">{{amount}}</td>
+                </tr>
+                {{/each}}
+
+                <tr class="summary-row">
+                    <td></td>
+                    <td></td>
+                    <td>एकुण रक्कम </td>
+                    <td class="amount">{{totalWithoutDiscount}}</td>
+                </tr>
+
+                <tr class="summary-row">
+                    <td></td>
+                    <td></td>
+                    <td>रिबेट/सुट रक्कम</td>
+                    <td class="amount">{{totalDiscount}}</td>
+                </tr>
+
+                <tr class="summary-row">
+                    <td></td>
+                    <td></td>
+                    <td>रिबेट वजा जाता एकुण रक्कम</td>
+                    <td class="amount">{{totalWithDiscount}}</td>
+                </tr>
+
+                <tr class="summary-row">
+                    <td></td>
+                    <td></td>
+                    <td>एकूण अक्षरी रक्कम रुपये</td>
+                    <td class="amount-words">{{amountInWords}}</td>
+                </tr>
+            </tbody>
+
+
+        </table>
+
+        <!-- <table class="summary-table">
+            <thead>
+                <tr>
+                    <th>Summary</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>एकूण मागणी </td>
+                    <td class="amount">{{totalWithoutDiscount}}</td>
+                </tr>
+                <tr>
+                    <td>सुट रक्कम </td>
+                    <td class="amount">{{amount8}}</td>
+                </tr>
+                <tr>
+                    <td><strong>वसूल रक्कम </strong></td>
+                    <td class="amount"><strong>{{totalWithDiscount}}</strong></td>
+                </tr>
+            </tbody>
+        </table> -->
+
+        <div class="remarks-section">
+
+            <div>
+                <div>
+                    प्रती, प्रमुख लेखापाल, लेखा विभाग, प्रभाग समिती अंतर्गत प्रभाग समिती निहाय चलन तपासणी करून एकत्रित
+                    चलन रक्कम मनपा खजिन्यात जमा करण्यात येत आहे.
+                </div>
+
+                <div class="signature">
+                    विभाग प्रमुख
+                    <span>जळगाव शहर महानगरपालिका, जळगाव </span>
+                </div>
+            </div>
+
+            <div>
+                <div>
+                    सदर प्रभाग समितीच्या एकत्रित चलन नुसार मिळालेली रक्कम तपासून नोंद केली व मनपा खजिन्यात जमा केली.
+                </div>
+
+                <div class="signature2">
+                    <div>
+                        <span>रोखपाल</span>
+                        <span>प्रमुख लेखापाल</span>
+                    </div>
+                    <span>जळगाव शहर महानगरपालिका, जळगाव </span>
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+
+    </div>
+
+</body>
+
+</html>
