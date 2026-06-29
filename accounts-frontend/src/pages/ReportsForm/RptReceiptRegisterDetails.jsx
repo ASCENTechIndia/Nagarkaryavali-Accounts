@@ -81,9 +81,18 @@ const RptReceiptRegisterDetails = () => {
       .get(`${BASE_URL}/api/Receipt/searchGLALL`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-      .then((res) => setGlCodes(res.data?.data?.rows || []))
+      .then((res) => {
+        console.log("GL Response: ", res)
+
+        const data = res.data?.data || [];
+        setGlCodes(data);
+      })
       .catch(console.error);
   }, [ulbId]);
+
+  useEffect(() => {
+    console.log(glCodes);
+  }, [glCodes]);
 
   /* ================= LOAD LEDGERS ================= */
   const loadLedgers = async (glcode) => {
@@ -95,6 +104,8 @@ const RptReceiptRegisterDetails = () => {
         { corp_id: ulbId, glcode },
         { headers: { Authorization: `Bearer ${token}` } },
       );
+
+      console.log("Ledger Response: ", res);
 
       setLedgers(res.data?.data?.rows || []);
     } catch (err) {
@@ -358,7 +369,12 @@ const formatDate = (date) => {
               <CardContent className="space-y-6">
                 {/* ROW 1 */}
                 <div className="grid md:grid-cols-3 gap-4">
-                  <Row label="प्रभाग">
+                  {/* <Row label="प्रभाग"> */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="प्रभाग" />
+                        <span>:</span>
+                    </div>
                     <Select
                       value={values.ward || "ALL"}
                       onValueChange={(v) => setFieldValue("ward", v)}
@@ -378,29 +394,46 @@ const formatDate = (date) => {
                         ))}
                       </SelectContent>
                     </Select>
-                  </Row>
+                  </div>
+                  {/* </Row> */}
 
-                  <Row label="दिनांक पासून">
+                  {/* <Row label="दिनांक पासून"> */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="दिनांक पासून" />
+                        <span>:</span>
+                    </div>
                     <DatePicker
                       value={values.fromDate}
                       onChange={(date) => setFieldValue("fromDate", date)}
                     />
-                  </Row>
+                  </div>
+                  {/* </Row> */}
 
-                  <Row label="दिनांक पर्यंत">
+                  {/* <Row label="दिनांक पर्यंत"> */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="दिनांक पासून" />
+                        <span>:</span>
+                    </div>
                     <DatePicker
                       value={values.toDate}
                       onChange={(date) => setFieldValue("toDate", date)}
                     />
-                  </Row>
+                  </div>
+                  {/* </Row> */}
                 </div>
 
                 {/* ROW 2 */}
                 <div className="grid md:grid-cols-3 gap-4">
-                  <Row label="विभाग संकेतांक">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="विभाग संकेतांक" />
+                        <span>:</span>
+                    </div>
                     <SearchableSelect
                       options={glCodes.map((g) => ({
-                        label: g.GLNAME,
+                        label: g.GLSEARCHNAME,
                         value: String(g.GLCODE),
                       }))}
                       value={values.deptCode}
@@ -410,9 +443,13 @@ const formatDate = (date) => {
                         await loadLedgers(selected.value);
                       }}
                     />
-                  </Row>
+                  </div>
 
-                  <Row label="लेखाशिर्ष">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="लेखाशिर्ष" />
+                        <span>:</span>
+                    </div>
                     <SearchableSelect
                       options={ledgers.map((l) => ({
                         label: l.ACCNAME,
@@ -423,7 +460,7 @@ const formatDate = (date) => {
                         setFieldValue("ledger", selected.value)
                       }
                     />
-                  </Row>
+                  </div>
 
                   <div className="flex items-center gap-4">
                     <Label className="text-sm font-medium">Export To :</Label>

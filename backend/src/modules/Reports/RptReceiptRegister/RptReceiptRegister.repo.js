@@ -7,7 +7,8 @@ const getReceiptRegister = async (params) => {
     let bindParams = {
       FromDate: params.fromDate,
       ToDate: params.toDate,
-      UlbId: params.ulbId
+      UlbId: params.ulbId,
+      department: params.department,
     };
 
     // ================= DETAIL REPORT =================
@@ -30,6 +31,11 @@ const getReceiptRegister = async (params) => {
       ON a.glcode = acc.glcode
       AND a.accno = acc.accno
       AND acc.ulbid = a.ulbid
+      INNER JOIN aoac_receiptmst_def
+              ON num_receiptmst_trnsno = a.transno
+             AND num_receiptmst_ulbid = a.ulbid
+   INNER JOIN aoac_receiptdet_def rd
+       ON rd.num_receiptdet_refno = aoac_receiptmst_def.num_receiptmst_refno
     LEFT JOIN view_zone vz
       ON vz.zoneid = a.zoneid
     LEFT JOIN aoac_grampanch_def
@@ -41,6 +47,7 @@ const getReceiptRegister = async (params) => {
       AND a.trnsdate < TO_DATE(:ToDate,'YYYY-MM-DD') + 1
       AND a.amount > 0
       AND a.trnstypeid IN (1,2)
+      AND aoac_receiptmst_def.num_receiptmst_deptid = :department
   `;
 
       if (params.majorCode && params.majorCode !== "-1" && !params.minorCode) {
@@ -115,6 +122,11 @@ const getReceiptRegister = async (params) => {
       ON a.glcode = acc.glcode
       AND a.accno = acc.accno
       AND acc.ulbid = a.ulbid
+      INNER JOIN aoac_receiptmst_def
+              ON num_receiptmst_trnsno = a.transno
+             AND num_receiptmst_ulbid = a.ulbid
+ INNER JOIN aoac_receiptdet_def rd
+       ON rd.num_receiptdet_refno = aoac_receiptmst_def.num_receiptmst_refno
     LEFT JOIN view_zone vz
       ON vz.zoneid = a.zoneid
     LEFT JOIN aoac_grampanch_def
@@ -126,6 +138,7 @@ const getReceiptRegister = async (params) => {
       AND a.trnsdate < TO_DATE(:ToDate,'YYYY-MM-DD') + 1
       AND a.amount > 0
       AND a.trnstypeid IN (1,2)
+      AND aoac_receiptmst_def.num_receiptmst_deptid = :department
   `;
 
       if (params.majorCode && params.majorCode !== "-1" && !params.minorCode) {
@@ -193,6 +206,7 @@ const getReceiptRegisterUserWise = async (params) => {
       FromDate: params.fromDate,
       ToDate: params.toDate,
       UlbId: params.ulbId,
+      department: params.department,
     };
 
     let query = `
@@ -246,6 +260,9 @@ const getReceiptRegisterUserWise = async (params) => {
               ON num_receiptmst_trnsno = a.transno
              AND num_receiptmst_ulbid = a.ulbid
 
+          INNER JOIN aoac_receiptdet_def rd
+       ON rd.num_receiptdet_refno = aoac_receiptmst_def.num_receiptmst_refno
+
           LEFT JOIN view_zone vz
               ON vz.zoneid = a.zoneid
 
@@ -260,6 +277,7 @@ const getReceiptRegisterUserWise = async (params) => {
             AND a.amount > 0
             AND a.trnstypeid IN (1,2)
             AND a.ulbid = :UlbId
+           AND aoac_receiptmst_def.num_receiptmst_deptid = :department
     `;
 
     if (params.userId && params.userId !== "0") {
