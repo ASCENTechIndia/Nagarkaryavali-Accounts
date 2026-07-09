@@ -34,8 +34,6 @@ const getReceiptRegister = async (params) => {
       INNER JOIN aoac_receiptmst_def
               ON num_receiptmst_trnsno = a.transno
              AND num_receiptmst_ulbid = a.ulbid
-   INNER JOIN aoac_receiptdet_def rd
-       ON rd.num_receiptdet_refno = aoac_receiptmst_def.num_receiptmst_refno
     LEFT JOIN view_zone vz
       ON vz.zoneid = a.zoneid
     LEFT JOIN aoac_grampanch_def
@@ -48,6 +46,13 @@ const getReceiptRegister = async (params) => {
       AND a.amount > 0
       AND a.trnstypeid IN (1,2)
       AND aoac_receiptmst_def.num_receiptmst_deptid = :department
+      AND EXISTS
+      (
+          SELECT 1
+          FROM aoac_receiptdet_def rd
+          WHERE rd.num_receiptdet_refno =
+                aoac_receiptmst_def.num_receiptmst_refno
+      )
   `;
 
       if (params.majorCode && params.majorCode !== "-1" && !params.minorCode) {
@@ -125,8 +130,6 @@ const getReceiptRegister = async (params) => {
       INNER JOIN aoac_receiptmst_def
               ON num_receiptmst_trnsno = a.transno
              AND num_receiptmst_ulbid = a.ulbid
- INNER JOIN aoac_receiptdet_def rd
-       ON rd.num_receiptdet_refno = aoac_receiptmst_def.num_receiptmst_refno
     LEFT JOIN view_zone vz
       ON vz.zoneid = a.zoneid
     LEFT JOIN aoac_grampanch_def
@@ -139,6 +142,13 @@ const getReceiptRegister = async (params) => {
       AND a.amount > 0
       AND a.trnstypeid IN (1,2)
       AND aoac_receiptmst_def.num_receiptmst_deptid = :department
+      AND EXISTS
+      (
+          SELECT 1
+          FROM aoac_receiptdet_def rd
+          WHERE rd.num_receiptdet_refno =
+                aoac_receiptmst_def.num_receiptmst_refno
+      )
   `;
 
       if (params.majorCode && params.majorCode !== "-1" && !params.minorCode) {
@@ -260,9 +270,6 @@ const getReceiptRegisterUserWise = async (params) => {
               ON num_receiptmst_trnsno = a.transno
              AND num_receiptmst_ulbid = a.ulbid
 
-          INNER JOIN aoac_receiptdet_def rd
-       ON rd.num_receiptdet_refno = aoac_receiptmst_def.num_receiptmst_refno
-
           LEFT JOIN view_zone vz
               ON vz.zoneid = a.zoneid
 
@@ -277,7 +284,14 @@ const getReceiptRegisterUserWise = async (params) => {
             AND a.amount > 0
             AND a.trnstypeid IN (1,2)
             AND a.ulbid = :UlbId
-           AND aoac_receiptmst_def.num_receiptmst_deptid = :department
+            AND aoac_receiptmst_def.num_receiptmst_deptid = :department
+            AND EXISTS
+            (
+                SELECT 1
+                FROM aoac_receiptdet_def rd
+                WHERE rd.num_receiptdet_refno =
+                      aoac_receiptmst_def.num_receiptmst_refno
+            )
     `;
 
     if (params.userId && params.userId !== "0") {
@@ -339,6 +353,7 @@ const getReceiptRegisterUserWise = async (params) => {
     throw err;
   }
 };
+
 
 
 const getReceiptRegisterProperty = async (params) => {
