@@ -8,47 +8,78 @@ const getReceiptRegister = async (params) => {
       FromDate: params.fromDate,
       ToDate: params.toDate,
       UlbId: params.ulbId,
-      department: params.department,
     };
+
+    // Make department filter optional
+    const hasDepartment =
+      params.department &&
+      params.department !== "-1" &&
+      params.department !== "" &&
+      params.department !== null &&
+      params.department !== undefined;
+
+    if (hasDepartment) {
+      bindParams.Department = params.department;
+    }
 
     // ================= DETAIL REPORT =================
     if (params.rptType === "1") {
       query = `
-    SELECT
-      a.trnsdate,
-      a.glcode,
-      acc.glname,
-      a.accno,
-      acc.accname,
-      vz.zoneename,
-      acc.functioncode,
-      acc.objectcode,
-      ${params.chkGramPanchayat ? "var_grampanch_grampanch" : "NULL"} AS grampanch,
-      SUM(a.amount) amount,
-      0 BudgetCode
-    FROM transview a
-    INNER JOIN accountview_web acc
-      ON a.glcode = acc.glcode
-      AND a.accno = acc.accno
-      AND acc.ulbid = a.ulbid
-      INNER JOIN aoac_receiptmst_def
-              ON num_receiptmst_trnsno = a.transno
-             AND num_receiptmst_ulbid = a.ulbid
-   INNER JOIN aoac_receiptdet_def rd
-       ON rd.num_receiptdet_refno = aoac_receiptmst_def.num_receiptmst_refno
-    LEFT JOIN view_zone vz
-      ON vz.zoneid = a.zoneid
-    LEFT JOIN aoac_grampanch_def
-      ON num_grampanch_grampanchid = a.grampanchid
-    LEFT JOIN aoac_partymst_def
-      ON num_partymst_partyid = a.partycode
-    WHERE
-      a.trnsdate >= TO_DATE(:FromDate,'YYYY-MM-DD')
-      AND a.trnsdate < TO_DATE(:ToDate,'YYYY-MM-DD') + 1
-      AND a.amount > 0
-      AND a.trnstypeid IN (1,2)
-      AND aoac_receiptmst_def.num_receiptmst_deptid = :department
-  `;
+        SELECT
+            a.trnsdate,
+            a.glcode,
+            acc.glname,
+            a.accno,
+            acc.accname,
+            vz.zoneename,
+            acc.functioncode,
+            acc.objectcode,
+            d.deptname,
+            ${
+              params.chkGramPanchayat
+                ? "var_grampanch_grampanch"
+                : "NULL"
+            } AS grampanch,
+            SUM(a.amount) amount,
+            0 BudgetCode
+        FROM transview a
+
+        INNER JOIN accountview_web acc
+            ON a.glcode = acc.glcode
+           AND a.accno = acc.accno
+           AND acc.ulbid = a.ulbid
+
+        INNER JOIN aoac_receiptmst_def rm
+            ON rm.num_receiptmst_trnsno = a.transno
+           AND rm.num_receiptmst_ulbid = a.ulbid
+
+        LEFT JOIN vw_accdeptconfig d
+            ON d.deptid = rm.num_receiptmst_deptid
+           AND d.ulbid = rm.num_receiptmst_ulbid
+
+        LEFT JOIN view_zone vz
+            ON vz.zoneid = a.zoneid
+
+        LEFT JOIN aoac_grampanch_def
+            ON num_grampanch_grampanchid = a.grampanchid
+
+        LEFT JOIN aoac_partymst_def
+            ON num_partymst_partyid = a.partycode
+
+        WHERE a.trnsdate >= TO_DATE(:FromDate,'YYYY-MM-DD')
+          AND a.trnsdate < TO_DATE(:ToDate,'YYYY-MM-DD') + 1
+          AND a.amount > 0
+          AND a.trnstypeid IN (1,2)
+          AND EXISTS (
+                SELECT 1
+                FROM aoac_receiptdet_def rd
+                WHERE rd.num_receiptdet_refno = rm.num_receiptmst_refno
+          )
+      `;
+
+      if (hasDepartment) {
+        query += ` AND rm.num_receiptmst_deptid = :Department`;
+      }
 
       if (params.majorCode && params.majorCode !== "-1" && !params.minorCode) {
         query += ` AND a.glcode = :MajorCode`;
@@ -61,8 +92,9 @@ const getReceiptRegister = async (params) => {
         params.minorCode &&
         params.minorCode !== "-1"
       ) {
-        query += ` AND acc.functioncode = :MajorCode
-               AND acc.objectcode = :MinorCode`;
+        query += `
+          AND acc.functioncode = :MajorCode
+          AND acc.objectcode = :MinorCode`;
 
         bindParams.MajorCode = params.majorCode;
         bindParams.MinorCode = params.minorCode;
@@ -94,52 +126,75 @@ const getReceiptRegister = async (params) => {
       }
 
       query += `
-    AND a.ulbid = :UlbId
-    GROUP BY
-      a.trnsdate,
-      a.glcode,
-      acc.glname,
-      acc.functioncode,
-      a.accno,
-      acc.objectcode,
-      acc.accname,
-      vz.zoneename
-      ${params.chkGramPanchayat ? ", var_grampanch_grampanch" : ""}
-    ORDER BY
-      a.trnsdate
-  `;
+        AND a.ulbid = :UlbId
+
+        GROUP BY
+            a.trnsdate,
+            a.glcode,
+            acc.glname,
+            a.accno,
+            acc.accname,
+            vz.zoneename,
+            acc.functioncode,
+            acc.objectcode,
+            d.deptname
+            ${
+              params.chkGramPanchayat
+                ? ", var_grampanch_grampanch"
+                : ""
+            }
+
+        ORDER BY
+            a.trnsdate
+      `;
     }
 
     // ================= SUMMARY REPORT =================
     else {
       query = `
-    SELECT
-      a.accno,
-      acc.accname,
-      SUM(a.amount) amount
-    FROM transview a
-    INNER JOIN accountview_web acc
-      ON a.glcode = acc.glcode
-      AND a.accno = acc.accno
-      AND acc.ulbid = a.ulbid
-      INNER JOIN aoac_receiptmst_def
-              ON num_receiptmst_trnsno = a.transno
-             AND num_receiptmst_ulbid = a.ulbid
- INNER JOIN aoac_receiptdet_def rd
-       ON rd.num_receiptdet_refno = aoac_receiptmst_def.num_receiptmst_refno
-    LEFT JOIN view_zone vz
-      ON vz.zoneid = a.zoneid
-    LEFT JOIN aoac_grampanch_def
-      ON num_grampanch_grampanchid = a.grampanchid
-    LEFT JOIN aoac_partymst_def
-      ON num_partymst_partyid = a.partycode
-    WHERE
-      a.trnsdate >= TO_DATE(:FromDate,'YYYY-MM-DD')
-      AND a.trnsdate < TO_DATE(:ToDate,'YYYY-MM-DD') + 1
-      AND a.amount > 0
-      AND a.trnstypeid IN (1,2)
-      AND aoac_receiptmst_def.num_receiptmst_deptid = :department
-  `;
+        SELECT
+            a.accno,
+            acc.accname,
+            d.deptname,
+            SUM(a.amount) amount
+        FROM transview a
+
+        INNER JOIN accountview_web acc
+            ON a.glcode = acc.glcode
+           AND a.accno = acc.accno
+           AND acc.ulbid = a.ulbid
+
+        INNER JOIN aoac_receiptmst_def rm
+            ON rm.num_receiptmst_trnsno = a.transno
+           AND rm.num_receiptmst_ulbid = a.ulbid
+
+        LEFT JOIN vw_accdeptconfig d
+            ON d.deptid = rm.num_receiptmst_deptid
+           AND d.ulbid = rm.num_receiptmst_ulbid
+
+        LEFT JOIN view_zone vz
+            ON vz.zoneid = a.zoneid
+
+        LEFT JOIN aoac_grampanch_def
+            ON num_grampanch_grampanchid = a.grampanchid
+
+        LEFT JOIN aoac_partymst_def
+            ON num_partymst_partyid = a.partycode
+
+        WHERE a.trnsdate >= TO_DATE(:FromDate,'YYYY-MM-DD')
+          AND a.trnsdate < TO_DATE(:ToDate,'YYYY-MM-DD') + 1
+          AND a.amount > 0
+          AND a.trnstypeid IN (1,2)
+          AND EXISTS (
+                SELECT 1
+                FROM aoac_receiptdet_def rd
+                WHERE rd.num_receiptdet_refno = rm.num_receiptmst_refno
+          )
+      `;
+
+      if (hasDepartment) {
+        query += ` AND rm.num_receiptmst_deptid = :Department`;
+      }
 
       if (params.majorCode && params.majorCode !== "-1" && !params.minorCode) {
         query += ` AND a.glcode = :MajorCode`;
@@ -152,8 +207,9 @@ const getReceiptRegister = async (params) => {
         params.minorCode &&
         params.minorCode !== "-1"
       ) {
-        query += ` AND acc.functioncode = :MajorCode
-               AND acc.objectcode = :MinorCode`;
+        query += `
+          AND acc.functioncode = :MajorCode
+          AND acc.objectcode = :MinorCode`;
 
         bindParams.MajorCode = params.majorCode;
         bindParams.MinorCode = params.minorCode;
@@ -185,21 +241,26 @@ const getReceiptRegister = async (params) => {
       }
 
       query += `
-    AND a.ulbid = :UlbId
-    GROUP BY
-      a.accno,
-      acc.accname
-    ORDER BY
-      a.accno
-  `;
+        AND a.ulbid = :UlbId
+
+        GROUP BY
+            a.accno,
+            acc.accname,
+            d.deptname
+
+        ORDER BY
+            a.accno
+      `;
     }
 
-    return await executeQuery(query, bindParams);
+    console.log(query);
 
+    return await executeQuery(query, bindParams);
   } catch (err) {
     throw err;
   }
 };
+
 const getReceiptRegisterUserWise = async (params) => {
   try {
     const bindParams = {
