@@ -58,6 +58,7 @@ const RptReceiptRegisterDetails = () => {
   const [ledgers, setLedgers] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [departments, setDepartments] = useState([]);
 
   /* ================= LOAD ZONES ================= */
   useEffect(() => {
@@ -114,98 +115,98 @@ const RptReceiptRegisterDetails = () => {
   };
 
   /* ================= 🔥 HANDLE SEARCH ================= */
-const formatDate = (date) => {
-          if (!date) return null;
+  const formatDate = (date) => {
+    if (!date) return null;
 
-          const d = new Date(date);
+    const d = new Date(date);
 
-          const year = d.getFullYear();
-          const month = String(d.getMonth() + 1).padStart(2, "0");
-          const day = String(d.getDate()).padStart(2, "0");
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
 
-          return `${year}-${month}-${day}`;
-      };
+    return `${year}-${month}-${day}`;
+  };
 
-//   const handleSearch = async (values) => {
-//     try {
-//       setLoading(true);
-//  const selectedZone = zones.find(
-//         (z) => String(z.ZONEID) === String(values.ward)
-//       );
-//        const payload = {
-//         ulbId: ulbId,
-//         fromDate: formatDate(values.fromDate),
-//         toDate: formatDate(values.toDate),
-//         majorCode: values.deptCode || null,
-//         minorCode: values.ledger || null,
-//         zoneId: values.ward || null,
-//         zoneName: selectedZone?.ZONEENAME || null,
-//         gramPanchayatId: null,
-//         corpCode: null,
-//         budgetId: null,
-//         nidhiId: null,
-//         exportType: values.exportType, // 🔥 important
-//       };
+  //   const handleSearch = async (values) => {
+  //     try {
+  //       setLoading(true);
+  //  const selectedZone = zones.find(
+  //         (z) => String(z.ZONEID) === String(values.ward)
+  //       );
+  //        const payload = {
+  //         ulbId: ulbId,
+  //         fromDate: formatDate(values.fromDate),
+  //         toDate: formatDate(values.toDate),
+  //         majorCode: values.deptCode || null,
+  //         minorCode: values.ledger || null,
+  //         zoneId: values.ward || null,
+  //         zoneName: selectedZone?.ZONEENAME || null,
+  //         gramPanchayatId: null,
+  //         corpCode: null,
+  //         budgetId: null,
+  //         nidhiId: null,
+  //         exportType: values.exportType, // 🔥 important
+  //       };
 
-//       const res = await axios.post(
-//         `${BASE_URL}/api/RptRegister/transaction-report-pdf`,
-//         payload,
-//         {
-//           headers: { Authorization: `Bearer ${token}` },
-//           responseType: values.exportType === "Excel" ? "blob" : "json",
-//         },
-//       );
+  //       const res = await axios.post(
+  //         `${BASE_URL}/api/RptRegister/transaction-report-pdf`,
+  //         payload,
+  //         {
+  //           headers: { Authorization: `Bearer ${token}` },
+  //           responseType: values.exportType === "Excel" ? "blob" : "json",
+  //         },
+  //       );
 
-//       /* ================= PDF ================= */
-//       if (values.exportType === "PDF") {
-//         const pdfUrl = res.data?.pdfUrl;
+  //       /* ================= PDF ================= */
+  //       if (values.exportType === "PDF") {
+  //         const pdfUrl = res.data?.pdfUrl;
 
-//         if (pdfUrl) {
-//           window.open(pdfUrl, "_blank");
-//         } else {
-//           Swal.fire("No Data", "No records found for PDF", "warning");
-//         }
-//         return;
-//       }
+  //         if (pdfUrl) {
+  //           window.open(pdfUrl, "_blank");
+  //         } else {
+  //           Swal.fire("No Data", "No records found for PDF", "warning");
+  //         }
+  //         return;
+  //       }
 
-//       /* ================= EXCEL DOWNLOAD ================= */
-//       if (values.exportType === "Excel") {
-//         const blob = new Blob([res.data], {
-//           type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-//         });
+  //       /* ================= EXCEL DOWNLOAD ================= */
+  //       if (values.exportType === "Excel") {
+  //         const blob = new Blob([res.data], {
+  //           type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  //         });
 
-//         const url = window.URL.createObjectURL(blob);
+  //         const url = window.URL.createObjectURL(blob);
 
-//         const link = document.createElement("a");
-//         link.href = url;
-//         link.download = `Receipt_Register_${Date.now()}.xlsx`;
+  //         const link = document.createElement("a");
+  //         link.href = url;
+  //         link.download = `Receipt_Register_${Date.now()}.xlsx`;
 
-//         document.body.appendChild(link);
-//         link.click();
+  //         document.body.appendChild(link);
+  //         link.click();
 
-//         link.remove();
-//         window.URL.revokeObjectURL(url);
+  //         link.remove();
+  //         window.URL.revokeObjectURL(url);
 
-//         return;
-//       }
+  //         return;
+  //       }
 
-//       /* ================= TABLE ================= */
-//       const list = res.data?.data?.list || [];
+  //       /* ================= TABLE ================= */
+  //       const list = res.data?.data?.list || [];
 
-//       if (list.length === 0) {
-//         Swal.fire("No Data", "No records found", "warning");
-//       }
+  //       if (list.length === 0) {
+  //         Swal.fire("No Data", "No records found", "warning");
+  //       }
 
-//       setTableData(list);
-//     } catch (err) {
-//       console.error(err);
-//       Swal.fire({
-//               text: err?.response?.data?.message ,
-//             });
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
+  //       setTableData(list);
+  //     } catch (err) {
+  //       console.error(err);
+  //       Swal.fire({
+  //               text: err?.response?.data?.message ,
+  //             });
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
   const exportTransactionExcel = (rows, values, zoneName) => {
     const excelData = rows.map((item, index) => ({
       "Sr No": index + 1,
@@ -288,6 +289,7 @@ const formatDate = (date) => {
         corpCode: null,
         budgetId: null,
         nidhiId: null,
+        department: values.department
       };
 
       /* ================= PDF ================= */
@@ -350,6 +352,30 @@ const formatDate = (date) => {
       setLoading(false);
     }
   };
+
+  const fetchDepartments = async () => {
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/api/Receipt/departments`,
+        {
+          ulbid: ulbId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        },
+      );
+      setDepartments(res.data.data || []);
+    } catch (err) {
+      console.error("Department API Error:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchDepartments();
+  }, [ulbId]);
+
   return (
     <Formik initialValues={getInitialValues()} onSubmit={handleSearch}>
       {({ values, setFieldValue, resetForm }) => (
@@ -372,8 +398,8 @@ const formatDate = (date) => {
                   {/* <Row label="प्रभाग"> */}
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
-                        <Label text="प्रभाग" />
-                        <span>:</span>
+                      <Label text="प्रभाग" />
+                      <span>:</span>
                     </div>
                     <Select
                       value={values.ward || "ALL"}
@@ -400,8 +426,8 @@ const formatDate = (date) => {
                   {/* <Row label="दिनांक पासून"> */}
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
-                        <Label text="दिनांक पासून" />
-                        <span>:</span>
+                      <Label text="दिनांक पासून" />
+                      <span>:</span>
                     </div>
                     <DatePicker
                       value={values.fromDate}
@@ -413,8 +439,8 @@ const formatDate = (date) => {
                   {/* <Row label="दिनांक पर्यंत"> */}
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
-                        <Label text="दिनांक पासून" />
-                        <span>:</span>
+                      <Label text="दिनांक पासून" />
+                      <span>:</span>
                     </div>
                     <DatePicker
                       value={values.toDate}
@@ -428,8 +454,40 @@ const formatDate = (date) => {
                 <div className="grid md:grid-cols-3 gap-4">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
-                        <Label text="विभाग संकेतांक" />
-                        <span>:</span>
+                      <Label text="विभाग" />
+                      <span>:</span>
+                    </div>
+                    <Select
+                      value={values.department}
+                      onValueChange={(v) => setFieldValue("department", v)}
+                    >
+                      <SelectTrigger className="w-full overflow-hidden">
+                        <SelectValue placeholder="-- ALL --" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        <SelectItem
+
+                          value="-1"
+                        >
+                          -- ALL --
+                        </SelectItem>
+                        {departments.map((d) => (
+                          <SelectItem
+                            key={d.DEPTID}
+                            value={d.DEPTID.toString()}
+                          >
+                            {d.DEPTNAME}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                      <Label text="विभाग संकेतांक" />
+                      <span>:</span>
                     </div>
                     <SearchableSelect
                       options={glCodes.map((g) => ({
@@ -447,8 +505,8 @@ const formatDate = (date) => {
 
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
-                        <Label text="लेखाशिर्ष" />
-                        <span>:</span>
+                      <Label text="लेखाशिर्ष" />
+                      <span>:</span>
                     </div>
                     <SearchableSelect
                       options={ledgers.map((l) => ({
@@ -461,7 +519,8 @@ const formatDate = (date) => {
                       }
                     />
                   </div>
-
+                </div>
+                <div className="grid md:grid-cols-3 gap-4">
                   <div className="flex items-center gap-4">
                     <Label className="text-sm font-medium">Export To :</Label>
 

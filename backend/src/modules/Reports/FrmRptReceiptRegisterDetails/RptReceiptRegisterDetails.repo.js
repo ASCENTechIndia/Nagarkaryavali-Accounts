@@ -17,6 +17,7 @@ async function getTransactionReport(filters) {
            0 AS BudgetCode, acc.functioncode, acc.objectcode, a.nidhi_id
     FROM transview a
     INNER JOIN accountview_web acc ON a.glcode = acc.glcode AND a.accno = acc.accno AND acc.ulbid = a.ulbid
+    INNER JOIN aoac_receiptmst_def arm ON arm.num_receiptmst_trnsno = a.transno AND arm.num_receiptmst_ulbid = a.ulbid
     LEFT JOIN view_zone vz ON vz.zoneid = a.zoneid
     LEFT OUTER JOIN aoac_grampanch_def agd ON agd.num_grampanch_grampanchid = a.grampanchid
     LEFT OUTER JOIN aoac_partymst_def apd ON apd.num_partymst_partyid = a.partycode
@@ -46,6 +47,11 @@ async function getTransactionReport(filters) {
     sql += ` AND a.grampanchid = :gpId `;
     params.gpId = filters.gramPanchayatId;
   }
+
+  if (filters.department && filters.department !== "0") {
+    sql += ` AND arm.num_receiptmst_deptid = :department`;
+    params.department = filters.department;
+}
 
   // MBMC Specific
   if (filters.corpCode === "MBMC") {
