@@ -1,128 +1,126 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Receipt Register Details</title>
 
-<head>
-  <meta charset="UTF-8" />
-  <title>Receipt Register Details</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 11px;
+        padding: 5mm;
+      }
 
-    body {
-      font-family: Arial, Helvetica, sans-serif;
-      font-size: 11px;
-      padding: 5mm;
-    }
+      @page {
+        size: A4 portrait;
+        margin: 10mm;
+      }
 
-    @page {
-      size: A4 portrait;
-      margin: 10mm;
-    }
+      .header {
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid #000;
+      }
 
-    .header {
-      display: flex;
-      align-items: center;
-      border-bottom: 1px solid #000;
-    }
+      .logo {
+        width: 50px;
+      }
 
-    .logo {
-      width: 50px;
-    }
+      .main-title {
+        flex: 1;
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+      }
 
-    .main-title {
-      flex: 1;
-      text-align: center;
-      font-size: 18px;
-      font-weight: bold;
-    }
+      .sub-title {
+        text-align: center;
+        font-size: 15px;
+        font-weight: bold;
+        margin-top: 8px;
+      }
 
-    .sub-title {
-      text-align: center;
-      font-size: 15px;
-      font-weight: bold;
-      margin-top: 8px;
-    }
+      .sub-heading {
+        text-align: center;
+        font-size: 11px;
+        margin-top: 4px;
+      }
 
-    .sub-heading {
-      text-align: center;
-      font-size: 11px;
-      margin-top: 4px;
-    }
+      .main-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+        table-layout: fixed;
+      }
 
-    .main-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 12px;
-      table-layout: fixed;
-    }
+      .main-table th,
+      .main-table td {
+        border: 1px solid #000;
+        padding: 4px;
+        font-size: 10px;
+      }
 
-    .main-table th,
-    .main-table td {
-      border: 1px solid #000;
-      padding: 4px;
-      font-size: 10px;
-    }
+      .text-left {
+        text-align: left;
+      }
 
-    .text-left {
-      text-align: left;
-    }
+      .text-right {
+        text-align: right;
+      }
 
-    .text-right {
-      text-align: right;
-    }
+      .total {
+        margin-top: 8px;
+        text-align: right;
+        font-weight: bold;
+      }
 
-    .total {
-      margin-top: 8px;
-      text-align: right;
-      font-weight: bold;
-    }
+      .footer {
+        margin-top: 20px;
+        font-size: 10px;
+      }
 
-    .footer {
-      margin-top: 20px;
-      font-size: 10px;
-    }
+      .summary-table {
+        width: 35%;
+        margin-top: 10px;
+        margin-left: auto;
+        border-collapse: collapse;
+      }
 
-    .summary-table {
-      width: 35%;
-      margin-top: 10px;
-      margin-left: auto;
-      border-collapse: collapse;
-    }
+      .summary-table td {
+        border: 1px solid #000;
+        padding: 5px;
+        font-size: 11px;
+      }
 
-    .summary-table td {
-      border: 1px solid #000;
-      padding: 5px;
-      font-size: 11px;
-    }
+      .summary-table .label {
+        font-weight: bold;
+      }
 
-    .summary-table .label {
-      font-weight: bold;
-    }
+      .summary-table .amount {
+        text-align: right;
+      }
+    </style>
+  </head>
 
-    .summary-table .amount {
-      text-align: right;
-    }
-  </style>
-</head>
+  <body>
+    <div class="header">
+      <img class="logo" src="{{logo}}" />
+      <div class="main-title">{{corporationName}}</div>
+    </div>
 
-<body>
+    <div class="sub-title">{{subtitle}}</div>
 
-  <div class="header">
-    <img class="logo" src="{{logo}}" />
-    <div class="main-title">{{corporationName}}</div>
-  </div>
+    <div class="sub-heading">
+      अहवालाचा कालावधी दिनांक : {{fromDate}} पासून {{toDate}} पर्यंत.
+    </div>
 
-  <div class="sub-title">{{subtitle}}</div>
-
-  <div class="sub-heading">
-    अहवालाचा कालावधी दिनांक : {{fromDate}} पासून {{toDate}} पर्यंत.
-  </div>
-
-  <table class="main-table">
+    <!-- <table class="main-table">
     <thead>
       <tr>
         <th>कोड</th>
@@ -140,25 +138,92 @@
       </tr>
       {{/each}}
     </tbody>
-  </table>
+  </table> -->
 
-  <table class="summary-table">
-    <tr>
-      <td class="label">एकूण रक्कम</td>
-      <td class="amount">{{totalAmount}}</td>
-    </tr>
+    {{#each departments}}
 
-    <!-- <tr>
-      <td class="label">सुट रक्कम</td>
-      <td class="amount">{{sutRakkam}}</td>
-    </tr>
+    <h3 style="margin-top: 20px; margin-bottom: 6px">
+      Department : {{deptName}}
+    </h3>
 
-    <tr>
-      <td class="label">एकूण वसूल रक्कम</td>
-      <td class="amount">{{netCollectedAmount}}</td>
-    </tr> -->
-  </table>
+    <table class="main-table">
+      <thead>
+        <tr>
+          {{#if ../isDetail}}
+          <th>Date</th>
+          {{/if}} {{#if ../isDetail}}
+          <th>GL Code</th>
+          {{/if}}
 
-</body>
+          <th>Code</th>
 
+          <th>Code Name</th>
+
+          <th>Department</th>
+
+          <th>Amount</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {{#each rows}}
+
+        <tr>
+          {{#if ../../isDetail}}
+          <td>{{TRNSDATE}}</td>
+          {{/if}} {{#if ../../isDetail}}
+          <td>{{GLCODE}}</td>
+          {{/if}}
+
+          <td>{{ACCNO}}</td>
+
+          <td class="text-left">{{ACCNAME}}</td>
+
+          <td>{{DEPTNAME}}</td>
+
+          <td class="text-right">{{AMOUNT}}</td>
+        </tr>
+
+        {{/each}}
+
+        <tr>
+          <td
+            colspan="{{#if ../isDetail}}5{{else}}3{{/if}}"
+            style="font-weight: bold; text-align: right"
+          >
+            Department Total
+          </td>
+
+          <td style="font-weight: bold; text-align: right">{{total}}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    {{/each}}
+
+
+    <table class="summary-table" style="width: 60%">
+      <tr>
+        <td class="label">Department</td>
+
+        <td class="label">Amount</td>
+      </tr>
+
+      {{#each departmentSummary}}
+
+      <tr>
+        <td>{{deptName}}</td>
+
+        <td class="amount">{{total}}</td>
+      </tr>
+
+      {{/each}}
+
+      <tr>
+        <td class="label">Grand Total</td>
+
+        <td class="amount">{{totalAmount}}</td>
+      </tr>
+    </table>
+  </body>
 </html>

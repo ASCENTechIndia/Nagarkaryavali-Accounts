@@ -28,7 +28,7 @@ const initialValues = {
     wardCode: "",
     head: "",
     userId: "",
-    department: "",
+    department: "-1",
     reportType: "summary",
     exportType: "pdf",
 };
@@ -139,7 +139,16 @@ const RptReceiptRegister = () => {
                     },
                 },
             );
-            setDepartments(res.data.data || []);
+
+            const data = res.data.data || [];
+
+            const formattedData = [
+                { DEPTID: "-1", DEPTNAME: "-- ALL --" },
+                ...data
+            ]
+
+
+            setDepartments(formattedData);
         } catch (err) {
             console.error("Department API Error:", err);
         }
@@ -154,8 +163,10 @@ const RptReceiptRegister = () => {
     const handleSubmit = async (values) => {
         try {
 
+            console.log(values);
+
             // JCMC Validation
-            if (values.reportType === "JCMC") {
+            if (values.reportType === "JCMC" || values.reportType === "JCMCSC") {
                 if (!values.department || values.department === "-1") {
                     Swal.fire({
                         text: "कृपया विभाग निवडा.",

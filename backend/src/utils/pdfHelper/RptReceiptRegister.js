@@ -38,32 +38,84 @@ const RptReceiptRegisterPDFHelper = async ({ reportData, filters, corporationNam
     // ? `data:image/png;base64,${corporationLogo}`
     // : imageToBase64(path.resolve(__dirname, "../../assets/logo.png"));
 
-    let totalAmount = 0;
+    // let totalAmount = 0;
+    // let sutRakkam = 0;
+
+    // const rows = reportData.map((row) => {
+    //   const amt = Number(row.AMOUNT || 0);
+
+    //   totalAmount += amt;
+
+    //   // ACCNO for Discount Amount
+    //   if (String(row.ACCNO) === "91028290003") {
+    //     sutRakkam += amt;
+    //   }
+
+    //   return {
+    //     TRNSDATE: formatDate(row.TRNSDATE),
+    //     TRANSNO: row.TRANSNO,
+    //     DOCNO: row.DOCNO,
+    //     ACCNO: row.ACCNO,
+    //     ACCNAME: row.ACCNAME,
+    //     NARRATION: row.NARRATION,
+    //     PARTYNAME: row.PARTYNAME || "",
+    //     AMOUNT: formatNumber(amt)
+    //   };
+    // });
+
+    let grandTotal = 0;
     let sutRakkam = 0;
 
-    const rows = reportData.map((row) => {
-      const amt = Number(row.AMOUNT || 0);
+    const departmentMap = {};
 
-      totalAmount += amt;
+    reportData.forEach((row) => {
+      const deptName = row.DEPTNAME || "Unknown Department";
+      const amount = Number(row.AMOUNT || 0);
 
-      // ACCNO for Discount Amount
+      grandTotal += amount;
+
       if (String(row.ACCNO) === "91028290003") {
-        sutRakkam += amt;
+        sutRakkam += amount;
       }
 
-      return {
+      if (!departmentMap[deptName]) {
+        departmentMap[deptName] = {
+          deptName,
+          total: 0,
+          rows: [],
+        };
+      }
+
+      departmentMap[deptName].rows.push({
         TRNSDATE: formatDate(row.TRNSDATE),
-        TRANSNO: row.TRANSNO,
-        DOCNO: row.DOCNO,
+        GLCODE: row.GLCODE,
         ACCNO: row.ACCNO,
         ACCNAME: row.ACCNAME,
+        DEPTNAME: deptName,
+        AMOUNT: formatNumber(amount),
+        TRANSNO: row.TRANSNO,
+        DOCNO: row.DOCNO,
         NARRATION: row.NARRATION,
         PARTYNAME: row.PARTYNAME || "",
-        AMOUNT: formatNumber(amt)
-      };
+      });
+
+      departmentMap[deptName].total += amount;
     });
 
-    const netCollectedAmount = totalAmount - sutRakkam;
+    const departments = Object.values(departmentMap).map((d) => ({
+      deptName: d.deptName,
+      rows: d.rows,
+      total: formatNumber(d.total),
+    }));
+
+    const departmentSummary = Object.values(departmentMap).map((d) => ({
+      deptName: d.deptName,
+      total: formatNumber(d.total),
+    }));
+
+    const netCollectedAmount = grandTotal - sutRakkam;
+
+    // const netCollectedAmount = totalAmount - sutRakkam;
 
     const subtitle =
       filters.rptType === "1"
@@ -76,11 +128,14 @@ const RptReceiptRegisterPDFHelper = async ({ reportData, filters, corporationNam
       fromDate: formatDate(filters.fromDate),
       toDate: formatDate(filters.toDate),
       zoneName: filters.zoneName || "All",
-      rows,
+      // rows,
+      departments,
+      departmentSummary,
 
-      totalAmount: formatNumber(totalAmount),
+      totalAmount: formatNumber(grandTotal),
       sutRakkam: formatNumber(sutRakkam),
       netCollectedAmount: formatNumber(netCollectedAmount),
+      isDetail: filters.rptType === "1",
 
       currentDate: new Date().toLocaleString("en-IN"),
       subtitle
