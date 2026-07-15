@@ -10,14 +10,17 @@ async function getTransactionReport(filters) {
     toDate: filters.toDate
   };
 
+
+
   let sql = `
-    SELECT a.trnsdate, a.transno, a.docno, a.glcode, acc.glname, a.accno, acc.accname, 
+    SELECT a.trnsdate, a.transno, a.docno, a.glcode, acc.glname, a.accno, acc.accname, d.deptname,
            vz.zoneename, agd.var_grampanch_grampanch AS grampanch, a.amount, 
            a.narration, apd.var_partymst_partyname AS partyname, 
            0 AS BudgetCode, acc.functioncode, acc.objectcode, a.nidhi_id
     FROM transview a
     INNER JOIN accountview_web acc ON a.glcode = acc.glcode AND a.accno = acc.accno AND acc.ulbid = a.ulbid
     INNER JOIN aoac_receiptmst_def arm ON arm.num_receiptmst_trnsno = a.transno AND arm.num_receiptmst_ulbid = a.ulbid
+    LEFT JOIN vw_accdeptconfig d ON d.deptid = arm.num_receiptmst_deptid AND d.ulbid = arm.num_receiptmst_ulbid
     LEFT JOIN view_zone vz ON vz.zoneid = a.zoneid
     LEFT OUTER JOIN aoac_grampanch_def agd ON agd.num_grampanch_grampanchid = a.grampanchid
     LEFT OUTER JOIN aoac_partymst_def apd ON apd.num_partymst_partyid = a.partycode
@@ -48,10 +51,17 @@ async function getTransactionReport(filters) {
     params.gpId = filters.gramPanchayatId;
   }
 
-  if (filters.department && filters.department !== "0") {
+  const hasDepartment =
+    filters.department &&
+    filters.department !== "-1" &&
+    filters.department !== "" &&
+    filters.department !== null &&
+    filters.department !== undefined;
+
+  if (hasDepartment) {
     sql += ` AND arm.num_receiptmst_deptid = :department`;
     params.department = filters.department;
-}
+  }
 
   // MBMC Specific
   if (filters.corpCode === "MBMC") {
@@ -80,7 +90,7 @@ async function getNidhiConfig(budgetId, ulbId) {
       AND ulbid = :ulbId
     ORDER BY nidhiname
   `;
-  
+
   const result = await executeQuery(sql, { budgetId, ulbId });
   if (!result.success) throw new Error(result.error);
   return result.rows;
@@ -211,7 +221,7 @@ async function getDailyTransactionReport(filters) {
 async function getOpeningBalance(filters) {
   // Define the Account SubType IDs based on your Enum
   const cashBankSubTypes = [4821, 4822, 4823, 4830, 4810, 4820];
-  
+
   // Params object for binding
   let params = {
     ulbId: filters.ulbId,
@@ -266,7 +276,7 @@ async function getOpeningBalance(filters) {
 
   const result = await executeQuery(sql, params);
   if (!result.success) throw new Error(result.error);
-  
+
   // Return the single balance value
   return result.rows.length > 0 ? result.rows[0].CLOSING_BALANCE : 0;
 }
@@ -274,6 +284,6 @@ async function getOpeningBalance(filters) {
 module.exports = {
   getDailyTransactionReport,
   getOpeningBalance,
-  getTransactionReport, 
+  getTransactionReport,
   getNidhiConfig,
 };

@@ -132,8 +132,16 @@
 
   <div class="sub-heading">
     अहवालाचा कालावधी दिनांक : {{fromDate}} पासून {{toDate}} पर्यंत.
-    झोन : {{zoneName}}
   </div>
+
+  <h3 style="margin-top: 15px; margin-bottom: 1px">
+    प्रभाग : {{zoneName}}
+  </h3>
+
+  {{#each departments}}
+  <h3 style="margin-top: 5px; margin-bottom: 1px">
+    Department : {{deptName}}
+  </h3>
 
   <table class="main-table">
     <thead>
@@ -150,7 +158,9 @@
     </thead>
 
     <tbody>
+
       {{#each rows}}
+
       <tr>
         <td>{{TRNSDATE}}</td>
         <td>{{TRANSNO}}</td>
@@ -161,10 +171,23 @@
         <td class="text-left">{{PARTYNAME}}</td>
         <td class="text-right">{{AMOUNT}}</td>
       </tr>
-      {{/each}}
-    </tbody>
-  </table>
 
+      {{/each}}
+
+      <!-- Department Total -->
+      <tr>
+        <td colspan="7" style="text-align:right;font-weight:bold;">
+          Department Total
+        </td>
+        <td class="text-right" style="font-weight:bold;">
+          {{total}}
+        </td>
+      </tr>
+
+    </tbody>
+   
+  </table>
+ {{/each}}
 
   <table class="summary-table">
     <thead>
