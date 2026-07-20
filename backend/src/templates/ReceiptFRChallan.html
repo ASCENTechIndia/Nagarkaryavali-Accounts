@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="mr">
+
+<head>
+    <meta charset="UTF-8">
+
+    <title>
+        मालमत्ता कर वसुली रक्कमा जमा करायचे चलन
+    </title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+       @page {
+    size: A4 portrait;
+    margin: 5mm;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.page {
+    min-height: 287mm;
+    border: 1px solid #000;
+    padding: 8px;
+    position: relative;
+}
+
+        .header {
+            position: relative;
+            margin-bottom: 15px;
+            min-height: 80px;
+        }
+
+        .logo {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+
+        .report-date {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+
+        .collection-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        .collection-table th,
+        .collection-table td {
+            border: 1px solid #000;
+            padding: 4px 6px;
+            vertical-align: middle;
+        }
+
+        .collection-table th {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .srno {
+            width: 8%;
+            text-align: center;
+        }
+
+        .ledger {
+            width: 18%;
+            text-align: center;
+        }
+
+        .particular {
+            width: 49%;
+        }
+
+        .amount {
+            width: 25%;
+            text-align: right;
+        }
+
+        .summary-row {
+            font-weight: bold;
+        }
+
+        .summary-label {
+            text-align: right;
+            padding-right: 10px;
+        }
+
+        .amount-words {
+            font-weight: bold;
+        }
+
+
+        .footer {
+            margin-top: 30px;
+            border-top: 1px solid #000;
+            padding-top: 6px;
+
+            display: flex;
+            justify-content: space-between;
+
+            font-size: 11px;
+        }
+
+        .summary-table {
+            width: 50%;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            border-collapse: collapse;
+            margin-left: auto;
+        }
+
+        .summary-table th,
+        .summary-table td {
+            border: 1px solid #000;
+            padding: 6px 8px;
+        }
+
+        .summary-table th {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .summary-table td:first-child {
+            text-align: left;
+        }
+
+        .summary-table td:last-child {
+            text-align: right;
+        }
+
+        .forward-section {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    margin-top: 18px;
+    margin-bottom: 24px;
+    font-size: 14px;
+}
+
+.forward-section .line {
+    width: 120px;
+    border-bottom: 1px solid #000;
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+.forward-text {
+    flex: 1;
+    line-height: 1.5;
+}
+
+.forward-text2{
+    width: 85%;
+    text-align: right;
+    font-weight: bold;
+    font-size: 15px;
+    margin-top: 40px;  
+    padding-right: 20px; 
+
+}
+ 
+
+        .footer-section {
+    width: 100%;
+    border-top: 1px solid #000;
+    display: table;
+    table-layout: fixed;
+    margin-top: 8px;
+    height: 180px;
+}
+
+.footer-left,
+.footer-right {
+    display: table-cell;
+    width: 50%;
+    position: relative;
+    vertical-align: top;
+    padding: 10px;
+}
+
+.footer-left {
+    border-right: 1px solid #000;
+}
+
+
+.footer-title {
+    font-size: 15px;
+    font-weight: bold;
+    text-decoration: underline;
+    margin-bottom: 10px;
+}
+
+.footer-text {
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.right-text {
+    text-align: center;
+}
+
+
+.footer-sign {
+    bottom: 15px;
+    text-align: center;
+    font-weight: bold;
+   margin-top: 90px;
+    line-height: 1.7;
+}
+    </style>
+
+</head>
+
+<body>
+
+    <div class="page">
+
+        <div class="header">
+
+            <img src="{{corporationLogo}}" class="logo" />
+
+            <div class="title">
+                {{corporationName}}
+            </div>
+
+            <div class="subtitle">
+                सरदार वल्लभ भाई पटेल टॉवर, प्रशासकीय इमारत
+            </div>
+
+            <div class="subtitle">
+                फोन:०२५७-२२२२२६१, ६२, ६३, ६४, ६५ फॅक्स: २२२२२६०
+            </div>
+
+             <div class="subtitle">
+                वसुलीच्या रकमा रवाना करण्यासाठी चलन 
+            </div>
+
+            <div class="subtitle">
+                विभागाचे नाव : {{deptName}}
+            </div>
+           
+
+            <div class="report-date">
+            दिनांक : {{fromDate}}
+            </div>
+
+        </div>
+
+
+        <table class="collection-table">
+
+            <thead>
+                <tr>
+                    <th class="srno">अ.</th>
+                    <th class="ledger">लेखा कोड</th>
+                    <th class="particular">कराचे नाव</th>
+                    <th class="amount">रक्कम रुपये</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {{#each rows}}
+                <tr>
+                    <td class="srno">{{srNo}}</td>
+                    <td class="ledger">{{ledgerCode}}</td>
+                    <td class="particular">{{particular}}</td>
+                    <td class="amount">{{amount}}</td>
+                </tr>
+                {{/each}}
+
+                <tr class="summary-row">
+                    <td></td>
+                    <td></td>
+                    <td>एकुण (१ ते 8) </td>
+                    <td class="amount">{{totalWithoutDiscount}}</td>
+                </tr>
+
+
+                <tr class="summary-row">
+                    <td></td>
+                    <td></td>
+                    <td>एकूण अक्षरी रक्कम रुपये</td>
+                    <td class="amount-words">{{amountInWords}}</td>
+                </tr>
+                
+            </tbody>
+            
+
+
+        </table>
+
+        <div class="forward-section">
+    <span class="line"></span>
+
+    <span class="forward-text">
+        यांचे कडील तपासणीसाठी व महापालिकेचे फंडास जमा करण्यासाठी रुपये
+        <span >{{totalWithDiscount}}</span>
+        पाठविले.
+    </span>
+    
+</div>
+        <div class="forward-section">
+
+    <span class="forward-text2">
+       वसुली कारकुन
+    </span>
+    
+</div>
+
+
+
+       <div class="footer-section">
+
+    <!-- LEFT -->
+    <div class="footer-left">
+
+
+
+        <div class="footer-text">
+            तपासणी केली आणि वसुलीच्या रजिस्टरातील नोंदी पावत्यांच्या दुसऱ्या प्रतीबरोबर
+            तपासून पहिच्यावर रजिस्टरमध्ये दिलेली एकूण रक्कम बरोबर आढळली.
+        </div>
+
+        <div class="footer-sign">
+            <div>अधीक्षक / निरीक्षक</div>
+            <div>जळगाव शहर महानगरपालिका, जळगाव</div>
+        </div>
+
+    </div>
+
+    <!-- RIGHT -->
+
+    <div class="footer-right">
+
+        <div class="footer-text right-text">
+            मिळालेली रक्कम रुपये<br>
+            तपासून पहिले व नोंद केली
+        </div>
+
+        <div class="footer-sign">
+            <div>लेखापाल</div>
+            <div>जळगाव शहर</div>
+        </div>
+
+    </div>
+
+</div>
+
+
+    </div>
+
+</body>
+
+</html>

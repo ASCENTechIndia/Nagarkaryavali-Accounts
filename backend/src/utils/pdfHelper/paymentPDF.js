@@ -19,8 +19,16 @@ const imageToBase64 = (imgPath) => {
   }
 };
 
+// Handlebars.registerHelper("formatChequeNo", (num) => {
+//   return String(num || "").padStart(6, "");
+// });
+
 Handlebars.registerHelper("formatChequeNo", (num) => {
-  return String(num || "").padStart(6, "0");
+  if (num === null || num === undefined || num === "") {
+    return "";
+  }
+
+  return String(num).padStart(6, "0");
 });
 
 const generatePaymentPDF = async ({ data, corporationName, corporationLogo }) => {
