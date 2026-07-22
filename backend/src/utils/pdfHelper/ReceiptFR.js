@@ -187,7 +187,7 @@ const fixedLedgers = [
 
 // Group API data by ledger code
 const ledgerMap = reportData.reduce((acc, row) => {
-    const code = String(row.ACCNO || row.GLCODE || "").trim();
+    const code = String(row.OBJECTCODE || row.GLCODE || "").trim();
 
     acc[code] = (acc[code] || 0) + Number(row.AMOUNT || row.amount || 0);
 
