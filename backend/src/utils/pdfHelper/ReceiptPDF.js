@@ -153,7 +153,7 @@ const imageToBase64 = (imgPath) => {
   }
 };
 
-const generateReceiptPDF = async ({ data, corporationName, corporationLogo, transNo }) => {
+const generateReceiptPDF = async ({ data, corporationName, corporationLogo, transNo, userId }) => {
   try {
     const templatePath = path.resolve(__dirname, "../../templates/Receipt.html");
 
@@ -178,14 +178,25 @@ const generateReceiptPDF = async ({ data, corporationName, corporationLogo, tran
         amount: Number(row.AMOUNT).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
         taxac: row.TAXACCCNO,
         taxname: row.TAXNAME,
-        remarks : row.REMARKS
+        remarks: row.REMARKS
       };
     });
 
     const discount = Number(data?.[0]?.DISCOUNTAMOUNT || 0);
     const netTotal = total - discount;
 
-    const amountWords = numberToMarathiWords(netTotal) ;
+    const amountWords = numberToMarathiWords(netTotal);
+
+    const currentTimestamp = new Date().toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
+
     const html = template({
       rows,
       total: total.toFixed(2),
@@ -196,9 +207,12 @@ const generateReceiptPDF = async ({ data, corporationName, corporationLogo, tran
       date: formatDate(data[0].TRANSDATE),
       trnstype: data[0].TRANSTYPE,
       zone: data[0].ZONEENAME,
+      deptname: data[0].DEPTNAME,
       logo,
       corporationName,
-      transNo
+      transNo,
+      userId,
+      currentTimestamp
     });
 
     // const browser = await puppeteer.launch({

@@ -81,6 +81,7 @@ exports.getBudgetHeads = asyncHandler(async (req, res) => {
 
 exports.getReceiptPDF = asyncHandler(async (req, res) => {
   const payload = req.body;
+  console.log("userId", payload)
 
   const data = await service.getReceiptPdfData(payload);
 
@@ -92,7 +93,8 @@ exports.getReceiptPDF = asyncHandler(async (req, res) => {
     data,
     corporationName: corpInfo.ABC_MUNICIPAL_TEXT || "",
     corporationLogo: corpInfo.ULBLOGO || "",
-    transNo: payload.transNo
+    transNo: payload.transNo,
+    userId: payload.userId
   });
 
   const baseUrl = `${req.protocol}://${req.get("host")}`;

@@ -127,6 +127,22 @@ body {
   text-align: right;
   padding: 40px 20px 20px;
 }
+/* FOOTER BOTTOM FLEXBOX LAYOUT */
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 10px;
+}
+
+.footer-left,
+.footer-center {
+  font-size: 10px;
+}
+
+.footer-center {
+  text-align: center;
+}
 </style>
 </head>
 
@@ -153,7 +169,8 @@ body {
     <!-- INFO -->
     <div class="info">
       <div class="info-left">
-        <b>प्रभाग</b> : {{zone}}
+        <b>प्रभाग</b> : {{zone}} </br>
+        <b>विभाग</b> : {{deptname}}
       </div>
 
       <div class="info-right">
@@ -213,17 +230,30 @@ body {
   </table>
 
   <!-- FOOTER -->
+  <!-- FOOTER -->
   <div class="footer">
     <div class="words">
       रक्कम (अक्षरात) : {{amountWords}}
     </div>
 
-    <div class="sign">
-      <div class="bold">कर अधिक्षक</div>
-      <div class="bold">{{corporationName}}</div>
+    <div class="footer-bottom">
+      <!-- LEFT: User ID -->
+      <div class="footer-left">
+        <b>User ID:</b> {{userId}}
+      </div>
+
+      <!-- MIDDLE: Timestamp -->
+      <div class="footer-center">
+        <b>दिनांक / वेळ:</b> {{currentTimestamp}}
+      </div>
+
+      <!-- RIGHT: Signature (Kept intact) -->
+      <div class="sign" style="padding: 0;">
+        <div class="bold">कर अधिक्षक</div>
+        <div class="bold">{{corporationName}}</div>
+      </div>
     </div>
   </div>
-
 </div>
 
 </body>

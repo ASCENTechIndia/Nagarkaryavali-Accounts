@@ -28,6 +28,7 @@ const FrmTransAuthMst = () => {
   const { user } = useAuth();
   const token = user?.token;
   const ulbId = user?.ulbId;
+  const userId = user?.userId;
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -284,7 +285,8 @@ const FrmTransAuthMst = () => {
             {
               refno: refNo,
               ulbid: currentUlbId,
-              transNo: transNo
+              transNo: transNo,
+              userId: userId,
             },
             {
               headers: {

@@ -32,6 +32,7 @@ const FrmReceiptReprint = () => {
   const { user } = useAuth();
   const token = user?.token;
   const ulbId = user?.ulbId;
+  const userId = user?.userId;
   const navigate = useNavigate();
   const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -111,7 +112,8 @@ const FrmReceiptReprint = () => {
         {
           refno: row.REFNO,
           ulbid: Number(ulbId),
-          transNo: row.TRNSNO
+          transNo: row.TRNSNO,
+          userId: userId,
         },
         {
           headers: {
