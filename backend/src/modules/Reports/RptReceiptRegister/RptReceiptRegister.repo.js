@@ -321,9 +321,6 @@ const getReceiptRegisterUserWise = async (params) => {
               ON num_receiptmst_trnsno = a.transno
              AND num_receiptmst_ulbid = a.ulbid
 
-          INNER JOIN aoac_receiptdet_def rd
-       ON rd.num_receiptdet_refno = aoac_receiptmst_def.num_receiptmst_refno
-
           LEFT JOIN view_zone vz
               ON vz.zoneid = a.zoneid
 
@@ -338,7 +335,14 @@ const getReceiptRegisterUserWise = async (params) => {
             AND a.amount > 0
             AND a.trnstypeid IN (1,2)
             AND a.ulbid = :UlbId
-           AND aoac_receiptmst_def.num_receiptmst_deptid = :department
+            AND aoac_receiptmst_def.num_receiptmst_deptid = :department
+            AND EXISTS
+            (
+                SELECT 1
+                FROM aoac_receiptdet_def rd
+                WHERE rd.num_receiptdet_refno =
+                      aoac_receiptmst_def.num_receiptmst_refno
+            )
     `;
 
     if (params.userId && params.userId !== "0") {
@@ -402,12 +406,15 @@ const getReceiptRegisterUserWise = async (params) => {
 };
 
 
+
 const getReceiptRegisterProperty = async (params) => {
   try {
     const bindParams = {
       FromDate: params.fromDate,
       ToDate: params.toDate,
       UlbId: params.ulbId,
+      department: params.department,
+
     };
 
     let query = `
@@ -489,6 +496,7 @@ const getReceiptRegisterProperty = async (params) => {
             AND a.amount > 0
             AND a.trnstypeid IN (1,2)
             AND a.ulbid = :UlbId
+            AND rmst.num_receiptmst_deptid = :department
     `;
 
     if (params.userId && params.userId !== "0") {
