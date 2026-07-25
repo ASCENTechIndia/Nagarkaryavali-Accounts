@@ -1065,14 +1065,14 @@ const FrmReceiptJcmcSC = () => {
         return;
       }
 
-      if (!values.totalAmount) {
-        Swal.fire({
-          text: "एकूण रक्कम रिक्त असू शकत नाही",
-          confirmButtonColor: "#1e3a8a",
-        });
-        setIsSubmitting(false);
-        return;
-      }
+      // if (!values.totalAmount) {
+      //   Swal.fire({
+      //     text: "एकूण रक्कम रिक्त असू शकत नाही",
+      //     confirmButtonColor: "#1e3a8a",
+      //   });
+      //   setIsSubmitting(false);
+      //   return;
+      // }
 
       if (tableData.length === 0) {
         Swal.fire({
