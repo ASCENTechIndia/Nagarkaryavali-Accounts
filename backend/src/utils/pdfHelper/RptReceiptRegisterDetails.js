@@ -65,58 +65,101 @@ const RptReceiptRegisterDetailsPDFHelper = async ({ reportData, filters, ulbInfo
     // const netCollectedAmount = totalAmount - sutRakkam;
 
     let grandTotal = 0;
-let sutRakkam = 0;
+    let sutRakkam = 0;
 
-const departmentMap = {};
+    const departmentMap = {};
 
-reportData.forEach((row) => {
-  const deptName = row.DEPTNAME || "Unknown Department";
-  const amount = Number(row.AMOUNT || 0);
+    reportData.forEach((row) => {
+      const deptName = row.DEPTNAME || "Unknown Department";
+      const amount = Number(row.AMOUNT || 0);
 
-  grandTotal += amount;
+      grandTotal += amount;
 
-  if (String(row.ACCNO) === "91028290003") {
-    sutRakkam += amount;
-  }
+      if (String(row.ACCNO) === "91028290003") {
+        sutRakkam += amount;
+      }
 
-  if (!departmentMap[deptName]) {
-    departmentMap[deptName] = {
-      deptName,
-      total: 0,
-      rows: [],
-      srNo: 1,
-    };
-  }
+      // if (!departmentMap[deptName]) {
+      //   departmentMap[deptName] = {
+      //     deptName,
+      //     total: 0,
+      //     rows: [],
+      //     srNo: 1,
+      //     lastTransNo: null,
+      //   };
+      // }
 
-  departmentMap[deptName].rows.push({
-    SRNO: departmentMap[deptName].srNo++,
-    TRNSDATE: formatDate(row.TRNSDATE),
-    GLCODE: row.GLCODE,
-    ACCNO: row.ACCNO,
-    ACCNAME: row.ACCNAME,
-    DEPTNAME: deptName,
-    AMOUNT: formatNumber(amount),
-    TRANSNO: row.TRANSNO,
-    DOCNO: row.DOCNO,
-    NARRATION: row.NARRATION,
-    PARTYNAME: row.PARTYNAME || "",
-  });
+      // const dept = departmentMap[deptName];
 
-  departmentMap[deptName].total += amount;
-});
+      // // Increment serial number only when transaction number changes
+      // if (dept.lastTransNo !== row.TRANSNO) {
+      //   dept.lastTransNo = row.TRANSNO;
+      //   dept.currentSrNo = dept.srNo++;
+      // }
 
-const departments = Object.values(departmentMap).map((d) => ({
-  deptName: d.deptName,
-  rows: d.rows,
-  total: formatNumber(d.total),
-}));
+      // dept.rows.push({
+      //   SRNO: dept.currentSrNo,
+      //   TRNSDATE: formatDate(row.TRNSDATE),
+      //   GLCODE: row.GLCODE,
+      //   ACCNO: row.ACCNO,
+      //   ACCNAME: row.ACCNAME,
+      //   DEPTNAME: deptName,
+      //   AMOUNT: formatNumber(amount),
+      //   TRANSNO: row.TRANSNO,
+      //   DOCNO: row.DOCNO,
+      //   NARRATION: row.NARRATION,
+      //   PARTYNAME: row.PARTYNAME || "",
+      // });
 
-const departmentSummary = Object.values(departmentMap).map((d) => ({
-  deptName: d.deptName,
-  total: formatNumber(d.total),
-}));
+      if (!departmentMap[deptName]) {
+        departmentMap[deptName] = {
+          deptName,
+          total: 0,
+          rows: [],
+          srNo: 1,
+          lastTransNo: null,
+        };
+      }
 
-const netCollectedAmount = grandTotal - sutRakkam;
+      const dept = departmentMap[deptName];
+
+      let displaySrNo = "";
+
+      // Show serial number only for first occurrence of a transaction
+      if (dept.lastTransNo !== row.TRANSNO) {
+        dept.lastTransNo = row.TRANSNO;
+        displaySrNo = dept.srNo++;
+      }
+
+      dept.rows.push({
+        SRNO: displaySrNo,
+        TRNSDATE: formatDate(row.TRNSDATE),
+        GLCODE: row.GLCODE,
+        ACCNO: row.ACCNO,
+        ACCNAME: row.ACCNAME,
+        DEPTNAME: deptName,
+        AMOUNT: formatNumber(amount),
+        TRANSNO: row.TRANSNO,
+        DOCNO: row.DOCNO,
+        NARRATION: row.NARRATION,
+        PARTYNAME: row.PARTYNAME || "",
+      });
+
+      departmentMap[deptName].total += amount;
+    });
+
+    const departments = Object.values(departmentMap).map((d) => ({
+      deptName: d.deptName,
+      rows: d.rows,
+      total: formatNumber(d.total),
+    }));
+
+    const departmentSummary = Object.values(departmentMap).map((d) => ({
+      deptName: d.deptName,
+      total: formatNumber(d.total),
+    }));
+
+    const netCollectedAmount = grandTotal - sutRakkam;
 
     // const html = template({
     //   logo: ulbInfo.ULBLOGO,
@@ -134,24 +177,24 @@ const netCollectedAmount = grandTotal - sutRakkam;
     // });
 
     const html = template({
-  logo: ulbInfo.ULBLOGO,
-  corporationName: ulbInfo.ABC_MUNICIPAL_TEXT,
+      logo: ulbInfo.ULBLOGO,
+      corporationName: ulbInfo.ABC_MUNICIPAL_TEXT,
 
-  fromDate: formatDate(filters.fromDate),
-  toDate: formatDate(filters.toDate),
-  zoneName: filters.zoneName || "All",
+      fromDate: formatDate(filters.fromDate),
+      toDate: formatDate(filters.toDate),
+      zoneName: filters.zoneName || "All",
 
-  departments,
-  departmentSummary,
+      departments,
+      departmentSummary,
 
-  totalAmount: formatNumber(grandTotal),
-  sutRakkam: formatNumber(sutRakkam),
-  netCollectedAmount: formatNumber(netCollectedAmount),
+      totalAmount: formatNumber(grandTotal),
+      sutRakkam: formatNumber(sutRakkam),
+      netCollectedAmount: formatNumber(netCollectedAmount),
 
-  isDetail: true,
+      isDetail: true,
 
-  currentDate: new Date().toLocaleString("en-IN")
-});
+      currentDate: new Date().toLocaleString("en-IN")
+    });
 
     const chromePath = path.resolve(
       __dirname,
