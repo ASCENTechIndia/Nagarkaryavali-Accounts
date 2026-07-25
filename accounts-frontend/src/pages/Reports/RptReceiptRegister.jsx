@@ -406,7 +406,7 @@ const RptReceiptRegister = () => {
                             <Card className="border shadow-sm">
                                 <CardHeader className="border-b">
                                     <CardTitle className="text-lg font-semibold">
-                                        पावती रजिस्टर सारांश
+                                        पावती रजिस्टर सारांश/चलान
                                     </CardTitle>
                                 </CardHeader>
 
