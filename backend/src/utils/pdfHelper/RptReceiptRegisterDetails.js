@@ -84,10 +84,12 @@ reportData.forEach((row) => {
       deptName,
       total: 0,
       rows: [],
+      srNo: 1,
     };
   }
 
   departmentMap[deptName].rows.push({
+    SRNO: departmentMap[deptName].srNo++,
     TRNSDATE: formatDate(row.TRNSDATE),
     GLCODE: row.GLCODE,
     ACCNO: row.ACCNO,

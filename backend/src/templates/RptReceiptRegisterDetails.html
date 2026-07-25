@@ -146,12 +146,13 @@
   <table class="main-table">
     <thead>
       <tr>
-        <th style="width:10%">तारीख</th>
-        <th style="width:14%">व्यवहार क्र</th>
+        <th style="width:4%">अ.क्र.</th>
+        <th style="width:9%">तारीख</th>
+        <th style="width:13%">व्यवहार क्र</th>
         <th style="width:13%">चलन/पावती क्र.</th>
         <th style="width:12%">लेखा कोड</th>
         <th style="width:18%">लेखा नाव</th>
-        <th style="width:14%">तपशील</th>
+        <th style="width:12%">तपशील</th>
         <th style="width:11%">पार्टी</th>
         <th style="width:8%">रक्कम</th>
       </tr>
@@ -162,6 +163,7 @@
       {{#each rows}}
 
       <tr>
+        <td>{{SRNO}}</td>
         <td>{{TRNSDATE}}</td>
         <td>{{TRANSNO}}</td>
         <td>{{DOCNO}}</td>
@@ -176,7 +178,7 @@
 
       <!-- Department Total -->
       <tr>
-        <td colspan="7" style="text-align:right;font-weight:bold;">
+        <td colspan="8" style="text-align:right;font-weight:bold;">
           Department Total
         </td>
         <td class="text-right" style="font-weight:bold;">
