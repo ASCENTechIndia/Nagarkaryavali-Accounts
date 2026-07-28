@@ -332,7 +332,7 @@ const getReceiptRegisterUserWise = async (params) => {
 
           WHERE a.trnsdate >= TO_DATE(:FromDate,'YYYY-MM-DD')
             AND a.trnsdate < TO_DATE(:ToDate,'YYYY-MM-DD') + 1
-            AND a.amount > 0
+            AND a.amount >= 0
             AND a.trnstypeid IN (1,2)
             AND a.ulbid = :UlbId
             AND aoac_receiptmst_def.num_receiptmst_deptid = :department
@@ -493,7 +493,7 @@ const getReceiptRegisterProperty = async (params) => {
 
           WHERE a.trnsdate >= TO_DATE(:FromDate,'YYYY-MM-DD')
             AND a.trnsdate < TO_DATE(:ToDate,'YYYY-MM-DD') + 1
-            AND a.amount > 0
+            AND a.amount >= 0
             AND a.trnstypeid IN (1,2)
             AND a.ulbid = :UlbId
             AND rmst.num_receiptmst_deptid = :department
