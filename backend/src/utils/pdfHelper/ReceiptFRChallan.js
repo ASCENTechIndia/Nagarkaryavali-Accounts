@@ -28,6 +28,11 @@ const numberToWords = (num) => {
 };
 
 const numberToMarathiWords = (num) => {
+    if (!num || Number(num) === 0) {
+    return "शून्य (निरंक - Nil)";
+  }
+
+
     const units = [
         "",
         "एक",
