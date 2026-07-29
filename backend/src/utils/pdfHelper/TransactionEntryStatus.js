@@ -78,25 +78,6 @@ const TransactionEntryStatusPDFHelper = async ({
         });
 
 
-        // const browser = await puppeteer.launch({
-        //   headless: true,
-        //   args: ["--no-sandbox"],
-        // });
-
-        // const page = await browser.newPage();
-
-        // await page.setContent(html, {
-        //   waitUntil: "networkidle0",
-        // });
-
-        // const pdfBuffer = await page.pdf({
-        //   format: "A4",
-        //   landscape: true,
-        //   printBackground: true,
-        // });
-
-        // await browser.close();
-
         const chromePath = path.resolve(
             __dirname,
             "../../../node_modules/puppeteer/.cache/puppeteer/chrome/win64-135.0.7049.84/chrome-win64/chrome.exe"

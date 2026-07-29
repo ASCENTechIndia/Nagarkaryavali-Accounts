@@ -8,14 +8,12 @@ const {
 
 const { getCorporationService } = require("../../MenuAccess/MenuAccess.service");
 
-//---------------- USER LIST ----------------//
 
 const getUserList = asyncHandler(async (req, res) => {
   const response = await service.getUserListService(req.body);
   res.json(response);
 });
 
-//---------------- REPORT ----------------//
 
 const getTransactionEntryStatusReport = asyncHandler(async (req, res) => {
   const result = await service.getTransactionEntryStatusReportService(req.body);
@@ -34,8 +32,6 @@ const getTransactionEntryStatusReport = asyncHandler(async (req, res) => {
     data: result,
   });
 });
-
-//---------------- PDF ----------------//
 
 const generateTransactionEntryStatusPDF = asyncHandler(async (req, res) => {
   try {

@@ -1,17 +1,15 @@
 const express = require("express");
 const router = express.Router();
-
+const auth = require("../../../middlewares/auth.middleware");
 const controller = require("./FrmTransactionEntryStatusRpt.controller");
 
-// Dropdown
-router.post("/username-list", controller.getUserList);
 
-// Report
-router.post("/report", controller.getTransactionEntryStatusReport);
+router.post("/username-list", auth(), controller.getUserList);
 
-// PDF
+router.post("/report", auth(),  controller.getTransactionEntryStatusReport);
+
 router.post(
-  "/generate-transaction-entry-status-pdf",
+  "/generate-transaction-entry-status-pdf", auth(),
   controller.generateTransactionEntryStatusPDF
 );
 

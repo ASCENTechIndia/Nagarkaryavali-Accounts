@@ -26,10 +26,8 @@ const initialValues = {
   fromDate: new Date(),
   toDate: new Date(),
   wardCode: "",
-  head: "",
   userId: "",
   department: "-1",
-  reportType: "summary",
   exportType: "pdf",
 };
 
@@ -44,8 +42,6 @@ const FrmTransactionEntryStatusRpt = () => {
 
   const [zoneList, setZoneList] = useState([]);
   const [userList, setUserList] = useState([]);
-  const [glList, setGlList] = useState([]);
-  const [partyList, setPartyList] = useState([]);
   const [departments, setDepartments] = useState([]);
 
   const fetchZones = async () => {
@@ -71,7 +67,7 @@ const FrmTransactionEntryStatusRpt = () => {
       const res = await axios.post(
         `${BASE_URL}/api/FrmTransactionEntryStatusRpt/username-list`,
         {
-          ulbId: ulbId
+          ulbId: ulbId,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -85,7 +81,6 @@ const FrmTransactionEntryStatusRpt = () => {
       console.error("User API Error:", err);
     }
   };
-
 
   const fetchDepartments = async () => {
     try {
@@ -117,375 +112,189 @@ const FrmTransactionEntryStatusRpt = () => {
     fetchDepartments();
   }, [ulbId]);
 
-//   const handleSubmit = async (values) => {
-//     try {
-//       console.log(values);
+  const handleSubmit = async (values) => {
+    try {
+      console.log(values);
 
-//       // JCMC Validation
-//       if (values.reportType === "JCMC" || values.reportType === "JCMCSC") {
-//         if (!values.department || values.department === "-1") {
-//           Swal.fire({
-//             text: "कृपया विभाग निवडा.",
-//             confirmButtonColor: "#1e3a8a",
-//           });
-//           return;
-//         }
+      if (!values.fromDate || !values.toDate) {
+        Swal.fire({
+          text: "कृपया दिनांक श्रेणी निवडा.",
+          confirmButtonColor: "#1e3a8a",
+        });
+        return;
+      }
 
-//         // if (!values.wardCode) {
-//         //     Swal.fire({
-//         //         text: "कृपया विभाग संकेतांक निवडा.",
-//         //         confirmButtonColor: "#1e3a8a",
-//         //     });
-//         //     return;
-//         // }
+      Swal.fire({
+        title: "Processing...",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      });
 
-//         // if (!values.head) {
-//         //     Swal.fire({
-//         //         text: "कृपया लेखाशीर्ष निवडा.",
-//         //         confirmButtonColor: "#1e3a8a",
-//         //     });
-//         //     return;
-//         // }
-//       }
+      const formatDate = (date) => {
+        if (!date) return null;
+        const d = new Date(date);
+        const day = String(d.getDate()).padStart(2, "0");
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const year = d.getFullYear();
+        return `${day}-${month}-${year}`;
+      };
+      const payload = {
+        fromDate: formatDate(values.fromDate),
+        toDate: formatDate(values.toDate),
+        ulbId: ulbId.toString(),
+        zoneId: values.zoneId || "-1",
+        department: values.department || "-1",
+        userId: values.userId || "0",
+      };
 
-//       Swal.fire({
-//         title: "Processing...",
-//         allowOutsideClick: false,
-//         didOpen: () => Swal.showLoading(),
-//       });
+      if (values.exportType === "pdf") {
+        const { data } = await axios.post(
+          `${BASE_URL}/api/FrmTransactionEntryStatusRpt/generate-transaction-entry-status-pdf`,
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-//       const formatDate = (date) => {
-//         if (!date) return null;
+        Swal.close();
 
-//         const d = new Date(date);
-
-//         const year = d.getFullYear();
-//         const month = String(d.getMonth() + 1).padStart(2, "0");
-//         const day = String(d.getDate()).padStart(2, "0");
-
-//         return `${year}-${month}-${day}`;
-//       };
-
-//       const selectedZone = zoneList.find(
-//         (z) => z.ZONEID.toString() === values.zoneId,
-//       );
-
-//       const selectedDepartment = departments.find(
-//         (d) => d.DEPTID.toString() === values.department,
-//       );
-
-//       const payload = {
-//         fromDate: formatDate(values.fromDate),
-//         toDate: formatDate(values.toDate),
-//         ulbId: ulbId?.toString(),
-//         zoneId: values.zoneId || "-1",
-//         zoneName: selectedZone?.ZONEENAME || "",
-//         deptName: selectedDepartment?.DEPTNAME || "",
-//         department: values.department,
-//       };
-
-//       console.log("payload", payload);
-
-//       if (values.exportType === "pdf") {
-//         const pdfUrl =
-//           values.reportType === "JCMC" || values.reportType === "JCMCSC"
-//             ? `${BASE_URL}/api/RptReceiptRegister/receipt-register-user-wise-pdf`
-//             : `${BASE_URL}/api/RptReceiptRegister/receipt-register-report-pdf`;
-
-//         const res = await axios.post(pdfUrl, payload, {
-//           headers: { Authorization: `Bearer ${token}` },
-//         });
-
-//         Swal.close();
-
-//         if (res.data?.success) {
-//           window.open(res.data.pdfUrl, "_blank");
-//         } else {
-//           Swal.fire({
-//             text: "Failed to generate PDF",
-//             confirmButtonColor: "#1e3a8a",
-//           });
-//         }
-
-//         return;
-//       }
-
-//       const excelApi =
-//         values.reportType === "JCMC"
-//           ? `${BASE_URL}/api/RptReceiptRegister/receipt-register-user-wise`
-//           : `${BASE_URL}/api/RptReceiptRegister/receipt-register`;
-
-//       const res = await axios.post(excelApi, payload, {
-//         headers: { Authorization: `Bearer ${token}` },
-//       });
-
-//       Swal.close();
-
-//       const rows = res.data?.data?.rows || [];
-
-//       if (rows.length === 0) {
-//         Swal.fire({
-//           text: "No data found",
-//           confirmButtonColor: "#1e3a8a",
-//         });
-//         return;
-//       }
-
-//       const formatDateDisplay = (date) => {
-//         if (!date) return "";
-//         const d = new Date(date);
-//         return `${String(d.getDate()).padStart(2, "0")}-${String(
-//           d.getMonth() + 1,
-//         ).padStart(2, "0")}-${d.getFullYear()}`;
-//       };
-
-//       const formattedData =
-//         values.reportType === "JCMC"
-//           ? rows.map((item) => ({
-//               TRNSDATE: formatDateDisplay(item.TRNSDATE),
-//               USERID: item.USERID || "",
-//               GLCODE: item.GLCODE,
-//               GLNAME: item.GLNAME,
-//               ACCNO: item.ACCNO,
-//               ACCNAME: item.ACCNAME,
-//               ZONEENAME: item.ZONEENAME,
-//               FUNCTIONCODE: item.FUNCTIONCODE,
-//               OBJECTCODE: item.OBJECTCODE,
-//               AMOUNT: item.AMOUNT,
-//             }))
-//           : rows.map((item) => ({
-//               TRNSDATE: formatDateDisplay(item.TRNSDATE),
-//               GLCODE: item.GLCODE,
-//               GLNAME: item.GLNAME,
-//               ACCNO: item.ACCNO,
-//               ACCNAME: item.ACCNAME,
-//               ZONEENAME: item.ZONEENAME,
-//               FUNCTIONCODE: item.FUNCTIONCODE,
-//               OBJECTCODE: item.OBJECTCODE,
-//               AMOUNT: item.AMOUNT,
-//               BUDGETCODE: item.BUDGETCODE,
-//             }));
-
-//       const worksheet = XLSX.utils.json_to_sheet(formattedData);
-
-//       const wscols =
-//         values.reportType === "JCMC"
-//           ? [
-//               { wch: 15 }, // TRNSDATE
-//               { wch: 15 }, // USERID
-//               { wch: 10 }, // GLCODE
-//               { wch: 35 }, // GLNAME
-//               { wch: 15 }, // ACCNO
-//               { wch: 35 }, // ACCNAME
-//               { wch: 15 }, // ZONEENAME
-//               { wch: 15 }, // FUNCTIONCODE
-//               { wch: 20 }, // OBJECTCODE
-//               { wch: 15 }, // AMOUNT
-//             ]
-//           : [
-//               { wch: 15 }, // TRNSDATE
-//               { wch: 10 }, // GLCODE
-//               { wch: 30 }, // GLNAME
-//               { wch: 15 }, // ACCNO
-//               { wch: 30 }, // ACCNAME
-//               { wch: 15 }, // ZONEENAME
-//               { wch: 15 }, // FUNCTIONCODE
-//               { wch: 20 }, // OBJECTCODE
-//               { wch: 12 }, // AMOUNT
-//               { wch: 15 }, // BUDGETCODE
-//             ];
-
-//       worksheet["!cols"] = wscols;
-
-//       const workbook = XLSX.utils.book_new();
-//       XLSX.utils.book_append_sheet(workbook, worksheet, "Receipt Register");
-
-//       const date = new Date();
-//       const timestamp = date.toISOString().split("T")[0].replace(/-/g, "");
-//       const filename = `Receipt_Register_${timestamp}.xlsx`;
-
-//       XLSX.writeFile(workbook, filename);
-//     } catch (err) {
-//       console.error("Error:", err);
-//       Swal.fire({
-//         text:
-//           err?.response?.data?.message ||
-//           err?.response?.data?.error ||
-//           "Something Went WRONG",
-//       });
-//     }
-//   };
-
-    const handleSubmit = async (values) => {
-        try {
-            console.log(values);
-
-            // Validation - Check if date range is selected
-            if (!values.fromDate || !values.toDate) {
-            Swal.fire({
-                text: "कृपया दिनांक श्रेणी निवडा.",
-                confirmButtonColor: "#1e3a8a",
-            });
-            return;
-            }
-
-            Swal.fire({
-            title: "Processing...",
-            allowOutsideClick: false,
-            didOpen: () => Swal.showLoading(),
-            });
-
-            // Format date to DD-MM-YYYY (as expected by backend)
-            const formatDate = (date) => {
-            if (!date) return null;
-            const d = new Date(date);
-            const day = String(d.getDate()).padStart(2, "0");
-            const month = String(d.getMonth() + 1).padStart(2, "0");
-            const year = d.getFullYear();
-            return `${day}-${month}-${year}`;
-            };
-
-            // Prepare payload for API
-            const payload = {
-            fromDate: formatDate(values.fromDate),
-            toDate: formatDate(values.toDate),
-            ulbId: ulbId?.toString(),
-            zoneId: values.zoneId || "-1",
-            department: values.department || "-1",
-            userId: values.userId || "0"
-            };
-
-            console.log("Payload:", payload);
-
-            // Check if export type is PDF
-            if (values.exportType === "pdf") {
-            // PDF API call
-            const pdfUrl = `${BASE_URL}/api/FrmTransactionEntryStatusRpt/generate-transaction-entry-status-pdf`;
-
-            const res = await axios.post(pdfUrl, payload, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-
-            Swal.close();
-
-            if (res.data?.success) {
-                // Open PDF in new tab
-                window.open(res.data.pdfUrl, "_blank");
-            } else {
-                Swal.fire({
-                text: res.data?.message || "Failed to generate PDF",
-                confirmButtonColor: "#1e3a8a",
-                });
-            }
-            return;
-            }
-
-            // Excel Report API call
-            const excelApi = `${BASE_URL}/api/FrmTransactionEntryStatusRpt/report`;
-
-            const res = await axios.post(excelApi, payload, {
-            headers: { Authorization: `Bearer ${token}` },
-            });
-
-            Swal.close();
-
-            // Check if data exists
-            const rows = res.data?.data?.rows || [];
-
-            if (rows.length === 0) {
-            Swal.fire({
-                text: "No data found for the selected criteria",
-                confirmButtonColor: "#1e3a8a",
-            });
-            return;
-            }
-
-            // Format date for display in Excel
-            const formatDateDisplay = (date) => {
-            if (!date) return "";
-            const d = new Date(date);
-            return `${String(d.getDate()).padStart(2, "0")}-${String(
-                d.getMonth() + 1
-            ).padStart(2, "0")}-${d.getFullYear()}`;
-            };
-
-            // Format data for Excel
-            const formattedData = rows.map((item) => ({
-            "Transaction Date": formatDateDisplay(item.TRNSDATE),
-            "Zone/Division": item.PRABHAGNAME || "",
-            "Department": item.VIBHAGNAME || "",
-            "User ID": item.USERID || "",
-            "Receipt No": item.RECNO || "",
-            "Transaction No": item.TRANSNO || "",
-            "Count": item.CNT || 0,
-            "Amount": item.AMOUNT || 0
-            }));
-
-            // Create worksheet
-            const worksheet = XLSX.utils.json_to_sheet(formattedData);
-
-            // Set column widths
-            const wscols = [
-            { wch: 18 }, // Transaction Date
-            { wch: 20 }, // Zone/Division
-            { wch: 20 }, // Department
-            { wch: 12 }, // User ID
-            { wch: 15 }, // Receipt No
-            { wch: 15 }, // Transaction No
-            { wch: 12 }, // Count
-            { wch: 15 }, // Amount
-            ];
-
-            worksheet["!cols"] = wscols;
-
-            // Create workbook
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(
-            workbook,
-            worksheet,
-            "Transaction Entry Status"
-            );
-
-            // Generate filename with timestamp
-            const now = new Date();
-            const timestamp = 
-            now.getFullYear() +
-            String(now.getMonth() + 1).padStart(2, "0") +
-            String(now.getDate()).padStart(2, "0") +
-            "_" +
-            String(now.getHours()).padStart(2, "0") +
-            String(now.getMinutes()).padStart(2, "0") +
-            String(now.getSeconds()).padStart(2, "0");
-            
-            const filename = `Transaction_Entry_Status_${timestamp}.xlsx`;
-
-            // Download Excel file
-            XLSX.writeFile(workbook, filename);
-
-            // Show success message
-            Swal.fire({
-            text: "Excel report downloaded successfully!",
-            icon: "success",
-            confirmButtonColor: "#1e3a8a",
-            });
-
-        } catch (err) {
-            console.error("Error:", err);
-            Swal.close();
-            Swal.fire({
-            text:
-                err?.response?.data?.message ||
-                err?.response?.data?.error ||
-                "Something went wrong. Please try again.",
-            confirmButtonColor: "#1e3a8a",
-            });
+        if (data.success) {
+          window.open(data.pdfUrl, "_blank");
+        } else {
+          Swal.fire({
+            icon: "error",
+            text: data.message || "Unable to generate PDF",
+          });
         }
-    };
+
+        return;
+      }
+
+      // Excel
+      const { data } = await axios.post(
+        `${BASE_URL}/api/FrmTransactionEntryStatusRpt/report`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      Swal.close();
+
+      const rows = data?.data?.rows || [];
+
+      if (!rows.length) {
+        return Swal.fire({
+          icon: "info",
+          text: "No data found.",
+        });
+      }
+
+
+      const excelData = [];
+
+      // excelData.push(["JALGAON MUNICIPAL CORPORATION"]);
+      // excelData.push(["सरदार वल्लभ भाई पटेल टॉवर, प्रशासकीय इमारत"]);
+      // excelData.push(["फोन:०२५७-२२२२२६१, ६२, ६३, ६४, ६५ फॅक्स: २२२२२६०"]);
+      // excelData.push(["Transactions Entry Status"]);
+      // excelData.push([
+      //   `दिनांक पासून ${payload.fromDate} ते दिनांक पर्यंत ${payload.toDate}`,
+      // ]);
+      // excelData.push([]);
+
+
+      excelData.push([
+        "अ.क्र.",
+        "दिनांक",
+        "प्रभाग",
+        "विभागाचे नाव",
+        "वापरकर्ता आय. डी.",
+        "पावती क्र.",
+        "व्यवहार क्र.",
+        "नोंदी संख्या",
+        "पावती रक्कम",
+      ]);
+
+
+      let totalCount = 0;
+      let totalAmount = 0;
+
+      rows.forEach((item, index) => {
+        const count = Number(item.CNT || 0);
+        const amount = Number(item.AMOUNT || 0);
+
+        totalCount += count;
+        totalAmount += amount;
+
+        excelData.push([
+          index + 1,
+          item.TRNSDATE || "",
+          item.PRABHAGNAME || "",
+          item.VIBHAGNAME || "",
+          item.USERID || "",
+          item.RECNO || "",
+          item.TRANSNO || "",
+          count,
+          amount,
+        ]);
+      });
+
+      excelData.push([
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "एकूण (Total)",
+        totalCount,
+        totalAmount,
+      ]);
+
+      const worksheet = XLSX.utils.aoa_to_sheet(excelData);
+
+      worksheet["!cols"] = [
+        { wch: 8 },   // Sr No
+        { wch: 15 },  // Date
+        { wch: 14 },  // Zone
+        { wch: 35 },  // Department
+        { wch: 18 },  // User
+        { wch: 18 },  // Receipt
+        { wch: 18 },  // Transaction
+        { wch: 12 },  // Count
+        { wch: 15 },  // Amount
+      ];
+
+      const workbook = XLSX.utils.book_new();
+
+      XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        "Transaction Entry Status"
+      );
+
+      XLSX.writeFile(workbook, "Transaction_Entry_Status.xlsx");
+
+    } catch (err) {
+      console.error("Error:", err);
+      Swal.close();
+      Swal.fire({
+        text:
+          err?.response?.data?.message ||
+          err?.response?.data?.error ||
+          "Something went wrong. Please try again.",
+        confirmButtonColor: "#1e3a8a",
+      });
+    }
+  };
 
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
       {({ values, setFieldValue }) => {
-
         return (
           <Form>
             <motion.div
@@ -502,8 +311,6 @@ const FrmTransactionEntryStatusRpt = () => {
 
                 <CardContent className="p-4 sm:p-5 space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    
-
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                       <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
                         <Label text="दिनांक पासून" />
@@ -529,7 +336,7 @@ const FrmTransactionEntryStatusRpt = () => {
                       />
                     </div>
 
-                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                       <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
                         <Label text="वापरकर्ता" />
                         <span>:</span>
@@ -561,7 +368,7 @@ const FrmTransactionEntryStatusRpt = () => {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                       <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
                         <Label text="प्रभाग" />
                         <span>:</span>
@@ -613,6 +420,39 @@ const FrmTransactionEntryStatusRpt = () => {
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="Export To" />
+                        <span>:</span>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-4">
+                        <label className="flex items-center gap-2 text-sm">
+                          <Input
+                            type="radio"
+                            name="exportType"
+                            checked={values.exportType === "pdf"}
+                            onChange={() => setFieldValue("exportType", "pdf")}
+                            className="h-4 w-4"
+                          />
+                          PDF
+                        </label>
+
+                        <label className="flex items-center gap-2 text-sm">
+                          <Input
+                            type="radio"
+                            name="exportType"
+                            checked={values.exportType === "excel"}
+                            onChange={() =>
+                              setFieldValue("exportType", "excel")
+                            }
+                            className="h-4 w-4"
+                          />
+                          Excel
+                        </label>
+                      </div>
                     </div>
                   </div>
 

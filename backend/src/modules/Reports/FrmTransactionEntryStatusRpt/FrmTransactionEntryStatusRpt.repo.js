@@ -29,6 +29,8 @@ const getReceiptRegisterEntryStatus = async (params) => {
       SELECT
           TRNSDATE,
           PRABHAGNAME,
+          PRABHAGID,
+          VIBHAGID,
           VIBHAGNAME,
           USERID,
           RECNO,
@@ -36,10 +38,11 @@ const getReceiptRegisterEntryStatus = async (params) => {
           CNT,
           AMOUNT
       FROM vw_transentstatus
-      WHERE 1=1
+      WHERE 1 = 1
     `;
 
-        let bindParams = {};
+        const bindParams = {};
+
         if (params.fromDate) {
             query += ` AND TRNSDATE >= TO_DATE(:FROMDATE, 'DD-MM-YYYY')`;
             bindParams.FROMDATE = params.fromDate;
@@ -50,17 +53,30 @@ const getReceiptRegisterEntryStatus = async (params) => {
             bindParams.TODATE = params.toDate;
         }
 
-        if (params.zoneId && params.zoneId !== "-1" && params.zoneId !== "") {
-            query += ` AND UPPER(PRABHAGNAME) = UPPER(:ZONE)`;
-            bindParams.ZONE = params.zoneId;
+        if (
+            params.zoneId &&
+            params.zoneId !== "-1" &&
+            params.zoneId !== ""
+        ) {
+            query += ` AND PRABHAGID = :ZONEID`;
+            bindParams.ZONEID = Number(params.zoneId);
         }
 
-        if (params.department && params.department !== "-1" && params.department !== "") {
-            query += ` AND UPPER(VIBHAGNAME) = UPPER(:DEPARTMENT)`;
-            bindParams.DEPARTMENT = params.department;
+        if (
+            params.department &&
+            params.department !== "-1" &&
+            params.department !== ""
+        ) {
+            query += ` AND VIBHAGID = :DEPARTMENTID`;
+            bindParams.DEPARTMENTID = Number(params.department);
         }
 
-        if (params.userId && params.userId !== "0" && params.userId !== "") {
+        if (
+            params.userId &&
+            params.userId !== "-1" &&
+            params.userId !== "0" &&
+            params.userId !== ""
+        ) {
             query += ` AND UPPER(USERID) = UPPER(:USERID)`;
             bindParams.USERID = params.userId;
         }
@@ -74,12 +90,12 @@ const getReceiptRegisterEntryStatus = async (params) => {
           RECNO
     `;
 
-        console.log('Entry Status Query:', query);
-        console.log('Bind Params:', bindParams);
+        console.log("Entry Status Query:\n", query);
+        console.log("Bind Params:", bindParams);
 
         return await executeQuery(query, bindParams);
     } catch (err) {
-        console.error('Error in getReceiptRegisterEntryStatus:', err);
+        console.error("Error in getReceiptRegisterEntryStatus:", err);
         throw err;
     }
 };
@@ -87,5 +103,5 @@ const getReceiptRegisterEntryStatus = async (params) => {
 
 module.exports = {
     getUserList,
-    getReceiptRegisterEntryStatus 
+    getReceiptRegisterEntryStatus
 };
