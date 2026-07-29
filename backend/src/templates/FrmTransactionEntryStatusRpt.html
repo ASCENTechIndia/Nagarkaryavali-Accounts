@@ -28,19 +28,22 @@
             padding: 5px;
             border: 1px solid #000;
         }
-        
-        .logo {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 60px;
-            height: 60px;
-            object-fit: contain;
-        }
 
         .header {
+            position: relative;
             text-align: center;
             margin-bottom: 5px;
+            min-height: 70px;
+            /* ensures space for logo */
+        }
+
+        .logo {
+            position: absolute;
+            left: 10px;
+            top: 5px;
+            width: 85px;
+            height: 85px;
+            object-fit: contain;
         }
 
         .main-title {
@@ -93,28 +96,63 @@
         }
 
         /* Column Alignments */
-        .col-srno { width: 4%; text-align: center; }
-        .col-date { width: 9%; text-align: center; }
-        .col-zone { width: 8%; text-align: center; }
-        .col-dept { width: 30%; text-align: left; }
-        .col-user { width: 12%; text-align: center; }
-        .col-receipt { width: 12%; text-align: center; }
-        .col-txn { width: 12%; text-align: center; }
-        .col-count { width: 6%; text-align: center; }
-        .col-amount { width: 7%; text-align: right; }
+        .col-srno {
+            width: 4%;
+            text-align: center;
+        }
+
+        .col-date {
+            width: 9%;
+            text-align: center;
+        }
+
+        .col-zone {
+            width: 8%;
+            text-align: center;
+        }
+
+        .col-dept {
+            width: 30%;
+            text-align: left;
+        }
+
+        .col-user {
+            width: 12%;
+            text-align: center;
+        }
+
+        .col-receipt {
+            width: 12%;
+            text-align: center;
+        }
+
+        .col-txn {
+            width: 12%;
+            text-align: center;
+        }
+
+        .col-count {
+            width: 6%;
+            text-align: center;
+        }
+
+        .col-amount {
+            width: 7%;
+            text-align: right;
+        }
 
         /* Total row styles */
         .total-row td {
             font-weight: bold;
             border-top: 2px solid #000;
         }
-        
+
         .total-label {
             text-align: right;
             font-weight: bold;
             padding-right: 10px !important;
         }
-        
+
         .total-amount {
             font-weight: bold;
             color: #000;
@@ -167,10 +205,11 @@
                     <td class="col-amount">{{amount}}</td>
                 </tr>
                 {{/each}}
-                
+
                 <!-- TOTAL ROW -->
                 <tr class="total-row">
-                    <td colspan="8" class="total-label">एकूण (Total)</td>
+                    <td colspan="7" class="total-label">एकूण (Total)</td>
+                    <td class="col-amount total-amount">{{totalCount}}</td>
                     <td class="col-amount total-amount">{{totalAmount}}</td>
                 </tr>
             </tbody>
