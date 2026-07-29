@@ -223,6 +223,7 @@ const RptReceiptRegister = () => {
                 fromDate: formatDate(values.fromDate),
                 toDate: formatDate(values.toDate),
                 ulbId: ulbId?.toString(),
+                UserId: values.userId,
                 zoneId: values.zoneId || "-1",
                 zoneName: selectedZone?.ZONEENAME || "",
                 deptName: selectedDepartment?.DEPTNAME || "",

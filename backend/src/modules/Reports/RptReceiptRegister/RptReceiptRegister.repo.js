@@ -253,8 +253,6 @@ const getReceiptRegister = async (params) => {
       `;
     }
 
-    console.log(query);
-
     return await executeQuery(query, bindParams);
   } catch (err) {
     throw err;
@@ -263,6 +261,7 @@ const getReceiptRegister = async (params) => {
 
 const getReceiptRegisterUserWise = async (params) => {
   try {
+
     const bindParams = {
       FromDate: params.fromDate,
       ToDate: params.toDate,
@@ -345,9 +344,9 @@ const getReceiptRegisterUserWise = async (params) => {
             )
     `;
 
-    if (params.userId && params.userId !== "0") {
+    if (params.UserId && params.UserId !== "0") {
       query += ` AND a.insby = :UserId `;
-      bindParams.UserId = params.userId;
+      bindParams.UserId = params.UserId;
     }
 
     if (params.zoneId && params.zoneId !== "-1") {
