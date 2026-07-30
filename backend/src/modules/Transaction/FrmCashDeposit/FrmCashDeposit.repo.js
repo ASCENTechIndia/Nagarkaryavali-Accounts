@@ -88,7 +88,7 @@ async function getCashDepositTransactions(params) {
     FROM vw_bankdeposit 
     WHERE TRUNC(Recdate) BETWEEN TO_DATE(:fromDate, 'DD-MON-YYYY') AND TO_DATE(:toDate, 'DD-MON-YYYY')
       AND ULB = :ulbId
-      AND (RMODE = '1' OR RMODE = '188');
+      AND (RMODE = '1' OR RMODE = '188')
   `;
 
   const queryParams = {
@@ -180,7 +180,7 @@ async function getTapshilReceipts(params) {
     INNER JOIN prop.vw_recmodeconfig ON recmodeid = rmode AND ulbid = ulb 
     WHERE TRUNC(Recdate) BETWEEN TO_DATE(:fromDate, 'DD-MON-YYYY') AND TO_DATE(:toDate, 'DD-MON-YYYY')
       AND ULB = :ulbId
-      AND (RMODE = '1' OR RMODE = '188');
+      AND (RMODE = '1' OR RMODE = '188')
   `;
 
   const queryParams = {
@@ -232,7 +232,7 @@ async function getLekhashirshDetails(params) {
     INNER JOIN prop.vw_recmodeconfig ON recmodeid = rmode AND ulbid = ulb 
     WHERE TRUNC(Recdate) BETWEEN TO_DATE(:fromDate, 'DD-MON-YYYY') AND TO_DATE(:toDate, 'DD-MON-YYYY')
       AND ULB = :ulbId
-      AND (RMODE = '1' OR RMODE = '188');
+      AND (RMODE = '1' OR RMODE = '188')
   `;
 
   const queryParams = {
