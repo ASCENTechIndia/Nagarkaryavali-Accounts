@@ -25,33 +25,31 @@ const getUserList = async (ulbId) => {
 
 const getReceiptRegisterEntryStatus = async (params) => {
     try {
+        if (!params.fromDate || !params.toDate) {
+            throw new Error("From Date and To Date are required.");
+        }
+
         let query = `
-      SELECT
-          TRNSDATE,
-          PRABHAGNAME,
-          PRABHAGID,
-          VIBHAGID,
-          VIBHAGNAME,
-          USERID,
-          RECNO,
-          TRANSNO,
-          CNT,
-          AMOUNT
-      FROM vw_transentstatus
-      WHERE 1 = 1
-    `;
+            SELECT
+                TRNSDATE,
+                PRABHAGNAME,
+                PRABHAGID,
+                VIBHAGID,
+                VIBHAGNAME,
+                USERID,
+                RECNO,
+                TRANSNO,
+                CNT,
+                AMOUNT
+            FROM vw_transentstatus
+            WHERE TRNSDATE BETWEEN TO_DATE(:FROMDATE, 'DD-MM-YYYY')
+                              AND TO_DATE(:TODATE, 'DD-MM-YYYY')
+        `;
 
-        const bindParams = {};
-
-        if (params.fromDate) {
-            query += ` AND TRNSDATE >= TO_DATE(:FROMDATE, 'DD-MM-YYYY')`;
-            bindParams.FROMDATE = params.fromDate;
-        }
-
-        if (params.toDate) {
-            query += ` AND TRNSDATE <= TO_DATE(:TODATE, 'DD-MM-YYYY')`;
-            bindParams.TODATE = params.toDate;
-        }
+        const bindParams = {
+            FROMDATE: params.fromDate,
+            TODATE: params.toDate,
+        };
 
         if (
             params.zoneId &&
@@ -82,16 +80,13 @@ const getReceiptRegisterEntryStatus = async (params) => {
         }
 
         query += `
-      ORDER BY
-          TRNSDATE,
-          PRABHAGNAME,
-          VIBHAGNAME,
-          USERID,
-          RECNO
-    `;
-
-        console.log("Entry Status Query:\n", query);
-        console.log("Bind Params:", bindParams);
+            ORDER BY
+                TRNSDATE,
+                PRABHAGNAME,
+                VIBHAGNAME,
+                USERID,
+                RECNO
+        `;
 
         return await executeQuery(query, bindParams);
     } catch (err) {
@@ -99,7 +94,6 @@ const getReceiptRegisterEntryStatus = async (params) => {
         throw err;
     }
 };
-
 
 module.exports = {
     getUserList,
