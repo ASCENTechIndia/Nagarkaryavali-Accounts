@@ -119,21 +119,21 @@ Ledger Form GEN-3 [{{accountHead}} / {{accountCode}}]
   <!-- COLUMN STRUCTURE -->
   <tr>
     <!-- DR -->
-    <th>Dr. Trans No</th>
+    <th colspan="2" class="text-center">Dr. Trans No</th>
     <th>Dr. Vou. No</th>
     <th>Date</th>
     <th colspan="3">Particulars</th>
     <th>Cheque No</th>
-    <th colspan="2">Amount (Rs.)</th>
+    <th>Amount (Rs.)</th>
 
     <!-- CR -->
-    <th>Cr. Trans No</th>
+    <th colspan="2" class="text-center">Cr. Trans No</th>
     <th>Cr. Vou. No</th>
     <th>Date</th>
     <!-- <th>Pan Card No</th> -->
     <th colspan="3">Particulars</th>
     <th>Cheque No</th>
-    <th colspan="2">Amount (Rs.)</th>
+    <th>Amount (Rs.)</th>
   </tr>
 
   <!-- OPENING BALANCE -->
@@ -149,20 +149,20 @@ Ledger Form GEN-3 [{{accountHead}} / {{accountCode}}]
   {{#each rows}}
   <tr>
     <!-- DR -->
-    <td class="wrap-text">{{DR_TRANS_NO}}</td>
+    <td colspan="2" class="wrap-text text-center">{{DR_TRANS_NO}}</td>
     <td class="wrap-text">{{DR_VOU_NO}}</td>
     <td class="wrap-text">{{DR_DATE}}</td>
     <td colspan="3" class="text-left wrap-text">{{DR_ACCOUNT_CODE}} {{DR_PARTICULARS}}</td>
     <td class="wrap-text">{{DR_CHEQUE}}</td>
-    <td colspan="2" class="text-right wrap-text">{{DR_AMOUNT}}</td>
+    <td class="text-right wrap-text">{{DR_AMOUNT}}</td>
 
-    <td class="wrap-text">{{CR_TRANS_NO}}</td>
+    <td colspan="2" class="wrap-text text-center">{{CR_TRANS_NO}}</td>
     <td class="wrap-text">{{CR_VOU_NO}}</td>
     <td class="wrap-text">{{CR_DATE}}</td>
     <!-- <td class="wrap-text">{{CR_PAN}}</td> -->
     <td colspan="3" class="text-left wrap-text">{{CR_ACCOUNT_CODE}} {{CR_PARTICULARS}}</td>
     <td class="wrap-text">{{CR_CHEQUE}}</td>
-    <td colspan="2" class="text-right wrap-text">{{CR_AMOUNT}}</td>
+    <td class="text-right wrap-text">{{CR_AMOUNT}}</td>
   </tr>
   {{/each}}
 
