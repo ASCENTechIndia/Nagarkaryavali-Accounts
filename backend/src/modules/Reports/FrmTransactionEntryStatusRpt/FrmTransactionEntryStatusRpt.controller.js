@@ -18,7 +18,7 @@ const getUserList = asyncHandler(async (req, res) => {
 const getTransactionEntryStatusReport = asyncHandler(async (req, res) => {
   const result = await service.getTransactionEntryStatusReportService(req.body);
 
-  if (!result.rows.length) {
+  if (result.rowCount == 0){
     return res.json({
       success: false,
       message: "No records found",
@@ -40,7 +40,7 @@ const generateTransactionEntryStatusPDF = asyncHandler(async (req, res) => {
     const result =
       await service.getTransactionEntryStatusReportService(filters);
 
-    if (!result.rows.length) {
+    if (result.rowCount == 0) {
       return res.status(404).json({
         success: false,
         message: "No records found",
@@ -53,8 +53,6 @@ const generateTransactionEntryStatusPDF = asyncHandler(async (req, res) => {
 
     const corporationName = corpInfo.ABC_MUNICIPAL_TEXT || "";
      const corporationLogo = corpInfo.ULBLOGO || "";
-
-    console.log("controller: ", corporationName)
 
     const pdf = await TransactionEntryStatusPDFHelper({
       reportData: result.rows,
