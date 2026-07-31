@@ -378,7 +378,7 @@ const FrmTransactionEntryStatusRpt = () => {
                         value={values.zoneId}
                         onValueChange={(v) => setFieldValue("zoneId", v)}
                       >
-                        <SelectTrigger className="w-full h-9">
+                        <SelectTrigger className="w-full h-9 overflow-hidden">
                           <SelectValue placeholder="-- ALL --" />
                         </SelectTrigger>
 
@@ -405,7 +405,7 @@ const FrmTransactionEntryStatusRpt = () => {
                         value={values.department}
                         onValueChange={(v) => setFieldValue("department", v)}
                       >
-                        <SelectTrigger className="w-full border rounded-md">
+                        <SelectTrigger className="w-full h-9 overflow-hidden">
                           <SelectValue placeholder="-- विकल्प निवडा --" />
                         </SelectTrigger>
 
