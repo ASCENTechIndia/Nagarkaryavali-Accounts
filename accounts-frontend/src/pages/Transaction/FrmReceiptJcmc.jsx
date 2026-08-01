@@ -1893,7 +1893,7 @@ isDiscountRow:
                         variant="destructive"
                         onClick={() => navigate("/Transactions/FrmReceiptList")}
                       >
-                        रद्द
+                        बाहेर जा
                       </Button>
                     </div>
 
