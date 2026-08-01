@@ -141,7 +141,7 @@ const FrmTransactionEntryStatusRpt = () => {
       const payload = {
         fromDate: formatDate(values.fromDate),
         toDate: formatDate(values.toDate),
-        ulbId: ulbId.toString(),
+        ulbId: ulbId,
         zoneId: values.zoneId || "-1",
         department: values.department || "-1",
         userId: values.userId || "0",
