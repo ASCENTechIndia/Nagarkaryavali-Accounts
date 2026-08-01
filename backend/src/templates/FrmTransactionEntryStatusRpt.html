@@ -157,6 +157,11 @@
             font-weight: bold;
             color: #000;
         }
+
+        .total-count {
+            text-align: center;
+            font-weight: bold;
+        }
     </style>
 </head>
 
@@ -209,7 +214,7 @@
                 <!-- TOTAL ROW -->
                 <tr class="total-row">
                     <td colspan="7" class="total-label">एकूण (Total)</td>
-                    <td class="col-amount total-amount">{{totalCount}}</td>
+                    <td class="total-count">{{totalCount}}</td>
                     <td class="col-amount total-amount">{{totalAmount}}</td>
                 </tr>
             </tbody>
