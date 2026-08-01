@@ -29,6 +29,10 @@ const getReceiptRegisterEntryStatus = async (params) => {
             throw new Error("From Date and To Date are required.");
         }
 
+        if (!params.ulbId) {
+            throw new Error("ULB ID is required.");
+        }
+
         let query = `
             SELECT
                 TRNSDATE,
@@ -42,11 +46,13 @@ const getReceiptRegisterEntryStatus = async (params) => {
                 CNT,
                 AMOUNT
             FROM vw_transentstatus
-            WHERE TRNSDATE BETWEEN TO_DATE(:FROMDATE, 'DD-MM-YYYY')
+            WHERE ULBID = :ULBID
+              AND  TRNSDATE BETWEEN TO_DATE(:FROMDATE, 'DD-MM-YYYY')
                               AND TO_DATE(:TODATE, 'DD-MM-YYYY')
         `;
 
         const bindParams = {
+            ULBID: params.ulbId,
             FROMDATE: params.fromDate,
             TODATE: params.toDate,
         };
