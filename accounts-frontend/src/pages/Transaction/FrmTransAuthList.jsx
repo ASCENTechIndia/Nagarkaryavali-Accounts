@@ -34,6 +34,7 @@ const FrmTransAuthList = () => {
   const { user } = useAuth();
   const token = user?.token;
   const ulbId = user?.ulbId;
+  const userId = user?.userId;
 
   const navigate = useNavigate();
   const [data, setData] = useState([]);
@@ -43,7 +44,8 @@ const FrmTransAuthList = () => {
   
   const [selectedPrabhag, setSelectedPrabhag] = useState("-1");
   const [selectedTransType, setSelectedTransType] = useState("1");
-  const [selectedUser, setSelectedUser] = useState("-1");
+  // const [selectedUser, setSelectedUser] = useState("-1");
+  const [selectedUser, setSelectedUser] = useState(userId || "");
   const [fromDate, setFromDate] = useState(new Date());
   const [toDate, setToDate] = useState(new Date());
   
@@ -127,7 +129,16 @@ const FrmTransAuthList = () => {
       console.log("Response User: ", response);
 
       if (response?.data?.success) {
-        setUsers(response.data.rows || []);
+        // setUsers(response.data.rows || []);
+        const userList = response.data.rows || [];
+        setUsers(userList);
+        const loggedInUser = userList.find(
+            (u) => u.USERID === userId
+        );
+
+        if (loggedInUser) {
+            setSelectedUser(loggedInUser.USERID);
+        }
       }
     } catch (err) {
       console.error("Error fetching users:", err);
@@ -357,6 +368,7 @@ const FrmTransAuthList = () => {
               <Select
                 value={selectedUser}
                 onValueChange={setSelectedUser}
+                disabled
               >
                 <SelectTrigger className="w-full h-9">
                   <SelectValue placeholder="-- विकल्प निवडा --" />

@@ -192,6 +192,12 @@ const getTransactionList = async (params) => {
           AND rmst.date_receiptmst_trnsdate < TO_DATE(:ToDate,'YYYY-MM-DD') + 1
           AND rmst.var_receiptmst_authstatus IS NULL
           AND rmst.num_receiptmst_ulbid = :UlbId
+          AND rmst.num_receiptmst_zoneid IN (
+                SELECT num_accusermap_ward
+                FROM aoms_accusermap_mas
+                WHERE num_accusermap_userid = :UserId
+          )
+
       `;
 
       if (params.zoneId && params.zoneId !== "-1") {
@@ -256,6 +262,11 @@ ORDER BY
             AND date_payment_trnsdate < TO_DATE(:ToDate,'YYYY-MM-DD') + 1
           AND var_payment_authstatus IS NULL
           AND corpid = :UlbId
+          AND rmst.num_receiptmst_zoneid IN (
+                SELECT num_accusermap_ward
+                FROM aoms_accusermap_mas
+                WHERE num_accusermap_userid = :UserId
+          )
       `;
 
       if (params.zoneId && params.zoneId !== "-1") {
@@ -329,6 +340,11 @@ ORDER BY
           AND var_transfermst_authstatus IS NULL
           AND num_transfermst_trnstypeid = :TransType
           AND corpid = :UlbId
+          AND rmst.num_receiptmst_zoneid IN (
+                SELECT num_accusermap_ward
+                FROM aoms_accusermap_mas
+                WHERE num_accusermap_userid = :UserId
+          )
       `;
 
       bindParams.TransType = params.transType;
