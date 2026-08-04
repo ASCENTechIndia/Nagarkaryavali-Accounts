@@ -162,3 +162,8 @@ exports.deleteVoucher = asyncHandler(async (req, res) => {
 
   return ok(res, data, data.out_ErrorMsg);
 });
+
+exports.getBudgetBalance = asyncHandler(async (req, res) => {
+  const data = await service.getBudgetBalanceService(req.body);
+  return ok(res, data);
+});

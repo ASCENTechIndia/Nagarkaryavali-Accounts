@@ -24,4 +24,6 @@ router.post("/voucher-receipt-details", auth(), controller.getVoucherReceiptDeta
 router.post("/SaveVoucher", auth(), controller.saveVoucher);
 router.post("/DeleteVoucher", auth(), controller.deleteVoucher);
 
+router.post("/budget-balance", auth(), controller.getBudgetBalance);
+
 module.exports = router;

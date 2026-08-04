@@ -146,6 +146,38 @@ async function deleteVoucherService(payload) {
   return await repo.deleteVoucherRepo(payload);
 }
 
+async function getBudgetBalanceService(payload) {
+  validateRequired(["glcode", "accno", "ulbid"], payload);
+  const data = await repo.getBudgetBalanceRepo(payload);
+  
+  if (data.length === 0) {
+    return { 
+      success: true, 
+      data: { 
+        totalAmount: 0, 
+        budgetAmount: 0, 
+        balance: 0,
+        hasBudget: false 
+      } 
+    };
+  }
+
+  const totalAmount = parseFloat(data[0].TOTAL_AMOUNT) || 0;
+  const budgetAmount = parseFloat(data[0].BUDGET_AMOUNT) || 0;
+  const balance = budgetAmount - totalAmount;
+  const hasBudget = budgetAmount > 0;
+
+  return { 
+    success: true, 
+    data: { 
+      totalAmount, 
+      budgetAmount, 
+      balance,
+      hasBudget
+    } 
+  };
+}
+
 module.exports = {
   getPendingVouchersService,
   getDepositeDropdownService,
@@ -166,5 +198,6 @@ module.exports = {
   getGovtTaxAccService,
   getVoucherReceiptDetailsService,
   saveVoucherService,
-  deleteVoucherService
+  deleteVoucherService,
+  getBudgetBalanceService
 };

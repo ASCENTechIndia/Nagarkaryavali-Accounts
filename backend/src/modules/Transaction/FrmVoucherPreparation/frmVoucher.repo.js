@@ -502,6 +502,33 @@ async function deleteVoucherRepo(payload) {
   return result.outBinds;
 }
 
+async function getBudgetBalanceRepo({ glcode, accno, ulbid }) {
+  const sql = `
+    SELECT 
+      NVL((
+        SELECT SUM(num_vchprepmst_totalamt) 
+        FROM aoac_vchprepmst_def 
+        WHERE num_vchprepmst_drgl = :glcode 
+          AND num_vchprepmst_dracc = :accno
+          AND num_vchpremst_ulbid = :ulbid
+      ), 0) AS total_amount,
+      NVL((
+        SELECT budgetamt 
+        FROM accountview_web 
+        WHERE glcode = :glcode 
+          AND accno = :accno
+          AND ulbid = :ulbid
+      ), 0) AS budget_amount
+    FROM dual
+  `;
+
+  const result = await executeQuery(sql, { glcode, accno, ulbid });
+
+  if (!result.success) throw new Error(result.error);
+
+  return result.rows;
+}
+
 module.exports = {
   getPendingVouchersRepo,
   getDepositeDropdownRepo,
@@ -522,5 +549,6 @@ module.exports = {
   getGovtTaxAccRepo,
   getVoucherReceiptDetailsRepo,
   saveVoucherRepo,
-  deleteVoucherRepo
+  deleteVoucherRepo,
+  getBudgetBalanceRepo
 };
