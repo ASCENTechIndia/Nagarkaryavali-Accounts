@@ -81,6 +81,7 @@ const FrmVoucherPreparation = () => {
   const [selectedBankId, setSelectedBankId] = useState("");
   const [taxRows, setTaxRows] = useState([]);
   const [secDepositRows, setSecDepositRows] = useState([]);
+  const [budgetBalance, setBudgetBalance] = useState(0);
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -603,6 +604,69 @@ const FrmVoucherPreparation = () => {
     }
   };
 
+  const checkBudgetBalance = async (glcode, accno, enteredAmount) => {
+    try {
+      if (!glcode || !accno || !ulbId) {
+        return { valid: true, balance: 0 };
+      }
+
+      const res = await axios.post(`${BASE_URL}/api/FrmVoucher/budget-balance`, 
+        {
+          glcode: Number(glcode),
+          accno: Number(accno),
+          ulbid: Number(ulbId),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("Budget res :", res);
+
+      if (res?.data?.data?.success) {
+        const data = res.data.data.data;
+        const totalAmount = parseFloat(data.totalAmount) || 0;
+        const budgetAmount = parseFloat(data.budgetAmount) || 0;
+        const balance = budgetAmount - totalAmount;
+        const hasBudget = budgetAmount > 0;
+
+        setBudgetBalance(balance);
+
+        if (!hasBudget || budgetAmount === 0) {
+          Swal.fire({
+            text: 'बजट तरतूद रक्कमेची नोंद खाते मास्टर मध्ये केलेली नाही',
+            confirmButtonColor: '#1e3a8a'
+          });
+          return { valid: false, balance: 0 };
+        }
+
+        if (balance <= 0) {
+          Swal.fire({
+            text: 'बजेट शिल्लक रक्कम 0 आहे. नवीन नोंद करता येणार नाही.',
+            confirmButtonColor: '#1e3a8a'
+          });
+          return { valid: false, balance: 0 };
+        }
+
+        if (enteredAmount && enteredAmount > balance) {
+          Swal.fire({
+            text: `नोंद केलेली रक्कम ${balance} बजेट शिल्लक रकमेपेक्षा जास्त आहे.`,
+            confirmButtonColor: '#1e3a8a'
+          });
+          return { valid: false, balance: balance };
+        }
+
+        return { valid: true, balance: balance, totalAmount, budgetAmount };
+      }
+      return { valid: true, balance: 0 };
+    } catch (err) {
+      console.error("Error checking budget balance:", err);
+      return { valid: true, balance: 0 };
+    }
+  };
+
   useEffect(() => {
     fetchParties();
     fetchZones();
@@ -1046,7 +1110,7 @@ const FrmVoucherPreparation = () => {
         confirmButtonColor: '#1e3a8a'
       }).then(async (result) => {
         if (result.isConfirmed) {
-          if (savedRefNo) {
+          if (savedRefNo && (ulbId == 930 || ulbId == 1750)) {
             await handlePrintPDF(savedRefNo);
           }
           navigate('/Transactions/FrmVoucherPreparationList');
@@ -1286,6 +1350,28 @@ const FrmVoucherPreparation = () => {
             setPendingDeptCode(null);
           }
         }, [pendingDeptCode, glCodes]);
+
+        useEffect(() => {
+          const validateBudgetOnChange = async () => {
+            if (values.deptCode && values.ledger) {
+              const enteredAmount = parseFloat(values.totalPayable) || 0;
+              const result = await checkBudgetBalance(
+                values.deptCode,
+                values.ledger,
+                enteredAmount
+              );
+              
+              if (!result.valid) {
+                setFieldValue("deptCode", "");
+                setFieldValue("ledger", "");
+                setLedgerOptions([]);
+              }
+            }
+          };
+
+          const timeoutId = setTimeout(validateBudgetOnChange, 300);
+          return () => clearTimeout(timeoutId);
+        }, [values.deptCode, values.ledger]);
 
         if (loadingVoucher) {
           return (
