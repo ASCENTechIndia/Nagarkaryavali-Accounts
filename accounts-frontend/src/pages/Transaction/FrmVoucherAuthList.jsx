@@ -3,278 +3,471 @@ import { Formik, Form } from "formik";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import Swal from "sweetalert2";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-    Select,
-    SelectTrigger,
-    SelectValue,
-    SelectContent,
-    SelectItem,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/context/AuthContext";
-import config from "@/utils/config.jsx";
-import Swal from "sweetalert2";
+import { Checkbox } from "@/components/ui/checkbox";
 import { DatePicker } from "@/components/ui/calendar";
 import ShadCNTable from "@/components/ui/table";
-import { Checkbox } from "@/components/ui/checkbox";
+
+import { useAuth } from "@/context/AuthContext";
+import config from "@/utils/config";
 
 const initialValues = {
-    zoneId: "",
-    fromDate: new Date(),
-    toDate: new Date(),
-    userId: "",
-    department: "-1",
+  zoneId: "-1",
+  fromDate: new Date(),
+  toDate: new Date(),
+  userId: "-1",
 };
 
 const FrmVoucherAuthList = () => {
-    const { user } = useAuth();
-    const token = user?.token;
-    const ulbId = user?.ulbId;
-    const deptId = config.deptId;
-    const navigate = useNavigate();
+  const { user } = useAuth();
 
-    const BASE_URL = import.meta.env.VITE_BASE_URL;
+  const token = user?.token;
+  const ulbId = user?.ulbId;
+  const deptId = config.deptId;
 
-    const [zoneList, setZoneList] = useState([]);
-    const [userList, setUserList] = useState([]);
-    const [showPendingOnly, setShowPendingOnly] = useState(false);
-    const [tableData, setTableData] = useState([]);
+  const navigate = useNavigate();
 
-    const headers = [
-        "संदर्भ क्र.",
-        "व्यवहार क्र",
-        "व्यवहार दिनांक",
-        "व्यवहार प्रकार",
-        "प्रभाग",
-        "धनादेश क्र",
-        "धनादेश दिनांक",
-    ];
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-    const keyMapping = {
-        "संदर्भ क्र.": "",
-        "व्यवहार क्र": "voucherNo",
-        "व्यवहार दिनांक": "voucherDate",
-        "व्यवहार प्रकार": "voucherType",
-        "प्रभाग": "zoneName",
-        "धनादेश क्र": "chequeNo",
-        "धनादेश दिनांक": "chequeDate",
-    };
+  const [zoneList, setZoneList] = useState([]);
+  const [userList, setUserList] = useState([]);
+  const [tableData, setTableData] = useState([]);
+  const [showPendingOnly, setShowPendingOnly] = useState(false);
+  const [searched, setSearched] = useState(false);
 
-    const columnStyles = {
-        "निवडा": { width: "80px" },
-        "व्यवहार क्र": { width: "170px" },
-        "व्यवहार दिनांक": { width: "150px" },
-        "व्यवहार प्रकार": { width: "220px" },
-        "प्रभाग": { width: "120px" },
-        "धनादेश क्र": { width: "160px" },
-        "धनादेश दिनांक": { width: "170px" },
-    };
+  const headers = [
+    "निवडा",
+    "व्यवहार क्र",
+    "व्यवहार दिनांक",
+    "व्यवहार प्रकार",
+    "प्रभाग",
+    "धनादेश क्र",
+    "धनादेश दिनांक",
+  ];
 
-    const fetchZones = async () => {
-        try {
-            const res = await axios.post(
-                `${BASE_URL}/api/Receipt/zones`,
-                { corp_id: ulbId },
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                },
-            );
+  const keyMapping = {
+    "निवडा": "select",
+    "व्यवहार क्र": "voucherNo",
+    "व्यवहार दिनांक": "voucherDate",
+    "व्यवहार प्रकार": "voucherType",
+    "प्रभाग": "zoneName",
+    "धनादेश क्र": "chequeNo",
+    "धनादेश दिनांक": "chequeDate",
+  };
 
-            if (res.data?.ok) {
-                setZoneList(res.data.data || []);
-            }
-        } catch (err) {
-            console.error("Zone API Error:", err);
+  const columnStyles = {
+    "निवडा": { width: "80px" },
+    "व्यवहार क्र": { width: "150px" },
+    "व्यवहार दिनांक": { width: "140px" },
+    "व्यवहार प्रकार": { width: "220px" },
+    "प्रभाग": { width: "150px" },
+    "धनादेश क्र": { width: "150px" },
+    "धनादेश दिनांक": { width: "150px" },
+  };
+
+  const formatPayloadDate = (date) => {
+    const d = new Date(date);
+
+    return [
+      d.getFullYear(),
+      String(d.getMonth() + 1).padStart(2, "0"),
+      String(d.getDate()).padStart(2, "0"),
+    ].join("-");
+  };
+
+  const formatDisplayDate = (date) => {
+    if (!date) return "-";
+
+    return new Date(date).toLocaleDateString("en-GB");
+  };
+
+  // ==========================
+  // Navigate to Auth Page
+  // ==========================
+
+  const handleSelectVoucher = (row) => {
+    navigate("/Transactions/FrmVoucherAuth", {
+      state: {
+        mode: 2,
+        vchTransNo: row.vchTransNo,
+      },
+    });
+  };
+
+  // ==========================
+  // Load Zones
+  // ==========================
+
+  const fetchZones = async () => {
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/api/Receipt/zones`,
+        {
+          corp_id: ulbId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-    };
+      );
 
-    const fetchUsers = async () => {
-        try {
-            const res = await axios.post(
-                `${BASE_URL}/api/FrmTransAuthList/user-list`,
-                {
-                    ulbId: ulbId?.toString(),
-                    deptId: deptId,
-                },
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                },
-            );
+      if (res.data?.ok) {
+        setZoneList(res.data.data || []);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-            if (res.data?.success) {
-                setUserList(res.data.rows || []);
-            }
-        } catch (err) {
-            console.error("User API Error:", err);
+  // ==========================
+  // Load Users
+  // ==========================
+
+  const fetchUsers = async () => {
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/api/FrmTransAuthList/user-list`,
+        {
+          ulbId,
+          deptId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-    };
+      );
 
-    useEffect(() => {
-        fetchZones();
-        fetchUsers();
-    }, [ulbId]);
+      if (res.data?.success) {
+        setUserList(res.data.rows || []);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-    const handleSubmit = async (values) => {
-        console.log(values);
-    };
+  // ==========================
+  // Voucher List
+  // ==========================
 
-    return (
-        <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-            {({ values, setFieldValue }) => {
+  const fetchVoucherList = async (values) => {
+    try {
+      Swal.fire({
+        title: "Loading...",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      });
 
-                return (
-                    <Form>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="px-2 sm:px-4 mt-4 sm:mt-6"
-                        >
-                            <Card className="border shadow-sm">
-                                <CardHeader className="border-b">
-                                    <CardTitle className="text-lg font-semibold">
-                                        प्रमाणक अधिकृतता
-                                    </CardTitle>
-                                </CardHeader>
+      const payload = {
+        ulbId: Number(ulbId),
+        fromDate: formatPayloadDate(values.fromDate),
+        toDate: formatPayloadDate(values.toDate),
+        zoneId:
+          values.zoneId !== "-1"
+            ? Number(values.zoneId)
+            : null,
+        userId:
+          values.userId !== "-1"
+            ? Number(values.userId)
+            : null,
+      };
 
-                                <CardContent className="p-4 sm:p-5 space-y-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                                            <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
-                                                <Label text="प्रभाग" />
-                                                <span>:</span>
-                                            </div>
+      const res = await axios.post(
+        `${BASE_URL}/api/FrmVoucherAuth/voucher-auth-list`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-                                            <Select
-                                                value={values.zoneId}
-                                                onValueChange={(v) => setFieldValue("zoneId", v)}
-                                            >
-                                                <SelectTrigger className="w-full h-9">
-                                                    <SelectValue placeholder="-- ALL --" />
-                                                </SelectTrigger>
+      Swal.close();
 
-                                                <SelectContent>
-                                                    <SelectItem
-                                                        value={"-1"}
-                                                    >
-                                                        -- ALL --
-                                                    </SelectItem>
-                                                    {zoneList.map((zone) => (
-                                                        <SelectItem
-                                                            key={zone.ZONEID}
-                                                            value={zone.ZONEID.toString()}
-                                                        >
-                                                            {zone.ZONEENAME}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
+      if (!res.data?.ok) {
+        setTableData([]);
+        return;
+      }
 
-                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                                            <div className="sm:w-36 shrink-0 flex items-center justify-between">
+      const rows = (res.data.data?.data || []).map((item) => ({
+        vchTransNo: item.VCHTRANSNO,
 
-                                                <div className="flex items-center gap-2">
-                                                    <Checkbox
-                                                        checked={showPendingOnly}
-                                                        onCheckedChange={(checked) =>
-                                                            setShowPendingOnly(checked === true)
-                                                        }
-                                                    />
+        voucherNo: item.DOCNO,
 
-                                                    <Label text="दिनांक पासून" />
-                                                </div>
+        voucherDate: formatDisplayDate(item.TRANSDATE),
 
-                                                <span>:</span>
+        voucherType: item.TRANSTYPE,
 
-                                            </div>
+        zoneName: item.DEPTNAME || "-",
 
-                                            <DatePicker
-                                                value={values.fromDate}
-                                                onChange={(date) => setFieldValue("fromDate", date)}
-                                                className="w-full h-9"
-                                            />
-                                        </div>
-                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                                            <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
-                                                <Label text="दिनांक पर्यंत" />
-                                                <span>:</span>
-                                            </div>
+        chequeNo: item.CHQNO || "-",
 
-                                            <DatePicker
-                                                value={values.toDate}
-                                                onChange={(date) =>
-                                                    setFieldValue("toDate", date)
-                                                }
-                                                className="w-full h-9"
-                                            />
-                                        </div>
-                                    </div>
+        chequeDate: item.CHQDATE
+          ? formatDisplayDate(item.CHQDATE)
+          : "-",
+      }));
 
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                                            <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
-                                                <Label text="वापरकर्ता" />
-                                                <span>:</span>
-                                            </div>
+      setTableData(rows);
 
-                                            <Select
-                                                value={values.userId}
-                                                onValueChange={(v) => setFieldValue("userId", v)}
-                                            >
-                                                <SelectTrigger className="w-full h-9">
-                                                    <SelectValue placeholder="-- विकल्प निवडा --" />
-                                                </SelectTrigger>
+    } catch (err) {
 
-                                                <SelectContent>
-                                                    {userList.length > 0 ? (
-                                                        userList.map((user) => (
-                                                            <SelectItem
-                                                                key={user.USERID}
-                                                                value={user.USERID}
-                                                            >
-                                                                {user.USERNAME}
-                                                            </SelectItem>
-                                                        ))
-                                                    ) : (
-                                                        <SelectItem value="no-data" disabled>
-                                                            No Users Found
-                                                        </SelectItem>
-                                                    )}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                    </div>
+      Swal.close();
 
+      console.error(err);
 
-                                    <div className="flex justify-center flex-wrap gap-4 pt-4">
-                                        <Button
-                                            type="submit"
-                                            className="bg-blue-900 text-white px-6 h-9"
-                                        >
-                                            व्हाउचर शोध
-                                        </Button>
-                                    </div>
+      setTableData([]);
 
+    }
+  };
 
-                                    <div className="mt-6">
-                                        <ShadCNTable
-                                            headers={headers}
-                                            data={tableData}
-                                            keyMapping={keyMapping}
-                                            columnStyles={columnStyles}
-                                            pagination={false}
-                                        />
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </motion.div>
-                    </Form>
-                );
+  useEffect(() => {
+    if (ulbId) {
+      fetchZones();
+      fetchUsers();
+    }
+  }, [ulbId]);
+
+const handleSubmit = async (values) => {
+  setSearched(true);
+  await fetchVoucherList(values);
+};
+
+  return (
+  <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+    {({ values, setFieldValue }) => {
+      const tableRows = tableData.map((row) => ({
+        select: (
+          <Button
+            variant="link"
+            size="sm"
+            className="text-blue-700 font-medium px-0 hover:text-blue-900"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleSelectVoucher(row);
             }}
-        </Formik>
-    );
+          >
+            निवडा
+          </Button>
+        ),
+
+        voucherNo: row.voucherNo,
+        voucherDate: row.voucherDate,
+        voucherType: row.voucherType,
+        zoneName: row.zoneName,
+        chequeNo: row.chequeNo,
+        chequeDate: row.chequeDate,
+      }));
+
+      return (
+        <Form>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="px-2 sm:px-4 mt-4 sm:mt-6"
+          >
+            <Card className="border shadow-sm">
+              <CardHeader className="border-b">
+                <CardTitle className="text-lg font-semibold">
+                  प्रमाणक अधिकृतता
+                </CardTitle>
+              </CardHeader>
+
+              <CardContent className="space-y-5 p-5">
+
+                {/* Filters */}
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+
+                    <div className="sm:w-36 flex justify-between">
+                      <Label text="प्रभाग" />
+                      <span>:</span>
+                    </div>
+
+                    <Select
+                      value={values.zoneId}
+                      onValueChange={(value) =>
+                        setFieldValue("zoneId", value)
+                      }
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="-- ALL --" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+
+                        <SelectItem value="-1">
+                          -- ALL --
+                        </SelectItem>
+
+                        {zoneList.map((zone) => (
+                          <SelectItem
+                            key={zone.ZONEID}
+                            value={zone.ZONEID.toString()}
+                          >
+                            {zone.ZONEENAME}
+                          </SelectItem>
+                        ))}
+
+                      </SelectContent>
+
+                    </Select>
+
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+
+                    <div className="sm:w-36 flex justify-between">
+
+                      <div className="flex items-center gap-2">
+
+                        <Checkbox
+                          checked={showPendingOnly}
+                          onCheckedChange={(checked) =>
+                            setShowPendingOnly(checked === true)
+                          }
+                        />
+
+                        <Label text="दिनांक पासून" />
+
+                      </div>
+
+                      <span>:</span>
+
+                    </div>
+
+                    <DatePicker
+                      value={values.fromDate}
+                      onChange={(date) =>
+                        setFieldValue("fromDate", date)
+                      }
+                      className="w-full"
+                    />
+
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+
+                    <div className="sm:w-36 flex justify-between">
+
+                      <Label text="दिनांक पर्यंत" />
+
+                      <span>:</span>
+
+                    </div>
+
+                    <DatePicker
+                      value={values.toDate}
+                      onChange={(date) =>
+                        setFieldValue("toDate", date)
+                      }
+                      className="w-full"
+                    />
+
+                  </div>
+
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+
+                    <div className="sm:w-36 flex justify-between">
+
+                      <Label text="वापरकर्ता" />
+
+                      <span>:</span>
+
+                    </div>
+
+                    <Select
+                      value={values.userId}
+                      onValueChange={(value) =>
+                        setFieldValue("userId", value)
+                      }
+                    >
+
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="-- विकल्प निवडा --" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+
+                        <SelectItem value="-1">
+                          -- ALL --
+                        </SelectItem>
+
+                        {userList.map((user) => (
+                          <SelectItem
+                            key={user.USERID}
+                            value={user.USERID}
+                          >
+                            {user.USERNAME}
+                          </SelectItem>
+                        ))}
+
+                      </SelectContent>
+
+                    </Select>
+
+                  </div>
+
+                </div>
+
+                <div className="flex justify-center">
+
+                  <Button
+                    type="submit"
+                    className="bg-blue-900 hover:bg-blue-800"
+                  >
+                    व्हाउचर शोध
+                  </Button>
+
+                </div>
+
+               {searched && (
+  <div className="mt-6">
+    {tableRows.length > 0 ? (
+      <ShadCNTable
+        headers={headers}
+        data={tableRows}
+        keyMapping={keyMapping}
+        columnStyles={columnStyles}
+        pagination
+        rowsPerPage={10}
+      />
+    ) : (
+      <div className="text-center py-8 text-gray-500">
+        No records found.
+      </div>
+    )}
+  </div>
+)}
+
+              </CardContent>
+
+            </Card>
+
+          </motion.div>
+        </Form>
+      );
+    }}
+  </Formik>
+);
+
 };
 
 export default FrmVoucherAuthList;
