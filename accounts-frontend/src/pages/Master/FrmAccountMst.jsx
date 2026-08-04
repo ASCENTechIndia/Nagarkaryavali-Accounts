@@ -59,7 +59,6 @@ const FrmAccountMaster = () => {
 
     const loadAll = async () => {
       try {
-
         Swal.fire({
           title: "Loading...",
           allowOutsideClick: false,
@@ -91,7 +90,6 @@ const FrmAccountMaster = () => {
         if (!isEditMode) {
           Swal.close();
         }
-
       } catch (err) {
         console.error(err);
         Swal.close();
@@ -102,7 +100,6 @@ const FrmAccountMaster = () => {
   }, [user?.token]);
 
   useEffect(() => {
-
     // ✅ ONLY EDIT MODE
     if (!isEditMode) return;
 
@@ -116,7 +113,6 @@ const FrmAccountMaster = () => {
 
     const loadAllDetails = async () => {
       try {
-
         const { accNo, functionCode, ulbId } = location.state;
 
         const mapRes = await api.post(
@@ -124,7 +120,7 @@ const FrmAccountMaster = () => {
           {
             glCode: functionCode,
             accNo,
-          }
+          },
         );
 
         const map = mapRes.data?.data?.data?.[0];
@@ -135,14 +131,11 @@ const FrmAccountMaster = () => {
         }
 
         // 🔥 SECOND API CALL
-        const fullRes = await api.post(
-          "/api/FrmAccount/account-fullDetails",
-          {
-            functionCode,
-            accNo,
-            ulbId: Number(ulbId || user?.ulbId),
-          }
-        );
+        const fullRes = await api.post("/api/FrmAccount/account-fullDetails", {
+          functionCode,
+          accNo,
+          ulbId: Number(ulbId || user?.ulbId),
+        });
 
         const fullData = fullRes?.data?.data?.data?.[0] || {};
 
@@ -150,29 +143,18 @@ const FrmAccountMaster = () => {
         setInitialValues({
           corp: String(ulbId || user?.ulbId || ""),
 
-          fund: String(
-            fullData.NIDHIID ||
-            map.NUM_ACCMASTER_NIDHIID ||
-            ""
-          ),
+          fund: String(fullData.NIDHIID || map.NUM_ACCMASTER_NIDHIID || ""),
 
           functionCode,
 
-          objectCode: String(
-            fullData.ACCSUBTYPE ||
-            map.ACCSUBTYPE ||
-            ""
-          ),
+          objectCode: String(fullData.ACCSUBTYPE || map.ACCSUBTYPE || ""),
 
           accId: accNo,
 
           oldAcc: fullData.OLDACCNO || "",
 
           // ✅ AUTO FILL FIELDS
-          nameMarathi:
-            fullData.ACCNAME ||
-            map.ACCNAME ||
-            "",
+          nameMarathi: fullData.ACCNAME || map.ACCNAME || "",
 
           nameEnglish:
             fullData.VAR_ACCMASTER_ACCNAMEENG ||
@@ -191,7 +173,6 @@ const FrmAccountMaster = () => {
         setTimeout(() => {
           Swal.close();
         }, 300);
-
       } catch (err) {
         console.error(err);
         Swal.close();
@@ -240,9 +221,6 @@ const FrmAccountMaster = () => {
         });
 
         resetForm();
-
-        // optional reset / reload
-        // window.location.reload();
       } else {
         Swal.fire({
           text: result?.message,
@@ -268,6 +246,9 @@ const FrmAccountMaster = () => {
       {({ values, setFieldValue, resetForm }) => {
         /* 🔥 AUTO ACCOUNT NUMBER */
         useEffect(() => {
+          // ✅ Don't generate in edit mode
+          if (isEditMode) return;
+
           if (!values.functionCode || !values.objectCode || !values.corp)
             return;
 
@@ -289,7 +270,7 @@ const FrmAccountMaster = () => {
           };
 
           generate();
-        }, [values.functionCode, values.objectCode, values.corp]);
+        }, [values.functionCode, values.objectCode, values.corp, isEditMode]);
 
         return (
           <Form>
@@ -307,8 +288,9 @@ const FrmAccountMaster = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* CORPORATION */}
                     <div className="flex items-center gap-3">
-                    
-                      <Label text=" महानगरपालिका :" />
+                      <label className="w-40 text-right text-sm font-medium">
+                        महानगरपालिका :
+                      </label>
 
                       <Select
                         value={values.corp || ""}
@@ -338,7 +320,6 @@ const FrmAccountMaster = () => {
                       <label className="w-40 text-right text-sm font-medium">
                         निधी :
                       </label>
-                      
 
                       <Select
                         value={values.fund || ""}
