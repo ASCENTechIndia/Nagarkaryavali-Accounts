@@ -68,14 +68,33 @@ const FrmVoucherAuth = () => {
     "दिनांक/ वेळ": { width: "170px" },
   };
 
-  const formatDate = (date) => {
-    if (!date) return "-";
-    return new Date(date).toLocaleDateString("en-GB");
+  const formatPayloadDate = (date) => {
+    if (!date) return null;
+
+    const d = new Date(date);
+
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
   };
 
-  const formatDateTime = (date) => {
+  const formatDisplayDate = (date) => {
     if (!date) return "-";
-    return new Date(date).toLocaleString("en-GB");
+
+    // If API returns ISO string like "2026-05-22T18:30:00.000Z"
+    if (typeof date === "string") {
+      return date.substring(0, 10).split("-").reverse().join("-");
+    }
+
+    const d = new Date(date);
+
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+
+    return `${day}-${month}-${year}`;
   };
 
   // ==========================
@@ -112,13 +131,13 @@ const FrmVoucherAuth = () => {
 
       const mapped = rows.map((item) => ({
         refNo: item.REFNO,
-        date: formatDate(item.TRNSDATE),
+        date: formatPayloadDate(item.TRNSDATE),
         voucherNo: item.VCHNO,
         zone: item.ZONENAME || "-",
         amount: Number(item.AMOUNT).toLocaleString("en-IN"),
         partyName: item.PARTYNAME || "-",
         userName: item.USERNAME || "-",
-        dateTime: formatDateTime(item.DATETIME),
+        dateTime: formatDisplayDate(item.DATETIME),
       }));
 
       setTableData(mapped);
@@ -136,6 +155,7 @@ const FrmVoucherAuth = () => {
       setTableLoading(false);
     }
   };
+
   useEffect(() => {
     if (!mode || !vchTransNo) {
       navigate("/Transactions/FrmVoucherAuthList");
