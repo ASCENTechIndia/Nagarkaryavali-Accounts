@@ -189,28 +189,35 @@ const RptReceiptPropertyPDFHelper = async ({ reportData, filters, corporationNam
     const getAmt = (code) => grouped.get(code) || 0;
 
     // 🔹 2. Map template rows to ledger codes
-    const amount1  = getAmt("91111110001"); // सामान्य कर
-    const amount2  = getAmt("91015210001"); // पाणीपट्टी
-    const amount3  = getAmt("31615210002"); // पाणी पुरवठा लाभ कर
-    const amount4  = getAmt("91011400003"); // साफसफाई
-    const amount5  = getAmt("91011900001"); // मलप्रवाह सुविधा लाभ कर
-    const amount6  = getAmt("81111400003"); // अग्निशमन कर
-    const amount7  = getAmt("94713310002"); // मनपा शिक्षण उपकर
-    const amount8  = getAmt("97111710002"); // रस्ताकर
+    const amount1 = getAmt("91111110001"); // सामान्य कर
+    const amount2 = getAmt("91015210001"); // पाणीपट्टी
+    const amount3 = getAmt("31615210002"); // पाणी पुरवठा लाभ कर
+    const amount4 = getAmt("91011400003"); // साफसफाई
+    const amount5 = getAmt("91011900001"); // मलप्रवाह सुविधा लाभ कर
+    const amount6 = getAmt("81111400003"); // अग्निशमन कर
+    const amount7 = getAmt("94713310002"); // मनपा शिक्षण उपकर
+    const amount8 = getAmt("97111710002"); // रस्ताकर
 
-    const amount9  = getAmt("34011190001"); // घनकचरा व्यवस्था (रहिवास)
+    const amount9 = getAmt("34011190001"); // घनकचरा व्यवस्था (रहिवास)
     const amount10 = getAmt("34011190002"); // घनकचरा व्यवस्था (अरहिवास)
 
     // रिबेट
-    // const rebateAmount = Number(reportData[0]?.DISCOUNT_91028290001 || 0);
-    // const discountAmount = Number(reportData[0]?.DISCOUNT_91028290003 || 0);
+    // const rebateAmount = Math.max(
+    //   ...reportData.map(row => Number(row.DISCOUNT_91028290001 || 0))
+    // );
 
-    const rebateAmount = Math.max(
-      ...reportData.map(row => Number(row.DISCOUNT_91028290001 || 0))
+    // const discountAmount = Math.max(
+    //   ...reportData.map(row => Number(row.DISCOUNT_91028290003 || 0))
+    // );
+
+    const rebateAmount = reportData.reduce(
+      (sum, row) => sum + Number(row.DISCOUNT_91028290001 || 0),
+      0 
     );
 
-    const discountAmount = Math.max(
-      ...reportData.map(row => Number(row.DISCOUNT_91028290003 || 0))
+    const discountAmount = reportData.reduce(
+      (sum, row) => sum + Number(row.DISCOUNT_91028290003 || 0),
+      0
     );
 
     const amount12 = getAmt("91015210004"); // विशेष पाणीपट्टी
