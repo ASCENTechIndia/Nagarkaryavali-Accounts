@@ -1702,8 +1702,6 @@ const FrmVoucherGeneration = () => {
 
   const handleSubmit = async (values, formikHelpers) => {
     try {
-    
-
       setSubmitLoading(true);
 
       const selectedRows = voucherList.filter((v) => v.selected);
@@ -1918,45 +1916,57 @@ const FrmVoucherGeneration = () => {
 
       Swal.close();
 
-      /* =====================================
-       SUCCESS
-    ===================================== */
       if (res.data?.success) {
         const msg = res.data?.errorMsg || "";
 
-        const voucherMatch = msg.match(/Vocher No\. ?: ?(\d+)/i);
+        // Transaction Number
+        const transactionMatch = msg.match(/Transaction No\. ?: ?(\d+)/i);
+        const transactionNo = transactionMatch?.[1];
 
-        // IMPORTANT FIX
+        // Voucher Number (returned by your existing API)
+        const voucherMatch = msg.match(/Vocher No\. ?: ?(\d+)/i);
         const generatedVoucherNo = voucherMatch?.[1];
 
-        console.log("GENERATED VOUCHER:", generatedVoucherNo);
+        if (Number(user?.ulbId) === 870) {
+          await Swal.fire({
+            title: "Success",
+            text: res.data.errorMsg,
+            icon: "success",
+            confirmButtonColor: "#1e3a8a",
+          });
 
+          formikHelpers.resetForm();
+          setVoucherList([]);
+          setVoucherDetails([]);
+          setChequeBooks([]);
+          setSearchDone(false);
+          setCurrentPage(1);
+
+          return;
+        }
+
+        // Other ULBs
         Swal.fire({
           title: "Success",
-          text: msg || "Voucher generated successfully",
-          // icon: "success",
+          text: `Transaction Number : ${transactionNo}`,
+          icon: "success",
           confirmButtonColor: "#1e3a8a",
         }).then(async (result) => {
-          if (result.isConfirmed) {
-            await new Promise((resolve) => setTimeout(resolve, 2000));
+          if (!result.isConfirmed) return;
 
-            if (generatedVoucherNo) {
-              await handlePrintPDF(generatedVoucherNo);
-
-              formikHelpers.resetForm();
-              setVoucherList([]);
-
-              setVoucherDetails([]);
-
-              setChequeBooks([]);
-
-              setSearchDone(false);
-
-              setCurrentPage(1);
-            } else {
-              Swal.fire("Error", "Generated voucher number not found", "error");
-            }
+          if (!generatedVoucherNo) {
+            Swal.fire("Error", "Voucher number not found.", "error");
+            return;
           }
+
+          await handlePrintPDF(generatedVoucherNo);
+
+          formikHelpers.resetForm();
+          setVoucherList([]);
+          setVoucherDetails([]);
+          setChequeBooks([]);
+          setSearchDone(false);
+          setCurrentPage(1);
         });
       }
     } catch (err) {
