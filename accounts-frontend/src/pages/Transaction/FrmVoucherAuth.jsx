@@ -216,8 +216,8 @@ const FrmVoucherAuth = () => {
       } else {
         Swal.fire({
           // icon: "error",
-          title: `Error ${errorCode ?? ""}`,
-          text: message || "Operation failed.",
+          // title: `Error ${errorCode ?? ""}`,
+          text: message ,
         });
       }
     } catch (err) {
