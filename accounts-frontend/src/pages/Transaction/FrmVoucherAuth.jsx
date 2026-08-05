@@ -182,7 +182,7 @@ const FrmVoucherAuth = () => {
 
       const payload = {
         userId: userId,
-        refNo: Number(voucherInfo?.REFNO),
+        refNo: Number(vchTransNo),
         remark: values.remark,
         status,
       };
@@ -215,7 +215,7 @@ const FrmVoucherAuth = () => {
         });
       } else {
         Swal.fire({
-          icon: "error",
+          // icon: "error",
           title: `Error ${errorCode ?? ""}`,
           text: message || "Operation failed.",
         });
