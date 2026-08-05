@@ -198,7 +198,7 @@ const FrmVoucherAuthList = () => {
       const rows = (res.data.data?.data || []).map((item) => ({
         vchTransNo: item.VCHTRANSNO,
 
-        voucherNo: item.DOCNO,
+        voucherNo: item.VCHTRANSNO,
 
         voucherDate: formatDisplayDate(item.TRANSDATE),
 
@@ -210,6 +210,8 @@ const FrmVoucherAuthList = () => {
 
         chequeDate: item.CHQDATE ? formatDisplayDate(item.CHQDATE) : "-",
       }));
+
+      console.log("Fetched Voucher List:", rows);
 
       setTableData(rows);
     } catch (err) {

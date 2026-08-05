@@ -23,6 +23,7 @@ const FrmVoucherAuth = () => {
   const token = user?.token;
   const ulbId = user?.ulbId;
   const userId = user?.userId;
+  console.log("FrmVoucherAuth userId:", userId);
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -171,69 +172,72 @@ const FrmVoucherAuth = () => {
   // Authorize Voucher
   // ==========================
 
-const handleSubmit = async (values) => {
-  try {
-    Swal.fire({
-      title: "Authorizing...",
-      allowOutsideClick: false,
-      didOpen: () => Swal.showLoading(),
-    });
-
-    const payload = {
-      ulbId: Number(ulbId),
-      userId,
-      vchTransNo: Number(vchTransNo),
-      refNo: voucherInfo?.REFNO,
-      remark: values.remark,
-      status: "A",
-    };
-
-    const res = await axios.post(
-      `${BASE_URL}/api/FrmVoucherAuth/voucher-approval`,
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    Swal.close();
-
-    const { success, errorCode, message } = res.data?.data || {};
-
-    if (success) {
+  const handleSubmit = async (values, status) => {
+    try {
       Swal.fire({
-        icon: "success",
-        title: "Success",
-        text: message || "Voucher authorized successfully.",
-      }).then(() => {
-        navigate("/Transactions/FrmVoucherAuthList");
+        title: status === "A" ? "Authorizing..." : "Rejecting...",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
       });
-    } else {
+
+      const payload = {
+        userId: userId,
+        refNo: Number(voucherInfo?.REFNO),
+        remark: values.remark,
+        status,
+      };
+
+      const res = await axios.post(
+        `${BASE_URL}/api/FrmVoucherAuth/voucher-approval`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      Swal.close();
+
+      const { success, errorCode, message } = res.data?.data || {};
+
+      if (success) {
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text:
+            message ||
+            (status === "A"
+              ? "Voucher authorized successfully."
+              : "Voucher rejected successfully."),
+        }).then(() => {
+          navigate("/Transactions/FrmVoucherAuthList");
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: `Error ${errorCode ?? ""}`,
+          text: message || "Operation failed.",
+        });
+      }
+    } catch (err) {
+      Swal.close();
+
+      console.error(err);
+
       Swal.fire({
         icon: "error",
-        title: `Error ${errorCode ?? ""}`,
-        text: message || "Authorization failed.",
+        title: "Error",
+        text:
+          err.response?.data?.data?.message ||
+          err.response?.data?.message ||
+          "Operation failed.",
       });
     }
-  } catch (err) {
-    Swal.close();
-    console.error(err);
-
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text:
-        err.response?.data?.data?.message ||
-        err.response?.data?.message ||
-        "Authorization failed.",
-    });
-  }
-};
+  };
 
   return (
-    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+    <Formik initialValues={initialValues} onSubmit={(e) => e.preventDefault()}>
       {({ values, handleChange }) => (
         <Form>
           <motion.div
@@ -297,10 +301,19 @@ const handleSubmit = async (values) => {
 
                 <div className="flex justify-center gap-4 pt-4">
                   <Button
-                    type="submit"
+                    type="button"
                     className="bg-green-700 hover:bg-green-800"
+                    onClick={() => handleSubmit(values, "A")}
                   >
                     Authorize
+                  </Button>
+
+                  <Button
+                    type="button"
+                    className="bg-red-700 hover:bg-red-800 text-white"
+                    onClick={() => handleSubmit(values, "R")}
+                  >
+                    Reject
                   </Button>
 
                   <Button
