@@ -1433,7 +1433,7 @@ const FrmVoucherGeneration = () => {
 
           AMT: Number(row.AMT ?? row.amt ?? 0),
 
-          BALAMT: Number(row.BALAMT ?? row.balamt ?? 0),
+          BALAMT: Number(row.TOTALAMT ?? row.totalamt ?? 0),
 
           DRGL: row.DRGL ?? row.drgl,
 
@@ -1451,6 +1451,8 @@ const FrmVoucherGeneration = () => {
         }));
 
       const balanceData = normalizeData(balanceRes.data?.rows);
+
+      console.log("Balance Data:", balanceData);
 
       const prepData = normalizeData(prepRes.data?.rows);
 
