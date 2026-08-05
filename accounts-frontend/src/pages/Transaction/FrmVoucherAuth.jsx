@@ -171,62 +171,66 @@ const FrmVoucherAuth = () => {
   // Authorize Voucher
   // ==========================
 
-  const handleSubmit = async (values) => {
-    try {
-      Swal.fire({
-        title: "Authorizing...",
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading(),
-      });
+const handleSubmit = async (values) => {
+  try {
+    Swal.fire({
+      title: "Authorizing...",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
 
-      const payload = {
-        ulbId: Number(ulbId),
-        userId,
-        vchTransNo: Number(vchTransNo),
-        refNo: voucherInfo?.REFNO,
-        remark: values.remark,
-        status: "A",
-      };
+    const payload = {
+      ulbId: Number(ulbId),
+      userId,
+      vchTransNo: Number(vchTransNo),
+      refNo: voucherInfo?.REFNO,
+      remark: values.remark,
+      status: "A",
+    };
 
-      const res = await axios.post(
-        `${BASE_URL}/api/FrmVoucherAuth/voucher-approval`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+    const res = await axios.post(
+      `${BASE_URL}/api/FrmVoucherAuth/voucher-approval`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
-
-      Swal.close();
-
-      if (res.data?.ok) {
-        Swal.fire({
-          icon: "success",
-          title: "Success",
-          text: res.data.message,
-        }).then(() => {
-          navigate("/Transactions/FrmVoucherAuthList");
-        });
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: res.data.message,
-        });
       }
-    } catch (err) {
-      Swal.close();
+    );
 
-      console.error(err);
+    Swal.close();
 
+    const { success, errorCode, message } = res.data?.data || {};
+
+    if (success) {
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: message || "Voucher authorized successfully.",
+      }).then(() => {
+        navigate("/Transactions/FrmVoucherAuthList");
+      });
+    } else {
       Swal.fire({
         icon: "error",
-        title: "Error",
-        text: "Authorization failed.",
+        title: `Error ${errorCode ?? ""}`,
+        text: message || "Authorization failed.",
       });
     }
-  };
+  } catch (err) {
+    Swal.close();
+    console.error(err);
+
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text:
+        err.response?.data?.data?.message ||
+        err.response?.data?.message ||
+        "Authorization failed.",
+    });
+  }
+};
 
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
