@@ -163,6 +163,7 @@ const FrmTransAuthList = () => {
         ulbId: Number(ulbId),
         budgetId: null,
         userId: selectedUser === "-1" ? null : selectedUser,
+        loginUser: userId,
         nidhiId: null,
         transType: selectedTransType,
       };

@@ -309,7 +309,6 @@ const FrmChequeBook = () => {
   const handlePDFExport = async (formValues) => {
     let loaderSwal;
     try {
-    debugger;
       loaderSwal = Swal.fire({
           title: "Generating...",
           text: "Please wait for cheque book pdf generation",
@@ -356,8 +355,9 @@ const FrmChequeBook = () => {
             Swal.close();
         }
       console.error("PDF Export Error:", error);
+
       Swal.fire({
-        text: error.response?.data?.message || "PDF तयार करताना त्रुटी",
+        text: error.response?.data?.error || "PDF तयार करताना त्रुटी",
         confirmButtonColor: "#1e3a8a",
       });
     } finally {

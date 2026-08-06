@@ -1110,7 +1110,8 @@ const FrmVoucherPreparation = () => {
         confirmButtonColor: '#1e3a8a'
       }).then(async (result) => {
         if (result.isConfirmed) {
-          if (savedRefNo && (ulbId == 930 || ulbId == 1750)) {
+          // if (savedRefNo && (ulbId == 930 || ulbId == 1750)) {
+          if (savedRefNo) {
             await handlePrintPDF(savedRefNo);
           }
           navigate('/Transactions/FrmVoucherPreparationList');
