@@ -82,9 +82,9 @@ async function getCounterVoucherService(body = {}) {
 
   const header = headerRes.rows[0];
 
-  if (!header.TRANSNO) {
-    throw new AppError("Invalid voucher data (missing TRANSNO)", 500);
-  }
+  // if (!header.TRANSNO) {
+  //   throw new AppError("Invalid voucher data (missing TRANSNO)", 500);
+  // }
 
   const detailsRes = await repo.getCounterVoucherDetails({
     transno: refno,

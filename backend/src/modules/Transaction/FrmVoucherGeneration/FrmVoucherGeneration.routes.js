@@ -13,7 +13,7 @@ router.post("/voucher-table", auth(), controller.getVoucherTableDetails);
 router.post("/voucher-tax", auth(), controller.getVoucherTax);
 router.post("/voucher-generation",  auth(), controller.voucherGeneration);
 
-router.post("/counter-voucher-generation-pdf", auth(), controller.getCounterVoucherPDF);
+router.post("/counter-voucher-generation-pdf", controller.getCounterVoucherPDF);
 
 
 module.exports = router;
