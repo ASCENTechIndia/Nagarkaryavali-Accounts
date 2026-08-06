@@ -34,22 +34,26 @@ const getReceiptRegisterEntryStatus = async (params) => {
         }
 
         let query = `
-            SELECT
-                TRNSDATE,
-                PRABHAGNAME,
-                PRABHAGID,
-                VIBHAGID,
-                VIBHAGNAME,
-                USERID,
-                RECNO,
-                TRANSNO,
-                CNT,
-                AMOUNT
-            FROM vw_transentstatus
-            WHERE ULBID = :ULBID
-              AND  TRNSDATE BETWEEN TO_DATE(:FROMDATE, 'DD-MM-YYYY')
-                              AND TO_DATE(:TODATE, 'DD-MM-YYYY')
-        `;
+    SELECT
+        v.TRNSDATE,
+        v.PRABHAGNAME,
+        v.PRABHAGID,
+        v.VIBHAGID,
+        v.VIBHAGNAME,
+        v.USERID,
+        v.RECNO,
+        v.TRANSNO,
+        v.CNT,
+        v.AMOUNT
+    FROM vw_transentstatus v
+    INNER JOIN aoac_receiptmst_def r
+        ON r.num_receiptmst_refno = v.RECNO
+       AND r.num_receiptmst_ulbid = v.ULBID
+    WHERE v.ULBID = :ULBID
+      AND v.TRNSDATE BETWEEN TO_DATE(:FROMDATE, 'DD-MM-YYYY')
+                        AND TO_DATE(:TODATE, 'DD-MM-YYYY')
+      AND NVL(r.var_receiptmst_authstatus, 'N') <> 'R'
+`;
 
         const bindParams = {
             ULBID: params.ulbId,

@@ -335,6 +335,9 @@ const getReceiptRegisterUserWise = async (params) => {
             AND a.trnstypeid IN (1,2)
             AND a.ulbid = :UlbId
             AND aoac_receiptmst_def.num_receiptmst_deptid = :department
+            AND a.accno NOT IN (
+    '04148100001'
+)
             AND EXISTS
             (
                 SELECT 1
