@@ -187,22 +187,24 @@ const RptReceiptMKPDFHelper = async ({ reportData, filters, corporationName, cor
     const getAmt = (code) => grouped.get(code) || 0;
 
    const amount1  = getAmt("45015620001") ||  getAmt("45015620002");
-    const amount2  = getAmt("1015200001"); 
-    const amount3  = getAmt("044015890001") || getAmt("4415890001"); 
-    const amount4  = getAmt("03515720001") ||  getAmt("44015720001"); 
-    const amount5  = getAmt("4319900001"); 
+   const amount2  = getAmt("98938190004");
+    const amount3  = getAmt("1015200001"); 
+    const amount4  = getAmt("044015890001") || getAmt("4415890001"); 
+    const amount5  = getAmt("03515720001") ||  getAmt("44015720001"); 
+    const amount6  = getAmt("4319900001"); 
     
-    const total1to5 =
+    const total1to6 =
       amount1 +
       amount2 +
       amount3 +
       amount4 +
-      amount5;
+      amount5 +
+      amount6 ;
 
     
-    const grandTotal = total1to5;
+    const grandTotal = total1to6;
 
-    console.log(amount1, amount2, amount3, amount4, amount5);
+    console.log(amount1, amount2, amount3, amount4, amount5, amount6);
 
 
     const html = template({
@@ -218,7 +220,8 @@ const RptReceiptMKPDFHelper = async ({ reportData, filters, corporationName, cor
       amount3: formatNumber(amount3),
       amount4: formatNumber(amount4),
       amount5: formatNumber(amount5),
-      total1to5: formatNumber(total1to5),   
+      amount6: formatNumber(amount6),
+      total1to6: formatNumber(total1to6),   
       grandTotal: formatNumber(grandTotal),
       amountInWords: numberToMarathiWords(grandTotal),
     });

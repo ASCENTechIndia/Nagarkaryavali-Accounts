@@ -271,7 +271,7 @@
 
                     <td class="right">एकूण देय रक्कम</td>
 
-                    <td class="right">{{totalPayAmount}}</td>
+                    <td class="right">{{totalPayAmountWithDeduction}}</td>
 
                     <td class="right">{{totalBalanceAmount}}</td>
                   </tr>
@@ -369,7 +369,7 @@
 
                     प्रमाणित करतो की, या देयकामध्ये दर्शविलेले दर व संख्या अचूक आहेत आणि प्राप्त झालेले साहित्य, वस्तू निर्देशानुसार आहेत आणि चांगल्या दर्जाची व चांगल्या स्थितीत आहेत.<br /><br />
 
-                    रुपये <b>{{finalPayable}}</b> (अक्षरात) <b>{{amountWords}}</b> मात्र या करीता प्रदान संमत केले.
+                    रुपये <b>{{totalPayAmountWithDeduction}}</b> (अक्षरात) <b>{{amountWords}}</b> मात्र या करीता प्रदान संमत केले.
                   </td>
 
                   <td class="signature-section no-border">विभाग प्रमुखाची सही</td>
@@ -423,7 +423,7 @@
                     <b>{{amountWords}}</b>
 
                     रु. अंकात
-                    <b>{{finalPayable}}</b>
+                    <b>{{totalPayAmountWithDeduction}}</b>
                     प्रदान.
                   </td>
 
@@ -462,7 +462,7 @@
                 <tr>
                   <td class="no-border received-text">
                     र.
-                    <b>{{finalPayable}}</b>
+                    <b>{{totalPayAmountWithDeduction}}</b>
                     चे प्रदान प्राप्त झाले.
                   </td>
                 </tr>

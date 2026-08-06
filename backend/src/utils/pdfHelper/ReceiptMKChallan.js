@@ -191,7 +191,7 @@ const RptReceiptMKChallanPDFHelper = async ({ reportData, filters, corporationNa
         const amount1 = getAmt("45114240001");
         const amount2 = getAmt("41015430001");
         const amount3 = getAmt("44015210001");
-        const amount4 = getAmt("98938190004");
+        // const amount4 = getAmt("98938190004");
         const amount5 = getAmt("99038900001");
         const amount6 = getAmt("44019900001");
         const amount7 = getAmt("45014100002") || getAmt("45014100001");
@@ -201,7 +201,7 @@ const RptReceiptMKChallanPDFHelper = async ({ reportData, filters, corporationNa
         const amount11 = getAmt("45114200001");
         const amount12 = getAmt("92011200001");
 
-        const grandTotal = amount1 + amount2 + amount3 + amount4 + amount5 + amount6 + amount7 + amount8 + amount9 + amount10 + amount11 + amount12;
+        const grandTotal = amount1 + amount2 + amount3 + amount5 + amount6 + amount7 + amount8 + amount9 + amount10 + amount11 + amount12;
 
 
         const html = template({
@@ -215,7 +215,7 @@ const RptReceiptMKChallanPDFHelper = async ({ reportData, filters, corporationNa
             amount1: formatNumber(amount1),
             amount2: formatNumber(amount2),
             amount3: formatNumber(amount3),
-            amount4: formatNumber(amount4),
+            // amount4: formatNumber(amount4),
             amount5: formatNumber(amount5),
             amount6: formatNumber(amount6),
             amount7: formatNumber(amount7),
