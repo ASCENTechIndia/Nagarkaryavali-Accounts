@@ -564,7 +564,7 @@ const RptCashBook = () => {
         payload,
         {
           headers: { Authorization: `Bearer ${token}` },
-          responseType: 'json'
+          // responseType: 'json'
         }
       );
 

@@ -61,6 +61,7 @@ exports.getCounterVoucherPDF = asyncHandler(async (req, res) => {
 
   const result = await service.getCounterVoucherService(filters);
   const corpInfo = await getCorporationService(filters);
+   console.log("BODY:", req.body);
 
   console.log(result);
 

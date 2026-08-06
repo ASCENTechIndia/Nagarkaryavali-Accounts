@@ -1645,15 +1645,16 @@ const FrmVoucherGeneration = () => {
     return `${day}-${month}-${year}`;
   };
 
-  const handlePrintPDF = async (generatedVoucherNo) => {
+  const handlePrintPDF = async (refNo) => {
     try {
-      console.log("PRINT VOUCHER NO:", generatedVoucherNo);
+      console.log("PRINT REF NO:", refNo);
 
-      if (!generatedVoucherNo) {
-        Swal.fire("Error", "Invalid Voucher No", "error");
+      if (!refNo) {
+        Swal.fire("Error", "Invalid Reference Number", "error");
         return;
       }
-      const loader = Swal.fire({
+
+      Swal.fire({
         title: "Generating PDF...",
         allowOutsideClick: false,
         showConfirmButton: false,
@@ -1664,10 +1665,7 @@ const FrmVoucherGeneration = () => {
         `${BASE_URL}/api/FrmVoucherGeneration/counter-voucher-generation-pdf`,
         {
           ulbId: Number(ulbId),
-
-          // IMPORTANT:
-          // send generated voucher no
-          refno: Number(generatedVoucherNo),
+          refno: Number(refNo),
         },
         {
           headers: {
@@ -1676,29 +1674,32 @@ const FrmVoucherGeneration = () => {
         },
       );
 
-      console.log("PDF RESPONSE:", res.data);
-
-      loader.close();
-
-      if (res?.data?.success && res?.data?.pdfUrl) {
-        window.open(res.data.pdfUrl, "_blank");
-      } else {
-        throw new Error(res?.data?.message || "PDF generation failed");
-      }
-    } catch (error) {
-      console.error("PDF ERROR:", error);
-
       Swal.close();
 
-      Swal.fire({
-        // icon: "error",
-        title: "PDF Error",
-        text:
-          error.response?.data?.message ||
-          error.message ||
-          "PDF तयार करताना त्रुटी आली.",
-        confirmButtonColor: "#1e3a8a",
-      });
+      console.log("PDF RESPONSE:", res.data);
+
+      if (res.data?.success && res.data?.pdfUrl) {
+        window.open(res.data.pdfUrl, "_blank");
+        return;
+      }
+
+      Swal.fire(
+        "Error",
+        res.data?.message || res.data?.error || "PDF generation failed",
+        "error",
+      );
+    } catch (error) {
+      Swal.close();
+
+      console.error("PDF ERROR:", error);
+
+      Swal.fire(
+        "Error",
+        error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message,
+        "error",
+      );
     }
   };
 
@@ -1921,55 +1922,37 @@ const FrmVoucherGeneration = () => {
       if (res.data?.success) {
         const msg = res.data?.errorMsg || "";
 
-        // Transaction Number
-        const transactionMatch = msg.match(/Transaction No\. ?: ?(\d+)/i);
+        const transactionMatch = msg.match(/Transaction\s*No\.?\s*:?\s*(\d+)/i);
+
         const transactionNo = transactionMatch?.[1];
 
-        // Voucher Number (returned by your existing API)
-        const voucherMatch = msg.match(/Vocher No\. ?: ?(\d+)/i);
-        const generatedVoucherNo = voucherMatch?.[1];
-
-        if (Number(user?.ulbId) === 870) {
-          await Swal.fire({
-            title: "Success",
-            text: res.data.errorMsg,
-            icon: "success",
-            confirmButtonColor: "#1e3a8a",
-          });
-
-          formikHelpers.resetForm();
-          setVoucherList([]);
-          setVoucherDetails([]);
-          setChequeBooks([]);
-          setSearchDone(false);
-          setCurrentPage(1);
-
+        if (!transactionNo) {
+          Swal.fire(
+            "Error",
+            "Transaction number not found in response.",
+            "error",
+          );
           return;
         }
 
-        // Other ULBs
-        Swal.fire({
+        console.log("Transaction No:", transactionNo);
+
+        await Swal.fire({
           title: "Success",
           text: `Transaction Number : ${transactionNo}`,
           icon: "success",
           confirmButtonColor: "#1e3a8a",
-        }).then(async (result) => {
-          if (!result.isConfirmed) return;
-
-          if (!generatedVoucherNo) {
-            Swal.fire("Error", "Voucher number not found.", "error");
-            return;
-          }
-
-          await handlePrintPDF(generatedVoucherNo);
-
-          formikHelpers.resetForm();
-          setVoucherList([]);
-          setVoucherDetails([]);
-          setChequeBooks([]);
-          setSearchDone(false);
-          setCurrentPage(1);
         });
+
+        // Generate PDF using Transaction/Reference Number
+        await handlePrintPDF(transactionNo);
+
+        formikHelpers.resetForm();
+        setVoucherList([]);
+        setVoucherDetails([]);
+        setChequeBooks([]);
+        setSearchDone(false);
+        setCurrentPage(1);
       }
     } catch (err) {
       console.error("Voucher Generation Error:", err);
