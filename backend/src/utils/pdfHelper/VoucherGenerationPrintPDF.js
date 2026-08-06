@@ -1,3 +1,4 @@
+
 const puppeteer = require("puppeteer");
 const fs = require("fs");
 const path = require("path");
@@ -5,34 +6,25 @@ const Handlebars = require("handlebars");
 
 const formatNumber = (amount) => {
   let num = Number(amount || 0);
-
   const isNegative = num < 0;
-
   num = Math.abs(num);
 
   const integerPart = Math.floor(num);
-
   const decimalPart = Math.round((num - integerPart) * 100);
 
   let s = integerPart.toString();
-
   let result = "";
 
-  // LAST 3 DIGITS
   if (s.length > 3) {
     result = "," + s.slice(-3);
-
     s = s.slice(0, -3);
   } else {
     result = s;
-
     s = "";
   }
 
-  // REMAINING 2 DIGITS
   while (s.length > 2) {
     result = "," + s.slice(-2) + result;
-
     s = s.slice(0, -2);
   }
 
@@ -41,7 +33,6 @@ const formatNumber = (amount) => {
   }
 
   const decimalString = "." + decimalPart.toString().padStart(2, "0");
-
   result = result + decimalString;
 
   return isNegative ? "-" + result : result;
@@ -151,6 +142,7 @@ const numberToMarathiWords = (num) => {
     "नव्व्याण्णव",
     "शंभर",
   ];
+
   const getWords = (n) => {
     if (n === 0) return "";
     if (n <= 100) return units[n];
@@ -173,127 +165,97 @@ const numberToMarathiWords = (num) => {
   if (!num || num === 0) return "शून्य रुपये";
 
   return getWords(Math.floor(num)).trim() + " रुपये";
-
-  if (!num || num === 0) return "शून्य रुपये";
-
-  return getWords(Math.floor(num)).trim() + " रुपये";
 };
 
 const formatDate = (date) => {
   if (!date) return "";
-
   return new Date(date).toLocaleDateString("en-GB");
 };
 
 const formatTime = (date) => {
   if (!date) return "";
-
   return new Date(date).toLocaleTimeString("en-US");
 };
 
-const numberToWords = (amount) => {
-  return `${formatNumber(amount)} रुपये`;
-};
-
-const generateVoucherGenerationPrintPDF = async ({ mainData, taxDetails, corporationName }) => {
+const generateVoucherGenerationPrintPDF = async ({
+  mainData,
+  taxDetails,
+  corporationName,
+}) => {
   try {
-    const templatePath = path.resolve(__dirname, "../../templates/VoucherGenerationPrint.html");
+    const templatePath = path.resolve(
+      __dirname,
+      "../../templates/VoucherGenerationPrint.html"
+    );
 
     const templateHtml = fs.readFileSync(templatePath, "utf8");
-
     const template = Handlebars.compile(templateHtml);
 
     const data = mainData[0];
 
     const grossAmount = Number(data.GROSSAMOUNT || 0);
-
     const payableAmount = Number(data.AMT || 0);
-
+    const payAmount = Number(data.CRAMT || data.AMT || 0);
     const balanceAmount = Number(data.BALAMT || 0);
 
+    // -------- MAIN TABLE --------
     const rows = [
       {
         srNo: 1,
-
         glcode: data.DRGLCODE || "",
-
         accname: data.DRACCNO || "",
-
         grossAmount: formatNumber(grossAmount),
-
         partyNetPayable: formatNumber(payableAmount),
-
         narration: data.CRACNAME || "",
-
-        payableAmount: formatNumber(data.CRAMT || data.AMT || 0),
-
+        payableAmount: formatNumber(payAmount),
         balanceAmount: formatNumber(balanceAmount),
       },
     ];
 
-    const totalPartyNetPayable = Number(data.AMT || 0);
+    // -------- TOTALS --------
+    const totalPartyNetPayable = payableAmount;
 
-    let totalDeduction = 0;
+    const totalDeduction = taxDetails.reduce(
+      (sum, row) => sum + Number(row.AMOUNT || 0),
+      0
+    );
 
-    let totalPayAmount = 0;
+    // निव्वळ देय रक्कम = देय रक्कम - रक्कम रुपये
+    const totalPayAmount = payAmount - totalDeduction;
 
-    let totalBalanceAmount = 0;
+    // निव्वळ देय रक्कम कपाती सहित = देय रक्कम
+    const totalPayAmountWithDeduction = payAmount;
 
-    let totalPayAmountWithDeduction = 0;
+    const totalBalanceAmount = balanceAmount;
 
-    const deductionRows = taxDetails.map((row, index) => {
-      const amount = Number(row.AMOUNT || 0);
+    // -------- DEDUCTION ROWS --------
+    const deductionRows = taxDetails.map((row, index) => ({
+      srNo: index + 1,
+      accno: row.ACCNO || "",
+      accname: row.ACCNAME || "",
+      amount: formatNumber(row.AMOUNT || 0),
 
-      const payamt = parseFloat(row.PAYAMT || 0);
-
-      const payamtWithDeduction = amount + payamt;
-
-      totalDeduction += amount;
-
-      totalPayAmount = totalPayAmount + payamt;
-
-      totalBalanceAmount += Number(data.BALAMT || 0);
-
-      totalPayAmountWithDeduction = totalPayAmountWithDeduction + payamtWithDeduction;
-
-      return {
-        srNo: index + 1,
-
-        accno: row.ACCNO || "",
-
-        accname: row.ACCNAME || "",
-
-        amount: formatNumber(amount),
-
-        payamt: formatNumber(payamt),
-
-        payamtWithDeduction: formatNumber(payamtWithDeduction),
-      };
-    });
+      // keep blank in row, totals shown below
+      payamt: "",
+      payamtWithDeduction: "",
+    }));
 
     const html = template({
       corporationName,
-
       header: "Payment Voucher Acknowledgement",
 
       printDate: formatDate(data.TRANSDATE),
-
       printTime: formatTime(data.TRANSDATE),
 
       zone: data.ZONEENAME || "",
-
       department: data.DEPTNAME || "",
-
       username: data.USERNAME || "",
 
       manualNo: data.MANUALNO || "",
-
       systemBillNo: data.SYSTEMBILLNO || "",
 
       voucherNo: data.PREVCHNO || "",
-
       transNo: data.TRANSNO || "",
-
       voucherDate: formatDate(data.VOUCHERDATE),
 
       party: `${data.PARTYID} ${data.PARTYNAME}`,
@@ -303,45 +265,40 @@ const generateVoucherGenerationPrintPDF = async ({ mainData, taxDetails, corpora
       narration: data.NARRATION || "",
 
       chequeNo: data.CHQNO || "",
-
       chequeDate: formatDate(data.CHQDATE),
 
       bankName: data.BANKNAME || "",
-
       paymode: data.PAYMODE || "",
 
       grossAmount: formatNumber(grossAmount),
-
       payableAmount: formatNumber(payableAmount),
-
       balanceAmount: formatNumber(balanceAmount),
 
       totalBalanceAmount: formatNumber(totalBalanceAmount),
 
-      amountWords: numberToMarathiWords(payableAmount),
+      amountWords: numberToMarathiWords(totalPayAmountWithDeduction),
 
       deductionRows,
 
       totalDeduction: formatNumber(totalDeduction),
-
       totalPartyNetPayable: formatNumber(totalPartyNetPayable),
 
+      // Correct totals
       totalPayAmount: formatNumber(totalPayAmount),
-
-      totalPayAmountWithDeduction: formatNumber(totalPayAmountWithDeduction),
+      totalPayAmountWithDeduction: formatNumber(
+        totalPayAmountWithDeduction
+      ),
 
       finalAmount: formatNumber(payableAmount),
-
-      finalAmountWords: numberToMarathiWords(payableAmount),
-
+      finalAmountWords: numberToMarathiWords(totalPayAmountWithDeduction),
       finalPayable: formatNumber(payableAmount),
     });
 
-    // const browser = await puppeteer.launch({
-    //   headless: true,
-    // });
-
-    const chromePath = path.resolve(__dirname, "../../../node_modules/puppeteer/.cache/puppeteer/chrome/win64-135.0.7049.84/chrome-win64/chrome.exe");
+    // -------- PUPPETEER --------
+    const chromePath = path.resolve(
+      __dirname,
+      "../../../node_modules/puppeteer/.cache/puppeteer/chrome/win64-135.0.7049.84/chrome-win64/chrome.exe"
+    );
 
     const launchOptions = {
       headless: true,
@@ -361,16 +318,12 @@ const generateVoucherGenerationPrintPDF = async ({ mainData, taxDetails, corpora
     });
 
     const fileName = `VoucherGeneration_${Date.now()}.pdf`;
-
     const filePath = path.resolve("public/pdf", fileName);
 
     await page.pdf({
       path: filePath,
-
       format: "A4",
-
       printBackground: true,
-
       margin: {
         top: "10px",
         bottom: "10px",
@@ -387,7 +340,6 @@ const generateVoucherGenerationPrintPDF = async ({ mainData, taxDetails, corpora
     };
   } catch (err) {
     console.error("VOUCHER PDF ERROR:", err);
-
     throw err;
   }
 };

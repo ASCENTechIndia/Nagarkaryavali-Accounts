@@ -93,12 +93,13 @@ const FrmVouchergenerationReprint = () => {
             });
 
             const payload = {
-                refno: Number(row.REFNO),
+                refNo: Number(row.REFNO),
                 ulbId: Number(ulbId),
             };
 
+
             const res = await axios.post(
-                `${BASE_URL}/api/FrmVoucherGeneration/counter-voucher-generation-pdf`,
+                `${BASE_URL}/api/FrmVouchergenerationReprint/voucher-generation-print`,
                 payload,
                 {
                     headers: {
@@ -112,12 +113,20 @@ const FrmVouchergenerationReprint = () => {
             if (res?.data?.success && res?.data?.pdfUrl) {
                 window.open(res.data.pdfUrl, "_blank");
             } else {
-                throw new Error("PDF generation failed");
+                Swal.fire({
+                    text: "PDF तयार करताना त्रुटी",
+                    confirmButtonColor: "#1e3a8a",
+                });
             }
         } catch (error) {
+            Swal.close();
+
             console.error(error);
+
             Swal.fire({
-                text: error.response?.data?.message || "PDF तयार करताना त्रुटी",
+                text:
+                    error.response?.data?.message ||
+                    "PDF तयार करताना त्रुटी",
                 confirmButtonColor: "#1e3a8a",
             });
         }
