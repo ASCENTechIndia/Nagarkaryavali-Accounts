@@ -9,6 +9,7 @@ const getTransactionList = async (params) => {
       FromDate: params.fromDate,
       ToDate: params.toDate,
       UlbId: params.ulbId,
+      loginUser: params.loginUser
     };
 
     // ================= RECEIPT =================
@@ -195,7 +196,7 @@ const getTransactionList = async (params) => {
           AND rmst.num_receiptmst_zoneid IN (
                 SELECT num_accusermap_ward
                 FROM aoms_accusermap_mas
-                WHERE num_accusermap_userid = :UserId
+                WHERE num_accusermap_userid = :loginUser
           )
 
       `;
@@ -210,7 +211,7 @@ const getTransactionList = async (params) => {
         bindParams.BudgetId = params.budgetId;
       }
 
-      if (params.userId && params.userId !== "0") {
+      if (params.userId && (params.userId !== "0" || params.userId !== "-1")) {
         query += ` AND rmst.var_receiptmst_insby = :UserId`;
         bindParams.UserId = params.userId;
       }
@@ -265,7 +266,7 @@ ORDER BY
           AND rmst.num_receiptmst_zoneid IN (
                 SELECT num_accusermap_ward
                 FROM aoms_accusermap_mas
-                WHERE num_accusermap_userid = :UserId
+                WHERE num_accusermap_userid = :loginUser
           )
       `;
 
@@ -343,7 +344,7 @@ ORDER BY
           AND rmst.num_receiptmst_zoneid IN (
                 SELECT num_accusermap_ward
                 FROM aoms_accusermap_mas
-                WHERE num_accusermap_userid = :UserId
+                WHERE num_accusermap_userid = :loginUser
           )
       `;
 
@@ -386,6 +387,9 @@ ORDER BY
     } else {
       throw new Error("Invalid Transaction Type");
     }
+
+    console.log(query);
+
     return await executeQuery(query, bindParams);
   } catch (err) {
     throw err;

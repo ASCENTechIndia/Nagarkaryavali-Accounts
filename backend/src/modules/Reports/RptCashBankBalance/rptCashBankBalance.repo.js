@@ -122,6 +122,296 @@ async function getCashBankBalanceReportRepo(payload) {
 }
 
 
+// async function getDailyTransactionDetailedReport(filters) {
+//   const { date, ulbId, corpCode, budgetId, nidhiId, zone } = filters;
+
+//   let params = {
+//     reportDate: date,
+//     ulbId: ulbId
+//   };
+
+//   let mbmcFilter1 = "";
+//   let mbmcFilter2 = "";
+//   let mbmcFilter3 = "";
+//   let mbmcFilter4 = "";
+
+//   if (corpCode === "MBMC") {
+//     if (budgetId && budgetId !== 0 && budgetId !== "0") {
+//       mbmcFilter1 += " AND a.budgetid = :budgetId ";
+//       mbmcFilter2 += " AND t.num_trans_budgetid = :budgetId ";
+//       mbmcFilter3 += " AND budgetid = :budgetId ";
+//       mbmcFilter4 += " AND budgetid = :budgetId ";
+//       params.budgetId = budgetId;
+//     }
+//     if (nidhiId && nidhiId !== 0 && nidhiId !== "0") {
+//       mbmcFilter1 += " AND a.nidhi_id = :nidhiId ";
+//       mbmcFilter2 += " AND t.num_trans_nidhiid = :nidhiId ";
+//       mbmcFilter3 += " AND a.nidhi_id = :nidhiId ";
+//       mbmcFilter4 += " AND a.nidhi_id = :nidhiId ";
+//       params.nidhiId = nidhiId;
+//     }
+//   }
+
+//   let zoneFilter1 = "";
+//   let zoneFilter2 = "";
+//   let zoneFilter3 = "";
+//   let zoneFilter4 = "";
+//   let zoneFilter5 = "";
+
+//   if (zone && zone !== "-1") {
+//     zoneFilter1 = " AND a.zoneid = :zone ";
+//     zoneFilter2 = " AND vpm.num_vchprepmst_zoneid = :zone ";
+//     zoneFilter3 = " AND a.zoneid = :zone ";
+//     zoneFilter4 = " AND a.zoneid = :zone ";
+//     zoneFilter5 = "  AND v.zoneid = :zone ";
+//     params.zone = zone;
+//   }
+
+//   const sql = `
+//     -- PART 1: Receipts (Type R)
+//     SELECT 
+//         a.transno, 
+//         a.trnsdate, 
+//         a.docno, 
+//         a.glcode, 
+//         a.accno, 
+//         a.narration, 
+//         CASE WHEN a.trnstypeid = 1 THEN a.amount ELSE 0 END AS cashamount, 
+//         CASE WHEN a.trnstypeid = 2 THEN a.amount ELSE 0 END AS bankamount, 
+//         'R' AS TransType, 
+//         TO_CHAR(a.chqno, 'FM000000') AS chqno, 
+//         CASE WHEN a.sourceid = 6 THEN a.amount ELSE 0 END AS transamount,
+//         v.zoneename AS zonename, 
+//         m.deptname AS grampanch,
+//         c.objectcode || ' ' || c.accname AS accname, 
+//         p.var_partymst_partyname AS PartyName, 
+//         NULL AS DelFlag,
+//         c.objectcode, 
+//         c.functioncode 
+//     FROM transview a 
+//     INNER JOIN accountview_web c 
+//         ON a.glcode = c.glcode 
+//         AND a.accno = c.accno 
+//         AND c.ulbid = a.ulbid 
+//     LEFT JOIN aoac_partymst_def p 
+//         ON p.num_partymst_partyid = a.partycode 
+//     LEFT JOIN view_zone v 
+//         ON v.zoneid = a.zoneid 
+//     LEFT OUTER JOIN vw_accdeptconfig m 
+//         ON m.deptid = a.accdept
+//     WHERE TRUNC(a.trnsdate) = TO_DATE(:reportDate, 'DD-MON-YYYY')
+//         AND a.amount > 0 
+//         AND a.trnstypeid IN (1, 2)
+//         AND c.ulbid = :ulbId
+//         ${mbmcFilter1}
+//         ${zoneFilter1}
+
+//     UNION ALL 
+
+//     -- PART 2: Voucher Payments (Type P)
+//     SELECT 
+//         num_vchtransbal_transno AS transno, 
+//         date_trans_trnsdate AS trnsdate, 
+//         (SELECT DISTINCT TO_CHAR(num_vchtransbal_vchtransbalno) 
+//          FROM aoac_vchtransbal_def 
+//          WHERE num_vchtransbal_transno = t.num_trans_transno) AS docno,    
+//         num_vchprepmst_drgl AS glcode, 
+//         num_vchprepmst_dracc AS accno, 
+//         var_vchpremst_narration AS narration, 
+//         0 AS cashamount,    
+//         num_vchtransbal_payamt AS bankamount, 
+//         'P' AS TransType, 
+//         TO_CHAR(num_trans_chqno, 'FM000000') AS chqno, 
+//         0 AS transamount,    
+//         NULL AS zonename, 
+//         NULL AS grampanch, 
+//         c.objectcode || ' ' || c.accname AS accname, 
+//         p.var_partymst_partyname AS PartyName, 
+//         NULL AS DelFlag, 
+//         c.objectcode, 
+//         c.functioncode
+//     FROM aoac_vchprepmst_def vpm
+//     INNER JOIN aoac_vchgenmst_def vgm 
+//         ON vgm.num_vchgenmst_refno = vpm.num_vchprepmst_refno 
+//     INNER JOIN accountview_web c 
+//         ON c.glcode = vpm.num_vchprepmst_drgl 
+//         AND c.accno = vpm.num_vchprepmst_dracc 
+//         AND c.ulbid = vpm.num_vchpremst_ulbid 
+//     LEFT JOIN aoac_partymst_def p 
+//         ON p.num_partymst_partyid = vpm.num_vchprepmst_partyid    
+//     INNER JOIN aoac_vchtransbal_def vtb 
+//         ON vtb.num_vchtransbal_vchrefno = vpm.num_vchprepmst_refno 
+//         AND vtb.num_vchtransbal_vchtransbalno = vgm.num_vchgenmst_trnsno 
+//     INNER JOIN aoac_trans_def t 
+//         ON t.num_trans_transno = vtb.num_vchtransbal_transno    
+//     WHERE TRUNC(t.date_trans_trnsdate) = TO_DATE(:reportDate, 'DD-MON-YYYY')
+//         AND c.ulbid = :ulbId
+//         ${zoneFilter2}
+//         ${mbmcFilter2}
+//     GROUP BY 
+//         num_vchtransbal_transno, 
+//         date_trans_trnsdate, 
+//         num_vchprepmst_vchno, 
+//         num_vchprepmst_drgl, 
+//         c.functioncode, 
+//         num_vchtransbal_payamt, 
+//         num_vchprepmst_dracc, 
+//         c.objectcode, 
+//         var_vchpremst_narration, 
+//         num_vchprepmst_totalamt, 
+//         TO_CHAR(num_trans_chqno, 'FM000000'), 
+//         c.objectcode || ' ' || c.accname, 
+//         var_partymst_partyname, 
+//         num_trans_transno
+
+//     UNION ALL 
+
+//     -- PART 3: General Payments (Type P)
+//     SELECT 
+//         a.transno, 
+//         a.trnsdate, 
+//         a.docno, 
+//         a.glcode, 
+//         a.accno, 
+//         p.var_partymst_partyname || ' ' || c.accname || ' ' || a.narration AS narration,    
+//         CASE WHEN a.trnstypeid = 3 THEN a.amount ELSE 0 END AS cashamount,    
+//         CASE WHEN a.trnstypeid = 4 THEN a.amount ELSE 0 END AS bankamount, 
+//         'P' AS TransType, 
+//         TO_CHAR(a.chqno, 'FM000000') AS chqno,     
+//         CASE WHEN a.trnstypeid = 8 THEN a.amount ELSE 0 END AS transamount, 
+//         v.zoneename AS zonename, 
+//         m.deptname AS grampanch,    
+//         c.objectcode || ' ' || c.accname AS accname, 
+//         p.var_partymst_partyname AS PartyName, 
+//         NULL AS DelFlag, 
+//         c.objectcode, 
+//         c.functioncode    
+//     FROM transview a    
+//     INNER JOIN accountview_web c 
+//         ON a.glcode = c.glcode 
+//         AND a.accno = c.accno 
+//         AND c.ulbid = a.ulbid    
+//     LEFT JOIN aoac_partymst_def p 
+//         ON p.num_partymst_partyid = a.partycode     
+//     LEFT JOIN view_zone v 
+//         ON v.zoneid = a.zoneid    
+//     LEFT OUTER JOIN vw_accdeptconfig m 
+//         ON m.deptid = a.accdept     
+//     WHERE TRUNC(a.trnsdate) = TO_DATE(:reportDate, 'DD-MON-YYYY') 
+//         AND a.amount < 0 
+//         AND a.trnstypeid IN (3, 4) 
+//         AND a.sourceid <> 6
+//         AND c.ulbid = :ulbId
+//         ${mbmcFilter3}
+//         ${zoneFilter3}
+
+//     UNION ALL 
+
+//     -- PART 4: Internal/Transfer Payments (Type P)
+//     SELECT 
+//         a.transno, 
+//         a.trnsdate, 
+//         a.docno, 
+//         a.glcode, 
+//         a.accno, 
+//         p.var_partymst_partyname || ' ' || c.accname || ' ' || a.narration AS narration,    
+//         0 AS cashamount,    
+//         0 AS bankamount, 
+//         'P' AS TransType, 
+//         TO_CHAR(a.chqno, 'FM000000') AS chqno,     
+//         CASE WHEN a.trnstypeid = 9 THEN a.amount ELSE 0 END AS transamount, 
+//         v.zoneename AS zonename, 
+//         m.deptname AS grampanch,    
+//         c.objectcode || ' ' || c.accname AS accname, 
+//         p.var_partymst_partyname AS PartyName, 
+//         NULL AS DelFlag, 
+//         c.objectcode, 
+//         c.functioncode
+//     FROM transview a    
+//     INNER JOIN accountview_web c 
+//         ON a.glcode = c.glcode 
+//         AND a.accno = c.accno 
+//         AND c.ulbid = a.ulbid 
+//     LEFT JOIN aoac_partymst_def p 
+//         ON p.num_partymst_partyid = a.partycode     
+//     LEFT JOIN view_zone v 
+//         ON v.zoneid = a.zoneid     
+//     LEFT OUTER JOIN vw_accdeptconfig m 
+//         ON m.deptid = a.accdept     
+//     WHERE TRUNC(a.trnsdate) = TO_DATE(:reportDate, 'DD-MON-YYYY') 
+//         AND a.amount > 0 
+//         AND a.trnstypeid IN (9) 
+//         AND a.sourceid <> 6    
+//         AND c.ulbid = :ulbId
+//         ${mbmcFilter4}
+//         ${zoneFilter4}
+
+//     UNION ALL
+
+//     SELECT
+//       num_receiptmst_trnsno AS transno,
+//       date_receiptmst_trnsdate AS trnsdate,
+//       TO_CHAR(num_receiptmst_refno) AS docno,
+//       num_receiptdesc_glcode AS glcode,
+//       num_receiptdesc_accno AS accno,
+//       var_receiptdesc_narration AS narration,
+//       CASE
+//           WHEN num_receiptmst_trnstypeid = 1
+//           THEN NVL(num_receiptdesc_amount,0)
+//           ELSE 0
+//       END AS cashamount,
+//       CASE
+//           WHEN num_receiptmst_trnstypeid = 2
+//           THEN NVL(num_receiptdesc_amount,0)
+//           ELSE 0
+//       END AS bankamount,
+//       'P' AS TransType,
+//       CAST(NULL AS VARCHAR2(20)) AS chqno,
+//       0 AS transamount,
+//       v.zoneename AS zonename,
+//       CAST(NULL AS VARCHAR2(200)) AS grampanch,
+//       c.objectcode || ' ' || c.accname AS accname,
+//       CAST(NULL AS VARCHAR2(200)) AS PartyName,
+//       CAST(NULL AS VARCHAR2(1)) AS DelFlag,
+//       c.objectcode,
+//       c.functioncode
+//       FROM aoac_receiptmst_def rm
+//       INNER JOIN aoac_receiptdesc_def rd  ON rm.num_receiptmst_refno = rd.num_receiptdesc_refno
+//       INNER JOIN accountview_web c  ON rd.num_receiptdesc_glcode = c.glcode AND rd.num_receiptdesc_accno = c.accno AND rm.num_receiptmst_ulbid = c.ulbid
+//       LEFT JOIN view_zone v
+//           ON v.zoneid = rm.num_receiptmst_zoneid
+
+//       WHERE TRUNC(rm.date_receiptmst_trnsdate) =
+//           TO_DATE(:reportDate, 'DD-MON-YYYY')
+//       AND c.ulbid = :ulbId
+//       AND rm.num_receiptmst_trnsno IS NOT NULL
+//       AND rd.num_receiptdesc_amount > 0
+//     ${zoneFilter5}
+
+
+//     ORDER BY TransType DESC, transno, docno, transamount
+//   `;
+
+//   console.log("Executing SQL with params:", params);
+//   console.log("Generated SQL:", sql);
+  
+//   const result = await executeQuery(sql, params);
+
+//   if (!result.success) {
+//     console.error("SQL Error:", result.error);
+//     throw new Error(result.error);
+//   }
+//   if (result.rows && result.rows.length > 0) {
+//     console.log("First row column names:", Object.keys(result.rows[0]));
+//     console.log("First row sample:", result.rows[0]);
+//   }
+  
+//   const transformedData = transformToCashBookFormat(result.rows);
+//   console.log("Transformed data count:", transformedData.length);
+  
+//   return transformedData;
+// }
+
 async function getDailyTransactionDetailedReport(filters) {
   const { date, ulbId, corpCode, budgetId, nidhiId, zone } = filters;
 
@@ -163,8 +453,43 @@ async function getDailyTransactionDetailedReport(filters) {
     zoneFilter2 = " AND vpm.num_vchprepmst_zoneid = :zone ";
     zoneFilter3 = " AND a.zoneid = :zone ";
     zoneFilter4 = " AND a.zoneid = :zone ";
-    zoneFilter5 = "  AND v.zoneid = :zone ";
+    zoneFilter5 = "  AND rm.num_receiptmst_zoneid = :zone ";
     params.zone = zone;
+  }
+
+  let receiptSourceFilter = "";
+  let voucherPaymentBankAmount = "vtb.num_vchtransbal_payamt";
+  let voucherPaymentFromClause = "";
+  let includeVoucherTransferPart = false;
+  
+  if (ulbId == 2) {
+    receiptSourceFilter = " AND a.trnstypeid IN (1, 2) ";
+  } 
+  else if (ulbId == 870) {
+    receiptSourceFilter = " AND (a.trnstypeid IN (1, 2) OR (a.sourceid = 6 AND c.accsubtypeid NOT IN (4820,4821,4822,4823,4829))) ";
+    voucherPaymentBankAmount = "CASE WHEN vpm.num_vchpremst_ulbid = 870 THEN vtb.num_vchtransbal_payamt - MAX(NVL(deductionamount, 0)) ELSE vtb.num_vchtransbal_payamt END";
+    voucherPaymentFromClause = " LEFT JOIN vw_deductions ON v_transno = vtb.num_vchtransbal_vchtransbalno AND v_vchrefno = vtb.num_vchtransbal_vchrefno ";
+    includeVoucherTransferPart = true;
+  }
+  else {
+    receiptSourceFilter = " AND a.trnstypeid IN (1, 2) ";
+  }
+
+  let paymentNarration = "p.var_partymst_partyname || ' ' || c.accname || ' ' || a.narration";
+  let paymentFromClause = " transview a ";
+  let paymentWhereClause = "";
+  
+  if (ulbId == 870) {
+    paymentNarration = "p.var_partymst_partyname || ' ' || c.accname || ' ' || CASE WHEN a.rn = 1 THEN a.narration ELSE NULL END";
+    paymentFromClause = `
+      (SELECT a.*, ROW_NUMBER() OVER(PARTITION BY a.narration ORDER BY a.transno, a.accno) rn 
+       FROM transview a 
+       WHERE TRUNC(a.trnsdate) = TO_DATE(:reportDate, 'DD-MON-YYYY') 
+       AND a.amount < 0 
+       AND a.trnstypeid IN (3, 4) 
+       AND a.sourceid <> 6
+      ) a`;
+    paymentWhereClause = "AND 1=1";
   }
 
   const sql = `
@@ -201,7 +526,7 @@ async function getDailyTransactionDetailedReport(filters) {
         ON m.deptid = a.accdept
     WHERE TRUNC(a.trnsdate) = TO_DATE(:reportDate, 'DD-MON-YYYY')
         AND a.amount > 0 
-        AND a.trnstypeid IN (1, 2)
+        ${receiptSourceFilter}
         AND c.ulbid = :ulbId
         ${mbmcFilter1}
         ${zoneFilter1}
@@ -210,18 +535,18 @@ async function getDailyTransactionDetailedReport(filters) {
 
     -- PART 2: Voucher Payments (Type P)
     SELECT 
-        num_vchtransbal_transno AS transno, 
-        date_trans_trnsdate AS trnsdate, 
+        vtb.num_vchtransbal_transno AS transno, 
+        t.date_trans_trnsdate AS trnsdate, 
         (SELECT DISTINCT TO_CHAR(num_vchtransbal_vchtransbalno) 
          FROM aoac_vchtransbal_def 
          WHERE num_vchtransbal_transno = t.num_trans_transno) AS docno,    
-        num_vchprepmst_drgl AS glcode, 
-        num_vchprepmst_dracc AS accno, 
-        var_vchpremst_narration AS narration, 
+        vpm.num_vchprepmst_drgl AS glcode, 
+        vpm.num_vchprepmst_dracc AS accno, 
+        vpm.var_vchpremst_narration AS narration, 
         0 AS cashamount,    
-        num_vchtransbal_payamt AS bankamount, 
+        ${voucherPaymentBankAmount} AS bankamount, 
         'P' AS TransType, 
-        TO_CHAR(num_trans_chqno, 'FM000000') AS chqno, 
+        TO_CHAR(t.num_trans_chqno, 'FM000000') AS chqno, 
         0 AS transamount,    
         NULL AS zonename, 
         NULL AS grampanch, 
@@ -244,36 +569,84 @@ async function getDailyTransactionDetailedReport(filters) {
         AND vtb.num_vchtransbal_vchtransbalno = vgm.num_vchgenmst_trnsno 
     INNER JOIN aoac_trans_def t 
         ON t.num_trans_transno = vtb.num_vchtransbal_transno    
+    ${voucherPaymentFromClause}
     WHERE TRUNC(t.date_trans_trnsdate) = TO_DATE(:reportDate, 'DD-MON-YYYY')
         AND c.ulbid = :ulbId
         ${zoneFilter2}
         ${mbmcFilter2}
     GROUP BY 
-        num_vchtransbal_transno, 
-        date_trans_trnsdate, 
-        num_vchprepmst_vchno, 
-        num_vchprepmst_drgl, 
+        vpm.num_vchpremst_ulbid,
+        vtb.num_vchtransbal_transno, 
+        t.date_trans_trnsdate, 
+        vpm.num_vchprepmst_vchno, 
+        vpm.num_vchprepmst_drgl, 
         c.functioncode, 
-        num_vchtransbal_payamt, 
-        num_vchprepmst_dracc, 
+        vtb.num_vchtransbal_payamt, 
+        vpm.num_vchprepmst_dracc, 
         c.objectcode, 
-        var_vchpremst_narration, 
-        num_vchprepmst_totalamt, 
-        TO_CHAR(num_trans_chqno, 'FM000000'), 
+        vpm.var_vchpremst_narration, 
+        vpm.num_vchprepmst_totalamt, 
+        TO_CHAR(t.num_trans_chqno, 'FM000000'), 
         c.objectcode || ' ' || c.accname, 
-        var_partymst_partyname, 
-        num_trans_transno
+        p.var_partymst_partyname, 
+        t.num_trans_transno
+
+    ${includeVoucherTransferPart ? `
+    UNION ALL 
+
+    -- PART 3: Voucher Payment Transfers (Type P) - Only for SMKC
+    SELECT 
+        vtb.num_vchtransbal_transno AS transno, 
+        t.date_trans_trnsdate AS trnsdate, 
+        (SELECT DISTINCT TO_CHAR(num_vchtransbal_vchtransbalno) 
+         FROM aoac_vchtransbal_def 
+         WHERE num_vchtransbal_transno = t.num_trans_transno) AS docno,    
+        vpm.num_vchprepmst_drgl AS glcode, 
+        vpm.num_vchprepmst_dracc AS accno, 
+        vpm.var_vchpremst_narration AS narration, 
+        0 AS cashamount,    
+        0 AS bankamount, 
+        'P' AS TransType, 
+        TO_CHAR(t.num_trans_chqno, 'FM000000') AS chqno, 
+        NVL(vtbdet.num_vchtransbaldet_amount, 0) AS transamount,    
+        NULL AS zonename, 
+        NULL AS grampanch, 
+        c.objectcode || ' ' || c.accname AS accname, 
+        p.var_partymst_partyname AS PartyName, 
+        NULL AS DelFlag, 
+        c.objectcode, 
+        c.functioncode
+    FROM aoac_vchprepmst_def vpm
+    INNER JOIN aoac_vchtransbal_def vtb 
+        ON vtb.num_vchtransbal_vchrefno = vpm.num_vchprepmst_refno 
+    INNER JOIN aoac_vchtransbaldet_def vtbdet 
+        ON vtbdet.num_vchtransbaldet_transno = vtb.num_vchtransbal_vchtransbalno 
+        AND vtb.num_vchtransbal_vchrefno = vpm.num_vchprepmst_refno 
+        AND vtbdet.num_vchtransbaldet_amount > 0 
+    INNER JOIN accountview_web c 
+        ON c.glcode = vtbdet.num_vchtransbaldet_glcode 
+        AND c.accno = vtbdet.num_vchtransbaldet_accno 
+        AND c.ulbid = vtb.num_vchtransbal_ulbid 
+    LEFT JOIN aoac_partymst_def p 
+        ON p.num_partymst_partyid = vpm.num_vchprepmst_partyid    
+    INNER JOIN aoac_trans_def t 
+        ON t.num_trans_transno = vtb.num_vchtransbal_transno 
+    WHERE TRUNC(t.date_trans_trnsdate) = TO_DATE(:reportDate, 'DD-MON-YYYY') 
+        AND vtb.num_vchtransbal_balamt <> 0
+        AND c.ulbid = :ulbId
+        ${zoneFilter2}
+    ` : ""}
 
     UNION ALL 
 
-    -- PART 3: General Payments (Type P)
+    -- PART ${includeVoucherTransferPart ? "4" : "3"}: General Payments (Type P)
     SELECT 
         a.transno, 
         a.trnsdate, 
         a.docno, 
         a.glcode, 
         a.accno, 
-        p.var_partymst_partyname || ' ' || c.accname || ' ' || a.narration AS narration,    
+        ${paymentNarration} AS narration,    
         CASE WHEN a.trnstypeid = 3 THEN a.amount ELSE 0 END AS cashamount,    
         CASE WHEN a.trnstypeid = 4 THEN a.amount ELSE 0 END AS bankamount, 
         'P' AS TransType, 
@@ -286,7 +659,7 @@ async function getDailyTransactionDetailedReport(filters) {
         NULL AS DelFlag, 
         c.objectcode, 
         c.functioncode    
-    FROM transview a    
+    FROM ${paymentFromClause}
     INNER JOIN accountview_web c 
         ON a.glcode = c.glcode 
         AND a.accno = c.accno 
@@ -302,12 +675,13 @@ async function getDailyTransactionDetailedReport(filters) {
         AND a.trnstypeid IN (3, 4) 
         AND a.sourceid <> 6
         AND c.ulbid = :ulbId
+        ${paymentWhereClause}
         ${mbmcFilter3}
         ${zoneFilter3}
 
     UNION ALL 
 
-    -- PART 4: Internal/Transfer Payments (Type P)
+    -- PART ${includeVoucherTransferPart ? "5" : "4"}: Internal/Transfer Payments (Type P)
     SELECT 
         a.transno, 
         a.trnsdate, 
@@ -348,46 +722,48 @@ async function getDailyTransactionDetailedReport(filters) {
 
     UNION ALL
 
+    -- PART ${includeVoucherTransferPart ? "6" : "5"}: Receipt Descriptions
     SELECT
-      num_receiptmst_trnsno AS transno,
-      date_receiptmst_trnsdate AS trnsdate,
-      TO_CHAR(num_receiptmst_refno) AS docno,
-      num_receiptdesc_glcode AS glcode,
-      num_receiptdesc_accno AS accno,
-      var_receiptdesc_narration AS narration,
-      CASE
-          WHEN num_receiptmst_trnstypeid = 1
-          THEN NVL(num_receiptdesc_amount,0)
-          ELSE 0
-      END AS cashamount,
-      CASE
-          WHEN num_receiptmst_trnstypeid = 2
-          THEN NVL(num_receiptdesc_amount,0)
-          ELSE 0
-      END AS bankamount,
-      'P' AS TransType,
-      CAST(NULL AS VARCHAR2(20)) AS chqno,
-      0 AS transamount,
-      v.zoneename AS zonename,
-      CAST(NULL AS VARCHAR2(200)) AS grampanch,
-      c.objectcode || ' ' || c.accname AS accname,
-      CAST(NULL AS VARCHAR2(200)) AS PartyName,
-      CAST(NULL AS VARCHAR2(1)) AS DelFlag,
-      c.objectcode,
-      c.functioncode
-      FROM aoac_receiptmst_def rm
-      INNER JOIN aoac_receiptdesc_def rd  ON rm.num_receiptmst_refno = rd.num_receiptdesc_refno
-      INNER JOIN accountview_web c  ON rd.num_receiptdesc_glcode = c.glcode AND rd.num_receiptdesc_accno = c.accno AND rm.num_receiptmst_ulbid = c.ulbid
-      LEFT JOIN view_zone v
-          ON v.zoneid = rm.num_receiptmst_zoneid
-
-      WHERE TRUNC(rm.date_receiptmst_trnsdate) =
-          TO_DATE(:reportDate, 'DD-MON-YYYY')
-      AND c.ulbid = :ulbId
-      AND rm.num_receiptmst_trnsno IS NOT NULL
-      AND rd.num_receiptdesc_amount > 0
-    ${zoneFilter5}
-
+        rm.num_receiptmst_trnsno AS transno,
+        rm.date_receiptmst_trnsdate AS trnsdate,
+        TO_CHAR(rm.num_receiptmst_refno) AS docno,
+        rd.num_receiptdesc_glcode AS glcode,
+        rd.num_receiptdesc_accno AS accno,
+        rd.var_receiptdesc_narration AS narration,
+        CASE
+            WHEN rm.num_receiptmst_trnstypeid = 1
+            THEN NVL(rd.num_receiptdesc_amount, 0)
+            ELSE 0
+        END AS cashamount,
+        CASE
+            WHEN rm.num_receiptmst_trnstypeid = 2
+            THEN NVL(rd.num_receiptdesc_amount, 0)
+            ELSE 0
+        END AS bankamount,
+        'P' AS TransType,
+        CAST(NULL AS VARCHAR2(20)) AS chqno,
+        0 AS transamount,
+        v.zoneename AS zonename,
+        CAST(NULL AS VARCHAR2(200)) AS grampanch,
+        c.objectcode || ' ' || c.accname AS accname,
+        CAST(NULL AS VARCHAR2(200)) AS PartyName,
+        CAST(NULL AS VARCHAR2(1)) AS DelFlag,
+        c.objectcode,
+        c.functioncode
+    FROM aoac_receiptmst_def rm
+    INNER JOIN aoac_receiptdesc_def rd  
+        ON rm.num_receiptmst_refno = rd.num_receiptdesc_refno
+    INNER JOIN accountview_web c  
+        ON rd.num_receiptdesc_glcode = c.glcode 
+        AND rd.num_receiptdesc_accno = c.accno 
+        AND rm.num_receiptmst_ulbid = c.ulbid
+    LEFT JOIN view_zone v
+        ON v.zoneid = rm.num_receiptmst_zoneid
+    WHERE TRUNC(rm.date_receiptmst_trnsdate) = TO_DATE(:reportDate, 'DD-MON-YYYY')
+        AND c.ulbid = :ulbId
+        AND rm.num_receiptmst_trnsno IS NOT NULL
+        AND rd.num_receiptdesc_amount > 0
+        ${zoneFilter5}
 
     ORDER BY TransType DESC, transno, docno, transamount
   `;
