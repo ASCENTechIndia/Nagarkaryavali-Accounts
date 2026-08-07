@@ -43,7 +43,7 @@ exports.getVoucherGenerationReprint = asyncHandler(async (req, res) => {
 exports.getVoucherGenerationPrint = asyncHandler(async (req, res) => {
   console.log("📥 Request Body:", req.body);
 
-  const { refNo, ulbId } = req.body;
+  const { refNo, ulbId, partyId } = req.body;
 
   if (!refNo) {
     throw new AppError("refNo is required", 400);
@@ -56,6 +56,7 @@ exports.getVoucherGenerationPrint = asyncHandler(async (req, res) => {
   const payload = {
     refNo,
     ulbId,
+    partyId 
   };
 
   const result = await service.getVoucherGenerationPrintService(payload);
