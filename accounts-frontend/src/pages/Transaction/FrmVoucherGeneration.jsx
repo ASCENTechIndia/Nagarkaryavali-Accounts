@@ -1945,7 +1945,9 @@ const FrmVoucherGeneration = () => {
         });
 
         // Generate PDF using Transaction/Reference Number
-        await handlePrintPDF(transactionNo);
+        if (Number(ulbId) !== 870) {
+          await handlePrintPDF(transactionNo);
+        }
 
         formikHelpers.resetForm();
         setVoucherList([]);
