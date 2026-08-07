@@ -83,6 +83,8 @@ const FrmVouchergenerationReprint = () => {
     };
 
     const handlePrint = async (row) => {
+        console.log("Row: ", row);
+
         try {
             Swal.fire({
                 title: "Generating...",
@@ -95,7 +97,10 @@ const FrmVouchergenerationReprint = () => {
             const payload = {
                 refNo: Number(row.REFNO),
                 ulbId: Number(ulbId),
+                partyId: row.PARTYID ? String(row.PARTYID) : null
             };
+
+            console.log(payload);
 
 
             const res = await axios.post(
