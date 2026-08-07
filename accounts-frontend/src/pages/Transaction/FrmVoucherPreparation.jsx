@@ -1595,8 +1595,9 @@ const FrmVoucherPreparation = () => {
                     <Select 
                       value={values.vibhag}
                       onValueChange={(v) => setFieldValue("vibhag", v)}
+                      className={"!w-full overflow-hidden"}
                     >
-                      <SelectTrigger className="w-full border rounded-md flex-1 h-9">
+                      <SelectTrigger className="w-full! border rounded-md flex-1 h-9 overflow-hidden">
                         <SelectValue placeholder="-- विकल्प निवडा --" />
                       </SelectTrigger>
 
