@@ -176,7 +176,6 @@ const formatTime = (date) => {
   if (!date) return "";
   return new Date(date).toLocaleTimeString("en-US");
 };
-
 const generateVoucherGenerationPrintPDF = async ({
   mainData,
   taxDetails,
@@ -191,42 +190,53 @@ const generateVoucherGenerationPrintPDF = async ({
     const templateHtml = fs.readFileSync(templatePath, "utf8");
     const template = Handlebars.compile(templateHtml);
 
-    const data = mainData[0];
+    // -------- MAIN TABLE ROWS --------
+    const rows = mainData.map((item, index) => {
+      const grossAmount = Number(item.GROSSAMOUNT || 0);
+      const payableAmount = Number(item.AMT || 0);
+      const payAmount = Number(item.CRAMT || item.AMT || 0);
+      const balanceAmount = Number(item.BALAMT || 0);
 
-    const grossAmount = Number(data.GROSSAMOUNT || 0);
-    const payableAmount = Number(data.AMT || 0);
-    const payAmount = Number(data.CRAMT || data.AMT || 0);
-    const balanceAmount = Number(data.BALAMT || 0);
-
-    // -------- MAIN TABLE --------
-    const rows = [
-      {
-        srNo: 1,
-        glcode: data.DRGLCODE || "",
-        accname: data.DRACCNO || "",
+      return {
+        srNo: index + 1,
+        glcode: item.DRGLCODE || "",
+        accname: item.DRACCNO || "",
         grossAmount: formatNumber(grossAmount),
         partyNetPayable: formatNumber(payableAmount),
-        narration: data.CRACNAME || "",
+        narration: item.CRACNAME || "",
         payableAmount: formatNumber(payAmount),
         balanceAmount: formatNumber(balanceAmount),
-      },
-    ];
+      };
+    });
 
     // -------- TOTALS --------
-    const totalPartyNetPayable = payableAmount;
+    // Calculate totals from all rows
+    const totalPartyNetPayable = mainData.reduce(
+      (sum, item) => sum + Number(item.AMT || 0),
+      0
+    );
 
+    const totalPayAmountWithDeduction = mainData.reduce(
+      (sum, item) => sum + Number(item.CRAMT || item.AMT || 0),
+      0
+    );
+
+    const totalBalanceAmount = mainData.reduce(
+      (sum, item) => sum + Number(item.BALAMT || 0),
+      0
+    );
+
+    // Total deduction from tax details
     const totalDeduction = taxDetails.reduce(
       (sum, row) => sum + Number(row.AMOUNT || 0),
       0
     );
 
-    // निव्वळ देय रक्कम = देय रक्कम - रक्कम रुपये
-    const totalPayAmount = payAmount - totalDeduction;
+    // निव्वळ देय रक्कम = एकूण देय रक्कम - वजाती
+    const totalPayAmount = totalPayAmountWithDeduction - totalDeduction;
 
-    // निव्वळ देय रक्कम कपाती सहित = देय रक्कम
-    const totalPayAmountWithDeduction = payAmount;
-
-    const totalBalanceAmount = balanceAmount;
+    // Use first row for header/party info
+    const firstRow = mainData[0];
 
     // -------- DEDUCTION ROWS --------
     const deductionRows = taxDetails.map((row, index) => ({
@@ -234,8 +244,6 @@ const generateVoucherGenerationPrintPDF = async ({
       accno: row.ACCNO || "",
       accname: row.ACCNAME || "",
       amount: formatNumber(row.AMOUNT || 0),
-
-      // keep blank in row, totals shown below
       payamt: "",
       payamtWithDeduction: "",
     }));
@@ -244,35 +252,37 @@ const generateVoucherGenerationPrintPDF = async ({
       corporationName,
       header: "Payment Voucher Acknowledgement",
 
-      printDate: formatDate(data.TRANSDATE),
-      printTime: formatTime(data.TRANSDATE),
+      printDate: formatDate(firstRow.TRANSDATE),
+      printTime: formatTime(firstRow.TRANSDATE),
 
-      zone: data.ZONEENAME || "",
-      department: data.DEPTNAME || "",
-      username: data.USERNAME || "",
+      zone: firstRow.ZONEENAME || "",
+      department: firstRow.DEPTNAME || "",
+      username: firstRow.USERNAME || "",
 
-      manualNo: data.MANUALNO || "",
-      systemBillNo: data.SYSTEMBILLNO || "",
+      manualNo: firstRow.MANUALNO || "",
+      systemBillNo: firstRow.SYSTEMBILLNO || "",
 
-      voucherNo: data.PREVCHNO || "",
-      transNo: data.TRANSNO || "",
-      voucherDate: formatDate(data.VOUCHERDATE),
+      voucherNo: firstRow.PREVCHNO || "",
+      transNo: firstRow.TRANSNO || "",
+      voucherDate: formatDate(firstRow.VOUCHERDATE),
 
-      party: `${data.PARTYID} ${data.PARTYNAME}`,
+      party: `${firstRow.PARTYID} ${firstRow.PARTYNAME}`,
 
-      rows,
+      rows,  // All rows from mainData
 
-      narration: data.NARRATION || "",
+      narration: firstRow.NARRATION || "",
 
-      chequeNo: data.CHQNO || "",
-      chequeDate: formatDate(data.CHQDATE),
+      chequeNo: firstRow.CHQNO || "",
+      chequeDate: formatDate(firstRow.CHQDATE),
 
-      bankName: data.BANKNAME || "",
-      paymode: data.PAYMODE || "",
+      bankName: firstRow.BANKNAME || "",
+      paymode: firstRow.PAYMODE || "",
 
-      grossAmount: formatNumber(grossAmount),
-      payableAmount: formatNumber(payableAmount),
-      balanceAmount: formatNumber(balanceAmount),
+      grossAmount: formatNumber(
+        mainData.reduce((sum, item) => sum + Number(item.GROSSAMOUNT || 0), 0)
+      ),
+      payableAmount: formatNumber(totalPartyNetPayable),
+      balanceAmount: formatNumber(totalBalanceAmount),
 
       totalBalanceAmount: formatNumber(totalBalanceAmount),
 
@@ -283,15 +293,12 @@ const generateVoucherGenerationPrintPDF = async ({
       totalDeduction: formatNumber(totalDeduction),
       totalPartyNetPayable: formatNumber(totalPartyNetPayable),
 
-      // Correct totals
       totalPayAmount: formatNumber(totalPayAmount),
-      totalPayAmountWithDeduction: formatNumber(
-        totalPayAmountWithDeduction
-      ),
+      totalPayAmountWithDeduction: formatNumber(totalPayAmountWithDeduction),
 
-      finalAmount: formatNumber(payableAmount),
+      finalAmount: formatNumber(totalPartyNetPayable),
       finalAmountWords: numberToMarathiWords(totalPayAmountWithDeduction),
-      finalPayable: formatNumber(payableAmount),
+      finalPayable: formatNumber(totalPartyNetPayable),
     });
 
     // -------- PUPPETEER --------

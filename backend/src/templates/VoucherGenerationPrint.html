@@ -220,63 +220,44 @@
             <td colspan="2" class="no-border">
               <!-- MAIN TABLE -->
 
-              <table class="main-grid">
-                <thead>
-                  <tr>
-                    <th>अ.क्र.</th>
+<!-- MAIN TABLE -->
+<table class="main-grid">
+  <thead>
+    <tr>
+      <th>अ.क्र.</th>
+      <th>लेखाशीर्ष सांकेतांक</th>
+      <th>लेखाशीर्ष सांकेतांक नाव</th>
+      <th>एकूण बिल रक्कम</th>
+      <th>पार्टी निव्वळ देय रक्कम</th>
+      <th>तपशील</th>
+      <th>देय रक्कम</th>
+      <th>शिल्लक रक्कम</th>
+    </tr>
+  </thead>
 
-                    <th>लेखाशीर्ष सांकेतांक</th>
+  <tbody>
+    {{#each rows}}
+    <tr>
+      <td class="center">{{srNo}}</td>
+      <td>{{glcode}}</td>
+      <td>{{accname}}</td>
+      <td class="right">{{grossAmount}}</td>
+      <td class="right">{{partyNetPayable}}</td>
+      <td>{{narration}}</td>
+      <td class="right">{{payableAmount}}</td>
+      <td class="right">{{balanceAmount}}</td>
+    </tr>
+    {{/each}}
 
-                    <th>लेखाशीर्ष सांकेतांक नाव</th>
-
-                    <th>एकूण बिल रक्कम</th>
-
-                    <th>पार्टी निव्वळ देय रक्कम</th>
-
-                    <th>तपशील</th>
-
-                    <th>देय रक्कम</th>
-
-                    <th>शिल्लक रक्कम</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {{#each rows}}
-
-                  <tr>
-                    <td class="center">{{srNo}}</td>
-
-                    <td>{{glcode}}</td>
-
-                    <td>{{accname}}</td>
-
-                    <td class="right">{{grossAmount}}</td>
-
-                    <td class="right">{{partyNetPayable}}</td>
-
-                    <td>{{narration}}</td>
-
-                    <td class="right">{{payableAmount}}</td>
-
-                    <td class="right">{{balanceAmount}}</td>
-                  </tr>
-
-                  {{/each}}
-
-                  <tr class="bold">
-                    <td colspan="4" class="right">&nbsp;</td>
-
-                    <td class="right">{{totalPartyNetPayable}}</td>
-
-                    <td class="right">एकूण देय रक्कम</td>
-
-                    <td class="right">{{totalPayAmountWithDeduction}}</td>
-
-                    <td class="right">{{totalBalanceAmount}}</td>
-                  </tr>
-                </tbody>
-              </table>
+    <tr class="bold">
+      <td colspan="4" class="right">&nbsp;</td>
+      <td class="right">{{totalPartyNetPayable}}</td>
+      <td class="right">एकूण देय रक्कम</td>
+      <td class="right">{{totalPayAmountWithDeduction}}</td>
+      <td class="right">{{totalBalanceAmount}}</td>
+    </tr>
+  </tbody>
+</table>
 
               <!-- NARRATION -->
 
