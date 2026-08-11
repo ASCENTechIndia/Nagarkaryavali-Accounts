@@ -7,13 +7,13 @@ const getTransactionListService = async (body) => {
 };
 
 const getUserListService = async (body) => {
-  const { ulbId, deptId } = body;
+  const { ulbId, deptId, loginUserId } = body;
 
   if (!ulbId || !deptId) {
     throw new Error("ulbId and deptId are required");
   }
 
-  const data = await repo.getUserList(ulbId, deptId);
+  const data = await repo.getUserList(ulbId, deptId, loginUserId);
 
   return data; // same structure as your other APIs
 };
@@ -153,4 +153,18 @@ const insertTransAuthService = async (payload) => {
   };
 };
 
-module.exports = { getTransactionListService, getUserListService, getTransactionDetailsService, insertTransAuthService };
+const getUserZonesService = async (body) => {
+  const { ulbId, userId } = body;
+
+  if (!ulbId || !userId) {
+    throw new Error("ulbId and userId are required");
+  }
+
+  const data = await repo.getUserZones(ulbId, userId);
+
+  return data;
+};
+
+module.exports = { getTransactionListService, getUserListService, getTransactionDetailsService, insertTransAuthService, 
+  getUserZonesService
+ };

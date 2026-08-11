@@ -41,4 +41,10 @@ const insertTransAuth = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { getTransactionList, getUserList , getTransactionDetails, insertTransAuth};
+const getUserZones = asyncHandler(async (req, res) => {
+  const response = await service.getUserZonesService(req.body);
+
+  res.json(response);
+});
+
+module.exports = { getTransactionList, getUserList , getTransactionDetails, insertTransAuth, getUserZones};
