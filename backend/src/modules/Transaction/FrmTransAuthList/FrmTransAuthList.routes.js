@@ -7,5 +7,6 @@ router.post("/transaction-list", auth(), controller.getTransactionList);
 router.post("/user-list", auth(), controller.getUserList);
 router.post("/transaction-details", auth(), controller.getTransactionDetails);
 router.post("/trans-auth-save", auth(),  controller.insertTransAuth);
+router.post("/user-zones", auth(), controller.getUserZones);
 
 module.exports = router;

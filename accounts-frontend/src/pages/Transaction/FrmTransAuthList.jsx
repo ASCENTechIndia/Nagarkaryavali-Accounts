@@ -43,7 +43,7 @@ const FrmTransAuthList = () => {
   const [searchText, setSearchText] = useState("");
   
   const [selectedPrabhag, setSelectedPrabhag] = useState("-1");
-  const [selectedTransType, setSelectedTransType] = useState("1");
+  const [selectedTransType, setSelectedTransType] = useState("-1");
   const [selectedUser, setSelectedUser] = useState("-1");
   // const [selectedUser, setSelectedUser] = useState(userId || "");
   const [fromDate, setFromDate] = useState(new Date());
@@ -56,6 +56,7 @@ const FrmTransAuthList = () => {
   const BASE_URL = import.meta.env.VITE_BASE_URL;
 
   const transTypeOptions = [
+    { value: "-1", label: "All"},
     { value: "1", label: "Receipt" },
     { value: "2", label: "Payment" },
     { value: "5", label: "Transfer" },
@@ -89,12 +90,35 @@ const FrmTransAuthList = () => {
     रक्कम: "amount",
   };
 
+  // const fetchZones = async () => {
+  //   try {
+  //     const res = await axios.post(
+  //       `${BASE_URL}/api/Receipt/zones`,
+  //       {
+  //         corp_id: ulbId,
+  //       },
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       }
+  //     );
+
+  //     if (res?.data) {
+  //       setZones(res.data.data);
+  //     }
+  //   } catch (err) {
+  //     console.error("Error fetching zones:", err);
+  //   }
+  // };
+
   const fetchZones = async () => {
     try {
       const res = await axios.post(
-        `${BASE_URL}/api/Receipt/zones`,
+        `${BASE_URL}/api/FrmTransAuthList/user-zones`,
         {
-          corp_id: ulbId,
+          ulbId: Number(ulbId),
+          userId: userId,
         },
         {
           headers: {
@@ -103,8 +127,10 @@ const FrmTransAuthList = () => {
         }
       );
 
+      console.log("zone res : ", res)
+
       if (res?.data) {
-        setZones(res.data.data);
+        setZones(res.data.rows);
       }
     } catch (err) {
       console.error("Error fetching zones:", err);
@@ -117,7 +143,8 @@ const FrmTransAuthList = () => {
         `${BASE_URL}/api/FrmTransAuthList/user-list`,
         {
           ulbId: Number(ulbId),
-          deptId: config.deptId
+          deptId: config.deptId,
+          loginUserId: userId
         },
         {
           headers: {
@@ -288,7 +315,8 @@ const FrmTransAuthList = () => {
     { value: "-1", label: "-- सर्व प्रभाग --" },
     ...(zones.map((z) => ({
       value: z.ZONEID?.toString(),
-      label: z.ZONEENAME,
+      // label: z.ZONEENAME,
+      label: z.ZONENAME,
     })) || []),
   ];
 

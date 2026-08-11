@@ -109,6 +109,9 @@ import FrmReceiptJcmcSC from "./pages/Transaction/FrmReceiptJcmcSC";
 import FrmTransactionEntryStatusRpt from "./pages/Reports/FrmTransactionEntryStatusRpt";
 import FrmVoucherAuthList from "./pages/Transaction/FrmVoucherAuthList";
 import FrmVoucherAuth from "./pages/Transaction/FrmVoucherAuth";
+import FrmUserDepartmentMapping from "./pages/Master/FrmUserDepartmentMapping";
+import FrmZoneDepartmentMapping from "./pages/Master/FrmUserZoneMapping";
+import FrmUserZoneMapping from "./pages/Master/FrmUserZoneMapping";
 
 const Home = () => <Button>Click me</Button>;
 
@@ -388,6 +391,14 @@ export const router = createBrowserRouter([
       {
         path: "/Masters/FrmNidhiMaster",
         element: <FrmNidhiMaster />,
+      },
+      {
+        path: "/Masters/FrmUserDepartmentMapping",
+        element: <FrmUserDepartmentMapping />,
+      },
+      {
+        path: "/Masters/FrmUserZoneMapping",
+        element: <FrmUserZoneMapping />,
       },
       {
         path: "/ReportsForm/RptClassifiedRegisterDetails",
