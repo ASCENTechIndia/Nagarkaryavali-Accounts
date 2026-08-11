@@ -14,10 +14,10 @@ import SearchableSelect from "@/components/SearchableSelect";
 
 const initialValues = {
   userId: "",
-  selectedDepartments: [],
+  selectedZones: [],
 };
 
-const FrmUserDepartmentMapping = () => {
+const FrmUserZoneMapping = () => {
   const { user } = useAuth();
   const token = user?.token;
   const ulbId = user?.ulbId;
@@ -25,9 +25,51 @@ const FrmUserDepartmentMapping = () => {
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
 
+  const [zones, setZones] = useState([]);
   const [userList, setUserList] = useState([]);
-  const [departments, setDepartments] = useState([]);
   const [mappingMode, setMappingMode] = useState(1); 
+
+  const userOptions = userList.map((u) => ({
+    label: `${u.USERNAME} (${u.USERID})`,
+    value: u.USERID,
+  }));
+
+  const fetchZones = async () => {
+    try {
+      Swal.fire({
+        title: "Loading ...",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      const res = await axios.post(
+        `${BASE_URL}/api/Receipt/zones`,
+        { corp_id: ulbId },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (res.data?.ok) {
+        const rawZones = res.data.data || [];
+        const formattedZones = rawZones.map((z) => ({
+          ...z,
+          zoneId: z.ZONEID,
+          zoneName: z.ZONEENAME,
+          checked: false,
+        }));
+        setZones(formattedZones);
+      }
+    } catch (err) {
+      console.error("Zone API Error:", err);
+    } finally {
+      Swal.close();
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -47,44 +89,7 @@ const FrmUserDepartmentMapping = () => {
     }
   };
 
-  
-  const fetchDepartments = async () => {
-    try {
-      Swal.fire({
-        title: "Loading...",
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        showConfirmButton: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
-
-      const res = await axios.post(
-        `${BASE_URL}/api/Receipt/departments`,
-        { ulbid: ulbId },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      const data = res.data?.data || [];
-
-      const formattedData = data.map((dept) => ({
-        deptId: dept.DEPTID,
-        deptName: dept.DEPTNAME,
-        checked: false,
-      }));
-
-      setDepartments(formattedData);
-    } catch (err) {
-      console.error("Department API Error:", err);
-    } finally {
-      Swal.close();
-    }
-  };
-
-  const fetchDepartmentConfig = async (userId) => {
+  const fetchZoneConfig = async (userId) => {
     try {
       if (!userId) {
         setMappingMode(1);
@@ -93,7 +98,7 @@ const FrmUserDepartmentMapping = () => {
 
       Swal.fire({
         title: "Loading ...",
-        text: "Fetching department configuration",
+        text: "Fetching zone configuration",
         allowOutsideClick: false,
         allowEscapeKey: false,
         showConfirmButton: false,
@@ -103,7 +108,7 @@ const FrmUserDepartmentMapping = () => {
       });
 
       const res = await axios.post(
-        `${BASE_URL}/api/FrmUserDepartmentMapping/deptconfigbyid`,
+        `${BASE_URL}/api/FrmUserDepartmentMapping/zoneconfigbyid`,
         {
           userId: userId,
           ulbId: Number(ulbId),
@@ -118,30 +123,30 @@ const FrmUserDepartmentMapping = () => {
 
       if (res.data?.ok && res.data?.data?.success) {
         const rows = res.data?.data?.rows || [];
-
+        
         if (rows.length > 0) {
           setMappingMode(2);
         } else {
           setMappingMode(1);
         }
 
-        const mappedDepartmentIds = rows.map((dept) => Number(dept.DEPTID));
+        const mappedZoneIds = rows.map((z) => Number(z.ZONEID));
 
-        setDepartments((prev) =>
-          prev.map((dept) => ({
-            ...dept,
-            checked: mappedDepartmentIds.includes(Number(dept.deptId)),
+        setZones((prev) =>
+          prev.map((zone) => ({
+            ...zone,
+            checked: mappedZoneIds.includes(Number(zone.zoneId)),
           }))
         );
 
         Swal.close();
-        return mappedDepartmentIds;
+        return mappedZoneIds;
       }
 
       setMappingMode(1);
-      setDepartments((prev) =>
-        prev.map((dept) => ({
-          ...dept,
+      setZones((prev) =>
+        prev.map((zone) => ({
+          ...zone,
           checked: false,
         }))
       );
@@ -149,13 +154,13 @@ const FrmUserDepartmentMapping = () => {
       Swal.close();
       return [];
     } catch (err) {
-      console.error("Department Configuration API Error:", err);
+      console.error("Zone Configuration API Error:", err);
       setMappingMode(1);
       Swal.close();
 
-      setDepartments((prev) =>
-        prev.map((dept) => ({
-          ...dept,
+      setZones((prev) =>
+        prev.map((zone) => ({
+          ...zone,
           checked: false,
         }))
       );
@@ -166,28 +171,23 @@ const FrmUserDepartmentMapping = () => {
 
   useEffect(() => {
     if (ulbId) {
+      fetchZones();
       fetchUsers();
-      fetchDepartments();
     }
   }, [ulbId]);
 
-  const userOptions = userList.map((u) => ({
-    value: String(u.USERID),
-    label: `${u.USERNAME} (${u.USERID})`,
-  }));
+  const zoneHeaders = ["Select", "Zone Name"];
 
-  const departmentHeaders = ["Select", "Department Name"];
-
-  const departmentKeyMapping = {
+  const zoneKeyMapping = {
     Select: "checked",
-    "Department Name": "deptName",
+    "Zone Name": "zoneName",
   };
 
-  const departmentColumnStyles = {
+  const zoneColumnStyles = {
     Select: {
       width: "100px",
     },
-    "Department Name": {
+    "Zone Name": {
       width: "auto",
     },
   };
@@ -201,30 +201,27 @@ const FrmUserDepartmentMapping = () => {
         return;
       }
 
-      if (
-        !values.selectedDepartments ||
-        values.selectedDepartments.length === 0
-      ) {
+      if (!values.selectedZones || values.selectedZones.length === 0) {
         Swal.fire({
-          text: "Please select at least one Department",
+          text: "Please select at least one Zone",
         });
         return;
       }
 
-      const userDeptStr = values.selectedDepartments.join("$");
+      const userZoneStr = values.selectedZones.join("$");
 
       const payload = {
         mode: mappingMode, 
         userId: values.userId,
         ulbId: Number(ulbId),
-        userDeptStr: userDeptStr,
-        loginUserId: user?.userId?.toString(),
+        userZoneStr: userZoneStr,
+        loginUserId: user?.userId?.toString() || user?.USERID?.toString() || "",
         ipAddress: config.ip,
         source: config.source,
       };
 
       const res = await axios.post(
-        `${BASE_URL}/api/FrmUserDepartmentMapping/user-dept-master`,
+        `${BASE_URL}/api/FrmUserDepartmentMapping/user-zone-master`,
         payload,
         {
           headers: {
@@ -236,18 +233,15 @@ const FrmUserDepartmentMapping = () => {
 
       if (res.data?.ok && res.data?.data?.success) {
         Swal.fire({
-          text:
-            res.data?.data?.message ||
-            res.data?.message ||
-            "User Department Mapping Configuration saved successfully!",
+          text: res.data?.data?.message || res.data?.message || "User Zone Mapping saved successfully!",
         });
 
         resetForm();
         setMappingMode(1);
 
-        setDepartments((prev) =>
-          prev.map((dept) => ({
-            ...dept,
+        setZones((prev) =>
+          prev.map((zone) => ({
+            ...zone,
             checked: false,
           }))
         );
@@ -276,67 +270,67 @@ const FrmUserDepartmentMapping = () => {
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
       {({ values, setFieldValue }) => {
         useEffect(() => {
-          const loadDepartmentConfig = async () => {
+          const loadZoneConfig = async () => {
             if (!values.userId) {
-              setFieldValue("selectedDepartments", []);
+              setFieldValue("selectedZones", []);
               setMappingMode(1);
-              setDepartments((prev) =>
-                prev.map((dept) => ({
-                  ...dept,
+              setZones((prev) =>
+                prev.map((zone) => ({
+                  ...zone,
                   checked: false,
                 }))
               );
               return;
             }
 
-            const mappedDepartmentIds = await fetchDepartmentConfig(values.userId);
-            setFieldValue("selectedDepartments", mappedDepartmentIds || []);
+            const mappedZoneIds = await fetchZoneConfig(values.userId);
+            setFieldValue("selectedZones", mappedZoneIds || []);
           };
 
-          loadDepartmentConfig();
+          loadZoneConfig();
         }, [values.userId]);
 
-        const handleDepartmentCheck = (row, checked) => {
-          const departmentId = row.deptId;
+        const handleZoneCheck = (row, checked) => {
+          const zoneId = row.zoneId;
 
-          setDepartments((prev) =>
-            prev.map((dept) =>
-              dept.deptId === departmentId
+          setZones((prev) =>
+            prev.map((zone) =>
+              zone.zoneId === zoneId
                 ? {
-                    ...dept,
+                    ...zone,
                     checked,
                   }
-                : dept
+                : zone
             )
           );
 
-          const currentSelected = values.selectedDepartments || [];
+          const currentSelected = values.selectedZones || [];
           let updatedSelected;
 
           if (checked) {
-            updatedSelected = currentSelected.includes(departmentId)
+            updatedSelected = currentSelected.includes(zoneId)
               ? currentSelected
-              : [...currentSelected, departmentId];
+              : [...currentSelected, zoneId];
           } else {
-            updatedSelected = currentSelected.filter((id) => id !== departmentId);
+            updatedSelected = currentSelected.filter((id) => id !== zoneId);
           }
 
-          setFieldValue("selectedDepartments", updatedSelected);
+          setFieldValue("selectedZones", updatedSelected);
         };
 
-        const handleSelectAllDepartments = (checked) => {
-          setDepartments((prev) =>
-            prev.map((dept) => ({
-              ...dept,
+        const handleSelectAllZones = (checked) => {
+          setZones((prev) =>
+            prev.map((zone) => ({
+              ...zone,
               checked,
             }))
           );
 
           if (checked) {
-            const allDepartmentIds = departments.map((dept) => dept.deptId);
-            setFieldValue("selectedDepartments", allDepartmentIds);
+            const allZoneIds = zones.map((zone) => zone.zoneId);
+            setFieldValue("selectedZones", allZoneIds);
           } else {
-            setFieldValue("selectedDepartments", []);
+            setFieldValue("selectedZones", []);
           }
         };
 
@@ -350,7 +344,7 @@ const FrmUserDepartmentMapping = () => {
               <Card className="border shadow-sm">
                 <CardHeader className="border-b">
                   <CardTitle className="text-lg font-semibold">
-                    User Department Mapping
+                    User Zone Mapping
                   </CardTitle>
                 </CardHeader>
 
@@ -377,13 +371,13 @@ const FrmUserDepartmentMapping = () => {
 
                   <div className="border rounded-md bg-white overflow-x-auto">
                     <ShadCNTable
-                      headers={departmentHeaders}
-                      data={departments}
-                      keyMapping={departmentKeyMapping}
-                      columnStyles={departmentColumnStyles}
+                      headers={zoneHeaders}
+                      data={zones}
+                      keyMapping={zoneKeyMapping}
+                      columnStyles={zoneColumnStyles}
                       pagination={false}
-                      onSelectAllChange={handleSelectAllDepartments}
-                      onRowCheckChange={handleDepartmentCheck}
+                      onSelectAllChange={handleSelectAllZones}
+                      onRowCheckChange={handleZoneCheck}
                     />
                   </div>
 
@@ -414,4 +408,4 @@ const FrmUserDepartmentMapping = () => {
   );
 };
 
-export default FrmUserDepartmentMapping;
+export default FrmUserZoneMapping;
