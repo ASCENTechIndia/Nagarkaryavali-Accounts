@@ -192,7 +192,7 @@ const RptReceiptMKPDFHelper = async ({ reportData, filters, corporationName, cor
     // const amount4  = getAmt("044015890001") || getAmt("4415890001"); 
     // const amount5  = getAmt("03515720001") ||  getAmt("44015720001"); 
     // const amount6  = getAmt("4319900001"); 
-    const amount7  = getAmt("45015620003"); 
+    const amount7  = getAmt("45015620001"); 
 
     const total1to7 =
       // amount1 +
