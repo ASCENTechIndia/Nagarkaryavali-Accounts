@@ -1433,7 +1433,7 @@ const FrmVoucherGeneration = () => {
 
           AMT: Number(row.AMT ?? row.amt ?? 0),
 
-          BALAMT: Number(row.BALAMT ?? row.totalamt ?? 0),
+          BALAMT: Number(row.BALAMT ?? row.balamt ?? 0),
 
           DRGL: row.DRGL ?? row.drgl,
 
@@ -1458,15 +1458,17 @@ const FrmVoucherGeneration = () => {
 
       const finalData = [...balanceData, ...prepData];
 
-      const formattedData = finalData.map((v) => {
-        const nival = v.BALAMT || v.TOTALAMT - v.AMT;
+      const formattedData = finalData.map((v) => ({
+        ...v,
+        selected: false,
 
-        return {
-          ...v,
-          selected: false,
-          deyRakkam: Math.abs(nival),
-        };
-      });
+        // निव्वळ देय = AMT + BALAMT
+        nivalDey: Number(v.AMT ?? 0) + Number(v.BALAMT ?? 0),
+
+        rakkam: 0,
+
+        deyRakkam: Number(v.AMT ?? 0) + Number(v.BALAMT ?? 0),
+      }));
 
       setVoucherList(formattedData);
 
@@ -2144,12 +2146,17 @@ const FrmVoucherGeneration = () => {
                             const actualIndex =
                               (currentPage - 1) * rowsPerPage + i;
 
-                            const nivalDey =
-                              row.BALAMT != null
-                                ? Number(row.BALAMT)
-                                : (row.TOTALAMT || 0) - (row.AMT || 0);
+                            const amt = Number(row.AMT ?? row.amt ?? 0);
 
-                            const deyRakkam = row.deyRakkam ?? nivalDey;
+                            const balAmt = Number(
+                              row.BALAMT ?? row.balamt ?? 0,
+                            );
+
+                            const nivalDey = amt + balAmt;
+
+                            const rakkam = Number(row.rakkam ?? 0);
+
+                            const deyRakkam = Number(row.deyRakkam ?? nivalDey);
 
                             const shillak = nivalDey - deyRakkam;
 
@@ -2160,19 +2167,33 @@ const FrmVoucherGeneration = () => {
                                     checked={row.selected || false}
                                     onCheckedChange={(checked) => {
                                       setVoucherList((prev) =>
-                                        prev.map((v, idx) =>
-                                          idx === actualIndex
-                                            ? {
-                                                ...v,
+                                        prev.map((v, idx) => {
+                                          if (idx !== actualIndex) {
+                                            return v;
+                                          }
 
-                                                selected: checked,
+                                          const amt = Number(v.AMT ?? 0);
 
-                                                deyRakkam: checked
-                                                  ? (v.deyRakkam ?? nivalDey)
-                                                  : 0,
-                                              }
-                                            : v,
-                                        ),
+                                          const balAmt = Number(v.BALAMT ?? 0);
+
+                                          const nivalDey = amt + balAmt;
+
+                                          return {
+                                            ...v,
+
+                                            selected: checked,
+
+                                            // निव्वळ देय
+                                            nivalDey,
+
+                                            // रक्कम = 0
+                                            rakkam: 0,
+
+                                            // Select केल्यावर देय रक्कम
+                                            // = निव्वळ देय
+                                            deyRakkam: checked ? nivalDey : 0,
+                                          };
+                                        }),
                                       );
                                     }}
                                   />
@@ -2208,24 +2229,32 @@ const FrmVoucherGeneration = () => {
 
                                 <td className="p-2">{row.PRENARRATION}</td>
 
-                                <td className="p-2 text-right">{row.AMT}</td>
+                                <td className="p-2 text-right">{rakkam}</td>
 
+                                {/* निव्वळ देय */}
                                 <td className="p-2 text-right font-semibold">
                                   {nivalDey}
                                 </td>
 
                                 <td className="p-2 text-right">
                                   <Input
-                                    className="h-8 w-24 text-right"
+                                    type="number"
+                                    min="0"
+                                    className="h-8 w-28 text-right"
                                     value={deyRakkam}
                                     disabled={!row.selected}
                                     onChange={(e) => {
-                                      let val = Number(e.target.value) || 0;
+                                      const val = Number(e.target.value);
+
+                                      if (Number.isNaN(val) || val < 0) {
+                                        return;
+                                      }
 
                                       if (val > nivalDey) {
-                                        Swal.fire(
-                                          "देय रक्कम जास्त असू शकत नाही!",
-                                        );
+                                        Swal.fire({
+                                          text: "देय रक्कम निव्वळ देय रकमेपेक्षा जास्त असू शकत नाही!",
+                                          confirmButtonColor: "#1e3a8a",
+                                        });
 
                                         return;
                                       }
@@ -2235,7 +2264,6 @@ const FrmVoucherGeneration = () => {
                                           idx === actualIndex
                                             ? {
                                                 ...v,
-
                                                 deyRakkam: val,
                                               }
                                             : v,
