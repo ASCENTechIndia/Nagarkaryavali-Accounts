@@ -5,11 +5,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import ShadCNTable from "@/components/ui/table";
 import { useAuth } from "@/context/AuthContext";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import axios from "axios";
 import { Form, Formik } from "formik";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
@@ -38,6 +45,7 @@ const FrmReceiptReprint = () => {
 
   const [loading, setLoading] = useState(false);
   const [tableData, setTableData] = useState([]);
+  const [departments, setDepartments] = useState([]);
 
   const headers = [
     "रिफ नं",
@@ -46,8 +54,8 @@ const FrmReceiptReprint = () => {
     "प्रभाग",
     "बँक नाव",
     "खाते क्रमांक",
-  
-  
+
+
     "रक्कम",
     "प्रिंट",
   ];
@@ -59,8 +67,8 @@ const FrmReceiptReprint = () => {
     प्रभाग: "ZONEENAME",
     "बँक नाव": "ACCNAME",
     "खाते क्रमांक": "ACCCNO",
- 
- 
+
+
     रक्कम: "NETAMOUNT",
     प्रिंट: "PRINT",
   };
@@ -92,6 +100,30 @@ const FrmReceiptReprint = () => {
     return new Date(date).toLocaleDateString("en-GB");
   };
 
+  const fetchDepartments = async () => {
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/api/Receipt/departments`,
+        {
+          ulbid: ulbId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        },
+      );
+      setDepartments(res.data.data || []);
+    } catch (err) {
+      console.error("Department API Error:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchDepartments();
+  }, [ulbId]);
+
+
   const handlePrint = async (row) => {
     try {
       Swal.fire({
@@ -102,10 +134,10 @@ const FrmReceiptReprint = () => {
       });
 
       console.log({
-          refno: row.REFNO,
-          ulbid: Number(ulbId),
-          transNo: row.TRNSNO
-        })
+        refno: row.REFNO,
+        ulbid: Number(ulbId),
+        transNo: row.TRNSNO
+      })
 
       const pdfRes = await axios.post(
         `${BASE_URL}/api/Receipt/receipt-pdf`,
@@ -156,6 +188,7 @@ const FrmReceiptReprint = () => {
 
       const payload = {
         ulbid: Number(ulbId),
+        deptid: Number(values.department),
         fromDate: new Date(values.fromDate)
           .toLocaleDateString("en-GB", {
             day: "2-digit",
@@ -192,8 +225,8 @@ const FrmReceiptReprint = () => {
           ...item,
           TRANSDATE: formatTableDate(item.TRANSDATE),
           NETAMOUNT:
-    Math.abs(Number(item.TOTAL_AMOUNT || 0)) -
-    Number(item.DISCOUNTAMOUNT || 0),
+            Math.abs(Number(item.TOTAL_AMOUNT || 0)) -
+            Number(item.DISCOUNTAMOUNT || 0),
 
         }));
 
@@ -278,6 +311,34 @@ const FrmReceiptReprint = () => {
                       onChange={(date) => setFieldValue("toDate", date)}
                       className="w-full h-9"
                     />
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <div className="sm:w-40 flex justify-between">
+                      <Label text="विभाग" />
+                      <span>:</span>
+                    </div>
+
+                    <Select
+                      value={values.department}
+                      onValueChange={(v) => setFieldValue("department", v)}
+                    >
+                      <SelectTrigger className="w-full border rounded-md">
+                        <SelectValue placeholder="-- ALL --" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        <SelectItem value="-1">-- ALL --</SelectItem>
+                        {departments.map((d) => (
+                          <SelectItem
+                            key={d.DEPTID}
+                            value={d.DEPTID.toString()}
+                          >
+                            {d.DEPTNAME}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 

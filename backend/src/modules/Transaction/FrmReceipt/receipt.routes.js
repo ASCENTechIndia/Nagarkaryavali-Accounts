@@ -29,7 +29,7 @@ router.post("/receiptInsertUpdate", auth(), controller.receiptInsertUpdate);
 
 router.get("/budget-heads", auth(), controller.getBudgetHeads);
 
-router.post("/receipt-pdf", controller.getReceiptPDF);
+router.post("/receipt-pdf", auth(), controller.getReceiptPDF);
 
 router.post(
   "/receiptdetailPdf",auth(),

@@ -139,10 +139,11 @@ async function getBudgetHeads() {
 }
 
 const getReceiptPdfData = async (payload) => {
-  const { refno, ulbid } = payload;
+  const { refno, ulbid  } = payload;
 
   if (!refno) throw new AppError("RefNo is required", 400);
   if (!ulbid) throw new AppError("ULBID is required", 400);
+  
 
   const data = await repo.getReceiptDetailsPdfRepo(refno, ulbid);
 
@@ -160,6 +161,10 @@ async function getReceiptDetailsService(payload) {
   }
 
   const data = await repo.getReceiptPDF(payload);
+
+  if (!data) {
+  throw new AppError("No data returned from DB", 500);
+}
 
   return {
     success: true,

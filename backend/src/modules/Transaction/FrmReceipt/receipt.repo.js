@@ -302,11 +302,11 @@ INNER JOIN
 
 async function getReceiptPDF(payload) {
   try {
-
-    const query = `
-     SELECT
+    let query = `
+      SELECT
         v.REFNO,
         r.num_receiptmst_trnsno AS TRNSNO,
+        r.num_receiptmst_deptid AS DEPTID,
         MIN(v.TRANSDATE) AS TRANSDATE,
         v.TRANSTYPE,
         v.ZONEENAME,
@@ -321,17 +321,39 @@ async function getReceiptPDF(payload) {
             FROM aoac_receiptdesc_def rd
             WHERE rd.num_receiptdesc_refno = v.REFNO
         ) AS DISCOUNTAMOUNT
-    FROM VW_Receiptdetails v
-    INNER JOIN aoac_receiptmst_def r
+      FROM VW_Receiptdetails v
+      INNER JOIN aoac_receiptmst_def r
         ON r.num_receiptmst_refno = v.REFNO
-      AND r.num_receiptmst_ulbid = v.ULBID
-      WHERE ULBID = :ulbid
-        AND TRUNC(TRANSDATE)
+       AND r.num_receiptmst_ulbid = v.ULBID
+      WHERE v.ULBID = :ulbid
+        AND TRUNC(v.TRANSDATE)
             BETWEEN TO_DATE(:fromDate,'DD-MM-YYYY')
                 AND TO_DATE(:toDate,'DD-MM-YYYY')
+    `;
+
+    let bindParams = {
+      ulbid: payload.ulbid,
+      fromDate: payload.fromDate,
+      toDate: payload.toDate
+    };
+
+    const hasDept =
+      payload.deptid &&
+      payload.deptid !== "-1" &&
+      payload.deptid !== "" &&
+      payload.deptid !== null &&
+      payload.deptid !== undefined;
+
+    if (hasDept) {
+      query += ` AND r.num_receiptmst_deptid = :deptid`;
+      bindParams.deptid = payload.deptid;
+    }
+
+    query += `
       GROUP BY
         v.REFNO,
         r.num_receiptmst_trnsno,
+        r.num_receiptmst_deptid,
         v.TRANSTYPE,
         v.ZONEENAME,
         v.ACCNAME,
@@ -339,24 +361,17 @@ async function getReceiptPDF(payload) {
         v.PARTYNAME,
         v.ULBID,
         v.PARTYCODE
-    ORDER BY v.REFNO DESC
+      ORDER BY v.REFNO DESC
     `;
 
-    const result = await executeQuery(
-      query,
-      {
-        ulbid: payload.ulbid,
-        fromDate: payload.fromDate,
-        toDate: payload.toDate
-      }
-    );
-
+    const result = await executeQuery(query, bindParams);
     return result.rows;
 
   } catch (err) {
     throw err;
   }
 }
+
 
 async function getUserMapHeaderRepo(payload) {
 

@@ -112,6 +112,7 @@ exports.getReceiptDetailsReprint = asyncHandler(async (req, res) => {
 
   const payload = {
     ulbid: req.body.ulbid,
+    deptid: req.body.deptid,
     fromDate: req.body.fromDate,  
     toDate: req.body.toDate       
   };
