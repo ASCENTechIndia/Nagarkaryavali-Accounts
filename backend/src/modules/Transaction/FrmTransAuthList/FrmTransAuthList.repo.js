@@ -1394,7 +1394,7 @@ INNER JOIN aoac_receiptdet_def
 INNER JOIN aoac_trnstype_def
     ON num_trnstype_trnstypeid = num_receiptmst_trnstypeid
     
- INNER JOIN
+ LEFT JOIN
     (
         SELECT
             var_accmpdet_accno,
