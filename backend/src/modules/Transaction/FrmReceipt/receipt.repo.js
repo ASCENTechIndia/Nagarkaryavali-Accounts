@@ -480,92 +480,151 @@ const getReceiptDetailByRefNo = async (params) => {
 
     const query = `
       SELECT *
-      FROM (
-          SELECT
-              0 AS count,
-              a.date_receiptmst_trnsdate AS trnsdate,
-              a.num_receiptmst_recno AS recno,
-              a.num_receiptmst_trnstypeid AS trnstypeid,
-              a.num_receiptmst_zoneid AS zoneid,
-              a.num_receiptmst_grampanchid AS grampanchid,
-              accdr.functioncode AS drgl,
-              accdr.glname AS drglname,
-              accdr.objectcode AS dracc,
-              accdr.accname AS draccname,
-              acc.functioncode AS glcode,
-              acc.glname AS glname,
-              acc.objectcode AS accno,
-              acc.accname AS accountname,
-              c.num_receiptdet_amount AS credit,
-              c.var_receiptdet_narration AS narration,
-              c.num_receiptdet_partycode AS party,
-              acc.accsubtypeid,
-              NVL(a.num_receiptmst_deptid,1) AS accdeptid,
-              a.num_receiptmst_budget_id AS budget_id,
-              a.num_receiptmst_nidhi_id AS nidhi_id,
-              a.num_receiptmst_subdeptid AS subdeptid,
-              c.num_receiptdet_arramount,
-              c.num_receiptdet_curramount,
-              a.num_receiptmst_refno
-          FROM aoac_receiptmst_def a
-          INNER JOIN aoac_receiptdet_def c
-              ON a.num_receiptmst_refno = c.num_receiptdet_refno
-          LEFT JOIN accountview_web accdr
-              ON a.num_receiptmst_drgl = accdr.glcode
-             AND a.num_receiptmst_dracc = accdr.accno
-             AND a.num_receiptmst_ulbid = accdr.ulbid
-          LEFT JOIN accountview_web acc
-              ON c.num_receiptdet_glcode = acc.glcode
-             AND c.num_receiptdet_accno = acc.accno
-             AND a.num_receiptmst_ulbid = acc.ulbid
+FROM (
+    SELECT
+        0 AS count,
+        a.date_receiptmst_trnsdate AS trnsdate,
+        a.num_receiptmst_recno AS recno,
+        a.num_receiptmst_trnstypeid AS trnstypeid,
+        a.num_receiptmst_zoneid AS zoneid,
+        a.num_receiptmst_grampanchid AS grampanchid,
 
-          UNION ALL
+        accdr.functioncode AS drgl,
+        accdr.glname AS drglname,
+        accdr.objectcode AS dracc,
+        accdr.accname AS draccname,
 
-          SELECT
-              0 AS count,
-              a.date_receiptmst_trnsdate AS trnsdate,
-              a.num_receiptmst_recno AS recno,
-              a.num_receiptmst_trnstypeid AS trnstypeid,
-              a.num_receiptmst_zoneid AS zoneid,
-              a.num_receiptmst_grampanchid AS grampanchid,
-              accdr.functioncode AS drgl,
-              accdr.glname AS drglname,
-              accdr.objectcode AS dracc,
-              accdr.accname AS draccname,
-              acc.functioncode AS glcode,
-              acc.glname AS glname,
-              acc.objectcode AS accno,
-              acc.accname AS accountname,
-              c.num_receiptdesc_amount AS credit,
-              c.var_receiptdesc_narration AS narration,
-              c.num_receiptdesc_partycode AS party,
-              acc.accsubtypeid,
-              NVL(a.num_receiptmst_deptid,1) AS accdeptid,
-              a.num_receiptmst_budget_id AS budget_id,
-              a.num_receiptmst_nidhi_id AS nidhi_id,
-              a.num_receiptmst_subdeptid AS subdeptid,
-              c.num_receiptdesc_arramount AS num_receiptdet_arramount,
-              c.num_receiptdesc_curramount AS num_receiptdet_curramount,
-              a.num_receiptmst_refno
-          FROM aoac_receiptmst_def a
-          INNER JOIN aoac_receiptdesc_def c
-              ON a.num_receiptmst_refno = c.num_receiptdesc_refno
-          LEFT JOIN accountview_web accdr
-              ON a.num_receiptmst_drgl = accdr.glcode
-             AND a.num_receiptmst_dracc = accdr.accno
-             AND a.num_receiptmst_ulbid = accdr.ulbid
-          LEFT JOIN accountview_web acc
-              ON c.num_receiptdesc_glcode = acc.glcode
-             AND c.num_receiptdesc_accno = acc.accno
-             AND a.num_receiptmst_ulbid = acc.ulbid
-      )
-      WHERE num_receiptmst_refno = :RefNo
+        acc.functioncode AS glcode,
+        acc.glname AS glname,
+        acc.objectcode AS accno,
+        acc.accname AS accountname,
+
+        c.num_receiptdet_amount AS credit,
+        c.var_receiptdet_narration AS narration,
+        c.num_receiptdet_partycode AS party,
+
+        acc.accsubtypeid,
+        NVL(a.num_receiptmst_deptid, 1) AS accdeptid,
+        a.num_receiptmst_budget_id AS budget_id,
+        a.num_receiptmst_nidhi_id AS nidhi_id,
+        a.num_receiptmst_subdeptid AS subdeptid,
+
+        c.num_receiptdet_arramount,
+        c.num_receiptdet_curramount,
+
+        a.num_receiptmst_refno,
+
+        -- User-specific sequence
+        map.num_accmpdet_id AS account_sequence
+
+    FROM aoac_receiptmst_def a
+
+    INNER JOIN aoac_receiptdet_def c
+        ON a.num_receiptmst_refno = c.num_receiptdet_refno
+
+    LEFT JOIN accountview_web accdr
+        ON a.num_receiptmst_drgl = accdr.glcode
+       AND a.num_receiptmst_dracc = accdr.accno
+       AND a.num_receiptmst_ulbid = accdr.ulbid
+
+    LEFT JOIN accountview_web acc
+        ON c.num_receiptdet_glcode = acc.glcode
+       AND c.num_receiptdet_accno = acc.accno
+       AND a.num_receiptmst_ulbid = acc.ulbid
+
+    LEFT JOIN (
+        SELECT
+            d.var_accmpdet_glcode,
+            d.var_accmpdet_accno,
+            d.num_accmpdet_id
+        FROM aoms_accusermap_mas m
+        INNER JOIN aoms_accusermap_det d
+            ON m.num_accusermap_id = d.num_accmpdet_mainid
+        WHERE m.num_accusermap_userid = :userid
+    ) map
+        ON map.var_accmpdet_glcode = c.num_receiptdet_glcode
+       AND map.var_accmpdet_accno = c.num_receiptdet_accno
+
+    WHERE a.num_receiptmst_refno = :RefNo
+
+    UNION ALL
+
+    SELECT
+        0 AS count,
+        a.date_receiptmst_trnsdate AS trnsdate,
+        a.num_receiptmst_recno AS recno,
+        a.num_receiptmst_trnstypeid AS trnstypeid,
+        a.num_receiptmst_zoneid AS zoneid,
+        a.num_receiptmst_grampanchid AS grampanchid,
+
+        accdr.functioncode AS drgl,
+        accdr.glname AS drglname,
+        accdr.objectcode AS dracc,
+        accdr.accname AS draccname,
+
+        acc.functioncode AS glcode,
+        acc.glname AS glname,
+        acc.objectcode AS accno,
+        acc.accname AS accountname,
+
+        c.num_receiptdesc_amount AS credit,
+        c.var_receiptdesc_narration AS narration,
+        c.num_receiptdesc_partycode AS party,
+
+        acc.accsubtypeid,
+        NVL(a.num_receiptmst_deptid, 1) AS accdeptid,
+        a.num_receiptmst_budget_id AS budget_id,
+        a.num_receiptmst_nidhi_id AS nidhi_id,
+        a.num_receiptmst_subdeptid AS subdeptid,
+
+        c.num_receiptdesc_arramount AS num_receiptdet_arramount,
+        c.num_receiptdesc_curramount AS num_receiptdet_curramount,
+
+        a.num_receiptmst_refno,
+
+        -- User-specific sequence
+        map.num_accmpdet_id AS account_sequence
+
+    FROM aoac_receiptmst_def a
+
+    INNER JOIN aoac_receiptdesc_def c
+        ON a.num_receiptmst_refno = c.num_receiptdesc_refno
+
+    LEFT JOIN accountview_web accdr
+        ON a.num_receiptmst_drgl = accdr.glcode
+       AND a.num_receiptmst_dracc = accdr.accno
+       AND a.num_receiptmst_ulbid = accdr.ulbid
+
+    LEFT JOIN accountview_web acc
+        ON c.num_receiptdesc_glcode = acc.glcode
+       AND c.num_receiptdesc_accno = acc.accno
+       AND a.num_receiptmst_ulbid = acc.ulbid
+
+    LEFT JOIN (
+        SELECT
+            d.var_accmpdet_glcode,
+            d.var_accmpdet_accno,
+            d.num_accmpdet_id
+        FROM aoms_accusermap_mas m
+        INNER JOIN aoms_accusermap_det d
+            ON m.num_accusermap_id = d.num_accmpdet_mainid
+        WHERE m.num_accusermap_userid = :userid
+    ) map
+        ON map.var_accmpdet_glcode = c.num_receiptdesc_glcode
+       AND map.var_accmpdet_accno = c.num_receiptdesc_accno
+
+    WHERE a.num_receiptmst_refno = :RefNo
+)
+ORDER BY account_sequence
     `;
+
+    console.log("query :", query)
 
     const result = await executeQuery(
       query,
       {
-        RefNo: params.refNo
+        RefNo: params.refNo,
+        userid: params.userId
       }
     );
 
