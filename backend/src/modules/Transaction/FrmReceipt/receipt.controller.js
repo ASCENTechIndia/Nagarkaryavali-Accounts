@@ -161,11 +161,11 @@ exports.getAccountMappingDetail = asyncHandler(async (req, res) => {
 exports.getReceiptDetailByRefNo =
 asyncHandler(async (req, res) => {
 
-  const { refNo } = req.body;
+  const { refNo , userId } = req.body;
 
   const data =
     await service.getReceiptDetailByRefNoService({
-      refNo
+      refNo , userId
     });
 
   return ok(

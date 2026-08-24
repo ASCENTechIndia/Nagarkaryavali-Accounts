@@ -235,7 +235,7 @@ async function getReceiptDetailByRefNoService(params) {
 
   return {
     success: true,
-    count: data.length,
+    count: data ? data.length : 0,
     data
   };
 }
