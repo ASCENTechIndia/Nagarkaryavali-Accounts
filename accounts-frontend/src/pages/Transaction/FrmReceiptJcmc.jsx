@@ -43,7 +43,7 @@ const FrmReceiptJcmc = () => {
   const navigate = useNavigate();
   const refNo = location.state?.receiptNo;
   const ulbId = user?.ulbId;
-
+  const userId = user?.userId;
   console.log("refNo", refNo);
   console.log("ocation.state", location.state);
 
@@ -457,6 +457,7 @@ const processTableData = (apiData) => {
       `${BASE_URL}/api/Receipt/receiptdetailbyrefno`,
       {
         refNo: refNo,
+        userId: userId
       },
       {
         headers: {
