@@ -68,13 +68,18 @@ const RptClassifiedAbstractSummary = () => {
     }, [ulbId]);
 
     const formatDate = (date) => {
-        if (!date) return "";
         const d = new Date(date);
-        return d.toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-        }).replace(/ /g, "-").toUpperCase();
+
+        const months = [
+            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        ];
+
+        const day = String(d.getDate()).padStart(2, "0");
+        const month = months[d.getMonth()];
+        const year = d.getFullYear();
+
+        return `${day}-${month}-${year}`;
     };
 
     const handleSubmit = async (values) => {

@@ -86,10 +86,16 @@ const FrmReceiptReprint = () => {
     रक्कम: { width: "8%" },
     प्रिंट: { width: "8%" },
   };
-  const formatDateForAPI = (date) => {
+  const formatDate = (date) => {
     const d = new Date(date);
+
+    const months = [
+      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ];
+
     const day = String(d.getDate()).padStart(2, "0");
-    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const month = months[d.getMonth()];
     const year = d.getFullYear();
 
     return `${day}-${month}-${year}`;
@@ -189,21 +195,8 @@ const FrmReceiptReprint = () => {
       const payload = {
         ulbid: Number(ulbId),
         deptid: Number(values.department),
-        fromDate: new Date(values.fromDate)
-          .toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-          })
-          .replace(/ /g, "-"),
-
-        toDate: new Date(values.toDate)
-          .toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-          })
-          .replace(/ /g, "-"),
+        fromDate: formatDate(values.fromDate),
+        toDate: formatDate(values.toDate),
       };
 
       const res = await axios.post(
