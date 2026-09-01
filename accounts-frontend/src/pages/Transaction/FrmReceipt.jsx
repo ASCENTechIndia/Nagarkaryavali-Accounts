@@ -418,7 +418,7 @@ const FrmReceipt = () => {
   };
 
   const handleSave = async (values) => {
-    console.log("values",values)
+    console.log("values", values)
     if (isSubmitting) return;
 
     setIsSubmitting(true);
@@ -506,16 +506,26 @@ const FrmReceipt = () => {
         return;
       }
 
+
       const formatDate = (date) => {
         const d = new Date(date);
-        return d.toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        }).replace(/ /g, "-");
+
+        const months = [
+          "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        ];
+
+        const day = String(d.getDate()).padStart(2, "0");
+        const month = months[d.getMonth()];
+        const year = d.getFullYear();
+
+        return `${day}-${month}-${year}`;
       };
 
       const TransDate = formatDate(values.date);
+
+      console.log("TransDate:", TransDate);
+console.log("TransDate length:", TransDate.length);
 
       const InMode = refNo ? 2 : 1;
       const RefNo = refNo || 0;
@@ -558,15 +568,15 @@ const FrmReceipt = () => {
         In_ParamStr3: "",
         In_ParamStr4: "",
         In_ParamStr5: "",
-        In_ParamStr6:"",
+        In_ParamStr6: "",
 
-      
-        
-       
-      
-     
-      
-     
+
+
+
+
+
+
+
       },
         {
           headers: {
@@ -1093,7 +1103,7 @@ const FrmReceipt = () => {
 
                   <div className="flex w-full flex-col-reverse lg:flex-row  items-center gap-4 pt-4">
 
-                    
+
 
                     <div className="flex gap-3 sm:w-[50%] max-lg:justify-center items-center justify-end">
                       <Button
