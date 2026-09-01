@@ -1133,15 +1133,19 @@ isDiscountRow:
         return;
       }
 
-      const formatDate = (date) => {
+     const formatDate = (date) => {
         const d = new Date(date);
-        return d
-          .toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-          })
-          .replace(/ /g, "-");
+
+        const months = [
+          "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        ];
+
+        const day = String(d.getDate()).padStart(2, "0");
+        const month = months[d.getMonth()];
+        const year = d.getFullYear();
+
+        return `${day}-${month}-${year}`;
       };
 
       const TransDate = formatDate(values.date);
