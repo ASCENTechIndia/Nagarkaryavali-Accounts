@@ -50,7 +50,7 @@ const CashbookPDFHelper = async ({ reportData, openingBalanceData, filters, ulbI
         totalReceiptOverall += receiptTotal;
         
         receiptRows.push({
-          SR: receiptSrNo++,
+          R_SR: receiptSrNo++,
           R_ZONE: row.RZone || "",
           R_DEPT: row.RDepartment || "",
           R_DOCNO: row.RDocNo || "",
@@ -79,7 +79,7 @@ const CashbookPDFHelper = async ({ reportData, openingBalanceData, filters, ulbI
         totalPaymentOverall += paymentTotal;
         
         paymentRows.push({
-          SR: paymentSrNo++,
+          P_SR: paymentSrNo++,
           P_DOCNO: row.PDocNo || "",
           P_CODE: row.PAccNowith0 || "",
           P_ACCNAME: row.PAccname || "",
@@ -115,7 +115,7 @@ const CashbookPDFHelper = async ({ reportData, openingBalanceData, filters, ulbI
     
     for (let i = 0; i < maxRows; i++) {
       const receiptRow = receiptRows[i] || {
-        SR: "",
+        R_SR: "",
         R_ZONE: "",
         R_DEPT: "",
         R_DOCNO: "",
@@ -130,7 +130,7 @@ const CashbookPDFHelper = async ({ reportData, openingBalanceData, filters, ulbI
       };
       
       const paymentRow = paymentRows[i] || {
-        SR: "",
+        P_SR: "",
         P_DOCNO: "",
         P_CODE: "",
         P_ACCNAME: "",

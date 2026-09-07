@@ -159,7 +159,7 @@
 
           <tr>
             <td class="no-border">
-              <b>Department :</b>
+              <b>{{#if (eq ulbId 870)}}विभागाचे नाव :{{else}}Department :{{/if}}</b>
               {{department}}
             </td>
 
@@ -176,39 +176,40 @@
             </td>
 
             <td class="no-border">
-              <b>Voucher No. :</b>
+              <b>{{#if (eq ulbId 870)}}लेखा विभागाकडील बिल नं. :{{else}}Voucher No. :{{/if}}</b>
               {{voucherNo}}
             </td>
           </tr>
 
           <tr>
             <td class="no-border">
-              <b>System Bill No :</b>
+              <b>{{#if (eq ulbId 870)}}विभागाकडील बिल नं. :{{else}}System Bill No :{{/if}}</b>
               {{systemBillNo}}
             </td>
 
             <td class="no-border">
-              <b>Transaction no :</b>
+              <b> {{#if (eq ulbId 870)}}प्रमाणक नं. :{{else}}Transaction no :{{/if}}</b>
               {{transNo}}
             </td>
           </tr>
 
           <tr>
             <td class="no-border">
-              <b>User name :</b>
+              <b>{{#if (eq ulbId 870)}}User ID :{{else}}User name :{{/if}}</b>
               {{username}}
             </td>
 
             <td class="no-border">
-              <b>Voucher Date :</b>
+              <b>{{#if (eq ulbId 870)}}लेखा विभागाकडील बिल दि. :{{else}}Voucher Date :{{/if}}</b>
               {{voucherDate}}
             </td>
           </tr>
 
           <tr>
             <td class="no-border">
-              <b>पार्टी कोड / पार्टी नाव :</b>
+              <b>{{#if (eq ulbId 870)}}पार्टी कोड/ पार्टी नाव/ GST No. :{{else}}पार्टी कोड / पार्टी नाव :{{/if}}</b>
               {{party}}
+              {{#if (eq ulbId 870)}}/ {{gstNo}}{{/if}}
             </td>
 
             <td class="no-border"></td>
@@ -386,7 +387,9 @@
                     मी याद्वारे प्रमाणित करतो की, या प्रमाणकामध्ये नोंद केलेले सर्व तपशील अचूक आहेत. पडताळणी केली व अचूक असल्याचे आढळून आले.
                   </td>
 
-                  <td class="signature-section no-border">अंतर्गत लेखापरीक्षकाची सही</td>
+                  <td class="signature-section no-border">
+                    {{#if (eq ulbId 870)}}अंतर्गत लेखापरीक्षक/ मुख्य लेखापरीक्षकाची सही{{else}}अंतर्गत लेखापरीक्षकाची सही{{/if}}
+                  </td>
                 </tr>
               </table>
 
@@ -404,7 +407,9 @@
                     पडताळणी केली व अचूक असल्याचे आढळून आले.
                   </td>
 
-                  <td class="signature-section no-border">लेखा प्रमुखाची सही</td>
+                  <td class="signature-section no-border">
+                    {{#if (eq ulbId 870)}}मुख्य लेखाधिकारी सही{{else}}लेखा प्रमुखाची सही{{/if}}
+                  </td>
                 </tr>
               </table>
 
@@ -427,7 +432,9 @@
                     प्रदान.
                   </td>
 
-                  <td class="signature-section no-border">मा. उपआयुक्त यांचे नाव सही</td>
+                  <td class="signature-section no-border">
+                    {{#if (eq ulbId 870)}}अतिरिक्त आयुक्त{{else}}मा. उपआयुक्त यांचे नाव सही{{/if}}
+                  </td>
                 </tr>
               </table>
 

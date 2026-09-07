@@ -156,6 +156,8 @@ const VoucherPreparreprint = async ({ data, ulbInfo }) => {
 
     const main = data[0];
 
+    const ulbId = data[0]?.ULBID || ulbInfo?.ULBID || null;
+
     // ✅ MULTILINE DETAILS + AMOUNTS
     const details = data.map((r, i) => `${i + 1}. ${r.CRACNAME}`).join("<br>");
 
@@ -181,7 +183,7 @@ const VoucherPreparreprint = async ({ data, ulbInfo }) => {
 
     const html = template({
       corporationName: ulbInfo.ABC_MUNICIPAL_TEXT,
-
+      ulbId: ulbId,
       partyId: main.PARTYID,
       partyName: main.PARTYNAME,
       pan: main.PANCARD,

@@ -181,6 +181,7 @@ const generateVoucherGenerationPrintPDF = async ({
   mainData,
   taxDetails,
   corporationName,
+  ulbId
 }) => {
   try {
     const templatePath = path.resolve(
@@ -189,6 +190,11 @@ const generateVoucherGenerationPrintPDF = async ({
     );
 
     const templateHtml = fs.readFileSync(templatePath, "utf8");
+
+    Handlebars.registerHelper('eq', function(a, b) {
+      return a === b;
+    });
+
     const template = Handlebars.compile(templateHtml);
 
     const data = mainData[0];
@@ -240,8 +246,11 @@ const generateVoucherGenerationPrintPDF = async ({
       payamtWithDeduction: "",
     }));
 
+    const gstNo = data.GSTNO || "";
+
     const html = template({
       corporationName,
+      ulbId: ulbId || null,
       header: "Payment Voucher Acknowledgement",
 
       printDate: formatDate(data.TRANSDATE),
@@ -292,6 +301,7 @@ const generateVoucherGenerationPrintPDF = async ({
       finalAmount: formatNumber(payableAmount),
       finalAmountWords: numberToMarathiWords(totalPayAmountWithDeduction),
       finalPayable: formatNumber(payableAmount),
+      gstNo: gstNo,
     });
 
     // -------- PUPPETEER --------
