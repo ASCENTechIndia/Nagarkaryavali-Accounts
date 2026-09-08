@@ -1757,9 +1757,11 @@ const FrmVoucherGeneration = () => {
 
       const firstTax = fullData.tax?.[0];
 
-      const deptCode = firstTax?.GLCODE || values.deptCode;
+      // const deptCode = firstTax?.GLCODE || values.deptCode;
 
-      const ledger = firstTax?.ACCNO || values.ledger;
+      // const ledger = firstTax?.ACCNO || values.ledger;
+      const deptCode = values.deptCode;
+      const ledger = values.ledger;
 
       const narration = fullData.table?.[0]?.NARRATION || values.details || "-";
 
