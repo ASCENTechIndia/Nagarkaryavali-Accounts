@@ -255,6 +255,7 @@ const generateVoucherGenerationPrintPDF = async ({
     }));
 
     const gstNo = data.GSTNO || "";
+    const userId = data.USERID || "";
 
     const html = template({
       corporationName,
@@ -264,9 +265,10 @@ const generateVoucherGenerationPrintPDF = async ({
       printDate: formatDate(firstRow.TRANSDATE),
       printTime: formatTime(firstRow.TRANSDATE),
 
-      zone: firstRow.ZONEENAME || "",
-      department: firstRow.DEPTNAME || "",
-      username: firstRow.USERNAME || "",
+      zone: data.ZONEENAME || "",
+      department: data.DEPTNAME || "",
+      username: data.USERNAME || "",
+      userId: userId,
 
       manualNo: firstRow.MANUALNO || "",
       systemBillNo: firstRow.SYSTEMBILLNO || "",

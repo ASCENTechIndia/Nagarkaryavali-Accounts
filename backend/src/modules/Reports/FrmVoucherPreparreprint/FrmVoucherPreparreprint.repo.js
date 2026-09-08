@@ -61,7 +61,8 @@ const getVoucherPrepareReprintDetails = async ({ refNo, corp_id }) => {
       DEPTNAME,
       ULBID,
       VHRNO,
-      transdate
+      transdate,
+      userid
     FROM vw_vchpreprecdtls
     WHERE REFNO = :refNo
       AND ULBID = :corp_id

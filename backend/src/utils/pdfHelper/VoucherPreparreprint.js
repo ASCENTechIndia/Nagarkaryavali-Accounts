@@ -198,6 +198,7 @@ const VoucherPreparreprint = async ({ data, ulbInfo }) => {
       zone: main.ZONEENAME,
       department: main.DEPTNAME,
       username: main.USERNAME,
+      userId: main.USERID,
 
       items,
 
