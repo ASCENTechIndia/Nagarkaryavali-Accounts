@@ -61,6 +61,9 @@ exports.getVoucherGenerationPrint = asyncHandler(async (req, res) => {
 
   const result = await service.getVoucherGenerationPrintService(payload);
 
+  console.log("result.data.mainData", result.data.mainData);
+  console.log("result.data.taxDetails", result.data.taxDetails);
+
   if (!result.data.mainData.length) {
     throw new AppError("No records found", 404);
   }
@@ -75,6 +78,7 @@ exports.getVoucherGenerationPrint = asyncHandler(async (req, res) => {
     taxDetails: result.data.taxDetails,
     corporationName: corpInfo.ABC_MUNICIPAL_TEXT || "",
     corporationLogo: corpInfo.ULBLOGO || "",
+    ulbId: payload.ulbId,
   });
 
   const baseUrl = `${req.protocol}://${req.get("host")}`;

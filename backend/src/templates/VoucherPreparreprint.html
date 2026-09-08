@@ -144,8 +144,12 @@
       <div class="right">
         <div class="row"><span class="label">दिनांक :</span>{{date}}</div>
         <div class="row"><span class="label">वेळ :</span>{{time}}</div>
-        <div class="row"><span class="label">Voucher No. :</span>{{voucherNo}}</div>
-        <div class="row"><span class="label">Voucher Date :</span>{{voucherDate}}</div>
+        <div class="row"><span class="label">
+          {{#if (eq ulbId 870)}}विभागाकडील बिल नं. :{{else}}Voucher No. :{{/if}}
+        </span>{{voucherNo}}</div>
+        <div class="row"><span class="label">
+          {{#if (eq ulbId 870)}}विभागाकडील दिनांक :{{else}}Voucher Date :{{/if}}
+        </span>{{voucherDate}}</div>
       </div>
     </div>
 
@@ -153,8 +157,12 @@
 
       <div class="mid">
         <div><span class="label">Zone :</span> {{zone}}</div>
-        <div><span class="label">Department :</span> {{department}}</div>
-        <div><span class="label">User name :</span> {{username}}</div>
+        <div><span class="label">
+          {{#if (eq ulbId 870)}}विभागाचे नाव :{{else}}Department :{{/if}}
+        </span> {{department}}</div>
+        <div><span class="label">
+          {{#if (eq ulbId 870)}}User ID :{{else}}User name :{{/if}}
+        </span> {{username}}</div>
       </div>
 
       <table>
