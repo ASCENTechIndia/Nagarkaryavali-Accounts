@@ -162,7 +162,7 @@
         </span> {{department}}</div>
         <div><span class="label">
           {{#if (eq ulbId 870)}}User ID :{{else}}User name :{{/if}}
-        </span> {{username}}</div>
+        </span> {{#if (eq ulbId 870)}}{{userId}}{{else}}{{username}}{{/if}}</div>
       </div>
 
       <table>

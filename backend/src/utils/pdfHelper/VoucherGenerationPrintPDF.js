@@ -247,6 +247,7 @@ const generateVoucherGenerationPrintPDF = async ({
     }));
 
     const gstNo = data.GSTNO || "";
+    const userId = data.USERID || "";
 
     const html = template({
       corporationName,
@@ -259,6 +260,7 @@ const generateVoucherGenerationPrintPDF = async ({
       zone: data.ZONEENAME || "",
       department: data.DEPTNAME || "",
       username: data.USERNAME || "",
+      userId: userId,
 
       manualNo: data.MANUALNO || "",
       systemBillNo: data.SYSTEMBILLNO || "",

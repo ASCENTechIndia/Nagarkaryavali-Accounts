@@ -159,7 +159,9 @@ async function getVoucherGenerationPrintRepo(payload) {
       PAYMODE,
       TRANSDATE,
       GROSSAMOUNT,
-      VOUCHERDATE
+      VOUCHERDATE,
+      userid,
+      gstno
     FROM vw_vchgendtlsrpt
     WHERE REFNO = :refNo
       AND ULBID = :ulbId
@@ -179,7 +181,9 @@ async function getVoucherGenerationPrintRepo(payload) {
         accname,
         ulbid,
         transno,
-        payamt
+        payamt,
+        userid,
+        gstno
       FROM vw_vchgendtlsrpt_details_smkc
       WHERE transno = :refNo
         AND ulbid = :ulbId

@@ -196,7 +196,7 @@
           <tr>
             <td class="no-border">
               <b>{{#if (eq ulbId 870)}}User ID :{{else}}User name :{{/if}}</b>
-              {{username}}
+              {{#if (eq ulbId 870)}}{{userId}}{{else}}{{username}}{{/if}}
             </td>
 
             <td class="no-border">
@@ -209,7 +209,7 @@
             <td class="no-border">
               <b>{{#if (eq ulbId 870)}}पार्टी कोड/ पार्टी नाव/ GST No. :{{else}}पार्टी कोड / पार्टी नाव :{{/if}}</b>
               {{party}}
-              {{#if (eq ulbId 870)}}/ {{gstNo}}{{/if}}
+              {{#if (eq ulbId 870)}}{{#if gstNo}} / {{gstNo}}{{/if}}{{/if}}
             </td>
 
             <td class="no-border"></td>
