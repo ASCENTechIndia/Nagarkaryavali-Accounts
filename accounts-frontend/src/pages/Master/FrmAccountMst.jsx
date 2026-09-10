@@ -1050,7 +1050,7 @@ const FrmAccountMaster = () => {
                       variant="secondary"
                       onClick={() => resetForm()}
                     >
-                      रद्द
+                      रिसेट करा
                     </Button>
                     <Button
                       type="button"

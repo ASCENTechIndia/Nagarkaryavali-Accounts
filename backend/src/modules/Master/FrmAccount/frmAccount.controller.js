@@ -3,18 +3,30 @@ const { ok } = require("../../../libs/response");
 const { AppError } = require("../../../libs/errors");
 const service = require("./frmAccount.service");
 
+// exports.getAccountDetails = asyncHandler(async (req, res) => {
+//   console.log("📥 Request Body:", req.body);
+//   const { functionCode, ulbId, objectCode } = req.body;
+
+//   if (!functionCode) {
+//     throw new AppError("जी.एल. नांव is required", 400);
+//   }
+//   if (!ulbId) {
+//     throw new AppError("ulbId is required", 400);
+//   }
+//   if (!objectCode) {
+//     throw new AppError("खाते नांव is required", 400);
+//   }
+
+//   const payload = { functionCode, ulbId, objectCode };
+//   const data = await service.getAccountDetailsService(payload);
+//   return ok(res, data, "Account details fetched successfully");
+// });
 exports.getAccountDetails = asyncHandler(async (req, res) => {
   console.log("📥 Request Body:", req.body);
   const { functionCode, ulbId, objectCode } = req.body;
 
-  if (!functionCode) {
-    throw new AppError("जी.एल. नांव is required", 400);
-  }
   if (!ulbId) {
     throw new AppError("ulbId is required", 400);
-  }
-  if (!objectCode) {
-    throw new AppError("खाते नांव is required", 400);
   }
 
   const payload = { functionCode, ulbId, objectCode };

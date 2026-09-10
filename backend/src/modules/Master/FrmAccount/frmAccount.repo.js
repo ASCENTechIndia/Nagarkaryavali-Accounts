@@ -2,6 +2,48 @@ const { executeProcedure } = require("../../../db/procedureExecutor");
 const { executeQuery } = require("../../../db/queryExecutor");
 const oracledb = require("oracledb");
 
+// async function getAccountDetailsRepo({ functionCode, ulbId, objectCode }) {
+//   console.log("📤 Repo: Fetch Account Details", {
+//     functionCode,
+//     ulbId,
+//     objectCode,
+//   });
+
+//   const sql = `
+//     SELECT
+//         functioncode,
+//         objectcode,
+//         var_accmaster_accname,
+//         num_accmaster_oldaccno AS oldaccno,
+//         num_accsubtypemst_accsubtypeid || '-' || var_accsubtypemst_accsubtype AS accsubtype
+//     FROM aoac_accmaster_def
+//     INNER JOIN accountview_web
+//         ON glcode = num_accmaster_glcode
+//         AND accno = num_accmaster_accno
+//         AND ulbid = num_accmaster_ulbid
+//     INNER JOIN aoac_accsubtypemaster_def
+//         ON num_accsubtypemst_accsubtypeid = num_accmaster_accsubtype
+//     WHERE functioncode = :functionCode
+//       AND num_accmaster_ulbid = :ulbId
+//       AND objectcode = :objectCode
+//     ORDER BY functioncode
+//   `;
+
+//   const binds = {
+//     functionCode,
+//     ulbId,
+//     objectCode,
+//   };
+
+//   const result = await executeQuery(sql, binds);
+
+//   if (!result.success) {
+//     throw new Error(result.error);
+//   }
+
+//   return result.rows;
+// }
+
 async function getAccountDetailsRepo({ functionCode, ulbId, objectCode }) {
   console.log("📤 Repo: Fetch Account Details", {
     functionCode,
@@ -9,7 +51,7 @@ async function getAccountDetailsRepo({ functionCode, ulbId, objectCode }) {
     objectCode,
   });
 
-  const sql = `
+  let sql = `
     SELECT 
         functioncode, 
         objectcode,
@@ -23,17 +65,22 @@ async function getAccountDetailsRepo({ functionCode, ulbId, objectCode }) {
         AND ulbid = num_accmaster_ulbid
     INNER JOIN aoac_accsubtypemaster_def 
         ON num_accsubtypemst_accsubtypeid = num_accmaster_accsubtype
-    WHERE functioncode = :functionCode
-      AND num_accmaster_ulbid = :ulbId
-      AND objectcode = :objectCode
-    ORDER BY functioncode
+    WHERE num_accmaster_ulbid = :ulbId
   `;
 
-  const binds = {
-    functionCode,
-    ulbId,
-    objectCode,
-  };
+  const binds = { ulbId };
+
+  if (functionCode && functionCode !== "") {
+    sql += ` AND functioncode = :functionCode`;
+    binds.functionCode = functionCode;
+  }
+
+  if (objectCode && objectCode !== "") {
+    sql += ` AND objectcode = :objectCode`;
+    binds.objectCode = objectCode;
+  }
+
+  sql += ` ORDER BY functioncode`;
 
   const result = await executeQuery(sql, binds);
 
@@ -453,7 +500,11 @@ async function saveAccountMasterRepo(payload) {
     in_revbudgetAmt: payload.revBudgetAmt,
 
     out_ErrorCode: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
-    out_ErrorMsg: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 500 },
+    out_ErrorMsg: {
+      dir: oracledb.BIND_OUT,
+      type: oracledb.STRING,
+      maxSize: 500,
+    },
   };
 
   const result = await executeProcedure({ sql, binds });
@@ -512,7 +563,7 @@ async function getFilteredAccSubTypeRepo({ accType, balanceSheetGroup }) {
   `;
 
   const binds = { accType };
-  console.log("sql", sql)
+  console.log("sql", sql);
   const result = await executeQuery(sql, binds);
 
   if (!result.success) {
@@ -521,7 +572,6 @@ async function getFilteredAccSubTypeRepo({ accType, balanceSheetGroup }) {
 
   return result.rows;
 }
-
 
 module.exports = {
   getAccountDetailsRepo,
@@ -539,5 +589,5 @@ module.exports = {
   getNextAccountNoRepo,
   getZoneListRepo,
   saveAccountMasterRepo,
-  getFilteredAccSubTypeRepo
+  getFilteredAccSubTypeRepo,
 };
