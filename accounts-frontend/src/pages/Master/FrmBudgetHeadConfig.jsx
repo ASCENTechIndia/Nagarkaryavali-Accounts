@@ -43,15 +43,15 @@ const FrmBudgetHeadConfig = () => {
   const location = useLocation();
   const { mode, headId } = location.state || {};
 
-  const [selectedOption, setSelectedOption] = useState(""); 
+  const [selectedOption, setSelectedOption] = useState("");
   const [headOptions, setHeadOptions] = useState([]);
   const [subHeadOptions, setSubHeadOptions] = useState([]);
   const [groupOptions, setGroupOptions] = useState([]);
-  
+
   const [selectedHead, setSelectedHead] = useState("");
   const [selectedSubHead, setSelectedSubHead] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("");
-  
+
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(false);
   const [formValues, setFormValues] = useState(initialValues);
@@ -71,7 +71,7 @@ const FrmBudgetHeadConfig = () => {
       console.error("Error fetching heads:", err);
     }
   };
-  
+
   const fetchSubHeads = async () => {
     try {
       const res = await axios.get(
@@ -114,7 +114,7 @@ const FrmBudgetHeadConfig = () => {
         const configData = res.data.data.data[0];
 
         console.log("configData: ", configData)
-        
+
         const level = configData.HEADLEVEL;
         if (level === 1) {
           setSelectedOption("Head");
@@ -158,7 +158,8 @@ const FrmBudgetHeadConfig = () => {
           }));
 
         } else if (level === 4) {
-          setSelectedHead(configData.PARENTHEADID?.toString() || "");
+          setSelectedHead(configData.HEADID?.toString() || "");
+          // setSelectedHead(configData.PARENTHEADID?.toString() || "");
           setSelectedSubHead(configData.PARENTSUBHEADID?.toString() || "");
           setSelectedGroup(configData.PARENTID?.toString() || "");
 
@@ -195,7 +196,7 @@ const FrmBudgetHeadConfig = () => {
     loadEditData();
   }, [mode, headId]);
 
- useEffect(() => {
+  useEffect(() => {
     if (selectedSubHead && (selectedOption === "Group" || selectedOption === "Sub-Group")) {
       fetchGroups(selectedSubHead);
       if (Number(mode) !== 2) {
@@ -238,7 +239,7 @@ const FrmBudgetHeadConfig = () => {
             return;
           }
           break;
-          
+
         case "SubHead":
           if (!selectedHead) {
             Swal.fire({ text: "Please select Head first" });
@@ -254,8 +255,9 @@ const FrmBudgetHeadConfig = () => {
             return;
           }
           headId = Number(selectedHead);
+          console.log({ headId })
           break;
-          
+
         case "Group":
           if (!selectedSubHead) {
             Swal.fire({ text: "Please select SubHead first" });
@@ -272,7 +274,7 @@ const FrmBudgetHeadConfig = () => {
           }
           subHeadId = Number(selectedSubHead);
           break;
-          
+
         case "Sub-Group":
           if (!selectedGroup) {
             Swal.fire({ text: "Please select Group first" });
@@ -280,16 +282,35 @@ const FrmBudgetHeadConfig = () => {
             setSubmitting(false);
             return;
           }
+
+          if (!selectedSubHead) {
+            Swal.fire({ text: "Please select SubHead first" });
+            setLoading(false);
+            setSubmitting(false);
+            return;
+          }
+
           name = values.subGroupName;
+
           if (!name) {
             Swal.fire({ text: "Please enter Sub-Group Name" });
             setLoading(false);
             setSubmitting(false);
             return;
           }
+
           groupId = Number(selectedGroup);
+          subHeadId = Number(selectedSubHead);
+          headId = Number(selectedHead);
+
+          console.log("Sub-Group IDs:", {
+            headId,
+            subHeadId,
+            groupId,
+          });
+
           break;
-          
+
         default:
           Swal.fire({ text: "Please select an option" });
           setLoading(false);
@@ -354,7 +375,7 @@ const FrmBudgetHeadConfig = () => {
   }
 
   return (
-    <Formik 
+    <Formik
       initialValues={formValues}
       enableReinitialize={true}
       onSubmit={handleSubmit}
@@ -494,12 +515,12 @@ const FrmBudgetHeadConfig = () => {
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <Label className='w-32 block whitespace-normal wrap-break-word' text="Head/SubHead/Group/SubGroup :" />
                     <Input
-                      name={selectedOption === "Head" ? "headName" : 
-                             selectedOption === "SubHead" ? "subHeadName" :
-                             selectedOption === "Group" ? "groupName" : "subGroupName"}
-                      value={selectedOption === "Head" ? values.headName : 
-                             selectedOption === "SubHead" ? values.subHeadName :
-                             selectedOption === "Group" ? values.groupName : values.subGroupName}
+                      name={selectedOption === "Head" ? "headName" :
+                        selectedOption === "SubHead" ? "subHeadName" :
+                          selectedOption === "Group" ? "groupName" : "subGroupName"}
+                      value={selectedOption === "Head" ? values.headName :
+                        selectedOption === "SubHead" ? values.subHeadName :
+                          selectedOption === "Group" ? values.groupName : values.subGroupName}
                       onChange={handleChange}
                       className="flex-1 h-9"
                     />
@@ -507,16 +528,16 @@ const FrmBudgetHeadConfig = () => {
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     className="bg-blue-900 hover:bg-blue-800 text-white px-8"
                     disabled={loading || isSubmitting}
                   >
                     {loading ? "Saving..." : "Submit"}
                   </Button>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
+                  <Button
+                    type="button"
+                    variant="outline"
                     className="px-8"
                     onClick={() => navigate("/Masters/FrmBudgetHeadConfigList")}
                   >
