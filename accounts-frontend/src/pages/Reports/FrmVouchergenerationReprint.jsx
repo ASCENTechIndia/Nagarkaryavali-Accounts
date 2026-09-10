@@ -301,10 +301,20 @@ const FrmVouchergenerationReprint = () => {
                                     </Button>
                                 </div>
 
-                                {formattedData.length > 0 && (
+                              {formattedData
+                                    .filter((item) =>
+                                        values.search
+                                            ? String(item.PREVCHNO || "").includes(values.search.trim())
+                                            : true
+                                    )
+                                    .length > 0 && (
                                     <ShadCNTable
                                         headers={headers}
-                                        data={formattedData}
+                                        data={formattedData.filter((item) =>
+                                            values.search
+                                                ? String(item.PREVCHNO || "").includes(values.search.trim())
+                                                : true
+                                        )}
                                         keyMapping={keyMapping}
                                         columnStyles={columnStyles}
                                         pagination={false}

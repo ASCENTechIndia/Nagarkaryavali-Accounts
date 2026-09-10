@@ -204,35 +204,73 @@ const generateVoucherGenerationPrintPDF = async ({
     const payAmount = Number(data.CRAMT || data.AMT || 0);
     const balanceAmount = Number(data.BALAMT || 0);
 
+    const computedBalanceAmount =
+    Number(ulbId) === 870
+      ? grossAmount - payAmount
+      : balanceAmount;
+
     // -------- MAIN TABLE --------
-    const rows = [
-      {
-        srNo: 1,
-        glcode: data.DRGLCODE || "",
-        accname: data.DRACCNO || "",
-        grossAmount: formatNumber(grossAmount),
-        partyNetPayable: formatNumber(payableAmount),
-        narration: data.CRACNAME || "",
-        payableAmount: formatNumber(payAmount),
-        balanceAmount: formatNumber(balanceAmount),
-      },
-    ];
+    // const rows = [
+    //   {
+    //     srNo: 1,
+    //     glcode: data.DRGLCODE || "",
+    //     accname: data.DRACCNO || "",
+    //     grossAmount: formatNumber(grossAmount),
+    //     partyNetPayable: formatNumber(payableAmount),
+    //     narration: data.CRACNAME || "",
+    //     payableAmount: formatNumber(payAmount),
+    //     balanceAmount: formatNumber(computedBalanceAmount),
+    //   },
+    // ];
+    const isUlb870 = Number(ulbId) === 870;
+
+    const rows = mainData.map((row, index) => {
+      const rowGross   = Number(row.GROSSAMOUNT || 0);
+      const rowPay     = Number(row.CRAMT || row.AMT || 0);
+      const rowBalance = Number(row.BALAMT || 0);
+
+      return {
+        srNo: index + 1,
+        glcode: row.DRGLCODE || "",
+        accname: row.DRACCNO || "",
+        grossAmount: formatNumber(rowGross),
+        partyNetPayable: formatNumber(Number(row.AMT || 0)),
+        narration: row.CRACNAME || "",
+        payableAmount: formatNumber(rowPay),
+        balanceAmount: formatNumber(isUlb870 ? rowGross - rowPay : rowBalance),
+      };
+    });
 
     // -------- TOTALS --------
-    const totalPartyNetPayable = payableAmount;
+    // const totalPartyNetPayable = payableAmount;
+    const totalPartyNetPayable = mainData.reduce(
+      (sum, row) => sum + Number(row.AMT || 0),
+      0
+    );
 
     const totalDeduction = taxDetails.reduce(
       (sum, row) => sum + Number(row.AMOUNT || 0),
       0
     );
 
-    // निव्वळ देय रक्कम = देय रक्कम - रक्कम रुपये
-    const totalPayAmount = payAmount - totalDeduction;
-
     // निव्वळ देय रक्कम कपाती सहित = देय रक्कम
-    const totalPayAmountWithDeduction = payAmount;
+    // const totalPayAmountWithDeduction = payAmount;
 
-    const totalBalanceAmount = balanceAmount;
+    // const totalBalanceAmount = computedBalanceAmount;
+    const totalPayAmountWithDeduction = mainData.reduce(
+      (sum, row) => sum + Number(row.CRAMT || row.AMT || 0),
+      0
+    );
+
+    const totalBalanceAmount = mainData.reduce((sum, row) => {
+      const g = Number(row.GROSSAMOUNT || 0);
+      const c = Number(row.CRAMT || row.AMT || 0);
+      const b = Number(row.BALAMT || 0);
+      return sum + (isUlb870 ? g - c : b);
+    }, 0);
+
+    // निव्वळ देय रक्कम = देय रक्कम - रक्कम रुपये
+    const totalPayAmount = totalPayAmountWithDeduction - totalDeduction;
 
     // -------- DEDUCTION ROWS --------
     const deductionRows = taxDetails.map((row, index) => ({

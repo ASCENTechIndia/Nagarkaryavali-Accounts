@@ -87,6 +87,7 @@
 
       td {
         vertical-align: top;
+        line-height: 18px;
       }
 
       .right-text {
@@ -126,6 +127,80 @@
           border: 1px solid #000;
           border-radius: 2px;
       }
+
+      .main-table {
+        table-layout: fixed;
+      }
+
+      .main-table th:nth-child(1),
+      .main-table td:nth-child(1) {
+        width: 5%;
+      }
+
+      .main-table th:nth-child(2),
+      .main-table td:nth-child(2) {
+        width: 11%;
+      }
+
+      .main-table th:nth-child(3),
+      .main-table td:nth-child(3) {
+        width: 21%;
+      }
+
+      .main-table th:nth-child(4),
+      .main-table td:nth-child(4) {
+        width: 11%;
+      }
+
+      .main-table th:nth-child(5),
+      .main-table td:nth-child(5) {
+        width: 35%;
+      }
+
+      .main-table th:nth-child(6),
+      .main-table td:nth-child(6) {
+        width: 8%;
+      }
+
+      .main-table th:nth-child(7),
+      .main-table td:nth-child(7) {
+        width: 9%;
+      }
+
+      .deduction-cell {
+        padding: 0;
+        vertical-align: top;
+      }
+
+      .deduction-table {
+        width: 100%;
+        margin: 0;
+        border: 0;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+
+      .deduction-table td {
+        border: 0;
+        padding: 5px;
+        vertical-align: top;
+        line-height: 18px;
+      }
+
+      .deduction-table td:first-child {
+        width: 81.4%;
+        text-align: left;
+        padding-right: 4px;
+      }
+
+      .deduction-table td:last-child {
+        width: 18.6%;
+        text-align: right;
+        white-space: nowrap;
+        padding-left: 4px;
+        border-left: 1px solid #000;
+      }
+
     </style>
   </head>
 
@@ -165,7 +240,7 @@
         </span> {{#if (eq ulbId 870)}}{{userId}}{{else}}{{username}}{{/if}}</div>
       </div>
 
-      <table>
+      <table class="main-table">
         <thead>
           <tr>
             <th rowspan="2">अ.क्र.</th>
@@ -189,8 +264,9 @@
             <td>{{name}}</td>
             <td class="right-text">{{total}}</td>
 
-            <td>{{{details}}}</td>
-            <td class="right-text">{{{amount}}}</td>
+            <td colspan="2" class="deduction-cell">
+              {{{deductions}}}
+            </td>
 
             <td class="right-text">{{net}}</td>
           </tr>
