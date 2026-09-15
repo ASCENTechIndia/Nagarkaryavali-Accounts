@@ -16,6 +16,7 @@ import SearchableSelect from "@/components/SearchableSelect";
 import ShadCNTable from "@/components/ui/table";
 import Swal from "sweetalert2";
 import { Label } from "@/components/ui/label";
+import * as XLSX from "xlsx";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -141,10 +142,10 @@ const FrmAccountList = () => {
         ulbId: Number(filters.ulbId || user?.ulbId),
         ...(filters.functionCode && {
           functionCode: Number(filters.functionCode),
-        }),
+        }) || "",
         ...(filters.objectCode && {
           objectCode: Number(filters.objectCode),
-        }),
+        }) || "",
       };
 
       const res = await axios.post(
@@ -209,6 +210,29 @@ const FrmAccountList = () => {
       }));
     }
   }, [user]);
+
+  const handleExportExcel = () => {
+  if (!tableData.length) {
+    Swal.fire({
+      text: "No Data Found",
+    });
+    return;
+  }
+
+  const exportData = tableData.map((row) => ({
+    "GL Code": row.FUNCTIONCODE,
+    "Account No": row.OBJECTCODE,
+    "Account Name": row.name,
+    "Balance Sheet Group": row.SUBTYPE,
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Account List");
+
+  XLSX.writeFile(workbook, "Account_List.xlsx");
+};
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
@@ -327,6 +351,18 @@ const FrmAccountList = () => {
 
           {/* TABLE */}
           {showTable && (
+            <div className="space-y-2">
+                  {tableData.length > 0 && (
+                  <div className="flex justify-end">
+                    <Button
+                      onClick={handleExportExcel}
+                      className="text-white"
+                    >
+                      Export to Excel
+                    </Button>
+                  </div>
+                )}
+
             <div className="border rounded-lg overflow-hidden shadow-sm">
               {tableData.length === 0 ? (
                 <div className="p-6 text-center text-muted-foreground">
@@ -340,7 +376,7 @@ const FrmAccountList = () => {
                 />
               )}
             </div>
-          )}
+          </div>)}
         </CardContent>
       </Card>
     </motion.div>

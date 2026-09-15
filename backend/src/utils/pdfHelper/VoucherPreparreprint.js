@@ -159,13 +159,42 @@ const VoucherPreparreprint = async ({ data, ulbInfo }) => {
     const ulbId = data[0]?.ULBID || ulbInfo?.ULBID || null;
 
     // ✅ MULTILINE DETAILS + AMOUNTS
-    const details = data.map((r, i) => `${i + 1}. ${r.CRACNAME}`).join("<br>");
+    // const details = data.map((r, i) => `${i + 1}. ${r.CRACNAME}`).join("<br>");
 
-    const amounts = data.map((r) => formatNumber(r.CRAMT)).join("<br>");
+    // const amounts = data.map((r) => formatNumber(r.CRAMT)).join("<br>");
+
+    const deductions = `
+      <table class="deduction-table">
+        <tbody>
+          ${data
+            .map(
+              (r, i) => `
+                <tr>
+                  <td>${i + 1}. ${r.CRACNAME}</td>
+                  <td>${formatNumber(r.CRAMT)}</td>
+                </tr>
+              `
+            )
+            .join("")}
+        </tbody>
+      </table>
+    `;
 
     const totalDeduction = data.reduce((sum, r) => sum + Number(r.CRAMT || 0), 0);
 
     const netAmount = Number(main.AMT) - totalDeduction;
+
+    // const items = [
+    //   {
+    //     sr: 1,
+    //     code: main.DRACCNO,
+    //     name: main.DRACNAME,
+    //     total: formatNumber(main.AMT),
+    //     details,
+    //     amount: amounts,
+    //     net: formatNumber(netAmount),
+    //   },
+    // ];
 
     const items = [
       {
@@ -173,8 +202,7 @@ const VoucherPreparreprint = async ({ data, ulbInfo }) => {
         code: main.DRACCNO,
         name: main.DRACNAME,
         total: formatNumber(main.AMT),
-        details,
-        amount: amounts,
+        deductions,
         net: formatNumber(netAmount),
       },
     ];
