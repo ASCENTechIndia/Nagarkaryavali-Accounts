@@ -202,7 +202,7 @@ const RptReceiptSCPDFHelper = async ({ reportData, filters, corporationName, cor
     const amount11 = getAmt("32019900001"); 
     const amount12 = getAmt("91037190001"); 
     const amount13 = getAmt("91037190002"); 
-    const amount14 = getAmt("04319900001");
+    const amount14 = getAmt("4319900001") || getAmt("04319900001");
 
     const total2to6 =
       amount2 +
