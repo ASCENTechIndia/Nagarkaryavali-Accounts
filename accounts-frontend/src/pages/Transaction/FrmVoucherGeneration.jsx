@@ -1463,11 +1463,13 @@ const FrmVoucherGeneration = () => {
         selected: false,
 
         // निव्वळ देय = AMT + BALAMT
-        nivalDey: Number(v.AMT ?? 0) + Number(v.BALAMT ?? 0),
+        // nivalDey: Number(v.AMT ?? 0) + Number(v.BALAMT ?? 0),
+        nivalDey: Number(v.BALAMT ?? 0),
 
         rakkam: 0,
 
-        deyRakkam: Number(v.AMT ?? 0) + Number(v.BALAMT ?? 0),
+        // deyRakkam: Number(v.AMT ?? 0) + Number(v.BALAMT ?? 0),
+        deyRakkam: Number(v.BALAMT ?? 0),
       }));
 
       setVoucherList(formattedData);
@@ -2154,7 +2156,7 @@ const FrmVoucherGeneration = () => {
                               row.BALAMT ?? row.balamt ?? 0,
                             );
 
-                            const nivalDey = amt + balAmt;
+                            const nivalDey = balAmt;
 
                             const rakkam = Number(row.rakkam ?? 0);
 
@@ -2178,7 +2180,7 @@ const FrmVoucherGeneration = () => {
 
                                           const balAmt = Number(v.BALAMT ?? 0);
 
-                                          const nivalDey = amt + balAmt;
+                                          const nivalDey = balAmt;
 
                                           return {
                                             ...v,
