@@ -199,7 +199,7 @@ const VoucherPreparreprint = async ({ data, ulbInfo }) => {
     const items = [
       {
         sr: 1,
-        code: main.DRACCNO,
+        code: String(main.DRACCNO).padStart(11, "0"),
         name: main.DRACNAME,
         total: formatNumber(main.AMT),
         deductions,

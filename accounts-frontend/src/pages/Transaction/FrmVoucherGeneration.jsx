@@ -1563,7 +1563,7 @@ const FrmVoucherGeneration = () => {
       const res = await axios.post(
         `${BASE_URL}/api/frmPayment/account-balance`,
         {
-          targetDate: formatDate(new Date()),
+          targetDate: formatOracleDate(new Date()),
 
           corpId: Number(ulbId),
 
@@ -2231,7 +2231,7 @@ const FrmVoucherGeneration = () => {
 
                                 <td className="p-2">{row.PRENARRATION}</td>
 
-                                <td className="p-2 text-right">{rakkam}</td>
+                                <td className="p-2 text-right">{amt}</td>
 
                                 {/* निव्वळ देय */}
                                 <td className="p-2 text-right font-semibold">
