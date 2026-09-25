@@ -166,16 +166,17 @@ const VoucherPreparreprint = async ({ data, ulbInfo }) => {
     const deductions = `
       <table class="deduction-table">
         <tbody>
-          ${data
-            .map(
-              (r, i) => `
-                <tr>
-                  <td>${i + 1}. ${r.CRACNAME}</td>
-                  <td>${formatNumber(r.CRAMT)}</td>
-                </tr>
-              `
-            )
-            .join("")}
+         ${data
+          .map((r) => {
+            const name = (r.CRACNAME ?? "").toString().trim();
+            return `
+              <tr>
+                <td>${name ? `${data.indexOf(r) + 1}. ${name}` : ""}</td>
+                <td>${formatNumber(r.CRAMT)}</td>
+              </tr>
+            `;
+          })
+          .join("")}
         </tbody>
       </table>
     `;
