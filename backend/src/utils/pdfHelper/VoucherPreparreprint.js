@@ -158,6 +158,8 @@ const VoucherPreparreprint = async ({ data, ulbInfo }) => {
 
     const ulbId = data[0]?.ULBID || ulbInfo?.ULBID || null;
 
+    const showDateTimeFooter = [930, 1750].includes(Number(ulbId));
+
     // ✅ MULTILINE DETAILS + AMOUNTS
     // const details = data.map((r, i) => `${i + 1}. ${r.CRACNAME}`).join("<br>");
 
@@ -236,6 +238,7 @@ const VoucherPreparreprint = async ({ data, ulbInfo }) => {
       netTotal: formatNumber(netAmount),
 
       amountInWords: numberToMarathiWords(netAmount),
+      showDateTimeFooter,
     });
 
     // ================= PUPPETEER =================

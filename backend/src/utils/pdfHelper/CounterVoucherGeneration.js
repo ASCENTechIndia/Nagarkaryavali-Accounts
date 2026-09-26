@@ -222,6 +222,9 @@ const CounterVoucherGeneration = async ({
       return String(num || "").padStart(6, "0");
     };
 
+    const ulbId = header.ULBID;
+    const showPrintedOn = [930, 1750].includes(Number(ulbId));
+
     // ================= TEMPLATE DATA =================
     const html = template({
       corporationName,
@@ -279,6 +282,8 @@ const CounterVoucherGeneration = async ({
       // OPTIONAL
       grossamount: formatAmount(header.GROSSAMOUNT),
       amountWords: numberToMarathiWords(totalPaid), 
+      ulbId,
+      showPrintedOn,
     });
 
     // ================= PDF =================

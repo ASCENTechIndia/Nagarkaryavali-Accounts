@@ -399,7 +399,7 @@ ORDER BY
                       WHERE login_zone.num_userzone_userid = :loginUser
                         AND login_zone.num_userzone_ulbid = :UlbId
                         AND login_zone.num_userzone_zoneid =
-                            rmst.num_receiptmst_zoneid
+                            num_payment_zoneid
                   )
 
                   AND
@@ -409,7 +409,7 @@ ORDER BY
                       SELECT 1
                       FROM aoms_accusermap_mas aum
                       WHERE aum.num_accusermap_userid =
-                            rmst.var_receiptmst_insby
+                            var_payment_insby
 
                         AND aum.num_accusermap_deptid IN
                         (
@@ -648,7 +648,9 @@ ORDER BY
 
     console.log(query);
 
-    return await executeQuery(query, bindParams);
+    const result = await executeQuery(query, bindParams);
+    console.log("getTransactionList result: ", result);
+    return result;
   } catch (err) {
     throw err;
   }

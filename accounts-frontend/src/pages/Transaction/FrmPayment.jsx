@@ -265,16 +265,16 @@ const FrmPayment = () => {
             setFieldValue("details", data.NARRATION);
             setFieldValue("partyCode", data.PARTYCODE?.toString());
             setFieldValue("debtorType", data.PAYMENTTYPE?.toString());
-            setFieldValue("costomerName", data.PARTYNAME || "");
+            setFieldValue("costomerName", data.DEYAKDHARAK || data.PARTYNAME || "");
 
-            setFieldValue("deptCode", data.GLCODE?.toString());
-            setFieldValue("debtorDeptCode", data.CRGL?.toString());
+            setFieldValue("deptCode", data.CRGL?.toString());
+            setFieldValue("debtorDeptCode", data.GLCODE?.toString());
 
-            setTempLedger(data.ACCNO?.toString());
-            setTempDebtorLedger(data.CRACC?.toString());
+            setTempLedger(data.CRACC?.toString()); 
+            setTempDebtorLedger(data.ACCNO?.toString());
 
-            await fetchCreditLeasure(data.GLCODE?.toString(), "entryHead");
-            await fetchCreditLeasure(data.CRGL?.toString(), "party");
+            await fetchCreditLeasure(data.CRGL?.toString(), "entryHead");
+            await fetchCreditLeasure(data.GLCODE?.toString(), "party");
 
         } catch (err) {
             console.error("Payment Details API Error:", err);
@@ -447,7 +447,7 @@ const FrmPayment = () => {
             const inMode = isEdit ? 2 : 1;
             const currentRefNo = isEdit ? refNo : 0;
 
-            const isBankPayment = values.transactionType === "4";
+            const isBankPayment = values.transactionType === "4" && (values.debtorType == "2" || values.debtorType == "3")
 
             const chqDate = isBankPayment
                 ? formatDate(values.date)
@@ -471,8 +471,8 @@ const FrmPayment = () => {
                 inMode,
                 currentRefNo,
                 values.transactionType,
-                1,
-                "",
+                "0",
+                "", 
                 "",
                 isBankPayment ? (values.chequePageNo || "") : "",
                 "",
@@ -482,17 +482,19 @@ const FrmPayment = () => {
                 "",
             ].join("~");
 
-            const paramStr2 = values.debtorDeptCode && values.debtorLedgerHead
-                ? [
-                    values.debtorDeptCode,
-                    values.partyCode,
-                    values.debtorDeptCode,
-                    values.debtorLedgerHead,
-                    values.amount,
-                    values.voucherNo || 0,
-                    formatDate(values.date),
-                ].join("#")
-                : "";
+            // const paramStr2 = values.debtorDeptCode && values.debtorLedgerHead
+            //     ? [
+            //         values.debtorDeptCode,
+            //         values.partyCode,
+            //         values.debtorDeptCode,
+            //         values.debtorLedgerHead,
+            //         values.amount,
+            //         values.voucherNo || 0,
+            //         formatDate(values.date),
+            //     ].join("#")
+            //     : "";
+
+            const paramStr2 = "";
 
             const payload = {
                 paramStr,
@@ -641,7 +643,7 @@ const FrmPayment = () => {
                     }
                 }, [values.deptCode, values.ledgerHead, values.date]);
 
-                const isBankPayment = values.transactionType === "4";
+                const isBankPayment = values.transactionType === "4" && (values.debtorType == "2" || values.debtorType == "3")
 
                 useEffect(() => {
                     if (values.transactionType) {
