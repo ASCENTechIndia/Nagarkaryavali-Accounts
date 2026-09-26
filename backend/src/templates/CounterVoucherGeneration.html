@@ -98,6 +98,19 @@
         font-weight: bold;
         padding-top: 20px;
       }
+      .printed-on {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 15px;
+        padding: 6px 8px;
+        border-top: 1px solid #000;
+        font-size: 11px;
+      }
+
+      .printed-on .printed-label {
+        font-weight: bold;
+      }
     </style>
   </head>
 
@@ -116,8 +129,10 @@
         </div>
       
         <div style="text-align:right;">
-          दिनांक : {{date}}<br />
-          वेळ : {{time}}<br />
+          {{#unless showPrintedOn}}
+            दिनांक : {{date}}<br />
+            वेळ : {{time}}<br />
+          {{/unless}}
           Voucher No : {{refno}}<br />
           Transaction no : {{transno}}<br />
           Voucher Date : {{transdate}}
@@ -291,6 +306,13 @@
           प्राप्त करणाऱ्याची सही
         </div>
       </div>
+      {{#if showPrintedOn}}
+        <div class="printed-on">
+          <span class="printed-label">Printed On</span>
+          <span>दिनांक : {{date}}</span>
+          <span>वेळ : {{time}}</span>
+        </div>
+      {{/if}}
     </div>
   
 </div>

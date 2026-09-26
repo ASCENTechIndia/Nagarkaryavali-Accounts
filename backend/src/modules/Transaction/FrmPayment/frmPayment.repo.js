@@ -239,6 +239,7 @@ async function getPaymentDetailsRepo({ refno }) {
         a.num_payment_paymenttype AS paymenttype,
         a.var_payment_efileno AS efileno,
         a.dat_payment_approvaldate AS approvaldate,
+        a.num_payment_deyakdharkname AS deyakdharak,
         a.num_payment_refno AS refno
     FROM aoac_payment_def a
     INNER JOIN aoac_paymentdet_def c 
@@ -437,6 +438,8 @@ async function savePaymentRepo(payload) {
   if (!result.success) {
     throw new Error(result.error);
   }
+
+  console.log("result: ", result);
 
   return result.outBinds;
 }

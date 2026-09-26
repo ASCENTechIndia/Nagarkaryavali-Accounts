@@ -201,6 +201,20 @@
         border-left: 1px solid #000;
       }
 
+      .printed-on {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 15px;
+        padding: 6px 8px;
+        border-top: 1px solid #000;
+        font-size: 12px;
+      }
+
+      .printed-on .printed-label {
+        font-weight: bold;
+      }
+
     </style>
   </head>
 
@@ -217,8 +231,10 @@
       </div>
 
       <div class="right">
-        <div class="row"><span class="label">दिनांक :</span>{{date}}</div>
-        <div class="row"><span class="label">वेळ :</span>{{time}}</div>
+        {{#unless showDateTimeFooter}}
+          <div class="row"><span class="label">दिनांक :</span>{{date}}</div>
+          <div class="row"><span class="label">वेळ :</span>{{time}}</div>
+        {{/unless}}
         <div class="row"><span class="label">
           {{#if (eq ulbId 870)}}विभागाकडील बिल नं. :{{else}}Voucher No. :{{/if}}
         </span>{{voucherNo}}</div>
@@ -305,5 +321,13 @@
       </div>
     
     </div>
+
+    {{#if showDateTimeFooter}}
+      <div class="printed-on">
+        <span class="printed-label">Printed On</span>
+        <span>दिनांक : {{date}}</span>
+        <span>वेळ : {{time}}</span>
+      </div>
+    {{/if}}
   </body>
 </html>
