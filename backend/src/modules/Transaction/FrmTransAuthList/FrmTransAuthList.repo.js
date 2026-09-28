@@ -369,87 +369,7 @@ ORDER BY
             AND date_payment_trnsdate < TO_DATE(:ToDate,'YYYY-MM-DD') + 1
           AND var_payment_authstatus IS NULL
           AND corpid = :UlbId
-         AND
-          (
-              (
-                  EXISTS
-                  (
-                      SELECT 1
-                      FROM aoac_userdept_map_config login_dept
-                      WHERE login_dept.num_userdept_userid = :loginUser
-                        AND login_dept.num_userdept_ulbid = :UlbId
-                  )
-
-                  AND
-
-                  EXISTS
-                  (
-                      SELECT 1
-                      FROM aoac_userzone_map_config login_zone
-                      WHERE login_zone.num_userzone_userid = :loginUser
-                        AND login_zone.num_userzone_ulbid = :UlbId
-                  )
-
-                  AND
-
-                  EXISTS
-                  (
-                      SELECT 1
-                      FROM aoac_userzone_map_config login_zone
-                      WHERE login_zone.num_userzone_userid = :loginUser
-                        AND login_zone.num_userzone_ulbid = :UlbId
-                        AND login_zone.num_userzone_zoneid =
-                            num_payment_zoneid
-                  )
-
-                  AND
-
-                  EXISTS
-                  (
-                      SELECT 1
-                      FROM aoms_accusermap_mas aum
-                      WHERE aum.num_accusermap_userid =
-                            var_payment_insby
-
-                        AND aum.num_accusermap_deptid IN
-                        (
-                            SELECT login_dept.num_userdept_deptid
-                            FROM aoac_userdept_map_config login_dept
-                            WHERE login_dept.num_userdept_userid = :loginUser
-                              AND login_dept.num_userdept_ulbid = :UlbId
-                        )
-
-                        AND aum.num_accusermap_ward IN
-                        (
-                            SELECT login_zone.num_userzone_zoneid
-                            FROM aoac_userzone_map_config login_zone
-                            WHERE login_zone.num_userzone_userid = :loginUser
-                              AND login_zone.num_userzone_ulbid = :UlbId
-                        )
-                  )
-              )
-
-              OR
-              (
-                  NOT EXISTS
-                  (
-                      SELECT 1
-                      FROM aoac_userdept_map_config login_dept
-                      WHERE login_dept.num_userdept_userid = :loginUser
-                        AND login_dept.num_userdept_ulbid = :UlbId
-                  )
-
-                  AND
-
-                  NOT EXISTS
-                  (
-                      SELECT 1
-                      FROM aoac_userzone_map_config login_zone
-                      WHERE login_zone.num_userzone_userid = :loginUser
-                        AND login_zone.num_userzone_ulbid = :UlbId
-                  )
-              )
-          )
+         
       `;
 
       if (params.zoneId && params.zoneId !== "-1") {
@@ -523,87 +443,6 @@ ORDER BY
           AND var_transfermst_authstatus IS NULL
           AND num_transfermst_trnstypeid = :TransType
           AND corpid = :UlbId
-          AND
-          (
-              (
-                  EXISTS
-                  (
-                      SELECT 1
-                      FROM aoac_userdept_map_config login_dept
-                      WHERE login_dept.num_userdept_userid = :loginUser
-                        AND login_dept.num_userdept_ulbid = :UlbId
-                  )
-
-                  AND
-
-                  EXISTS
-                  (
-                      SELECT 1
-                      FROM aoac_userzone_map_config login_zone
-                      WHERE login_zone.num_userzone_userid = :loginUser
-                        AND login_zone.num_userzone_ulbid = :UlbId
-                  )
-
-                  AND
-
-                  EXISTS
-                  (
-                      SELECT 1
-                      FROM aoac_userzone_map_config login_zone
-                      WHERE login_zone.num_userzone_userid = :loginUser
-                        AND login_zone.num_userzone_ulbid = :UlbId
-                        AND login_zone.num_userzone_zoneid =
-                            rmst.num_receiptmst_zoneid
-                  )
-
-                  AND
-
-                  EXISTS
-                  (
-                      SELECT 1
-                      FROM aoms_accusermap_mas aum
-                      WHERE aum.num_accusermap_userid =
-                            rmst.var_receiptmst_insby
-
-                        AND aum.num_accusermap_deptid IN
-                        (
-                            SELECT login_dept.num_userdept_deptid
-                            FROM aoac_userdept_map_config login_dept
-                            WHERE login_dept.num_userdept_userid = :loginUser
-                              AND login_dept.num_userdept_ulbid = :UlbId
-                        )
-
-                        AND aum.num_accusermap_ward IN
-                        (
-                            SELECT login_zone.num_userzone_zoneid
-                            FROM aoac_userzone_map_config login_zone
-                            WHERE login_zone.num_userzone_userid = :loginUser
-                              AND login_zone.num_userzone_ulbid = :UlbId
-                        )
-                  )
-              )
-
-              OR
-              (
-                  NOT EXISTS
-                  (
-                      SELECT 1
-                      FROM aoac_userdept_map_config login_dept
-                      WHERE login_dept.num_userdept_userid = :loginUser
-                        AND login_dept.num_userdept_ulbid = :UlbId
-                  )
-
-                  AND
-
-                  NOT EXISTS
-                  (
-                      SELECT 1
-                      FROM aoac_userzone_map_config login_zone
-                      WHERE login_zone.num_userzone_userid = :loginUser
-                        AND login_zone.num_userzone_ulbid = :UlbId
-                  )
-              )
-          )
       `;
 
       bindParams.TransType = params.transType;
@@ -647,8 +486,15 @@ ORDER BY
     }
 
     console.log(query);
+    const finalBindParams = {};
+    for (const key of Object.keys(bindParams)) {
+      if (query.includes(`:${key}`)) {
+        finalBindParams[key] = bindParams[key];
+      }
+    }
 
-    const result = await executeQuery(query, bindParams);
+    const result = await executeQuery(query, finalBindParams);
+    // const result = await executeQuery(query, bindParams);
     console.log("getTransactionList result: ", result);
     return result;
   } catch (err) {
