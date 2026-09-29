@@ -598,7 +598,7 @@ const FrmPayment = () => {
 
     return (
         <Formik initialValues={INITIAL_VALUES} onSubmit={handleSubmit}>
-            {({ values, handleChange, setFieldValue, errors, touched }) => {
+            {({ values, handleChange, setFieldValue, errors, touched, resetForm }) => {
 
                 setFieldValueRef.current = setFieldValue;
 
@@ -780,7 +780,7 @@ const FrmPayment = () => {
                                         {ulbId != 2 && (
                                             <div>
                                                 <Label text="व्हाउचर क्रमांक :" />
-                                                <Input name="voucherNo" value={values.voucherNo} onChange={handleChange} />
+                                                <Input name="voucherNo" type="number" value={values.voucherNo} onChange={handleChange} />
                                                 {errors.voucherNo && touched.voucherNo && (
                                                     <p className="text-red-500 text-sm">{errors.voucherNo}</p>
                                                 )}
@@ -939,7 +939,7 @@ const FrmPayment = () => {
                                         <Button type="submit" className="bg-blue-900 text-white hover:bg-blue-800">
                                             स्वीकार
                                         </Button>
-                                        <Button type="button" variant="destructive">
+                                        <Button type="button" variant="destructive" onClick={() => resetForm()}>
                                             हटवा
                                         </Button>
                                         <Button type="button" path="/Transactions/FrmPaymentList">

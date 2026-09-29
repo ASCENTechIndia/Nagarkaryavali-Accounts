@@ -244,7 +244,7 @@ const ChequeRegisterPDFHelper = async ({ reportData, ulbInfo, filters }) => {
       currentDate: formatDate(now),
       currentTime: now.toLocaleTimeString(),
       pages: pages,
-      accountNumber: filters.minorCode || "ALL",
+      accountNumber: String(filters.minorCode).padStart(11, "0") || "ALL",
       // bankName:filters.majorCode ?? "ALL"
       // accountNumber: filters.minorCodeName || "ALL",
       bankName: filters.minorCodeName || "ALL",
