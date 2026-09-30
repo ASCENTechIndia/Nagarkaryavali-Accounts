@@ -120,11 +120,11 @@ const getBalanceVoucherDetails = async (params) => {
         zoneid,
         ulbid,
         budgetid,
-        amt,
+        CASE WHEN ulbid = 870 THEN 0 ELSE amt END AS amt,
         partycode,
         prenarration,
         deptid,
-        NVL(totalamt, 0) - NVL(amt, 0) - NVL(bal, 0) AS balamt,
+        case when ulbid=870 then NVL(totalamt, 0)  - NVL(bal, 0)  else  NVL(totalamt, 0) - NVL(amt, 0) - NVL(bal, 0) end balamt,
         nidhiid
       FROM (
         SELECT
@@ -232,7 +232,7 @@ const getVoucherPrepList = async (params) => {
       acc.accname,
       var_budgetconfig_budgetname AS budgetname,
       SUM(NVL(num_vchprepdet_amt,0)) AS amt,
-      NVL(num_vchprepmst_totalamt,0) - SUM(NVL(num_vchprepdet_amt,0)) AS balamt,
+      CASE WHEN num_vchpremst_ulbid = '870' THEN NVL (num_vchprepmst_totalamt, 0) ELSE  NVL (num_vchprepmst_totalamt, 0) - SUM (NVL (num_vchprepdet_amt, 0)) END balamt, 
       var_vchpremst_narration AS prenarration,
       num_vchprepmst_deptid AS deptid,
       num_vchprepmst_partyid AS partycode
@@ -321,7 +321,8 @@ const getVoucherPrepList = async (params) => {
       var_budgetconfig_budgetname,
       var_vchpremst_narration,
       num_vchprepmst_deptid,
-      num_vchprepmst_partyid
+      num_vchprepmst_partyid,
+      num_vchpremst_ulbid
     ORDER BY num_vchprepmst_refno
   `;
 
