@@ -112,6 +112,7 @@ import FrmVoucherAuth from "./pages/Transaction/FrmVoucherAuth";
 import FrmUserDepartmentMapping from "./pages/Master/FrmUserDepartmentMapping";
 import FrmZoneDepartmentMapping from "./pages/Master/FrmUserZoneMapping";
 import FrmUserZoneMapping from "./pages/Master/FrmUserZoneMapping";
+import RptConsolidateReport from "./pages/Reports/RptConsolidateReport";
 
 const Home = () => <Button>Click me</Button>;
 
@@ -561,6 +562,10 @@ export const router = createBrowserRouter([
       {
         path: "/Transactions/FrmVoucherAuth",
         element: <FrmVoucherAuth />,
+      },
+      {
+        path: "/ReportsForm/RptConsolidateReport",
+        element: <RptConsolidateReport />,
       },
     ],
   },

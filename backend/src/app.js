@@ -156,6 +156,8 @@ app.use("/api/FrmCashDepositReprint", require("./modules/Reports/FrmCashDepositR
 app.use("/api/ReceiptPaymentRegister", require("./modules/Reports/FrmReceiptPaymentRegisterRpt/FrmReceiptPaymentRegisterRpt.routes"));
 app.use("/api/RptGLAccStatement", require("./modules/Reports/RptGLAccStatement/RptGLAccStatement.routes"));
 app.use("/api/FrmTransactionEntryStatusRpt", require("./modules/Reports/FrmTransactionEntryStatusRpt/FrmTransactionEntryStatusRpt.routes"));
+app.use("/api/RptConsolidateReport", require("./modules/Reports/RptConsolidateReport/RptConsolidateReport.routes"));
+
 app.use(errorMiddleware);
 
 module.exports = app;
