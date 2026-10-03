@@ -573,6 +573,18 @@ async function getFilteredAccSubTypeRepo({ accType, balanceSheetGroup }) {
   return result.rows;
 }
 
+const creditLeasure = async (corp_id) => {
+  const query = `
+    SELECT 
+      objectcode,
+      objectcode || '-' || accname AS accname
+    FROM accountview_web
+    WHERE ulbid = :corp_id
+  `;
+  return executeQuery(query, { corp_id });
+};
+
+
 module.exports = {
   getAccountDetailsRepo,
   searchAccountRepo,
@@ -590,4 +602,5 @@ module.exports = {
   getZoneListRepo,
   saveAccountMasterRepo,
   getFilteredAccSubTypeRepo,
+  creditLeasure
 };

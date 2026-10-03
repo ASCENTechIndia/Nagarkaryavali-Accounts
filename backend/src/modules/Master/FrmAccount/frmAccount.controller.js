@@ -253,3 +253,9 @@ exports.getFilteredAccSubType = asyncHandler(async (req, res) => {
 
   return ok(res, data, "Filtered account subtypes fetched successfully");
 });
+
+exports.creditLeasure = asyncHandler(async (req, res) => {
+  const { corp_id } = req.body;
+  const data = await service.creditLeasureService(corp_id);
+  return ok(res, data);
+});

@@ -94,17 +94,15 @@ const FrmAccountList = () => {
   };
 
   // ================= LEDGERS =================
-  const loadLedgers = async (glcode) => {
+  const loadLedgers = async () => {
     try {
-      if (!glcode) return;
 
       setLedgerLoading(true);
 
       const res = await axios.post(
-        `${BASE_URL}/api/FrmTransfer/credit-leasure`,
+        `${BASE_URL}/api/FrmAccount/credit-leasure`,
         {
           corp_id: Number(user?.ulbId),
-          glcode: Number(glcode),
         },
         {
           headers: { Authorization: `Bearer ${user?.token}` },
@@ -123,6 +121,7 @@ const FrmAccountList = () => {
     if (!user?.token) return;
     getCorporations();
     loadGLList();
+    loadLedgers();
   }, [user]);
 
   // ================= SEARCH =================
@@ -292,7 +291,6 @@ const FrmAccountList = () => {
                     functionCode: gl,
                     objectCode: "",
                   }));
-                  loadLedgers(gl);
                 }}
               />
             </div>

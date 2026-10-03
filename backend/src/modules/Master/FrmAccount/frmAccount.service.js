@@ -185,6 +185,14 @@ async function getFilteredAccSubTypeService(payload) {
   };
 }
 
+const creditLeasureService = async (corp_id) => {
+  if (!corp_id) {
+    throw new AppError("corp_id are required", 400);
+  }
+  return await repo.creditLeasure(corp_id);
+};
+
+
 module.exports = {
   getAccountDetailsService,
   searchAccountService,
@@ -201,5 +209,6 @@ module.exports = {
   getNextAccountNoService,
   getZoneListService,
   saveAccountMasterService,
-  getFilteredAccSubTypeService
+  getFilteredAccSubTypeService,
+  creditLeasureService
 };

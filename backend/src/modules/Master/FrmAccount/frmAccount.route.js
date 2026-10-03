@@ -19,4 +19,6 @@ router.post("/next-accountNo", auth(), controller.getNextAccountNo);
 router.post("/zone-list", auth(), controller.getZoneList);
 router.post("/save-account", auth(), controller.saveAccountMaster);
 router.post("/filtered-acc-subType", auth(), controller.getFilteredAccSubType);
+router.post("/credit-leasure",  auth(), controller.creditLeasure);
+
 module.exports = router;
