@@ -2,6 +2,9 @@ const asyncHandler = require("../../../libs/asyncHandler");
 const { ok } = require("../../../libs/response");
 const { AppError } = require("../../../libs/errors");
 const service = require("./frmAccount.service");
+const { getCorporationService } = require("../../MenuAccess/MenuAccess.service");
+const { generateAccountDetailsPDFHelper } = require("../../../utils/pdfHelper/FrmAccountDetails");
+const path = require("path");
 
 // exports.getAccountDetails = asyncHandler(async (req, res) => {
 //   console.log("📥 Request Body:", req.body);
@@ -22,7 +25,7 @@ const service = require("./frmAccount.service");
 //   return ok(res, data, "Account details fetched successfully");
 // });
 exports.getAccountDetails = asyncHandler(async (req, res) => {
-  console.log("📥 Request Body:", req.body);
+  console.log("📥 Request Body:", req.body);  
   const { functionCode, ulbId, objectCode } = req.body;
 
   if (!ulbId) {
@@ -258,4 +261,48 @@ exports.creditLeasure = asyncHandler(async (req, res) => {
   const { corp_id } = req.body;
   const data = await service.creditLeasureService(corp_id);
   return ok(res, data);
+});
+
+
+
+exports.generateAccountDetailsPDF = asyncHandler(async (req, res) => {
+  console.log("📥 PDF Request Body:", req.body);
+
+  const { functionCode, ulbId, objectCode } = req.body;
+
+  if (!ulbId) {
+    throw new AppError("ulbId is required", 400);
+  }
+
+  const payload = { functionCode, ulbId, objectCode };
+  const result = await service.getAccountDetailsService(payload);
+
+  console.log("📄 Account Details for PDF:", result);
+
+  let corpInfo = {};
+  try {
+    corpInfo = await getCorporationService({ ulbId });
+  } catch (e) {
+    corpInfo = {};
+  }
+
+  const corporationName =
+    corpInfo?.ABC_MUNICIPAL_TEXT || corpInfo?.ULBNAME || "";
+  const logo = corpInfo?.ULBLOGO || "";
+
+  const pdf = await generateAccountDetailsPDFHelper({
+    rows: result.data || [],
+    corporationName,
+    logo,
+  });
+
+  const baseUrl = `${req.protocol}://${req.get("host")}`;
+  const pdfUrl = `${baseUrl}/pdf/${path.basename(pdf.filePath)}`;
+
+  return res.json({
+    success: true,
+    message: "Account Details PDF Generated Successfully",
+    fileName: pdf.fileName,
+    pdfUrl,
+  });
 });

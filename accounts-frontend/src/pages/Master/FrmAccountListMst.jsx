@@ -32,6 +32,7 @@ const FrmAccountList = () => {
   const [glList, setGlList] = useState([]);
   const [ledgerOptions, setLedgerOptions] = useState([]);
   const [ledgerLoading, setLedgerLoading] = useState(false);
+  const [excelData, setExcelData] = useState([]);
 
   const [filters, setFilters] = useState({
     ulbId: "",
@@ -160,6 +161,9 @@ const FrmAccountList = () => {
       }
 
       const list = res.data?.data?.data || res.data?.data?.rows || [];
+
+      setExcelData(list);
+
       const mapped = list.map((row) => ({
         select: (
           <Button
@@ -210,27 +214,249 @@ const FrmAccountList = () => {
     }
   }, [user]);
 
-  const handleExportExcel = () => {
-  if (!tableData.length) {
+ const handleExportExcel = () => {
+  if (!excelData.length) {
     Swal.fire({
       text: "No Data Found",
     });
     return;
   }
 
-  const exportData = tableData.map((row) => ({
-    "GL Code": row.FUNCTIONCODE,
-    "Account No": row.OBJECTCODE,
-    "Account Name": row.name,
-    "Balance Sheet Group": row.SUBTYPE,
+  const exportData = excelData.map((row, index) => ({
+    "अ.क्र.": index + 1,
+    "खाते कोड": row.OBJECTCODE || "",
+    "खाते नाव": row.VAR_ACCMASTER_ACCNAME || "",
+    "जुना खाते क्र": row.OLDACCNO || "",
+    "बजेट तरतूद रक्कम": Number(row.BUDGETAMT || 0),
+    "प्रारंभिक शिल्लक": Number(row.OPENINGBAL || 0),
+    "सुधारित बजेट": Number(row.REVBUDGETAMT || 0),
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(exportData);
 
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Account List");
+  worksheet["!cols"] = [
+    { wch: 8 }, 
+    { wch: 18 }, 
+    { wch: 35 }, 
+    { wch: 18 }, 
+    { wch: 22 }, 
+    { wch: 22 }, 
+    { wch: 20 }, 
+  ];
 
-  XLSX.writeFile(workbook, "Account_List.xlsx");
+  const lastRow = exportData.length + 1;
+
+  for (let row = 2; row <= lastRow; row++) {
+    if (worksheet[`E${row}`]) {
+      worksheet[`E${row}`].z = "0.00";
+    }
+
+    if (worksheet[`F${row}`]) {
+      worksheet[`F${row}`].z = "0.00";
+    }
+
+    if (worksheet[`G${row}`]) {
+      worksheet[`G${row}`].z = "0.00";
+    }
+  }
+
+  const headerStyle = {
+    font: {
+      bold: true,
+      sz: 12,
+    },
+    alignment: {
+      horizontal: "center",
+      vertical: "center",
+      wrapText: true,
+    },
+    fill: {
+      fgColor: {
+        rgb: "FFD966",
+      },
+    },
+    border: {
+      top: {
+        style: "thin",
+        color: { rgb: "000000" },
+      },
+      bottom: {
+        style: "thin",
+        color: { rgb: "000000" },
+      },
+      left: {
+        style: "thin",
+        color: { rgb: "000000" },
+      },
+      right: {
+        style: "thin",
+        color: { rgb: "000000" },
+      },
+    },
+  };
+
+  const headers = [
+    "अ.क्र.",
+    "खाते कोड",
+    "खाते नाव",
+    "जुना खाते क्र",
+    "बजेट तरतूद रक्कम",
+    "प्रारंभिक शिल्लक",
+    "सुधारित बजेट",
+  ];
+
+  headers.forEach((header, index) => {
+    const cellAddress = XLSX.utils.encode_cell({
+      r: 0,
+      c: index,
+    });
+
+    if (worksheet[cellAddress]) {
+      worksheet[cellAddress].s = headerStyle;
+    }
+  });
+
+  for (let row = 1; row <= exportData.length; row++) {
+    for (let col = 0; col < headers.length; col++) {
+      const cellAddress = XLSX.utils.encode_cell({
+        r: row,
+        c: col,
+      });
+
+      if (!worksheet[cellAddress]) continue;
+
+      worksheet[cellAddress].s = {
+        alignment: {
+          vertical: "center",
+          horizontal:
+            col === 0 ||
+            col === 1 ||
+            col === 3 ||
+            col >= 4
+              ? "center"
+              : "left",
+          wrapText: true,
+        },
+        border: {
+          top: {
+            style: "thin",
+            color: { rgb: "000000" },
+          },
+          bottom: {
+            style: "thin",
+            color: { rgb: "000000" },
+          },
+          left: {
+            style: "thin",
+            color: { rgb: "000000" },
+          },
+          right: {
+            style: "thin",
+            color: { rgb: "000000" },
+          },
+        },
+      };
+    }
+  }
+
+  worksheet["!rows"] = [
+    {
+      hpt: 35,
+    },
+    ...exportData.map(() => ({
+      hpt: 28,
+    })),
+  ];
+
+
+  worksheet["!freeze"] = {
+    xSplit: 0,
+    ySplit: 1,
+  };
+
+  worksheet["!autofilter"] = {
+    ref: `A1:G${lastRow}`,
+  };
+
+  const workbook = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    "खाते मास्टर यादी"
+  );
+
+  XLSX.writeFile(
+    workbook,
+    "खाते_मास्टर_यादी.xlsx"
+  );
+};
+
+const handleExportPDF = async () => {
+  if (!excelData.length) {
+    Swal.fire({
+      text: "No Data Found",
+    });
+    return;
+  }
+
+  try {
+    Swal.fire({
+      title: "Generating PDF...",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    const payload = {
+      functionCode: filters.functionCode || "",
+      ulbId: String(filters.ulbId || user?.ulbId || ""),
+      objectCode: filters.objectCode || "",
+    };
+
+    console.log("PDF Payload:", payload);
+
+    const res = await axios.post(
+      `${BASE_URL}/api/FrmAccount/account-details-pdf`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${user?.token}`,
+        },
+      }
+    );
+
+    console.log("PDF Response:", res.data);
+
+    if (!res.data?.success) {
+      throw new Error(
+        res.data?.message || "Failed to generate PDF"
+      );
+    }
+
+    const pdfUrl = res.data?.pdfUrl;
+
+    if (!pdfUrl) {
+      throw new Error("PDF URL not received from server");
+    }
+
+    Swal.close();
+
+    window.open(pdfUrl, "_blank");
+  } catch (err) {
+    console.error("PDF Export Error:", err);
+
+    Swal.close();
+
+    Swal.fire({
+      text:
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        "Failed to generate PDF",
+    });
+  }
 };
 
   return (
@@ -351,12 +577,18 @@ const FrmAccountList = () => {
           {showTable && (
             <div className="space-y-2">
                   {tableData.length > 0 && (
-                  <div className="flex justify-end">
+                  <div className="flex justify-end gap-3">
                     <Button
                       onClick={handleExportExcel}
                       className="text-white"
                     >
                       Export to Excel
+                    </Button>
+                    <Button
+                      onClick={handleExportPDF}
+                      className="text-white"
+                    >
+                      Export to PDF
                     </Button>
                   </div>
                 )}
