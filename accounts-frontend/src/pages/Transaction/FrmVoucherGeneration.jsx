@@ -1502,14 +1502,30 @@ const FrmVoucherGeneration = () => {
     ledger,
     department,
     setFieldValue,
+    voucherList
   }) => {
     try {
+
+      let zoneId = department;
+      if (department === "-1") {
+        const selectedRow = voucherList?.find((v) => v.selected);
+        const zoneName = selectedRow?.ZONENAME;
+
+        const matched = zones.find(
+          (z) =>
+            String(z.ZONEENAME || "").trim().toLowerCase() ===
+            String(zoneName || "").trim().toLowerCase(),
+        );
+
+        zoneId = matched ? String(matched.ZONEID) : "";
+      }
+
       const payload = {
         bank_glcode: String(deptCode),
         bank_accno: String(ledger),
         cheque_no: String(chequeNo),
         corp_id: String(ulbId),
-        zone_id: String(department),
+        zone_id: String(zoneId),
       };
 
       const res = await axios.post(
@@ -1713,6 +1729,19 @@ const FrmVoucherGeneration = () => {
 
       const selectedRows = voucherList.filter((v) => v.selected);
 
+      const selectedZoneId = (() => {
+        const zoneName = selectedRows?.[0]?.ZONENAME;
+        if (!zoneName) return 0;
+
+        const matched = zones.find(
+          (z) =>
+            String(z.ZONEENAME || "").trim().toLowerCase() ===
+            String(zoneName).trim().toLowerCase(),
+        );
+
+        return matched ? Number(matched.ZONEID) : 0;
+      })();
+
       if (!selectedRows.length) {
         Swal.fire("किमान एक व्यवहार निवडा");
         return;
@@ -1805,7 +1834,7 @@ const FrmVoucherGeneration = () => {
         totalSelectedAmount || 0,
         chequeNo || "",
         chequeDate || "",
-        values.department === "-1" ? 0 : values.department,
+        values.department === "-1" ? selectedZoneId : values.department,
         0,
         formatOracleDate(values.transactionDate),
         values.budgetId || 0,
@@ -2520,6 +2549,7 @@ const FrmVoucherGeneration = () => {
                                   department: values.department,
 
                                   setFieldValue,
+                                  voucherList
                                 });
                               }
                             }}
