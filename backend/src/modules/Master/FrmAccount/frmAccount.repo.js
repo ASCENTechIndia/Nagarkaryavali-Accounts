@@ -54,10 +54,13 @@ async function getAccountDetailsRepo({ functionCode, ulbId, objectCode }) {
   let sql = `
     SELECT 
         functioncode, 
-        objectcode,
-        var_accmaster_accname,
-        num_accmaster_oldaccno AS oldaccno,
-        num_accsubtypemst_accsubtypeid || '-' || var_accsubtypemst_accsubtype AS accsubtype 
+         objectcode,
+         var_accmaster_accname,
+         num_accmaster_oldaccno AS oldaccno,
+         num_accsubtypemst_accsubtypeid || '-' || var_accsubtypemst_accsubtype AS accsubtype,
+         openingbal,
+         budgetamt,
+         revbudgetamt
     FROM aoac_accmaster_def
     INNER JOIN accountview_web 
         ON glcode = num_accmaster_glcode 

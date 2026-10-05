@@ -21,4 +21,6 @@ router.post("/save-account", auth(), controller.saveAccountMaster);
 router.post("/filtered-acc-subType", auth(), controller.getFilteredAccSubType);
 router.post("/credit-leasure",  auth(), controller.creditLeasure);
 
+router.post("/account-details-pdf", auth(), controller.generateAccountDetailsPDF);
+
 module.exports = router;

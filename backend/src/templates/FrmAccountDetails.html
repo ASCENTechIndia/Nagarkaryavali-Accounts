@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="mr">
+
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    @page {
+      size: A4 landscape;
+      margin: 10mm;
+    }
+
+    body {
+      font-family: 'Times New Roman', serif;
+      font-size: 11px;
+      color: #000;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      position: relative;
+      margin-bottom: 6px;
+    }
+
+    .main-title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+
+    th,
+    td {
+      border: 1px solid black;
+      padding: 4px 6px;
+      vertical-align: top;
+    }
+
+    thead th {
+      background: #d9a94a;   
+      color: #000;
+      font-weight: bold;
+      text-align: center;
+      font-size: 11px;
+    }
+
+    tbody td {
+      font-size: 11px;
+    }
+
+    .right {
+      text-align: right;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .bold {
+      font-weight: bold;
+    }
+
+    .totals-row td {
+      background: #f5e6c8;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    {{#if corporationLogo}}
+    <img src="{{corporationLogo}}" style="height:50px;" />
+    {{/if}}
+    <div class="main-title">{{corporationName}}</div>
+  </div>
+
+  <!-- ================= TABLE ================= -->
+  <table>
+    <thead>
+      <tr>
+        <th style="width:5%;">अ.क्र.</th>
+        <th style="width:14%;">खाते कोड</th>
+        <th style="width:24%;">खाते नाव</th>
+        <th style="width:12%;">जुना खाते क्र</th>
+        <th style="width:15%;">बजत तरतूद रक्कम</th>
+        <th style="width:15%;">प्रारंभिक शिल्लक</th>
+        <th style="width:15%;">सुधारित बजेट</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {{#each rows}}
+      <tr>
+        <td class="center">{{this.srNo}}</td>
+        <td>
+          {{this.functionCode}}{{this.objectCode}}
+        </td>
+        <td>{{this.accountName}}</td>
+        <td class="center">{{this.oldAccNo}}</td>
+        <td class="right">{{formatNumber this.budgetAmt}}</td>
+        <td class="right">{{formatNumber this.openingBal}}</td>
+        <td class="right">{{formatNumber this.revBudgetAmt}}</td>
+      </tr>
+      {{/each}}
+
+      {{#unless rows.length}}
+      <tr>
+        <td colspan="7" class="center">No records found</td>
+      </tr>
+      {{/unless}}
+
+    </tbody>
+  </table>
+
+</body>
+
+</html>
