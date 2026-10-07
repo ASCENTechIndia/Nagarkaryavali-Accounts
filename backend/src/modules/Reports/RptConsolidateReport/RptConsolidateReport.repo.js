@@ -23,9 +23,10 @@ async function getConsolidateChallanData({ fromDate, toDate, ulbId }) {
       SUM(amount) AS amount,
       BudgetCode,
       SUM(discountamount) AS discountamount,
+      departmentid,
       deptname,
       dept_marname
-    FROM VW_ALLCHALLAN_REPORT
+  FROM VW_ALLCHALLAN_REPORT
     WHERE trnsdate >= TO_DATE(:fromDate, 'YYYY-MM-DD')
       AND trnsdate <  TO_DATE(:toDate, 'YYYY-MM-DD') + 1
       AND ulbid = :ulbId
@@ -41,13 +42,15 @@ async function getConsolidateChallanData({ fromDate, toDate, ulbId }) {
       objectcode,
       grampanch,
       BudgetCode,
+      departmentid,
       deptname,
       dept_marname
-    ORDER BY
+  ORDER BY
       trnsdate,
       userid,
       glcode,
-      accno
+      accno,
+      departmentid
   `;
 
   const binds = {
