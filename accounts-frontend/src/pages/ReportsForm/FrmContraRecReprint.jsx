@@ -48,6 +48,18 @@ const FrmContraRecReprint = () => {
         return new Date(date).toLocaleDateString("en-GB");
     };
 
+    const formatAccountCode = (value) => {
+        if (!value) return value;
+
+        const [code, ...rest] = value.split("/");
+
+        const paddedCode = code.padStart(11, "0");
+
+        return rest.length > 0
+            ? `${paddedCode}/${rest.join("/")}`
+            : paddedCode;
+    };
+
     const fetchData = async (values) => {
         try {
             Swal.fire({
@@ -93,18 +105,19 @@ const FrmContraRecReprint = () => {
                     voucherno: row.VOUCHERNO,
                     voucherdate: formatDisplayDate(row.VOUCHERDATE),
                     cramount: row.CRAMOUNT,
-                    craccountcode: row.CRACCOUNTCODE,
+                    craccountcode: formatAccountCode(row.CRACCOUNTCODE),
                     crparticulars: row.CRPARTICULARS,
                     dramount: row.DRAMOUNT,
-                    draccountcode: row.DRACCOUNTCODE,
+                    draccountcode: formatAccountCode(row.DRACCOUNTCODE),
                     drparticulars: row.DRPARTICULARS,
                     refno: row.REFNO,
                     chqno: row.CHQNO,
+                    transno: row.TRANSNO,
                     print: (
                         <button
                             type="button"
                             className="text-blue-600 hover:underline hover:cursor-pointer"
-                            onClick={() => handlePrint(row.REFNO)}
+                            onClick={() => handlePrint(row.REFNO, row.TRANSNO)}
                         >
                             Print
                         </button>
@@ -127,7 +140,7 @@ const FrmContraRecReprint = () => {
         }
     };
 
-    const handlePrint = async (refno) => {
+    const handlePrint = async (refno, transNo) => {
         try {
             Swal.fire({
                 title: "Generating PDF...",
@@ -142,6 +155,7 @@ const FrmContraRecReprint = () => {
                 {
                     refno,
                     ulbId: Number(ulbId),
+                    transNo
                 },
                 {
                     headers: {

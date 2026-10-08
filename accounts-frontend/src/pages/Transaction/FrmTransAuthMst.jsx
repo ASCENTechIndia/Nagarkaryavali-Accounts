@@ -335,6 +335,7 @@ const FrmTransAuthMst = () => {
             {
               refno: refNo,
               ulbId: currentUlbId,
+              transNo: transNo,
             },
             {
               headers: {
