@@ -20,6 +20,19 @@ const formatNumber = (num) =>
     maximumFractionDigits: 2,
   });
 
+
+  const formatAccountCode = (value) => {
+      if (!value) return value;
+
+      const [code, ...rest] = value.split("/");
+
+      const paddedCode = code.padStart(11, "0");
+
+      return rest.length > 0
+          ? `${paddedCode}/${rest.join("/")}`
+          : paddedCode;
+  };
+
 // =======================
 // MAIN FUNCTION
 // =======================
@@ -27,6 +40,7 @@ const CounterVoucherPDFHelper = async ({
   details = [],
   corporationName = "",
   corporationLogo = "",
+  transNo
 }) => {
   let browser, page;
 
@@ -37,16 +51,18 @@ const CounterVoucherPDFHelper = async ({
     // MAP DATA (MATCH TEMPLATE)
     // =======================
     const rows = safeDetails.map((d) => ({
-      drCode: d.DRACCOUNTCODE || "-",
+      drCode: formatAccountCode(d.DRACCOUNTCODE) || "-",
       drParticular: d.DRPARTICULARS || "-",
       drAmount: formatNumber(d.DRAMOUNT),
 
-      crCode: d.CRACCOUNTCODE || "-",
+      crCode: formatAccountCode(d.CRACCOUNTCODE) || "-",
       crParticular: d.CRPARTICULARS || "-",
       crAmount: formatNumber(d.CRAMOUNT),
     }));
 
     const firstRow = safeDetails[0] || {};
+
+    console.log("firstRow: ", firstRow);
     const now = new Date();
 
     // =======================
@@ -63,6 +79,7 @@ const CounterVoucherPDFHelper = async ({
       chequeNo: firstRow.CHQNO || "-",
 
       rows,
+      transNo: transNo,
     };
 
     // =======================

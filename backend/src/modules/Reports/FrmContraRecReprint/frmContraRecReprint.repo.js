@@ -18,7 +18,8 @@ async function getContraReceiptListRepo({ fromDate, toDate, ulbId }) {
       DRACCOUNTCODE,
       DRPARTICULARS,
       REFNO,
-      CHQNO
+      CHQNO,
+      "num_transfermst_trnsno" as TRANSNO
     FROM vw_contrarecreprint
     WHERE TRUNC(VOUCHERDATE)
           BETWEEN TO_DATE(:fromDate, 'DD-MON-YYYY')
