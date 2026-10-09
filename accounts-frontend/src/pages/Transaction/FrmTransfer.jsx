@@ -578,7 +578,7 @@ const FrmTransfer = () => {
       onSubmit={handleSubmit}
       innerRef={formikRef}
     >
-      {({ values, setFieldValue }) => {
+      {({ values, setFieldValue, resetForm }) => {
         const showChequeFields = values.transactionType === "5";
 
         // ✅ HANDLE RESET WITHOUT useEffect
@@ -699,7 +699,7 @@ const FrmTransfer = () => {
                     {/* LEFT SECTION */}
                     <div>
                       <h3 className="mb-3 font-semibold text-base sm:text-lg">
-                        खर्च (Credit)
+                        जमा (Credit)
                       </h3>
 
                       <div className="space-y-3">
@@ -842,7 +842,7 @@ const FrmTransfer = () => {
                     {/* RIGHT SECTION */}
                     <div>
                       <h3 className="mb-3 font-semibold text-base sm:text-lg">
-                        जमा (Debit)
+                        खर्च (Debit)
                       </h3>
 
                       <div className="space-y-3">
@@ -903,7 +903,7 @@ const FrmTransfer = () => {
                       type="button"
                       variant="destructive"
                       className="w-full sm:w-auto px-6"
-                      onClick={() => navigate("/Transactions/FrmTransferList")}
+                      onClick={() => resetForm()}
                     >
                       रिसेट
                     </Button>

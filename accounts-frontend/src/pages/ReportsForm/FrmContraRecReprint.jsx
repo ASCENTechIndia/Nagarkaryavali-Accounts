@@ -102,7 +102,8 @@ const FrmContraRecReprint = () => {
 
             setTableData(
                 rows.map((row) => ({
-                    voucherno: row.VOUCHERNO,
+                    // voucherno: row.VOUCHERNO,
+                     refno: row.REFNO,
                     voucherdate: formatDisplayDate(row.VOUCHERDATE),
                     cramount: row.CRAMOUNT,
                     craccountcode: formatAccountCode(row.CRACCOUNTCODE),
@@ -110,7 +111,6 @@ const FrmContraRecReprint = () => {
                     dramount: row.DRAMOUNT,
                     draccountcode: formatAccountCode(row.DRACCOUNTCODE),
                     drparticulars: row.DRPARTICULARS,
-                    refno: row.REFNO,
                     chqno: row.CHQNO,
                     transno: row.TRANSNO,
                     print: (
@@ -185,7 +185,8 @@ const FrmContraRecReprint = () => {
     };
 
     const headers = [
-        "व्हाउचर क्रमांक",
+        // "व्हाउचर क्रमांक",
+        "रेफ क्रमांक",
         "व्हाउचर दिनांक",
         "जमा रक्कम",
         "जमा खाते",
@@ -193,13 +194,13 @@ const FrmContraRecReprint = () => {
         "खर्च रक्कम",
         "खर्च खाते",
         "खर्च तपशील",
-        "रेफ क्रमांक",
         "चेक क्रमांक",
         "प्रिंट",
     ];
 
     const keyMapping = {
-        "व्हाउचर क्रमांक": "voucherno",
+        // "व्हाउचर क्रमांक": "voucherno",
+        "रेफ क्रमांक": "refno",
         "व्हाउचर दिनांक": "voucherdate",
         "जमा रक्कम": "cramount",
         "जमा खाते": "craccountcode",
@@ -207,7 +208,6 @@ const FrmContraRecReprint = () => {
         "खर्च रक्कम": "dramount",
         "खर्च खाते": "draccountcode",
         "खर्च तपशील": "drparticulars",
-        "रेफ क्रमांक": "refno",
         "चेक क्रमांक": "chqno",
         "प्रिंट": "print",
     };
