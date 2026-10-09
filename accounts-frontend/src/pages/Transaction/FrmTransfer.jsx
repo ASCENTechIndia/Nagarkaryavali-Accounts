@@ -699,7 +699,7 @@ const FrmTransfer = () => {
                     {/* LEFT SECTION */}
                     <div>
                       <h3 className="mb-3 font-semibold text-base sm:text-lg">
-                        जमा
+                        खर्च (Credit)
                       </h3>
 
                       <div className="space-y-3">
@@ -842,7 +842,7 @@ const FrmTransfer = () => {
                     {/* RIGHT SECTION */}
                     <div>
                       <h3 className="mb-3 font-semibold text-base sm:text-lg">
-                        खर्च
+                        जमा (Debit)
                       </h3>
 
                       <div className="space-y-3">
@@ -905,7 +905,7 @@ const FrmTransfer = () => {
                       className="w-full sm:w-auto px-6"
                       onClick={() => navigate("/Transactions/FrmTransferList")}
                     >
-                      रद्द
+                      रिसेट
                     </Button>
 
                     <Button
