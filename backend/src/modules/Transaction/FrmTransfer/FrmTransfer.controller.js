@@ -83,7 +83,8 @@ const getCounterVoucherPDF = asyncHandler(async (req, res) => {
     details: result.rows,
     corporationName: corpInfo.ABC_MUNICIPAL_TEXT || "",
     corporationLogo: corpInfo.ULBLOGO || "", // ✅ ADD THIS
-    transNo: filters.transNo
+    transNo: filters.transNo,
+    refNo: filters.refno
   });
 
   const baseUrl = `${req.protocol}://${req.get("host")}`;

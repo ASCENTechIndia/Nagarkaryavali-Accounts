@@ -40,7 +40,8 @@ const CounterVoucherPDFHelper = async ({
   details = [],
   corporationName = "",
   corporationLogo = "",
-  transNo
+  transNo,
+  refNo
 }) => {
   let browser, page;
 
@@ -80,6 +81,7 @@ const CounterVoucherPDFHelper = async ({
 
       rows,
       transNo: transNo,
+      refNo: refNo
     };
 
     // =======================
