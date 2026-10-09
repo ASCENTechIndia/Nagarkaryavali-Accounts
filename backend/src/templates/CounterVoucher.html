@@ -79,24 +79,26 @@
     </tr>
 
     <tr>
-      <th>Account Code & Name</th>
+       <th>Account Code & Name</th>
       <th>Particulars</th>
       <th>Amount</th>
 
       <th>Account Code & Name</th>
       <th>Particulars</th>
       <th>Amount</th>
+
     </tr>
 
     {{#each rows}}
     <tr>
+      <td>{{crCode}}</td>
+      <td>{{crParticular}}</td>
+      <td class="right">{{crAmount}}</td>
+      
       <td>{{drCode}}</td>
       <td>{{drParticular}}</td>
       <td class="right">{{drAmount}}</td>
 
-      <td>{{crCode}}</td>
-      <td>{{crParticular}}</td>
-      <td class="right">{{crAmount}}</td>
     </tr>
     {{/each}}
 
