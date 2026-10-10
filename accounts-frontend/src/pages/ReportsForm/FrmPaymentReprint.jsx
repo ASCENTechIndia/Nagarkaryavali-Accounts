@@ -191,7 +191,7 @@ const FrmPaymentReprint = () => {
             <Card className="border shadow-sm">
               <CardHeader className="border-b">
                 <CardTitle className="text-xl font-semibold">
-                  पेट पेमेंट रिप्रिंट
+                  थेट पेमेंट रिप्रिंट
                 </CardTitle>
               </CardHeader>
 

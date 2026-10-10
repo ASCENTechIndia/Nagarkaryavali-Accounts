@@ -699,7 +699,7 @@ const FrmTransfer = () => {
                     {/* LEFT SECTION */}
                     <div>
                       <h3 className="mb-3 font-semibold text-base sm:text-lg">
-                        जमा (Credit)
+                        खर्च (Debit)
                       </h3>
 
                       <div className="space-y-3">
@@ -842,7 +842,7 @@ const FrmTransfer = () => {
                     {/* RIGHT SECTION */}
                     <div>
                       <h3 className="mb-3 font-semibold text-base sm:text-lg">
-                        खर्च (Debit)
+                        जमा (Credit)
                       </h3>
 
                       <div className="space-y-3">
