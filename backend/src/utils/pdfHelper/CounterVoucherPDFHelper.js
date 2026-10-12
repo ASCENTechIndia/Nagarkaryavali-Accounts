@@ -72,8 +72,8 @@ const CounterVoucherPDFHelper = async ({
     const data = {
       corporationName,
       corporationLogo,
-
-      currentDate: formatDate(firstRow.VOUCHERDATE),
+      currentDate: formatDate(new Date()),
+      voucherdate: formatDate(firstRow.VOUCHERDATE),
       currentTime: now.toLocaleTimeString(),
 
       voucherNo: firstRow.VOUCHERNO || "-",

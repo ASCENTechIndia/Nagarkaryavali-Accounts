@@ -423,7 +423,7 @@ const FrmTransfer = () => {
       const paramStr = [
         formatDate(values.date),
 
-        "1", // ✅ ALWAYS 1 for new
+        values.voucherNo || "1", // ✅ ALWAYS 1 for new
 
         values.department || "0",
         "0",
@@ -699,7 +699,7 @@ const FrmTransfer = () => {
                     {/* LEFT SECTION */}
                     <div>
                       <h3 className="mb-3 font-semibold text-base sm:text-lg">
-                        खर्च (Debit)
+                        खर्च (Credit)
                       </h3>
 
                       <div className="space-y-3">
@@ -842,7 +842,7 @@ const FrmTransfer = () => {
                     {/* RIGHT SECTION */}
                     <div>
                       <h3 className="mb-3 font-semibold text-base sm:text-lg">
-                        जमा (Credit)
+                        जमा (Debit)
                       </h3>
 
                       <div className="space-y-3">
@@ -912,9 +912,9 @@ const FrmTransfer = () => {
                       type="button"
                       variant="secondary"
                       className="w-full sm:w-auto px-6"
-                      onClick={() => formikRef.current.resetForm()}
+                      onClick={() => navigate("/Transactions/FrmTransferList")}
                     >
-                      बदल
+                      बाहेर
                     </Button>
                   </div>
                 </CardContent>
