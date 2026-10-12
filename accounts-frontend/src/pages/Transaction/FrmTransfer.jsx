@@ -682,6 +682,7 @@ const FrmTransfer = () => {
                         व्हाउचर क्रमांक :
                       </Label>
                       <Input
+                       type="number"
                         className="w-full sm:w-[150px] h-9"
                         value={values.voucherNo}
                         onChange={(e) =>
