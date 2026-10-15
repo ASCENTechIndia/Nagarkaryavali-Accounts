@@ -96,6 +96,7 @@ app.use("/api/Frmauthorizationconfig", require("./modules/Master/Frmauthorizatio
 app.use("/api/FrmNidhiConfig", require("./modules/Master/FrmNidhiConfig/FrmNidhiConfig.routes"));
 app.use("/api/NidhiList", require("./modules/Master/FrmNidhiList/FrmNidhiList.routes"));
 app.use("/api/FrmUserDepartmentMapping", require("./modules/Master/FrmUserDepartmentMapping/FrmUserDepartmentMapping.routes"));
+app.use("/api/FrmDCPSnoGenarationMst", require("./modules/Master/FrmDCPSnoGenarationMst/FrmDCPSnoGenarationMst.routes"));
 
 //Transaction
 app.use("/api/FrmTransfer", require("./modules/Transaction/FrmTransfer/FrmTransfer.routes"));
