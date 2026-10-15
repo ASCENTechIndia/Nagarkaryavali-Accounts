@@ -1,0 +1,128 @@
+
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 10px;
+      color: #000;
+    }
+
+    .header {
+      text-align: center;
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .details {
+      margin-bottom: 10px;
+      font-size: 11px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    th, td {
+      border: 1px solid #000;
+      padding: 5px 3px;
+      text-align: center;
+      font-size: 10px;
+      overflow-wrap: anywhere;
+    }
+
+    th {
+      background-color: #fff59d;
+      font-weight: bold;
+    }
+
+    .left {
+      text-align: left;
+    }
+
+    .right {
+      text-align: right;
+    }
+
+    .total-row {
+      font-weight: bold;
+      background: #f5f5f5;
+    }
+
+    .sr { width: 5%; }
+    .opening { width: 12%; }
+    .employee { width: 13%; }
+    .ulb { width: 13%; }
+    .total { width: 12%; }
+    .interest { width: 15%; }
+    .rate { width: 10%; }
+    .name { width: 20%; }
+
+    thead {
+      display: table-header-group;
+    }
+
+    tr {
+      page-break-inside: avoid;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">DCPS Interest Calculation Report</div>
+
+  <div class="details">
+    <b>Year:</b> {{year}}
+    &nbsp;&nbsp;&nbsp;
+    <b>DCPS Number:</b> {{dcpsNo}}
+    &nbsp;&nbsp;&nbsp;
+    <b>Print Date:</b> {{printDate}}
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th class="sr">Sr. No.</th>
+        <th class="name">Employee Name</th>
+        <th class="opening">Opening Balance</th>
+        <th class="employee">Employee Contribution<br>10% (Basic + DA)</th>
+        <th class="ulb">ULB Contribution<br>14% (Basic + DA)</th>
+        <th class="total">Total<br>EC + UC + OB</th>
+        <th class="interest">Interest Amount<br>(Total × Rate) / 12</th>
+        <th class="rate">Interest %</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {{#each rows}}
+      <tr>
+        <td>{{srNo}}</td>
+        <td class="left">{{employeeName}}</td>
+        <td class="right">{{openingBalance}}</td>
+        <td class="right">{{employeeContribution}}</td>
+        <td class="right">{{ulbContribution}}</td>
+        <td class="right">{{total}}</td>
+        <td class="right">{{interestAmount}}</td>
+        <td>{{interestRate}}</td>
+      </tr>
+      {{/each}}
+
+      <tr class="total-row">
+        <td colspan="2">Grand Total</td>
+        <td class="right">{{totals.openingBalance}}</td>
+        <td class="right">{{totals.employeeContribution}}</td>
+        <td class="right">{{totals.ulbContribution}}</td>
+        <td class="right">{{totals.total}}</td>
+        <td class="right">{{totals.interestAmount}}</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>

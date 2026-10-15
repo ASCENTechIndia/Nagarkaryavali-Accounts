@@ -51,7 +51,50 @@ const getBudgetReportData = async ({ ulbId }) => {
 
   return result.rows;
 };
+const getDcpsReportData = async ({ ulbId, dcpsNo, yearId }) => {
+  const query = `
+    SELECT
+      D.NUM_DCPS_ID AS DCPS_ID,
+      D.NUM_DCPS_ULBID AS ULBID,
+      D.NUM_DCPS_EMPID AS EMPLOYEE_ID,
+      D.NUM_DCPS_SLIPID AS SLIP_ID,
+      D.DAT_DCPS_SALDATE AS SALARY_DATE,
+      D.VAR_DCPS_NAME AS EMPLOYEE_NAME,
+      D.NUM_DCPS_EMPSHARE AS EMPLOYEE_CONTRIBUTION,
+      D.NUM_DCPS_CORPSHARE AS ULB_CONTRIBUTION,
+      D.NUM_DCPS_INTRESTPERC AS INTEREST_PERCENTAGE,
+      D.NUM_DCPS_INTRESTAMOUNT AS INTEREST_AMOUNT,
+      D.NUM_DCPS_CALCAMOUNT AS CALCULATED_AMOUNT,
+      D.NUM_DCPS_OPENINGBAL AS OPENING_BALANCE,
+      D.VAR_DCPS_DCPSNO AS DCPS_NUMBER,
+      Y.NUM_YEAR_ID AS YEAR_ID,
+      Y.VAR_YEAR AS YEAR
+    FROM ACCCLOUD.AOAC_DCPS_MAS D
+    INNER JOIN ADMINS.AOMA_YEAR Y
+      ON Y.NUM_YEAR_ID = :yearId
+    WHERE D.NUM_DCPS_ULBID = :ulbId
+      AND D.VAR_DCPS_DCPSNO = :dcpsNo
+      AND D.DAT_DCPS_SALDATE >= TO_DATE(Y.VAR_YEAR || '-01-01', 'YYYY-MM-DD')
+      AND D.DAT_DCPS_SALDATE < ADD_MONTHS(
+            TO_DATE(Y.VAR_YEAR || '-01-01', 'YYYY-MM-DD'),
+            12
+          )
+    ORDER BY D.DAT_DCPS_SALDATE
+  `;
 
+  const result = await executeQuery(query, {
+    ulbId,
+    dcpsNo,
+    yearId,
+  });
+
+  if (!result.success) {
+    throw new Error(result.error);
+  }
+
+  return result.rows;
+};
 module.exports = {
   getBudgetReportData,
+  getDcpsReportData
 };
