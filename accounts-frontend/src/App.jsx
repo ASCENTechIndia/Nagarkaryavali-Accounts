@@ -41,6 +41,7 @@ import FrmTransAuthMst from "./pages/Transaction/FrmTransAuthMst";
 import RptReceiptRegister from "./pages/Reports/RptReceiptRegister";
 import FrmAccountMaster from "./pages/Master/FrmAccountMst";
 import FrmAccountListMst from "./pages/Master/FrmAccountListMst";
+import FrmDCPSnoGenaretionMst from "./pages/Master/FrmDCPSnoGenaretionMst";
 import FrmGrampanchayatMst from "./pages/GenMaster/FrmGrampanchayatMst";
 import FrmGrampanchayatList from "./pages/GenMaster/FrmGrampanchayatList";
 import FrmStateList from "./pages/GenMaster/FrmStateList";
@@ -400,6 +401,10 @@ export const router = createBrowserRouter([
       {
         path: "/Masters/FrmUserZoneMapping",
         element: <FrmUserZoneMapping />,
+      },
+      {
+        path: "/Masters/FrmDCPSnoGenaretionMst",
+        element: <FrmDCPSnoGenaretionMst />,
       },
       {
         path: "/ReportsForm/RptClassifiedRegisterDetails",
