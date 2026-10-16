@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="mr">
 <head>
@@ -8,8 +7,8 @@
 
   <style>
     @page {
-      size: A4 portrait;
-      margin: 18mm 16mm;
+      size: A4 landscape;
+      margin: 10mm 10mm;
     }
 
     * {
@@ -25,22 +24,22 @@
     }
 
     .page {
-      width: 210mm;
-      min-height: 297mm;
+      width: 297mm; 
+      min-height: 210mm;
       margin: auto;
-      padding: 10mm 16mm;
+      padding: 6mm 8mm;
       background: white;
     }
 
     .section-heading {
-      margin: 0 0 30px 18px;
+      margin: 0 0 18px 8px;
       font-family: Arial, sans-serif;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: bold;
     }
 
     .report-wrap {
-      width: 78%;
+      width: 100%;
       margin: 0 auto;
     }
 
@@ -49,14 +48,14 @@
       table-layout: fixed;
       border-collapse: collapse;
       border: 1px solid #555;
-      font-size: 8px;
-      line-height: 1.15;
+      font-size: 13px;           
+      line-height: 1.3;
     }
 
     th,
     td {
       border: 1px solid #666;
-      padding: 2px 1px;
+      padding: 5px 4px;          
       text-align: center;
       vertical-align: middle;
       font-weight: normal;
@@ -64,40 +63,29 @@
     }
 
     .report-title {
-      font-size: 9px;
-      padding: 2px;
-      line-height: 1.15;
+      font-size: 14px;
+      padding: 6px;
+      line-height: 1.3;
     }
 
     .column-heading {
-      height: 42px;
-      font-size: 8px;
+      height: 55px;
+      font-size: 13px; 
     }
 
-    .account-col {
-      width: 6%;
-    }
-
-    .opening-col {
-      width: 7%;
-    }
-
-    .month-col {
-      width: 6%;
-    }
-
-    .closing-col {
-      width: 6%;
-    }
-
-    .total-col {
-      width: 8%;
-    }
+    .account-col { width: 5%;  }
+    .opening-col { width: 7%;  }
+    .month-col   { width: 6%;  }
+    .closing-col { width: 7%;  }
+    .total-col   { width: 9%;  }
 
     .data-row td {
-      height: 14px;
-      padding: 1px;
+      height: 24px;
+      padding: 4px 3px;
     }
+
+    thead { display: table-header-group; }
+    tr    { page-break-inside: avoid; }
 
     @media screen {
       body {
@@ -119,11 +107,11 @@
         width: auto;
         min-height: auto;
         margin: 0;
-        padding: 5mm 0;
+        padding: 2mm 0;
       }
 
       .section-heading {
-        margin-bottom: 30px;
+        margin-bottom: 18px;
       }
     }
   </style>
@@ -133,7 +121,7 @@
   <main class="page">
 
     <h2 class="section-heading">
-      2.&nbsp; Broad Sheet Credit Report
+      Broad Sheet Credit Report
     </h2>
 
     <div class="report-wrap">
@@ -169,67 +157,53 @@
           <tr>
             <th colspan="16" class="report-title">
               मनपा आस्थापनेवरील कार्यरत कर्मचारी यांचा भविष्य निर्वाह निधी योजना
-              (DCPS) अंतर्गत सन २०२५-२६ चा जमा बाबत ताळेबंद
+              (DCPS) अंतर्गत सन {{yearLabel}} चा जमा बाबत ताळेबंद
             </th>
           </tr>
 
           <tr class="column-heading">
-            <th>खाते क्र.</th>
-            <th>आरंभीची<br />शिल्लक</th>
+  <th>खाते<br/>क्र.</th>
+  <th>आरंभीची<br/>शिल्लक</th>
 
-            <th>एप्रिल - २५</th>
-            <th>मे - २५</th>
-            <th>जून - २५</th>
-            <th>जुलै - २५</th>
-            <th>ऑगस्ट - २५</th>
-            <th>सप्टेंबर - २५</th>
-            <th>ऑक्टोबर - २५</th>
-            <th>नोव्हेंबर - २५</th>
-            <th>डिसेंबर - २५</th>
-            <th>जानेवारी - २६</th>
-            <th>फेब्रुवारी - २६</th>
-            <th>मार्च - २६</th>
+  <th>{{{months.[0]}}}</th>
+  <th>{{{months.[1]}}}</th>
+  <th>{{{months.[2]}}}</th>
+  <th>{{{months.[3]}}}</th>
+  <th>{{{months.[4]}}}</th>
+  <th>{{{months.[5]}}}</th>
+  <th>{{{months.[6]}}}</th>
+  <th>{{{months.[7]}}}</th>
+  <th>{{{months.[8]}}}</th>
+  <th>{{{months.[9]}}}</th>
+  <th>{{{months.[10]}}}</th>
+  <th>{{{months.[11]}}}</th>
 
-            <th>वर्षअखेर जमा</th>
-            <th>आरंभीची शिल्लक सह एकूण</th>
-          </tr>
+  <th>वर्षअखेर<br/>जमा</th>
+  <th>आरंभीची शिल्लक<br/>सह एकूण</th>
+</tr>
         </thead>
 
         <tbody>
+          {{#each rows}}
           <tr class="data-row">
-            <td>33</td>
-            <td></td><td></td><td></td><td></td><td></td>
-            <td></td><td></td><td></td><td></td><td></td>
-            <td></td><td></td><td></td><td></td><td></td>
+            <td>{{accountNo}}</td>
+            <td>{{opening}}</td>
+            <td>{{apr}}</td>
+            <td>{{may}}</td>
+            <td>{{jun}}</td>
+            <td>{{jul}}</td>
+            <td>{{aug}}</td>
+            <td>{{sep}}</td>
+            <td>{{oct}}</td>
+            <td>{{nov}}</td>
+            <td>{{dec}}</td>
+            <td>{{jan}}</td>
+            <td>{{feb}}</td>
+            <td>{{mar}}</td>
+            <td>{{yearEndInterest}}</td>
+            <td>{{totalBalance}}</td>
           </tr>
-
-          <tr class="data-row">
-            <td>76</td>
-            <td></td><td></td><td></td><td></td><td></td>
-            <td></td><td></td><td></td><td></td><td></td>
-            <td></td><td></td><td></td><td></td><td></td>
-          </tr>
-
-          <tr class="data-row">
-            <td>154</td>
-            <td></td><td></td><td></td><td></td><td></td>
-            <td></td><td></td><td></td><td></td><td></td>
-            <td></td><td></td><td></td><td></td><td></td>
-          </tr>
-
-          <tr class="data-row">
-            <td>258</td>
-            <td></td><td></td><td></td><td></td><td></td>
-            <td></td><td></td><td></td><td></td><td></td>
-            <td></td><td></td><td></td><td></td><td></td>
-          </tr>
-
-          <tr class="data-row">
-            <td>345</td>
-            <td></td><td></td><td></td><td></td><td></td>
-            <td></td><td></td><td></td><td></td><td></td>
-            <td></td><td></td><td></td><td></td><td></td>
-          </tr>
+          {{/each}}
         </tbody>
       </table>
     </div>

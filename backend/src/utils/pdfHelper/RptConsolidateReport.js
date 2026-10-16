@@ -256,7 +256,7 @@ function calculateDeptAndAccSum(transactions, deptId, accountCodes) {
   const hasDeptId = deptId !== null && deptId !== undefined;
 
   return transactions.reduce((sum, t) => {
-    const rowAcc = String(t.ACCNO ?? t.accno ?? "").trim();
+    const rowAcc = String(t.OBJECTCODE ?? t.objectcode ?? "").trim();
 
     if (!hasDeptId) {
       return codeSet.has(rowAcc)

@@ -218,9 +218,9 @@ const FrmEmployeeAccountSummary = () => {
                     <Button
                       className="bg-gray-200 text-black hover:bg-gray-300"
                       type="button"
-                      onClick={() => navigate(-1)}
+                      onClick={() => navigate("/HomePage/FrmHomePage")}
                     >
-                      Cancel
+                      Back
                     </Button>
                   </div>
                 </div>

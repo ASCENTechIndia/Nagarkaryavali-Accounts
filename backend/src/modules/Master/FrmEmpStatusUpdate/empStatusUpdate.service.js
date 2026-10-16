@@ -86,6 +86,20 @@ async function saveEmpStatusUpdateService(payload) {
   };
 }
 
+
+async function getEmpStatusUpdateService(payload) {
+    console.log("📥 Service: Fetch Employee Status Update", payload);
+
+    const data = await repo.getEmpStatusUpdateRepo(payload);
+
+    return {
+        success: true,
+        count: data.length,
+        data,
+    };
+}
+
 module.exports = {
   saveEmpStatusUpdateService,
+  getEmpStatusUpdateService
 };
