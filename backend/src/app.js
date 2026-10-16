@@ -157,6 +157,7 @@ app.use("/api/ReceiptPaymentRegister", require("./modules/Reports/FrmReceiptPaym
 app.use("/api/RptGLAccStatement", require("./modules/Reports/RptGLAccStatement/RptGLAccStatement.routes"));
 app.use("/api/FrmTransactionEntryStatusRpt", require("./modules/Reports/FrmTransactionEntryStatusRpt/FrmTransactionEntryStatusRpt.routes"));
 app.use("/api/RptConsolidateReport", require("./modules/Reports/RptConsolidateReport/RptConsolidateReport.routes"));
+app.use("/api/employee-status", require("./modules/Master/FrmEmpStatusUpdate/empStatusUpdate.route"));
 
 app.use(errorMiddleware);
 

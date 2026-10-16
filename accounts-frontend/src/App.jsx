@@ -114,6 +114,8 @@ import FrmZoneDepartmentMapping from "./pages/Master/FrmUserZoneMapping";
 import FrmUserZoneMapping from "./pages/Master/FrmUserZoneMapping";
 import RptConsolidateReport from "./pages/Reports/RptConsolidateReport";
 
+import EmployeeStatusUpdate from "./pages/Master/EmployeeStatusUpdate";
+
 const Home = () => <Button>Click me</Button>;
 
 export const router = createBrowserRouter([
@@ -566,6 +568,11 @@ export const router = createBrowserRouter([
       {
         path: "/ReportsForm/RptConsolidateReport",
         element: <RptConsolidateReport />,
+      },
+
+        {
+        path: "/Masters/EmployeeStatusUpdate",
+        element: <EmployeeStatusUpdate />,
       },
     ],
   },

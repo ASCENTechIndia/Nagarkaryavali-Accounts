@@ -1,0 +1,239 @@
+
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Broad Sheet Credit Report</title>
+
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 18mm 16mm;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #fff;
+      color: #000;
+      font-family: "Nirmala UI", "Mangal",
+        "Noto Sans Devanagari", sans-serif;
+    }
+
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: auto;
+      padding: 10mm 16mm;
+      background: white;
+    }
+
+    .section-heading {
+      margin: 0 0 30px 18px;
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .report-wrap {
+      width: 78%;
+      margin: 0 auto;
+    }
+
+    table {
+      width: 100%;
+      table-layout: fixed;
+      border-collapse: collapse;
+      border: 1px solid #555;
+      font-size: 8px;
+      line-height: 1.15;
+    }
+
+    th,
+    td {
+      border: 1px solid #666;
+      padding: 2px 1px;
+      text-align: center;
+      vertical-align: middle;
+      font-weight: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .report-title {
+      font-size: 9px;
+      padding: 2px;
+      line-height: 1.15;
+    }
+
+    .column-heading {
+      height: 42px;
+      font-size: 8px;
+    }
+
+    .account-col {
+      width: 6%;
+    }
+
+    .opening-col {
+      width: 7%;
+    }
+
+    .month-col {
+      width: 6%;
+    }
+
+    .closing-col {
+      width: 6%;
+    }
+
+    .total-col {
+      width: 8%;
+    }
+
+    .data-row td {
+      height: 14px;
+      padding: 1px;
+    }
+
+    @media screen {
+      body {
+        background: #e9e9e9;
+        padding: 20px;
+      }
+
+      .page {
+        box-shadow: 0 1px 8px #bbb;
+      }
+    }
+
+    @media print {
+      body {
+        background: white;
+      }
+
+      .page {
+        width: auto;
+        min-height: auto;
+        margin: 0;
+        padding: 5mm 0;
+      }
+
+      .section-heading {
+        margin-bottom: 30px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+
+    <h2 class="section-heading">
+      2.&nbsp; Broad Sheet Credit Report
+    </h2>
+
+    <div class="report-wrap">
+      <table>
+        <colgroup>
+          <col class="account-col" />
+          <col class="opening-col" />
+
+          <col class="month-col" />
+          <col class="month-col" />
+          <col class="month-col" />
+          <col class="month-col" />
+          <col class="month-col" />
+          <col class="month-col" />
+          <col class="month-col" />
+          <col class="month-col" />
+          <col class="month-col" />
+          <col class="month-col" />
+          <col class="month-col" />
+          <col class="month-col" />
+
+          <col class="closing-col" />
+          <col class="total-col" />
+        </colgroup>
+
+        <thead>
+          <tr>
+            <th colspan="16" class="report-title">
+              जळगाव शहर महानगरपालिका, जळगाव
+            </th>
+          </tr>
+
+          <tr>
+            <th colspan="16" class="report-title">
+              मनपा आस्थापनेवरील कार्यरत कर्मचारी यांचा भविष्य निर्वाह निधी योजना
+              (DCPS) अंतर्गत सन २०२५-२६ चा जमा बाबत ताळेबंद
+            </th>
+          </tr>
+
+          <tr class="column-heading">
+            <th>खाते क्र.</th>
+            <th>आरंभीची<br />शिल्लक</th>
+
+            <th>एप्रिल - २५</th>
+            <th>मे - २५</th>
+            <th>जून - २५</th>
+            <th>जुलै - २५</th>
+            <th>ऑगस्ट - २५</th>
+            <th>सप्टेंबर - २५</th>
+            <th>ऑक्टोबर - २५</th>
+            <th>नोव्हेंबर - २५</th>
+            <th>डिसेंबर - २५</th>
+            <th>जानेवारी - २६</th>
+            <th>फेब्रुवारी - २६</th>
+            <th>मार्च - २६</th>
+
+            <th>वर्षअखेर जमा</th>
+            <th>आरंभीची शिल्लक सह एकूण</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr class="data-row">
+            <td>33</td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+          </tr>
+
+          <tr class="data-row">
+            <td>76</td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+          </tr>
+
+          <tr class="data-row">
+            <td>154</td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+          </tr>
+
+          <tr class="data-row">
+            <td>258</td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+          </tr>
+
+          <tr class="data-row">
+            <td>345</td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+            <td></td><td></td><td></td><td></td><td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</body>
+</html>
