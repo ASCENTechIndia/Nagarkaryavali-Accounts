@@ -160,6 +160,7 @@ app.use("/api/FrmTransactionEntryStatusRpt", require("./modules/Reports/FrmTrans
 app.use("/api/RptConsolidateReport", require("./modules/Reports/RptConsolidateReport/RptConsolidateReport.routes"));
 app.use("/api/InterestMst", require("./modules/Master/FrmInterestRtMst/FrmInterestRtMst.routes"));
 app.use("/api/FrmEmployeeAccountSummary", require("./modules/Reports/FrmBudgetReport/FrmBudgetReport.routes"));
+app.use("/api/employee-status", require("./modules/Master/FrmEmpStatusUpdate/empStatusUpdate.route"));
 
 app.use(errorMiddleware);
 
