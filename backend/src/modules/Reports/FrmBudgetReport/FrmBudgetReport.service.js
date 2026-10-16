@@ -29,7 +29,13 @@ const getDcpsReportService = async ({ ulbId, dcpsNo, yearId }) => {
   return data;
 };
 
+const getYearListService = () => {
+  return repo.getYearListRepo();
+};
+
 module.exports = {
   getBudgetReportService,
   getDcpsReportService,
+  getYearListService,
+
 };

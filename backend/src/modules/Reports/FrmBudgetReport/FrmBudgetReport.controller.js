@@ -75,4 +75,9 @@ exports.getDcpsInterestPDF = asyncHandler(async (req, res) => {
   });
 });
 
+exports.getYearList = asyncHandler(async (req, res) => {
+  res.json(await service.getYearListService());
+});
+
+
 

@@ -11,6 +11,8 @@ auth(),
   controller.getDcpsInterestPDF
 );
 
+router.get("/year-list", auth(), controller.getYearList);
+
 
 
 module.exports = router;

@@ -94,7 +94,27 @@ const getDcpsReportData = async ({ ulbId, dcpsNo, yearId }) => {
 
   return result.rows;
 };
+async function getYearListRepo() {
+  try {
+    const query = `
+      SELECT
+        num_year_id,
+        var_year
+      FROM admins.aoma_year
+      ORDER BY var_year
+    `;
+
+    const result = await executeQuery(query, {});
+    return result.rows;
+  } catch (err) {
+    throw err;
+  }
+}
+
+
 module.exports = {
   getBudgetReportData,
+  getYearListRepo,
+
   getDcpsReportData
 };
