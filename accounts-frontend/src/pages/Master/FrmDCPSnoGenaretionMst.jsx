@@ -18,12 +18,10 @@ const FrmDCPSnoGenaretionMst = () => {
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-  // Search input state
   const [employeeNo, setEmployeeNo] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [isSearched, setIsSearched] = useState(false);
 
-  // Dynamic Fetched Data State (Read-only)
   const [employeeData, setEmployeeData] = useState({
     name: "",
     dob: "",
@@ -36,11 +34,10 @@ const FrmDCPSnoGenaretionMst = () => {
     nomineeName: "",
   });
 
-  // Only Opening DCPS Balance is editable
+
   const [openingDcpsBalance, setOpeningDcpsBalance] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Format date helper (DD/MM/YYYY)
   const formatDate = (dateVal) => {
     if (!dateVal) return "";
     try {
@@ -56,7 +53,6 @@ const FrmDCPSnoGenaretionMst = () => {
   };
 
 
-  // Search Employee Handler
   const handleSearchEmployee = async () => {
     const trimmedNo = employeeNo?.trim();
     if (!trimmedNo) {
@@ -81,7 +77,6 @@ const FrmDCPSnoGenaretionMst = () => {
 
       let found = null;
 
-      // 1. Try real API call
       try {
         const currentToken = token || localStorage.getItem("token") || "";
         const currentUlbId = ulbId || localStorage.getItem("ulbId") || 930;
@@ -106,7 +101,7 @@ const FrmDCPSnoGenaretionMst = () => {
         const resPayload = res.data?.data;
         let emp = resPayload?.data;
 
-        // If list returned and multiple records, prefer current ULB if found
+       
         if (resPayload?.list && resPayload.list.length > 0) {
           const matchUlb = resPayload.list.find(
             (r) => String(r.NUM_EMPLOYEE_ULBID) === String(currentUlbId)
@@ -188,7 +183,6 @@ const FrmDCPSnoGenaretionMst = () => {
     }
   };
 
-  // Reset form
   const handleReset = () => {
     setEmployeeNo("");
     setIsSearched(false);
@@ -206,7 +200,7 @@ const FrmDCPSnoGenaretionMst = () => {
     setOpeningDcpsBalance("");
   };
 
-  // Generate DCPS Number
+
   const handleGenerateDCPSNo = async () => {
     if (!openingDcpsBalance && openingDcpsBalance !== 0) {
       Swal.fire({
@@ -232,7 +226,6 @@ const FrmDCPSnoGenaretionMst = () => {
       const randomSeq = Math.floor(1000 + Math.random() * 9000);
       const newDcpsNumber = `DCPS/${currentYear}/${ulbId}/${employeeNo.trim()}-${randomSeq}`;
 
-      // Backend call to execute AOAC_DCPSNOGEN_INS
       const currentToken = token || localStorage.getItem("token") || "";
       const reqHeaders = {};
       if (currentToken && currentToken !== "undefined" && currentToken !== "null") {
@@ -300,9 +293,7 @@ const FrmDCPSnoGenaretionMst = () => {
         </CardHeader>
 
         <CardContent className="p-4 sm:p-6 space-y-6">
-          {/* ================= SECTION 1: SEARCH EMPLOYEE ================= */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 items-center">
-            {/* Employee No Input */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <Label className="sm:w-44 text-gray-900 font-semibold text-sm shrink-0">Employee No :</Label>
               <Input
@@ -325,7 +316,6 @@ const FrmDCPSnoGenaretionMst = () => {
               />
             </div>
 
-            {/* Action Buttons: शोधा and साफ करा */}
             <div className="flex gap-3">
               <Button
                 type="button"
@@ -345,8 +335,6 @@ const FrmDCPSnoGenaretionMst = () => {
               </Button>
             </div>
           </div>
-
-          {/* ================= SECTION 2: DYNAMIC EMPLOYEE DETAILS & GENERATION ================= */}
           <AnimatePresence>
             {isSearched && (
               <motion.div
@@ -356,9 +344,7 @@ const FrmDCPSnoGenaretionMst = () => {
                 transition={{ duration: 0.25 }}
                 className="space-y-6 pt-4 border-t"
               >
-                {/* Row 1: Name and DOB */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-                  {/* Name */}
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <Label className="sm:w-44 text-gray-900 font-semibold text-sm shrink-0">Name :</Label>
                     <Input
@@ -369,9 +355,7 @@ const FrmDCPSnoGenaretionMst = () => {
                       className="w-full sm:flex-1 bg-slate-100 text-gray-950 font-semibold border-gray-400 disabled:opacity-100 disabled:text-gray-950 disabled:bg-slate-100 disabled:cursor-not-allowed shadow-none"
                     />
                   </div>
-
-                  {/* DOB */}
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <Label className="sm:w-44 text-gray-900 font-semibold text-sm shrink-0">DOB :</Label>
                     <Input
                       name="dob"
@@ -383,9 +367,8 @@ const FrmDCPSnoGenaretionMst = () => {
                   </div>
                 </div>
 
-                {/* Row 2: Address and Mobile No */}
+          
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-                  {/* Address */}
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <Label className="sm:w-44 text-gray-900 font-semibold text-sm shrink-0">Address :</Label>
                     <Input
@@ -397,7 +380,6 @@ const FrmDCPSnoGenaretionMst = () => {
                     />
                   </div>
 
-                  {/* Mobile No */}
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <Label className="sm:w-44 text-gray-900 font-semibold text-sm shrink-0">Mobile No :</Label>
                     <Input
@@ -410,9 +392,7 @@ const FrmDCPSnoGenaretionMst = () => {
                   </div>
                 </div>
 
-                {/* Row 3: Email Id and Designation */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-                  {/* Email Id */}
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <Label className="sm:w-44 text-gray-900 font-semibold text-sm shrink-0">Email Id :</Label>
                     <Input
@@ -424,7 +404,7 @@ const FrmDCPSnoGenaretionMst = () => {
                     />
                   </div>
 
-                  {/* Designation */}
+               
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <Label className="sm:w-44 text-gray-900 font-semibold text-sm shrink-0">Designation :</Label>
                     <Input
@@ -437,9 +417,8 @@ const FrmDCPSnoGenaretionMst = () => {
                   </div>
                 </div>
 
-                {/* Row 4: DOJ and Dt of confirmation */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-                  {/* DOJ */}
+
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <Label className="sm:w-44 text-gray-900 font-semibold text-sm shrink-0">DOJ :</Label>
                     <Input
@@ -451,7 +430,6 @@ const FrmDCPSnoGenaretionMst = () => {
                     />
                   </div>
 
-                  {/* Dt of confirmation */}
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <Label className="sm:w-44 text-gray-900 font-semibold text-sm shrink-0">Dt of confirmation :</Label>
                     <Input
@@ -464,9 +442,9 @@ const FrmDCPSnoGenaretionMst = () => {
                   </div>
                 </div>
 
-                {/* Row 5: Name of the Nominee and Opening DCPS Balance */}
+                
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-                  {/* Name of the Nominee (Disabled / Read-only) */}
+               
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <Label className="sm:w-44 text-gray-900 font-semibold text-sm shrink-0">Name of the Nominee :</Label>
                     <Input
@@ -478,7 +456,6 @@ const FrmDCPSnoGenaretionMst = () => {
                     />
                   </div>
 
-                  {/* Opening DCPS Balance (THE ONLY EDITABLE TEXT BOX) */}
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <Label className="sm:w-44 text-gray-900 font-semibold text-sm shrink-0">Opening DCPS Balance :</Label>
                     <Input
@@ -492,7 +469,7 @@ const FrmDCPSnoGenaretionMst = () => {
                   </div>
                 </div>
 
-                {/* Buttons (Same standard style as other master forms) */}
+            
                 <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 pt-4 border-t">
                   <Button
                     type="button"

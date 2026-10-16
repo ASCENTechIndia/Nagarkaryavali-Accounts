@@ -40,7 +40,6 @@ async function getEmployeeByNoService(payload) {
     };
   }
 
-  // Format first matched row
   const raw = rows[0];
   const formattedData = {
     employeeId: raw.NUM_EMPLOYEE_EMPID,
@@ -97,7 +96,6 @@ async function saveDCPSService(payload) {
 
   const isSuccess = result.out_ErrorCode === -100;
 
-  // Extract generated DCPS number from procedure message (e.g., 'Generated DCPS Number : JCMCDCPS000000X')
   let generatedDcpsNo = "";
   if (result.out_ErrorMsg && result.out_ErrorMsg.includes(":")) {
     const parts = result.out_ErrorMsg.split(":");

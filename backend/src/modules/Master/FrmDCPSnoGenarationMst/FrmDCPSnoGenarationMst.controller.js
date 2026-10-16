@@ -3,9 +3,7 @@ const { ok } = require("../../../libs/response");
 const { AppError } = require("../../../libs/errors");
 const service = require("./FrmDCPSnoGenarationMst.service");
 
-/**
- * Controller: Get Employee Details by Employee No / ID / Name
- */
+
 exports.getEmployeeByNo = asyncHandler(async (req, res) => {
   console.log("📥 Request Body (Fetch Employee):", req.body);
 
@@ -30,9 +28,6 @@ exports.getEmployeeByNo = asyncHandler(async (req, res) => {
   return ok(res, data, "Employee details fetched successfully");
 });
 
-/**
- * Controller: Save / Generate DCPS Number using AOAC_DCPSNOGEN_INS procedure
- */
 exports.saveDCPS = asyncHandler(async (req, res) => {
   console.log("📥 Request Body (Save DCPS):", req.body);
 
@@ -65,9 +60,6 @@ exports.saveDCPS = asyncHandler(async (req, res) => {
   return ok(res, data, data.message || "Operation executed successfully");
 });
 
-/**
- * Controller: Fetch Generated DCPS List
- */
 exports.getDCPSList = asyncHandler(async (req, res) => {
   console.log("📥 Request Body (DCPS List):", req.body || req.query);
 

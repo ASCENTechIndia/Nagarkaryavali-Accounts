@@ -105,13 +105,11 @@ async function getEmployeeByNoRepo({ ulbId, employeeId, employeeNo, employeeName
     return result.rows || [];
   };
 
-  // 1. Try with provided ulbId first
   let rows = [];
   if (ulbId) {
     rows = await runQuery(ulbId);
   }
 
-  // 2. If not found or ulbId was not provided, search across all ULBs
   if (!rows || rows.length === 0) {
     rows = await runQuery(null);
   }
