@@ -572,6 +572,19 @@ export const router = createBrowserRouter([
         path: "/ReportsForm/RptConsolidateReport",
         element: <RptConsolidateReport />,
       },
+      {
+        path: "Masters/FrmInterestRtList",
+        element: <FrmInterestRtList />,
+       },
+       {
+        path: "Masters/FrmInterestRtMst",
+        element: <FrmInterestRtMst />,
+       },
+       {
+        path: "ReportsForm/FrmEmployeeAccountSummary",
+        element: <FrmEmployeeAccountSummary />,
+       },
+
     ],
   },
 ]);
