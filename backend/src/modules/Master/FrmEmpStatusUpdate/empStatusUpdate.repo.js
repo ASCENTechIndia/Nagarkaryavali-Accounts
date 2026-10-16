@@ -1,4 +1,3 @@
-
 const { executeQuery } = require("../../../db/queryExecutor");
 const { executeProcedure } = require("../../../db/procedureExecutor");
 const oracledb = require("oracledb");
@@ -107,6 +106,43 @@ async function saveEmpStatusUpdateRepo({
   return result.outBinds;
 }
 
+async function getEmpStatusUpdateRepo({ ulbId }) {
+  console.log("📤 Repo: Fetch Employee Status Update", { ulbId });
+
+  const sql = `
+    SELECT
+      ES.NUM_EMPSTATUSUPD_EMPID AS EMPLOYEE_ID,
+      CASE
+        WHEN EM.NUM_EMPLOYEE_ULBID IN (751, 870)
+          THEN EM.VAR_EMPLOYEE_MARNAME
+        ELSE EM.VAR_EMPLOYEE_ENGNAME
+      END AS EMPLOYEE_NAME,
+      ES.*
+    FROM AOAC_EMPSTATUSUPD_MAS ES
+    LEFT JOIN TMCPAYROLL.AOPR_EMPLOYEE_DEF EM
+      ON EM.NUM_EMPLOYEE_EMPID = ES.NUM_EMPSTATUSUPD_EMPID
+      AND EM.NUM_EMPLOYEE_ULBID = ES.NUM_EMPSTATUSUPD_ULBID
+    WHERE ES.NUM_EMPSTATUSUPD_ULBID = :ulbId
+    ORDER BY ES.NUM_EMPSTATUSUPD_EMPID
+  `;
+
+  const binds = {
+    ulbId: Number(ulbId),
+  };
+
+  const result = await executeQuery(sql, binds);
+
+  if (!result.success) {
+    throw new Error(
+      result.error || "Failed to fetch employee status update records"
+    );
+  }
+
+  return result.rows || [];
+}
+
+
 module.exports = {
   saveEmpStatusUpdateRepo,
+  getEmpStatusUpdateRepo,
 };

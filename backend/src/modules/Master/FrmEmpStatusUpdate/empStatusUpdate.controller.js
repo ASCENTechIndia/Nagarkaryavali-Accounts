@@ -76,3 +76,23 @@ exports.saveEmpStatusUpdate = asyncHandler(async (req, res) => {
     data.message || "Employee status operation completed"
   );
 });
+
+exports.getEmpStatusUpdate = asyncHandler(async (req, res) => {
+    const ulbId = req.query.ulbId;
+
+    if (!ulbId || !Number.isInteger(Number(ulbId)) || Number(ulbId) <= 0) {
+        throw new AppError("Valid ulbId is required", 400);
+    }
+
+    const payload = {
+        ulbId: Number(ulbId),
+    };
+
+    const data = await service.getEmpStatusUpdateService(payload);
+
+    return ok(
+        res,
+        data,
+        "Employee status update records fetched successfully"
+    );
+});

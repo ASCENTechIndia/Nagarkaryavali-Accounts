@@ -118,6 +118,7 @@ import EmployeeStatusUpdate from "./pages/Master/EmployeeStatusUpdate";
 import FrmEmployeeAccountSummary from "./pages/Reports/FrmEmployeeAccountSummary";
 import FrmInterestRtMst from "./pages/Master/FrmInterestRtMst";
 import FrmInterestRtList from "./pages/Master/FrmInterestRtList";
+import FrmEmployeeUpdateList from "./pages/Master/FrmEmployeeUpdateList";
 
 const Home = () => <Button>Click me</Button>;
 
@@ -592,6 +593,11 @@ export const router = createBrowserRouter([
         path: "ReportsForm/FrmEmployeeAccountSummary",
         element: <FrmEmployeeAccountSummary />,
        },
+
+       {
+        path:"Masters/FrmEmployeeUpdateList",
+        element:<FrmEmployeeUpdateList/>,
+       }
 
     ],
   },
