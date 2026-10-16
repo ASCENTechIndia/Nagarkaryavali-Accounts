@@ -71,7 +71,7 @@ const FrmInterestRtMst = () => {
         `${BASE_URL}/api/InterestMst/interestbyid`,
         {
           interestId: id,
-          ulbId: Number(user?.ulbId) || 930,
+          ulbId: Number(user?.ulbId),
         },
         {
           headers: { Authorization: `Bearer ${token}` },
