@@ -30,7 +30,8 @@ const getMonthLabels = (startYear) => {
 
 const buildRows = (data) => {
   return data.map((row) => ({
-    accountNo: row.ACCOUNT_NO,
+    //accountNo: row.ACCOUNT_NO,
+    dcpsNo: row.DCPS_NO,
     opening: formatNumber(row.OPENING_BALANCE),
     apr: formatNumber(row.APR_AMOUNT),
     may: formatNumber(row.MAY_AMOUNT),

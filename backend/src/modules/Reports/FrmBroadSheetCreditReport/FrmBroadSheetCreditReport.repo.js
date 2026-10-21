@@ -4,6 +4,7 @@ const getBroadSheetCreditReportData = async ({ ulbId, yearId }) => {
   const query = `
     SELECT
       NUM_DCPS_EMPID AS ACCOUNT_NO,
+      var_dcps_dcpsno AS DCPS_NO,
       MAX(NUM_DCPS_OPENINGBAL) AS OPENING_BALANCE,
 
       SUM(CASE
@@ -102,7 +103,7 @@ const getBroadSheetCreditReportData = async ({ ulbId, yearId }) => {
       AND DAT_DCPS_SALDATE >= TO_DATE(:yearId || '-04-01', 'YYYY-MM-DD')
       AND DAT_DCPS_SALDATE <  TO_DATE((:yearId + 1) || '-04-01', 'YYYY-MM-DD')
 
-    GROUP BY NUM_DCPS_EMPID
+    GROUP BY NUM_DCPS_EMPID, var_dcps_dcpsno
     ORDER BY NUM_DCPS_EMPID
   `;
 

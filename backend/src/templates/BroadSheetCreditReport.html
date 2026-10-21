@@ -73,7 +73,7 @@
       font-size: 13px; 
     }
 
-    .account-col { width: 5%;  }
+    .account-col { width: 13%;  }
     .opening-col { width: 7%;  }
     .month-col   { width: 6%;  }
     .closing-col { width: 7%;  }
@@ -156,13 +156,13 @@
 
           <tr>
             <th colspan="16" class="report-title">
-              मनपा आस्थापनेवरील कार्यरत कर्मचारी यांचा भविष्य निर्वाह निधी योजना
-              (DCPS) अंतर्गत सन {{yearLabel}} चा जमा बाबत ताळेबंद
+              मनपा आस्थापनेवरील कार्यरत कर्मचारी यांचा परिभाषित अंशदान पेन्शन योजना
+              (DCPS) अंतर्गत सन {{yearLabel}} चा जमा बाजू ताळेबंद
             </th>
           </tr>
 
           <tr class="column-heading">
-  <th>खाते<br/>क्र.</th>
+  <th>खाते क्र.</th>
   <th>आरंभीची<br/>शिल्लक</th>
 
   <th>{{{months.[0]}}}</th>
@@ -178,7 +178,7 @@
   <th>{{{months.[10]}}}</th>
   <th>{{{months.[11]}}}</th>
 
-  <th>वर्षअखेर<br/>जमा</th>
+  <th>वर्षअखेर<br/>व्याज</th>
   <th>आरंभीची शिल्लक<br/>सह एकूण</th>
 </tr>
         </thead>
@@ -186,7 +186,7 @@
         <tbody>
           {{#each rows}}
           <tr class="data-row">
-            <td>{{accountNo}}</td>
+            <td>{{dcpsNo}}</td>
             <td>{{opening}}</td>
             <td>{{apr}}</td>
             <td>{{may}}</td>
