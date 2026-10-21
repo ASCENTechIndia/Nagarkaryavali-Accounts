@@ -65,18 +65,35 @@ const RptClassifiedRegisterDetails = () => {
         fetchZones();
     }, [ulbId]);
 
+    // const formatOracleDate = (date) => {
+    //     if (!date) return "";
+
+    //     const d = new Date(date);
+
+    //     return d.toLocaleDateString("en-GB", {
+    //         day: "2-digit",
+    //         month: "short",
+    //         year: "numeric",
+    //     })
+    //         .replace(/ /g, "-")
+    //         .toUpperCase();
+    // };
+
     const formatOracleDate = (date) => {
         if (!date) return "";
 
         const d = new Date(date);
 
-        return d.toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-        })
-            .replace(/ /g, "-")
-            .toUpperCase();
+        const months = [
+            "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+            "JUL", "AUG", "SEP", "OCT", "NOV", "DEC",
+        ];
+
+        const day = String(d.getDate()).padStart(2, "0");
+        const month = months[d.getMonth()];
+        const year = d.getFullYear();
+
+        return `${day}-${month}-${year}`;
     };
 
     const getMonthDates = (selectedDate) => {
