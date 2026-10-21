@@ -1,4 +1,3 @@
-
 const fs = require("fs");
 const path = require("path");
 const puppeteer = require("puppeteer");
@@ -15,11 +14,7 @@ const formatNumber = (num) => {
   });
 };
 
-const BudgetExpenditurePDFHelper = async ({
-  reportData,
-  filters,
-  ulbInfo,
-}) => {
+const BudgetExpenditurePDFHelper = async ({ reportData, filters, ulbInfo }) => {
   try {
     if (!reportData || !reportData.length) {
       throw new Error("No data found");
@@ -72,6 +67,12 @@ const BudgetExpenditurePDFHelper = async ({
         totalExcess += absExcess;
 
         return {
+          HEAD: row.HEAD,
+          SUB_HEAD: row.SUB_HEAD,
+          GROUP_NAME: row.GROUP_NAME,
+          SUB_GROUP: row.SUB_GROUP,
+          SR_NO: row.SR_NO,
+
           ACCOUNTCODE: row.ACCOUNTCODE,
           ACCNAME: row.ACCNAME,
           ACTUAL: formatNumber(absActual),
@@ -83,8 +84,7 @@ const BudgetExpenditurePDFHelper = async ({
       });
 
       htmlData = {
-        corporationName:
-          ulbInfo?.ABC_MUNICIPAL_TEXT || "Municipal Corporation",
+        corporationName: ulbInfo?.ABC_MUNICIPAL_TEXT || "Municipal Corporation",
 
         fromDate: formatDate(filters.fromDate),
 
@@ -106,9 +106,7 @@ const BudgetExpenditurePDFHelper = async ({
 
         totalExcess: formatNumber(totalExcess),
       };
-    }
-
-    else {
+    } else {
       templateFile = "BudgetAbstractPayment.html";
 
       let groupedRows = [];
@@ -152,22 +150,14 @@ const BudgetExpenditurePDFHelper = async ({
           });
 
           group.rows.forEach((row) => {
-            const actual = Math.abs(
-              Number(row.ACTUAL_PAYMENT || 0)
-            );
+            const actual = Math.abs(Number(row.ACTUAL_PAYMENT || 0));
 
             const exp =
               row.PROGRESSIVE_TOTAL != null
-                ? Math.abs(
-                  Number(row.PROGRESSIVE_TOTAL || 0)
-                )
-                : Math.abs(
-                  Number(row.EXPENDITURE || 0)
-                );
+                ? Math.abs(Number(row.PROGRESSIVE_TOTAL || 0))
+                : Math.abs(Number(row.EXPENDITURE || 0));
 
-            const budget = Math.abs(
-              Number(row.BUDGPROV || 0)
-            );
+            const budget = Math.abs(Number(row.BUDGPROV || 0));
 
             const balance = budget - actual;
 
@@ -179,16 +169,17 @@ const BudgetExpenditurePDFHelper = async ({
             groupedRows.push({
               isData: true,
 
+              HEAD: row.HEAD,
+              SUB_HEAD: row.SUB_HEAD,
+              GROUP_NAME: row.GROUP_NAME,
+              SUB_GROUP: row.SUB_GROUP,
+              SR_NO: row.SR_NO,
+
               ACCOUNTCODE: row.ACCOUNTCODE,
-
               ACCNAME: row.ACCNAME,
-
               ACTUAL: formatNumber(actual),
-
               EXPENDITURE: formatNumber(exp),
-
               BUDGET: formatNumber(budget),
-
               BALANCE: formatNumber(balance),
             });
           });
@@ -212,8 +203,7 @@ const BudgetExpenditurePDFHelper = async ({
         });
 
       htmlData = {
-        corporationName:
-          ulbInfo?.ABC_MUNICIPAL_TEXT || "Municipal Corporation",
+        corporationName: ulbInfo?.ABC_MUNICIPAL_TEXT || "Municipal Corporation",
 
         fromDate: formatDate(filters.fromDate),
 
@@ -237,13 +227,10 @@ const BudgetExpenditurePDFHelper = async ({
 
     const templatePath = path.resolve(
       __dirname,
-      `../../templates/${templateFile}`
+      `../../templates/${templateFile}`,
     );
 
-    const templateHtml = fs.readFileSync(
-      templatePath,
-      "utf8"
-    );
+    const templateHtml = fs.readFileSync(templatePath, "utf8");
 
     const template = Handlebars.compile(templateHtml);
 
@@ -251,7 +238,7 @@ const BudgetExpenditurePDFHelper = async ({
 
     const chromePath = path.resolve(
       __dirname,
-      "../../../node_modules/puppeteer/.cache/puppeteer/chrome/win64-135.0.7049.84/chrome-win64/chrome.exe"
+      "../../../node_modules/puppeteer/.cache/puppeteer/chrome/win64-135.0.7049.84/chrome-win64/chrome.exe",
     );
 
     const launchOptions = {
@@ -263,9 +250,7 @@ const BudgetExpenditurePDFHelper = async ({
       launchOptions.executablePath = chromePath;
     }
 
-    const browser = await puppeteer.launch(
-      launchOptions
-    );
+    const browser = await puppeteer.launch(launchOptions);
 
     const page = await browser.newPage();
 
@@ -290,10 +275,7 @@ const BudgetExpenditurePDFHelper = async ({
 
     await browser.close();
 
-    const outputDir = path.resolve(
-      __dirname,
-      "../../../public/pdf"
-    );
+    const outputDir = path.resolve(__dirname, "../../../public/pdf");
 
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, {
@@ -301,13 +283,9 @@ const BudgetExpenditurePDFHelper = async ({
       });
     }
 
-    const fileName = `${isReceipt ? "Receipt" : "Payment"
-      }_${Date.now()}.pdf`;
+    const fileName = `${isReceipt ? "Receipt" : "Payment"}_${Date.now()}.pdf`;
 
-    const filePath = path.join(
-      outputDir,
-      fileName
-    );
+    const filePath = path.join(outputDir, fileName);
 
     fs.writeFileSync(filePath, pdfBuffer);
 
