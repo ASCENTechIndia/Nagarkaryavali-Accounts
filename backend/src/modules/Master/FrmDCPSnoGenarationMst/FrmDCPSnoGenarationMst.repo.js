@@ -80,7 +80,7 @@ async function getEmployeeByNoRepo({ ulbId, employeeId, employeeNo, employeeName
       WHERE 
         (:ulbId IS NULL OR EM.num_employee_ulbid = :ulbId)
         AND (
-          :employeeId IS NULL OR EM.num_employee_empid = :employeeId OR EM.var_employee_oldempno = :empNoStr
+          :employeeId IS NULL OR var_deptslip_sequence = :employeeId OR EM.var_employee_oldempno = :empNoStr
         )
         AND (
           :employeeName IS NULL OR UPPER(
