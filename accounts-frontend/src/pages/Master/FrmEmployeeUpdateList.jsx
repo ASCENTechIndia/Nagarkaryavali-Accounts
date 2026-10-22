@@ -11,7 +11,6 @@ import { useAuth } from "@/context/AuthContext";
 
 const BASE_URL = (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
 
-
 const FORM_ROUTE = "/Masters/EmployeeStatusUpdate";
 
 const getRowsFromResponse = (response) => {
@@ -29,7 +28,9 @@ const formatDate = (value) => {
 };
 
 const getStatusLabel = (value) => {
-  const status = String(value ?? "").trim().toUpperCase();
+  const status = String(value ?? "")
+    .trim()
+    .toUpperCase();
   if (status === "Y" || status === "ACTIVE") return "Active";
   if (status === "N" || status === "INACTIVE") return "Inactive";
   return value || "-";
@@ -49,7 +50,9 @@ const FrmEmployeeUpdateList = () => {
   const fetchEmployeeUpdates = useCallback(async () => {
     if (!ulbId) {
       setTableData([]);
-      setErrorMessage("Organization ID is not available. Please sign in again.");
+      setErrorMessage(
+        "Organization ID is not available. Please sign in again.",
+      );
       return;
     }
 
@@ -61,7 +64,7 @@ const FrmEmployeeUpdateList = () => {
         {
           params: { ulbId },
           headers: token ? { Authorization: `Bearer ${token}` } : {},
-        }
+        },
       );
       const rows = getRowsFromResponse(response);
       console.log("Employee status API response:", response.data);
@@ -71,7 +74,7 @@ const FrmEmployeeUpdateList = () => {
       setTableData([]);
       setErrorMessage(
         error?.response?.data?.message ||
-          "Failed to load employee update records. Please try again."
+          "Failed to load employee update records. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -95,11 +98,9 @@ const FrmEmployeeUpdateList = () => {
         row.VAR_EMPLOYEE_MARNAME ??
         row.employeeName ??
         "";
-      const status = getStatusLabel(
-        row.VAR_EMPSTATUSUPD_STATUS ?? row.status
-      );
+      const status = getStatusLabel(row.VAR_EMPSTATUSUPD_STATUS ?? row.status);
       return [employeeId, employeeName, status].some((value) =>
-        String(value).toLowerCase().includes(query)
+        String(value).toLowerCase().includes(query),
       );
     });
   }, [tableData, searchText]);
@@ -108,8 +109,20 @@ const FrmEmployeeUpdateList = () => {
     const employeeId =
       row.EMPLOYEE_ID ?? row.NUM_EMPSTATUSUPD_EMPID ?? row.employeeId ?? "";
 
-    if (employeeId === "" || employeeId == null) {
+    const statusUpdateId =
+      row.NUM_EMPSTATUSUPD_ID ??
+      row.NUM_EMPSTATUSUPD_STATUSID ??
+      row.statusUpdateId ??
+      row.empStatusUpdateId ??
+      null;
+
+    if (!employeeId) {
       setErrorMessage("Employee ID is missing from the selected record.");
+      return;
+    }
+
+    if (statusUpdateId == null || statusUpdateId === "") {
+      setErrorMessage("Status update record ID is missing.");
       return;
     }
 
@@ -117,6 +130,7 @@ const FrmEmployeeUpdateList = () => {
       ...row,
       employeeId: String(employeeId),
       empId: String(employeeId),
+      statusUpdateId,
       name:
         row.EMPLOYEE_NAME ??
         row.VAR_EMPLOYEE_ENGNAME ??
@@ -125,16 +139,23 @@ const FrmEmployeeUpdateList = () => {
         "",
       ulbId: row.NUM_EMPSTATUSUPD_ULBID ?? row.ulbId ?? ulbId,
       status: String(
-        row.VAR_EMPSTATUSUPD_STATUS ?? row.status ?? ""
+        row.VAR_EMPSTATUSUPD_STATUS ?? row.status ?? "",
       ).toUpperCase(),
       effectiveDate:
-        row.DATE_EMPSTATUSUPD_STATUSDT ?? row.statusDate ?? row.effectiveDate ?? null,
+        row.DATE_EMPSTATUSUPD_STATUSDT ??
+        row.statusDate ??
+        row.effectiveDate ??
+        null,
       reason: row.VAR_EMPSTATUSUPD_REASON ?? row.reason ?? "",
-      statusUpdateId:
-        row.NUM_EMPSTATUSUPD_ID ?? row.statusUpdateId ?? null,
     };
 
-    navigate(FORM_ROUTE, { state: { employee: selectedEmployee } });
+    navigate(FORM_ROUTE, {
+      state: {
+        mode: 2,
+        employee: selectedEmployee,
+        statusUpdateId,
+      },
+    });
   };
 
   const headers = [
@@ -162,11 +183,9 @@ const FrmEmployeeUpdateList = () => {
       row.VAR_EMPLOYEE_MARNAME ??
       row.employeeName ??
       "-",
-    employeeStatus: getStatusLabel(
-      row.VAR_EMPSTATUSUPD_STATUS ?? row.status
-    ),
+    employeeStatus: getStatusLabel(row.VAR_EMPSTATUSUPD_STATUS ?? row.status),
     statusDate: formatDate(
-      row.DATE_EMPSTATUSUPD_STATUSDT ?? row.statusDate ?? row.effectiveDate
+      row.DATE_EMPSTATUSUPD_STATUSDT ?? row.statusDate ?? row.effectiveDate,
     ),
     select: (
       <Button
@@ -193,7 +212,18 @@ const FrmEmployeeUpdateList = () => {
             <CardTitle className="text-lg font-semibold">
               Employee Update List
             </CardTitle>
-           
+
+            <Button
+              type="button"
+              className="bg-blue-900 text-white hover:bg-blue-800 w-full sm:w-auto"
+              onClick={() =>
+                navigate(FORM_ROUTE, {
+                  state: { mode: 1 },
+                })
+              }
+            >
+              नविन जोडा
+            </Button>
           </div>
         </CardHeader>
 

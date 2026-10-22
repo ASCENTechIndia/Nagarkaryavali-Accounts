@@ -192,13 +192,16 @@ const EmployeeStatusUpdate = ({
 
   const recordId =
     statusUpdateId ??
+    location.state?.statusUpdateId ??
     initialEmployee?.statusUpdateId ??
     initialEmployee?.NUM_EMPSTATUSUPD_ID ??
+    initialEmployee?.NUM_EMPSTATUSUPD_STATUSID ??
     initialEmployee?.empStatusUpdateId ??
     null;
 
   const isEditMode =
-    recordId !== null && recordId !== undefined && recordId !== "";
+    location.state?.mode === 2 ||
+    (recordId !== null && recordId !== undefined && recordId !== "");
 
   const mode = isEditMode ? 2 : 1;
 
@@ -895,11 +898,13 @@ const EmployeeStatusUpdate = ({
                   {employeeVerified && employee && (
                     <Button
                       type="submit"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || searching}
                       className="w-full bg-blue-900 text-white hover:bg-blue-800 sm:w-auto sm:min-w-32"
                     >
                       {isSubmitting
-                        ? "Submitting..."
+                        ? isEditMode
+                          ? "Updating..."
+                          : "Submitting..."
                         : isEditMode
                           ? "Update"
                           : "Submit"}
