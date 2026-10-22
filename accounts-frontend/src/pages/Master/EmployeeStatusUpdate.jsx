@@ -682,14 +682,9 @@ const EmployeeStatusUpdate = ({
 
         confirmButtonColor: "#1e3a8a",
       });
-
-      resetForm();
-
-      setEmployeeNo("");
-
-      setEmployee(null);
-
-      setEmployeeVerified(false);
+navigate("/Masters/FrmEmployeeUpdateList", {
+  replace: true,
+});
     } catch (error) {
       Swal.close();
 
