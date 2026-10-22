@@ -313,38 +313,55 @@ async function getBudgetExpenditureReport(filters) {
   }else {
     sql = `
       SELECT
+        HEAD,
+        SUB_HEAD,
+        GROUP_NAME,
+        SUB_GROUP,
+        SR_NO,
+
         glcode,
         glname,
         accno,
         accname,
         budgprov,
         accountcode,
+
         SUM(actual_payment) AS actual_payment,
         SUM(expenditure) AS expenditure,
         SUM(balance) AS balance,
         SUM(progressive_total) AS progressive_total,
+
         accno_type_no,
         accno_type_name,
         functioncode
 
       FROM (
         SELECT
+          h.var_budgetconfig_budgetname AS HEAD,
+          sh.var_budgetconfig_budgetname AS SUB_HEAD,
+          g.var_budgetconfig_budgetname AS GROUP_NAME,
+          sg.var_budgetconfig_budgetname AS SUB_GROUP,
+          bam.num_budgetaccmap_srno AS SR_NO,
+
           a.glcode,
           acc.glname,
           a.accno,
           acc.accname,
-          NVL(budgetamt, 0) AS budgprov,
+
+          NVL(bam.num_budgetaccmap_budgetprov, 0) AS budgprov,
+
           acc.functioncode,
           acc.objectcode AS accountcode,
 
-          /* ACTUAL PAYMENT */
           (
             NVL((
               SELECT SUM(d.num_vchtransbaldet_amount * -1)
               FROM aoac_vchtransbal_def vb
               INNER JOIN aoac_vchtransbaldet_def d
-                ON d.num_vchtransbaldet_transno = vb.num_vchtransbal_vchtransbalno
-               AND d.num_vchtransbaldet_vchrefno = vb.num_vchtransbal_vchrefno
+                ON d.num_vchtransbaldet_transno =
+                   vb.num_vchtransbal_vchtransbalno
+               AND d.num_vchtransbaldet_vchrefno =
+                   vb.num_vchtransbal_vchrefno
               WHERE vb.num_vchtransbal_transno = a.transno
                 AND d.num_vchtransbaldet_accno = a.accno
                 AND d.num_vchtransbaldet_amount < 0
@@ -354,33 +371,32 @@ async function getBudgetExpenditureReport(filters) {
               SELECT SUM(d.num_vchtransbaldet_amount)
               FROM aoac_vchtransbal_def vb
               INNER JOIN aoac_vchtransbaldet_def d
-                ON d.num_vchtransbaldet_transno = vb.num_vchtransbal_vchtransbalno
-               AND d.num_vchtransbaldet_vchrefno = vb.num_vchtransbal_vchrefno
+                ON d.num_vchtransbaldet_transno =
+                   vb.num_vchtransbal_vchtransbalno
+               AND d.num_vchtransbaldet_vchrefno =
+                   vb.num_vchtransbal_vchrefno
               WHERE vb.num_vchtransbal_transno = a.transno
                 AND vb.num_vchtransbal_accno = a.accno
                 AND d.num_vchtransbaldet_amount > 0
             ), 0)
           ) AS actual_payment,
 
-          /* EXPENDITURE */
           SUM(a.amount) AS expenditure,
 
-          NVL(budgetamt, 0) - SUM(a.amount) AS balance,
+          NVL(bam.num_budgetaccmap_budgetprov, 0)
+            - SUM(a.amount) AS balance,
 
-          /* PROGRESSIVE TOTAL */
           NVL(ABS((
-            SELECT
-              NVL(SUM(b.amount), 0)
+            SELECT NVL(SUM(b.amount), 0)
             FROM transview b
-            WHERE
-              b.trnsdate BETWEEN TO_DATE(:fromDate, 'DD-MON-YYYY')
-                              AND TO_DATE(:toDate, 'DD-MON-YYYY')
+            WHERE b.trnsdate >= TO_DATE(:fromDate, 'DD-MON-YYYY')
+              AND b.trnsdate < TO_DATE(:toDate, 'DD-MON-YYYY') + 1
+              AND b.ulbid = :ulbId
               AND b.trnstypeid IN (1, 2, 4)
               AND b.glcode = a.glcode
               AND b.accno = a.accno
           )), 0) AS progressive_total,
 
-          /* ACCOUNT TYPE */
           CASE
             WHEN SUBSTR(acc.objectcode, 4, 1) = '2' THEN '2'
             WHEN SUBSTR(acc.objectcode, 4, 1) = '3' THEN '3'
@@ -394,24 +410,37 @@ async function getBudgetExpenditureReport(filters) {
           END AS accno_type_name
 
         FROM transview a
+
         INNER JOIN accountview_web acc
           ON acc.glcode = a.glcode
          AND acc.accno = a.accno
          AND acc.ulbid = a.ulbid
 
-        LEFT JOIN aoac_budgetaccmap_det
-          ON num_budgetaccmap_glcode = a.glcode
-         AND num_budgetaccmap_accountno = a.accno
-         AND num_budgetaccmap_ulbid = a.ulbid
+        LEFT JOIN aoac_budgetaccmap_det bam
+          ON bam.num_budgetaccmap_glcode = a.glcode
+         AND bam.num_budgetaccmap_accountno = a.accno
+         AND bam.num_budgetaccmap_ulbid = a.ulbid
 
-        WHERE
-          a.trnsdate BETWEEN TO_DATE(:fromDate, 'DD-MON-YYYY')
-                          AND TO_DATE(:toDate, 'DD-MON-YYYY')
+        LEFT JOIN aoac_budgetconfig_det sg
+          ON sg.num_budgetconfig_headid =
+             bam.num_budgetaccmap_subgroup
+
+        LEFT JOIN aoac_budgetconfig_det g
+          ON g.num_budgetconfig_headid = sg.num_budgetconfig_parentid
+
+        LEFT JOIN aoac_budgetconfig_det sh
+          ON sh.num_budgetconfig_headid = g.num_budgetconfig_parentid
+
+        LEFT JOIN aoac_budgetconfig_det h
+          ON h.num_budgetconfig_headid = sh.num_budgetconfig_parentid
+
+        WHERE a.trnsdate >= TO_DATE(:fromDate, 'DD-MON-YYYY')
+          AND a.trnsdate < TO_DATE(:toDate, 'DD-MON-YYYY') + 1
           AND a.ulbid = :ulbId
           AND a.sourceid IN (6)
           AND a.amount < 0
           AND acc.accsubtypeid NOT IN (1, 2)
-          AND a.accno NOT IN ('4148100001','4148210004')
+          AND a.accno NOT IN ('4148100001', '4148210004')
           AND acc.accsubtypeid NOT IN (4820, 4821)
     `;
 
@@ -422,17 +451,30 @@ async function getBudgetExpenditureReport(filters) {
 
     sql += `
          GROUP BY
+          h.var_budgetconfig_budgetname,
+          sh.var_budgetconfig_budgetname,
+          g.var_budgetconfig_budgetname,
+          sg.var_budgetconfig_budgetname,
+          bam.num_budgetaccmap_srno,
+
           a.transno,
           a.glcode,
           acc.glname,
           a.accno,
           acc.accname,
-          budgetamt,
+          bam.num_budgetaccmap_budgetprov,
           acc.functioncode,
           acc.objectcode
       )
       WHERE accno_type_no IS NOT NULL
+
       GROUP BY
+        HEAD,
+        SUB_HEAD,
+        GROUP_NAME,
+        SUB_GROUP,
+        SR_NO,
+
         glcode,
         glname,
         accno,
@@ -442,7 +484,14 @@ async function getBudgetExpenditureReport(filters) {
         accno_type_no,
         accno_type_name,
         functioncode
-      ORDER BY accno_type_no
+
+      ORDER BY
+        HEAD,
+        SUB_HEAD,
+        GROUP_NAME,
+        SUB_GROUP,
+        SR_NO,
+        accno_type_no
     `;
   }
 
