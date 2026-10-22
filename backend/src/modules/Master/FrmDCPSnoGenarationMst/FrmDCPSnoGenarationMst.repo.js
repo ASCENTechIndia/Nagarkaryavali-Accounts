@@ -79,9 +79,12 @@ async function getEmployeeByNoRepo({ ulbId, employeeId, employeeNo, employeeName
         AND NM.num_nominee_ulbid = EM.num_employee_ulbid
       WHERE 
         (:ulbId IS NULL OR EM.num_employee_ulbid = :ulbId)
-        AND (
-          :employeeId IS NULL OR EM.num_employee_empid = :employeeId OR EM.var_employee_oldempno = :empNoStr
-        )
+       AND (
+       :employeeId IS NULL
+       OR var_deptslip_sequence = :employeeId
+       OR var_deptslip_sequence = :empNoStr
+       OR EM.var_employee_oldempno = :empNoStr
+    )
         AND (
           :employeeName IS NULL OR UPPER(
             NVL(EM.var_employee_engname, '') || ' ' ||
