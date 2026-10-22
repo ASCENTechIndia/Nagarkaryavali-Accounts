@@ -102,8 +102,9 @@ const getBroadSheetCreditReportData = async ({ ulbId, yearId }) => {
     WHERE NUM_DCPS_ULBID = :ulbId
       AND DAT_DCPS_SALDATE >= TO_DATE(:yearId || '-04-01', 'YYYY-MM-DD')
       AND DAT_DCPS_SALDATE <  TO_DATE((:yearId + 1) || '-04-01', 'YYYY-MM-DD')
-
-    GROUP BY NUM_DCPS_EMPID, var_dcps_dcpsno
+      AND var_dcps_dcpsno IS NOT NULL
+        
+    GROUP BY NUM_DCPS_EMPID,var_dcps_dcpsno
     ORDER BY NUM_DCPS_EMPID
   `;
 
