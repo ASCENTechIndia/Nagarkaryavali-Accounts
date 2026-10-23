@@ -11,6 +11,54 @@ const formatNumber = (value) => {
   return Number.isFinite(num) ? num.toFixed(2) : "0.00";
 };
 
+const formatSalMonthYear = (value) => {
+  if (!value) return "";
+
+  const months = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  ];
+
+  if (value instanceof Date && !isNaN(value)) {
+    return `${months[value.getMonth()]} ${value.getFullYear()}`;
+  }
+
+  const str = String(value).trim();
+
+  const namedMonth = str.match(/([A-Za-z]{3,})\s+\d{1,2}[,\s]+\d{4}/);
+  if (namedMonth) {
+    const m = months.find(
+      (mm) => mm.toLowerCase() === namedMonth[1].slice(0, 3).toLowerCase()
+    );
+    const yearMatch = str.match(/(\d{4})/);
+    if (m && yearMatch) return `${m} ${yearMatch[1]}`;
+  }
+
+  const dayFirst = str.match(/\d{1,2}\s+([A-Za-z]{3,})\s+(\d{4})/);
+  if (dayFirst) {
+    const m = months.find(
+      (mm) => mm.toLowerCase() === dayFirst[1].slice(0, 3).toLowerCase()
+    );
+    if (m) return `${m} ${dayFirst[2]}`;
+  }
+
+  const isoMatch = str.match(/^(\d{4})-(\d{1,2})/);
+  if (isoMatch) {
+    const monthIdx = Number(isoMatch[2]) - 1;
+    if (monthIdx >= 0 && monthIdx < 12) {
+      return `${months[monthIdx]} ${isoMatch[1]}`;
+    }
+  }
+
+  const d = new Date(str);
+  if (!isNaN(d)) {
+    return `${months[d.getMonth()]} ${d.getFullYear()}`;
+  }
+
+  return str;
+};
+
+
 const generateDcpsInterestPDF = async ({ data }) => {
   let browser;
 
@@ -38,7 +86,6 @@ const generateDcpsInterestPDF = async ({ data }) => {
 
       const interestRate = Number(item.INTEREST_PERCENTAGE) || 0;
 
-      // Use the stored interest amount from the API.
       const interestAmount =
         item.INTEREST_AMOUNT !== null &&
         item.INTEREST_AMOUNT !== undefined
@@ -48,7 +95,11 @@ const generateDcpsInterestPDF = async ({ data }) => {
       return {
         srNo: index + 1,
         employeeName: item.EMPLOYEE_NAME || "",
+        //salDate: item.SALARY_DATE || "",
+        salDate: formatSalMonthYear(item.SALARY_DATE),
         dcpsNo: item.DCPS_NUMBER || "",
+        //calculatedBalance: formatNumber(CALCULATED_AMOUNT),
+        calculatedBalance: formatNumber(item.CALCULATED_AMOUNT),
         openingBalance: formatNumber(openingBalance),
         employeeContribution: formatNumber(employeeContribution),
         ulbContribution: formatNumber(ulbContribution),
@@ -60,6 +111,7 @@ const generateDcpsInterestPDF = async ({ data }) => {
 
     const totals = rows.reduce(
       (acc, row) => {
+        acc.calculatedBalance += Number(row.calculatedBalance);
         acc.openingBalance += Number(row.openingBalance);
         acc.employeeContribution += Number(row.employeeContribution);
         acc.ulbContribution += Number(row.ulbContribution);
@@ -68,6 +120,7 @@ const generateDcpsInterestPDF = async ({ data }) => {
         return acc;
       },
       {
+        calculatedBalance: 0,
         openingBalance: 0,
         employeeContribution: 0,
         ulbContribution: 0,
@@ -79,6 +132,7 @@ const generateDcpsInterestPDF = async ({ data }) => {
     const html = template({
       rows,
       totals: {
+        calculatedBalance: formatNumber(totals.calculatedBalance),
         openingBalance: formatNumber(totals.openingBalance),
         employeeContribution: formatNumber(totals.employeeContribution),
         ulbContribution: formatNumber(totals.ulbContribution),
