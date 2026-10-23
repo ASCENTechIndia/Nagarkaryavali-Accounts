@@ -56,8 +56,10 @@
     }
 
     .sr { width: 5%; }
+    .calculated { width: 12%; }
     .opening { width: 12%; }
     .employee { width: 13%; }
+    .saldate { width: 10%; }
     .ulb { width: 13%; }
     .total { width: 12%; }
     .interest { width: 15%; }
@@ -90,6 +92,8 @@
       <tr>
         <th class="sr">Sr. No.</th>
         <th class="name">Employee Name</th>
+        <th class="saldate">Salary Date</th>
+        <th class="calculated">Calculated Balance</th>
         <th class="opening">Opening Balance</th>
         <th class="employee">Employee Contribution<br>10% (Basic + DA)</th>
         <th class="ulb">ULB Contribution<br>14% (Basic + DA)</th>
@@ -104,6 +108,8 @@
       <tr>
         <td>{{srNo}}</td>
         <td class="left">{{employeeName}}</td>
+        <td class="right">{{salDate}}</td>
+        <td class="right">{{calculatedBalance}}</td>
         <td class="right">{{openingBalance}}</td>
         <td class="right">{{employeeContribution}}</td>
         <td class="right">{{ulbContribution}}</td>
@@ -115,6 +121,8 @@
 
       <tr class="total-row">
         <td colspan="2">Grand Total</td>
+        <td></td>
+        <td class="right">{{totals.calculatedBalance}}</td>
         <td class="right">{{totals.openingBalance}}</td>
         <td class="right">{{totals.employeeContribution}}</td>
         <td class="right">{{totals.ulbContribution}}</td>
