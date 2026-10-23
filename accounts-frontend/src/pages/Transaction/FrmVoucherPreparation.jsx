@@ -1042,7 +1042,7 @@ const FrmVoucherPreparation = () => {
       values.remark || "",             // Narration
       "",                              // BudgetId
       "",                              // NidhiId
-      values.vibhag || "0",            // DeptId
+      values.vibhag == "1845" ? "15" : values.vibhag,            // DeptId
       "",                              // EFileNo
       formattedDate                    // ApprovalDate
     ].join('~');
