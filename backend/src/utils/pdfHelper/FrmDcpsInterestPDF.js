@@ -99,7 +99,7 @@ const generateDcpsInterestPDF = async ({ data }) => {
         salDate: formatSalMonthYear(item.SALARY_DATE),
         dcpsNo: item.DCPS_NUMBER || "",
         //calculatedBalance: formatNumber(CALCULATED_AMOUNT),
-        calculatedBalance: formatNumber(item.CALCULATED_AMOUNT),
+        //calculatedBalance: formatNumber(item.CALCULATED_AMOUNT),
         openingBalance: formatNumber(openingBalance),
         employeeContribution: formatNumber(employeeContribution),
         ulbContribution: formatNumber(ulbContribution),
@@ -111,7 +111,7 @@ const generateDcpsInterestPDF = async ({ data }) => {
 
     const totals = rows.reduce(
       (acc, row) => {
-        acc.calculatedBalance += Number(row.calculatedBalance);
+        //acc.calculatedBalance += Number(row.calculatedBalance);
         acc.openingBalance += Number(row.openingBalance);
         acc.employeeContribution += Number(row.employeeContribution);
         acc.ulbContribution += Number(row.ulbContribution);
@@ -120,7 +120,7 @@ const generateDcpsInterestPDF = async ({ data }) => {
         return acc;
       },
       {
-        calculatedBalance: 0,
+        //calculatedBalance: 0,
         openingBalance: 0,
         employeeContribution: 0,
         ulbContribution: 0,
@@ -132,7 +132,7 @@ const generateDcpsInterestPDF = async ({ data }) => {
     const html = template({
       rows,
       totals: {
-        calculatedBalance: formatNumber(totals.calculatedBalance),
+        //calculatedBalance: formatNumber(totals.calculatedBalance),
         openingBalance: formatNumber(totals.openingBalance),
         employeeContribution: formatNumber(totals.employeeContribution),
         ulbContribution: formatNumber(totals.ulbContribution),
