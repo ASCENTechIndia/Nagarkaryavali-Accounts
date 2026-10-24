@@ -178,7 +178,7 @@ const BudgetExpenditurePDFHelper = async ({ reportData, filters, ulbInfo }) => {
               ACCOUNTCODE: row.ACCOUNTCODE,
               ACCNAME: row.ACCNAME,
               ACTUAL: formatNumber(actual),
-              EXPENDITURE: formatNumber(exp),
+              EXPENDITURE: formatNumber(actual),
               BUDGET: formatNumber(budget),
               BALANCE: formatNumber(balance),
             });
