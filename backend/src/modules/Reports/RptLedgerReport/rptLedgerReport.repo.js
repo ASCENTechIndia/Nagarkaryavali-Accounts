@@ -70,89 +70,87 @@ async function getTransactionDetails(transNo) {
   };
 }
 
-function isFinancialYearBoundary(fromDate, toDate) {
-  const [fd, fm] = fromDate.split("-");
-  const [td, tm] = toDate.split("-");
+function parseDMY(dateStr) {
+  const MONTHS = {
+    JAN: 0, FEB: 1, MAR: 2, APR: 3, MAY: 4, JUN: 5,
+    JUL: 6, AUG: 7, SEP: 8, OCT: 9, NOV: 10, DEC: 11,
+  };
+  const [d, m, y] = dateStr.split("-");
+  return new Date(Number(y), MONTHS[m.toUpperCase()], Number(d));
+}
 
-  return (
-    fd === "31" && fm === "03" &&
-    td === "01" && tm === "04"
-  );
+function parseDMY(dateStr) {
+  const MONTHS = {
+    JAN: 0, FEB: 1, MAR: 2, APR: 3, MAY: 4, JUN: 5,
+    JUL: 6, AUG: 7, SEP: 8, OCT: 9, NOV: 10, DEC: 11,
+  };
+  const [d, m, y] = dateStr.split("-");
+  return new Date(Number(y), MONTHS[m.toUpperCase()], Number(d));
+}
+
+function computeOpeningContext(fromDate) {
+  const fromObj = parseDMY(fromDate);
+
+  const isFYBoundary =
+    fromObj.getMonth() === 2 && fromObj.getDate() === 31;   
+
+  return { isFYBoundary, prevDayStr: fromDate };
 }
 
 
 async function getAccountBalance(payload) {
-  const { glcode, accno, ulbid, fromDate, toDate, zoneid } = payload;
+  const { glcode, accno, ulbid, fromDate, zoneid } = payload;
 
-  console.log("📤 Repo → Balance Payload:", payload);
+  console.log("Repo → Balance Payload:", payload);
+
+  const { isFYBoundary, prevDayStr } = computeOpeningContext(fromDate);
+  console.log("prevDay:", prevDayStr, "| FY Boundary:", isFYBoundary);
 
   let sql = "";
   let binds = {};
 
-  const isFYBoundary = isFinancialYearBoundary(fromDate, toDate);
-
-  console.log("👉 FY Boundary Check:", isFYBoundary);
-
-  // ✅ CASE 1: Opening Balance
   if (isFYBoundary) {
-    console.log("👉 Using Opening Balance Logic");
-
     sql = `
       SELECT NVL(SUM(openingbal), 0) AS balance
       FROM accountview_web c
       WHERE c.glcode = :glcode
-        AND c.accno = :accno
-        AND c.ulbid = :ulbid
+        AND c.accno  = :accno
+        AND c.ulbid  = :ulbid
     `;
-
-    binds = {
-      glcode,
-      accno,
-      ulbid,
-    };
-  } 
-  // ✅ CASE 2: Running Balance
-  else {
-    console.log("👉 Using Running Balance Logic");
+    binds = { glcode, accno, ulbid };
+  } else {
+    const zoneClause = zoneid && zoneid !== "-1"
+      ? " AND a.zoneid = :zoneid"
+      : "";
 
     sql = `
       SELECT NVL(
-        SUM(
-          openingbal + (
-            SELECT NVL(SUM(amount), 0)
-            FROM transview a
-            WHERE a.glcode = c.glcode
-              AND a.accno = c.accno
-              AND TRUNC(a.trnsdate) <= TO_DATE(:toDate, 'DD-MM-YYYY')
-              AND a.ulbid = :ulbid
-              AND (:zoneid = '-1' OR a.zoneid = :zoneid)
-          )
-        ), 0
-      ) AS balance
+               SUM(
+                 openingbal + (
+                   SELECT NVL(SUM(amount), 0)
+                   FROM transview a
+                   WHERE a.glcode = c.glcode
+                     AND a.accno = c.accno
+                     AND TRUNC(a.trnsdate) <= TO_DATE(:prevDay, 'DD-MM-YYYY')
+                     AND a.ulbid = :ulbid
+                     ${zoneClause}
+                 )
+               ), 0
+             ) AS balance
       FROM accountview_web c
       WHERE c.glcode = :glcode
-        AND c.accno = :accno
-        AND c.ulbid = :ulbid
+        AND c.accno  = :accno
+        AND c.ulbid  = :ulbid
     `;
-
-    binds = {
-      glcode,
-      accno,
-      ulbid,
-      toDate,
-      zoneid,
-    };
+    binds = { glcode, accno, ulbid, prevDay: prevDayStr };
+    if (zoneClause) binds.zoneid = zoneid;
   }
 
-  console.log("📄 Final SQL:", sql);
-  console.log("📦 Binds:", binds);
+  console.log("SQL:", sql);
+  console.log("Binds:", binds);
 
   const result = await executeQuery(sql, binds);
-
-  if (!result.success) {
-    throw new AppError(result.error, 500);
-  }
-
+  if (!result.success) throw new AppError(result.error, 500);
   return result.rows[0];
 }
 
