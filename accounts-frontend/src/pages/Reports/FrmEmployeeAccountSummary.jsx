@@ -162,7 +162,7 @@ const FrmEmployeeAccountSummary = () => {
                 <div className="flex justify-center mt-5">
                   <div className="grid grid-cols-4 gap-6 w-[1000px] items-center">
                     <Label className="font-bold whitespace-nowrap text-right">
-                      कर्मचाऱ्याचा DCPS क्र{" "}
+                      कर्मचाऱ्याचा क्र{" "}
                       <span className="text-red-500">*</span> :
                     </Label>
 
@@ -170,7 +170,7 @@ const FrmEmployeeAccountSummary = () => {
                       name="dcpsNo"
                       value={values.dcpsNo}
                       onChange={handleChange}
-                      placeholder="Enter DCPS Number"
+                      placeholder="Enter Employee Number"
                       required
                       className="w-full"
                     />

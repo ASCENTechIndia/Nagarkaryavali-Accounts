@@ -51,118 +51,113 @@ const getBudgetReportData = async ({ ulbId }) => {
 
   return result.rows;
 };
-// const getDcpsReportData = async ({ ulbId, dcpsNo, yearId }) => {
-//   const query = `
-//     SELECT
-//       D.NUM_DCPS_ID AS DCPS_ID,
-//       D.NUM_DCPS_ULBID AS ULBID,
-//       D.NUM_DCPS_EMPID AS EMPLOYEE_ID,
-//       D.NUM_DCPS_SLIPID AS SLIP_ID,
-//       D.DAT_DCPS_SALDATE AS SALARY_DATE,
-//       D.VAR_DCPS_NAME AS EMPLOYEE_NAME,
-//       D.NUM_DCPS_EMPSHARE AS EMPLOYEE_CONTRIBUTION,
-//       D.NUM_DCPS_CORPSHARE AS ULB_CONTRIBUTION,
-//       D.NUM_DCPS_INTRESTPERC AS INTEREST_PERCENTAGE,
-//       D.NUM_DCPS_INTRESTAMOUNT AS INTEREST_AMOUNT,
-//       D.NUM_DCPS_CALCAMOUNT AS CALCULATED_AMOUNT,
-//       D.NUM_DCPS_OPENINGBAL AS OPENING_BALANCE,
-//       D.VAR_DCPS_DCPSNO AS DCPS_NUMBER,
-//       Y.NUM_YEAR_ID AS YEAR_ID,
-//       Y.VAR_YEAR AS YEAR
-//     FROM ACCCLOUD.AOAC_DCPS_MAS D
-//     INNER JOIN ADMINS.AOMA_YEAR Y
-//       ON Y.NUM_YEAR_ID = :yearId
-//     WHERE D.NUM_DCPS_ULBID = :ulbId
-//       AND D.VAR_DCPS_DCPSNO = :dcpsNo
-//       AND D.DAT_DCPS_SALDATE >= TO_DATE(Y.VAR_YEAR || '-01-01', 'YYYY-MM-DD')
-//       AND D.DAT_DCPS_SALDATE < ADD_MONTHS(
-//             TO_DATE(Y.VAR_YEAR || '-01-01', 'YYYY-MM-DD'),
-//             12
-//           )
-//     ORDER BY D.DAT_DCPS_SALDATE
-//   `;
-
-//   const result = await executeQuery(query, {
-//     ulbId,
-//     dcpsNo,
-//     yearId,
-//   });
-
-//   if (!result.success) {
-//     throw new Error(result.error);
-//   }
-
-//   return result.rows;
-// };
-
-
-
 
 const getDcpsReportData = async ({ ulbId, dcpsNo, yearId }) => {
   const query = `
-    WITH DCPS_DATA AS
-    (
-        SELECT
-            D.NUM_DCPS_ID AS DCPS_ID,
-            D.NUM_DCPS_ULBID AS ULBID,
-            D.NUM_DCPS_EMPID AS EMPLOYEE_ID,
-            D.NUM_DCPS_SLIPID AS SLIP_ID,
-            D.DAT_DCPS_SALDATE AS SALARY_DATE,
-            D.VAR_DCPS_NAME AS EMPLOYEE_NAME,
-            D.NUM_DCPS_EMPSHARE AS EMPLOYEE_CONTRIBUTION,
-            D.NUM_DCPS_CORPSHARE AS ULB_CONTRIBUTION,
-            D.NUM_DCPS_INTRESTPERC AS INTEREST_PERCENTAGE,
-            D.NUM_DCPS_INTRESTAMOUNT AS INTEREST_AMOUNT,
-            D.NUM_DCPS_CALCAMOUNT AS CALCULATED_AMOUNT,
-            D.NUM_DCPS_OPENINGBAL AS ORIGINAL_OPENING_BALANCE,
-            D.VAR_DCPS_DCPSNO AS DCPS_NUMBER,
-            Y.NUM_YEAR_ID AS YEAR_ID,
-            Y.VAR_YEAR AS YEAR
-        FROM ACCCLOUD.AOAC_DCPS_MAS D
-        INNER JOIN ADMINS.AOMA_YEAR Y
-            ON Y.NUM_YEAR_ID = :yearId
-        WHERE D.NUM_DCPS_ULBID = :ulbId
-          AND D.VAR_DCPS_DCPSNO = :dcpsNo
-          AND D.DAT_DCPS_SALDATE >=
-              TO_DATE(Y.VAR_YEAR || '-01-01', 'YYYY-MM-DD')
-          AND D.DAT_DCPS_SALDATE <
-              ADD_MONTHS(
-                  TO_DATE(Y.VAR_YEAR || '-01-01', 'YYYY-MM-DD'),
-                  12
-              )
-    )
+   WITH DCPS_DATA AS
+(
     SELECT
-        DCPS_ID,
-        ULBID,
-        EMPLOYEE_ID,
-        SLIP_ID,
-        SALARY_DATE,
-        EMPLOYEE_NAME,
-        EMPLOYEE_CONTRIBUTION,
-        ULB_CONTRIBUTION,
-        INTEREST_PERCENTAGE,
-        INTEREST_AMOUNT,
-        CALCULATED_AMOUNT,
+        D.NUM_DCPS_ID AS DCPS_ID,
+        N.NUM_DCPSNOGEN_ULBID AS ULBID,
+        N.NUM_DCPSNOGEN_EMPID AS EMPLOYEE_ID,
+        D.NUM_DCPS_SLIPID AS SLIP_ID,
+        D.DAT_DCPS_SALDATE AS SALARY_DATE,
+        D.VAR_DCPS_NAME AS EMPLOYEE_NAME,
 
-        /* Opening balance includes all previous months' contributions */
+        NVL(D.NUM_DCPS_EMPSHARE, 0) AS EMPLOYEE_CONTRIBUTION,
+        NVL(D.NUM_DCPS_CORPSHARE, 0) AS ULB_CONTRIBUTION,
+
+        D.NUM_DCPS_INTRESTPERC AS INTEREST_PERCENTAGE,
+        D.NUM_DCPS_INTRESTAMOUNT AS INTEREST_AMOUNT,
+        D.NUM_DCPS_CALCAMOUNT AS CALCULATED_AMOUNT,
+
+        NVL(N.NUM_DCPSNOGEN_OPENINGBAL, 0)
+            AS ORIGINAL_OPENING_BALANCE,
+
+        N.VAR_DCPSNOGEN_DCPSNO AS DCPS_NUMBER,
+
+        Y.NUM_YEAR_ID AS YEAR_ID,
+        Y.VAR_YEAR AS YEAR
+
+    FROM ACCCLOUD.AOAC_DCPSNOGEN_MAS N
+
+    INNER JOIN ADMINS.AOMA_YEAR Y
+        ON Y.NUM_YEAR_ID = :yearId
+
+    LEFT JOIN ACCCLOUD.AOAC_DCPS_MAS D
+        ON D.NUM_DCPS_ULBID = N.NUM_DCPSNOGEN_ULBID
+       AND D.NUM_DCPS_EMPID = N.NUM_DCPSNOGEN_EMPID
+       AND D.VAR_DCPS_DCPSNO = N.VAR_DCPSNOGEN_DCPSNO
+       AND D.DAT_DCPS_SALDATE >=
+           TO_DATE(Y.VAR_YEAR || '-01-01', 'YYYY-MM-DD')
+       AND D.DAT_DCPS_SALDATE <
+           ADD_MONTHS(
+               TO_DATE(Y.VAR_YEAR || '-01-01', 'YYYY-MM-DD'),
+               12
+           )
+
+    WHERE N.NUM_DCPSNOGEN_ULBID = :ulbId
+      AND D.NUM_DCPS_SLIPID = :dcpsNo
+),
+
+DCPS_BALANCE AS
+(
+    SELECT
+        DCPS_DATA.*,
+
         NVL(ORIGINAL_OPENING_BALANCE, 0)
         +
         NVL(
             SUM(
                 NVL(EMPLOYEE_CONTRIBUTION, 0)
                 + NVL(ULB_CONTRIBUTION, 0)
-            ) OVER (
-                ORDER BY SALARY_DATE, DCPS_ID
+            ) OVER
+            (
+                PARTITION BY ULBID, EMPLOYEE_ID, DCPS_NUMBER
+                ORDER BY SALARY_DATE NULLS FIRST, DCPS_ID
                 ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
             ),
             0
-        ) AS OPENING_BALANCE,
+        ) AS OPENING_BALANCE
 
-        DCPS_NUMBER,
-        YEAR_ID,
-        YEAR
     FROM DCPS_DATA
-    ORDER BY SALARY_DATE, DCPS_ID
+)
+
+SELECT
+    DCPS_ID,
+    ULBID,
+    EMPLOYEE_ID,
+    SLIP_ID,
+    SALARY_DATE,
+    EMPLOYEE_NAME,
+    EMPLOYEE_CONTRIBUTION,
+    ULB_CONTRIBUTION,
+    INTEREST_PERCENTAGE,
+    INTEREST_AMOUNT,
+    CALCULATED_AMOUNT,
+
+    OPENING_BALANCE,
+
+    -- Calculate interest using the opening balance of the individual row
+ ROUND(
+    (
+        NVL(OPENING_BALANCE, 0)
+        + NVL(EMPLOYEE_CONTRIBUTION, 0)
+        + NVL(ULB_CONTRIBUTION, 0)
+    )
+    * NVL(INTEREST_PERCENTAGE, 0)
+    / 100
+    / 12,
+    2
+) AS INTEREST_AMOUNT,
+
+    DCPS_NUMBER,
+    YEAR_ID,
+    YEAR
+
+FROM DCPS_BALANCE
+
+ORDER BY SALARY_DATE NULLS FIRST, DCPS_ID
   `;
 
   const result = await executeQuery(query, {
