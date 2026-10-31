@@ -72,6 +72,7 @@
       font-weight: bold;
     }
 
+    .slip-col { width: 6%; }
     .name-col { width: 10%; }
     .account-col { width: 10%; }
     .opening-col { width: 7%; }
@@ -129,6 +130,7 @@
     <div class="report-wrap">
       <table>
         <colgroup>
+          <col class="slip-col" /> 
           <col class="name-col" />
           <col class="account-col" />
           <col class="opening-col" />
@@ -152,13 +154,13 @@
 
         <thead>
           <tr>
-            <th colspan="17" class="report-title">
+            <th colspan="18" class="report-title">
               जळगाव शहर महानगरपालिका, जळगाव
             </th>
           </tr>
 
           <tr>
-            <th colspan="17" class="report-title">
+            <th colspan="18" class="report-title">
               मनपा आस्थापनेवरील कार्यरत कर्मचारी यांचा
               परिभाषित अंशदान पेन्शन योजना (DCPS) अंतर्गत
               सन {{yearLabel}} चा जमा बाजू ताळेबंद
@@ -166,8 +168,9 @@
           </tr>
 
           <tr class="column-heading">
+            <th>स्लिप आयडी</th>
             <th>कर्मचारी नाव</th>
-            <th>खाते क्र.</th>
+            <th>DCPS क्र.</th>
             <th>आरंभीची<br />शिल्लक</th>
 
             <th>{{{months.[0]}}}</th>
@@ -191,6 +194,7 @@
         <tbody>
           {{#each rows}}
           <tr class="data-row">
+            <td>{{slipId}}</td>
             <td>{{empName}}</td>
             <td>{{dcpsNo}}</td>
             <td>{{opening}}</td>
@@ -211,7 +215,7 @@
           </tr>
           {{else}}
           <tr>
-            <td colspan="17">रेकॉर्ड उपलब्ध नाहीत</td>
+            <td colspan="18">रेकॉर्ड उपलब्ध नाहीत</td>
           </tr>
           {{/each}}
         </tbody>

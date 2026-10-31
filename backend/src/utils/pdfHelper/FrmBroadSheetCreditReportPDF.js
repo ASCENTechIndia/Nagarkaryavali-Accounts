@@ -30,6 +30,7 @@ const getMonthLabels = (startYear) => {
 
 const buildRows = (data) => {
   return data.map((row) => ({
+    slipId: row.SLIP_ID,
     //accountNo: row.ACCOUNT_NO,
     empName: row.DCPS_NAME,
     dcpsNo: row.DCPS_NO,

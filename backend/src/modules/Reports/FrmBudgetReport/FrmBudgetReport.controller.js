@@ -26,24 +26,32 @@ exports.getBudgetReportPDF = asyncHandler(async (req, res) => {
   });
 });
 exports.getDcpsReportData = asyncHandler(async (req, res) => {
-  const { ulbId, dcpsNo, yearId } = req.body;
+  const { ulbId, dcpsNo,slipNo, yearId } = req.body;
 
-  if (!ulbId) {
-    throw new AppError("ulbId is required", 400);
-  }
+  // if (!ulbId) {
+  //   throw new AppError("ulbId is required", 400);
+  // }
 
-  if (!dcpsNo) {
-    throw new AppError("dcpsNo is required", 400);
-  }
+  // if (!dcpsNo) {
+  //   throw new AppError("dcpsNo is required", 400);
+  // }
 
-  if (!yearId) {
-    throw new AppError("yearId is required", 400);
+  // if (!yearId) {
+  //   throw new AppError("yearId is required", 400);
+  // }
+
+  if (!ulbId || !yearId || (!dcpsNo && !slipNo)) {
+    throw new AppError(
+      "ulbId, yearId and either dcpsNo or slipNo are required",
+      400
+    );
   }
 
   const data = await service.getDcpsReportService({
     ulbId,
     dcpsNo,
     yearId,
+    slipNo
   });
 
   return res.json({
@@ -53,16 +61,24 @@ exports.getDcpsReportData = asyncHandler(async (req, res) => {
   });
 });
 exports.getDcpsInterestPDF = asyncHandler(async (req, res) => {
-  const { ulbId, dcpsNo, yearId } = req.body;
+  const { ulbId, dcpsNo, slipNo,yearId } = req.body;
 
-  if (!ulbId || !dcpsNo || !yearId) {
-    throw new AppError("ulbId, dcpsNo and yearId are required", 400);
+  // if (!ulbId || !dcpsNo || !yearId) {
+  //   throw new AppError("ulbId, dcpsNo and yearId are required", 400);
+  // }
+
+  if (!ulbId || !yearId || (!dcpsNo && !slipNo)) {
+    throw new AppError(
+      "ulbId, yearId and either dcpsNo or slipNo are required",
+      400
+    );
   }
 
   const data = await service.getDcpsReportService({
     ulbId,
     dcpsNo,
     yearId,
+    slipNo,
   });
 
   const pdf = await generateDcpsInterestPDF({ data });
@@ -74,8 +90,10 @@ exports.getDcpsInterestPDF = asyncHandler(async (req, res) => {
     pdfUrl: `${baseUrl}/pdf/${path.basename(pdf.filePath)}`,
   });
 });
+
 exports.getYearList = asyncHandler(async (req, res) => {
   res.json(await service.getYearListService());
 });
+
 
 

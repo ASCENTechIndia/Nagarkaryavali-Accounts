@@ -52,7 +52,7 @@ const getBudgetReportData = async ({ ulbId }) => {
   return result.rows;
 };
 
-const getDcpsReportData = async ({ ulbId, dcpsNo, yearId }) => {
+const getDcpsReportData = async ({ ulbId, dcpsNo,slipNo, yearId }) => {
   const query = `
    WITH DCPS_DATA AS
 (
@@ -97,7 +97,8 @@ const getDcpsReportData = async ({ ulbId, dcpsNo, yearId }) => {
            )
 
     WHERE N.NUM_DCPSNOGEN_ULBID = :ulbId
-      AND D.NUM_DCPS_SLIPID = :dcpsNo
+    AND ( :dcpsNo IS NULL OR N.VAR_DCPSNOGEN_DCPSNO = :dcpsNo )
+    AND ( :slipNo IS NULL OR D.NUM_DCPS_SLIPID      = :slipNo )
 ),
 
 DCPS_BALANCE AS
@@ -162,8 +163,11 @@ ORDER BY SALARY_DATE NULLS FIRST, DCPS_ID
 
   const result = await executeQuery(query, {
     ulbId,
-    dcpsNo,
+    // dcpsNo,
     yearId,
+    //slipNo,
+    dcpsNo: dcpsNo || null,
+    slipNo: slipNo || null,
   });
 
   if (!result.success) {
@@ -172,7 +176,6 @@ ORDER BY SALARY_DATE NULLS FIRST, DCPS_ID
 
   return result.rows;
 };
-
 async function getYearListRepo() {
   try {
     const query = `
@@ -189,8 +192,11 @@ async function getYearListRepo() {
     throw err;
   }
 }
+
+
 module.exports = {
   getBudgetReportData,
   getYearListRepo,
+
   getDcpsReportData
 };

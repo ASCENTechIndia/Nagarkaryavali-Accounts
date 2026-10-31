@@ -12,6 +12,7 @@ const getBroadSheetCreditReportData = async ({ ulbId, yearId }) => {
       D.NUM_DCPS_EMPID AS ACCOUNT_NO,
       D.VAR_DCPS_DCPSNO AS DCPS_NO,
       D.VAR_DCPS_NAME AS DCPS_NAME,
+      D.NUM_DCPS_SLIPID AS SLIP_ID,
 
       NVL(MAX(D.NUM_DCPS_OPENINGBAL), 0) AS OPENING_BALANCE,
 
@@ -116,7 +117,8 @@ const getBroadSheetCreditReportData = async ({ ulbId, yearId }) => {
     GROUP BY
       D.NUM_DCPS_EMPID,
       D.VAR_DCPS_DCPSNO,
-      D.VAR_DCPS_NAME
+      D.VAR_DCPS_NAME,
+      D.NUM_DCPS_SLIPID
 
     ORDER BY D.NUM_DCPS_EMPID
   `;
