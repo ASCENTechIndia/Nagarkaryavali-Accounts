@@ -97,7 +97,8 @@ const generateDcpsInterestPDF = async ({ data }) => {
         employeeName: item.EMPLOYEE_NAME || "",
         //salDate: item.SALARY_DATE || "",
         salDate: formatSalMonthYear(item.SALARY_DATE),
-        dcpsNo: item.DCPS_NUMBER || "",
+        //dcpsNo: item.DCPS_NUMBER || "",
+        slipNo: item.SLIP_ID || "",
         //calculatedBalance: formatNumber(CALCULATED_AMOUNT),
         //calculatedBalance: formatNumber(item.CALCULATED_AMOUNT),
         openingBalance: formatNumber(openingBalance),
@@ -140,7 +141,8 @@ const generateDcpsInterestPDF = async ({ data }) => {
         interestAmount: formatNumber(totals.interestAmount),
       },
       year: records[0]?.YEAR || "",
-      dcpsNo: records[0]?.DCPS_NUMBER || "",
+      // dcpsNo: records[0]?.DCPS_NUMBER || "",
+      slipNo: records[0]?.SLIP_ID || "",
       printDate: new Date().toLocaleDateString("en-GB"),
     });
 

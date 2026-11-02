@@ -132,7 +132,7 @@ const FrmEmployeeAccountSummary = () => {
             <CardContent className="p-4 sm:p-6 space-y-6">
               <div className="flex justify-center mt-5">
                 <div className="grid grid-cols-6 gap-4 w-[1200px] items-center">
-                  <Label className="font-bold whitespace-nowrap text-right">
+                  {/* <Label className="font-bold whitespace-nowrap text-right">
                     कर्मचाऱ्याचा DCPS क्र :
                   </Label>
                   <Input
@@ -141,14 +141,14 @@ const FrmEmployeeAccountSummary = () => {
                     onChange={handleChange}
                     placeholder="Enter Employee DCPS No"
                     className="w-full"
-                  />
+                  /> */}
 
                   <Label className="font-bold whitespace-nowrap text-right">
                     स्लिप क्र :
                   </Label>
                   <Input
                     name="slipNo"
-                    value={values.slipNo}
+                    value={values.slipNo||values.dcpsNo}
                     onChange={handleChange}
                     placeholder="Enter Slip No"
                     className="w-full"

@@ -34,6 +34,7 @@ const FrmDCPSnoGenaretionMst = () => {
     doj: "",
     confirmationDate: "",
     nomineeName: "",
+    slipNo: "",
   });
 
   // Only Opening DCPS Balance is editable
@@ -136,6 +137,7 @@ const FrmDCPSnoGenaretionMst = () => {
         if (emp && (emp.name || emp.employeeId || emp.designation)) {
           found = {
             employeeId: emp.employeeId || trimmedNo,
+            slipNo: emp.employeeId || trimmedNo,
             ulbId: emp.ulbId || currentUlbId,
             name: emp.name || "",
             dob: emp.dob || "",
@@ -202,6 +204,7 @@ const FrmDCPSnoGenaretionMst = () => {
       doj: "",
       confirmationDate: "",
       nomineeName: "",
+      slipNo: "",
     });
     setOpeningDcpsBalance("");
   };
@@ -488,6 +491,19 @@ const FrmDCPSnoGenaretionMst = () => {
                       value={openingDcpsBalance}
                       onChange={(e) => setOpeningDcpsBalance(e.target.value)}
                       className="w-full sm:flex-1 bg-white text-gray-950 font-semibold border-gray-400 placeholder:text-gray-400 focus:border-blue-700"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <Label className="sm:w-44 text-gray-900 font-semibold text-sm shrink-0">Slip No :</Label>
+                    <Input
+                      name="slipNo"
+                      value={employeeData.slipNo}
+                      readOnly
+                      disabled
+                      className="w-full sm:flex-1 bg-slate-100 text-gray-950 font-semibold border-gray-400 disabled:opacity-100 disabled:text-gray-950 disabled:bg-slate-100 disabled:cursor-not-allowed shadow-none"
                     />
                   </div>
                 </div>
