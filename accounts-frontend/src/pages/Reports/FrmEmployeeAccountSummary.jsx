@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
 import Swal from "sweetalert2";
 
-const initialValues = { dcpsNo: "", slipNo: "", yearId: "" };
+const initialValues = { employee_ID: "", dcpsNo: "", slipNo: "", yearId: "" };
 
 const FrmEmployeeAccountSummary = () => {
   const { user } = useAuth();
@@ -54,8 +54,9 @@ const FrmEmployeeAccountSummary = () => {
     try {
       const dcpsNo = values.dcpsNo?.trim() || null;
       const slipNo = values.slipNo?.trim() || null;
+      const employee_ID = values.employee_ID?.trim() || null;
 
-      if ((!dcpsNo && !slipNo) || !values.yearId) {
+      if ((!employee_ID && !slipNo) || !values.yearId) {
         Swal.fire({
           text: "Please enter either Employee Number or Slip Number, and select a Financial Year",
           confirmButtonColor: "#1e3a8a",
@@ -69,6 +70,7 @@ const FrmEmployeeAccountSummary = () => {
         dcpsNo,
         slipNo,
         yearId: Number(values.yearId),
+        employee_ID,
       };
 
       console.log("PDF Request payload:", payload);
@@ -148,7 +150,7 @@ const FrmEmployeeAccountSummary = () => {
                   </Label>
                   <Input
                     name="slipNo"
-                    value={values.slipNo||values.dcpsNo}
+                    value={values.slipNo||values.employee_ID}
                     onChange={handleChange}
                     placeholder="Enter Slip No"
                     className="w-full"
