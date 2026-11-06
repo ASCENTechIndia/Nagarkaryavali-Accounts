@@ -128,6 +128,102 @@ const getBankBranchByIfsc = async (ifsc) => {
   }
 };
 
+const getReceiptListKarjat = async ({
+  ulbId,
+  userId,
+}) => {
+  const query = `
+    SELECT
+        rmst.num_receiptmst_refno AS refno,
+        rmst.date_receiptmst_trnsdate AS trnsdate,
+        rmst.num_receiptmst_recno AS docno,
+
+        tt.var_trnstype_trnstypemar AS trnstype,
+
+        vz.zoneename AS zonename,
+
+        gp.var_grampanch_grampanch AS grampanch,
+
+        rd.num_receiptother_refno AS otherrefno,
+        rd.num_receiptother_recno AS otherrecno,
+        rd.num_receiptother_rectypeid AS otherrectypeid,
+        rd.var_receiptother_from AS otherreceipt,
+        rd.var_receiptother_email AS otherreceiptno,
+        rd.num_receiptother_mobno AS othermobileno,
+        rd.num_receiptother_anudanno AS otheranudanno,
+        rd.num_receiptother_recmodeid AS otherrecmodeid,
+        rd.num_receiptother_bankid AS otherbankid,
+        rd.num_receiptother_branchid AS otherbranchid,
+        rd.var_receiptother_chequeno AS otherreceiptchequeno,
+        rd.date_receiptother_chequedate AS otherchequedate,
+        rd.var_receiptother_insby AS otherreciptins,
+
+        NVL(det.total_amount, 0)
+        - NVL(rdesc.discount_amount, 0) AS amount,
+
+        rmst.var_receiptmst_insby AS username,
+        rmst.date_receiptmst_insdate AS datetime,
+        rmst.num_receiptmst_trnstypeid AS trnstypeid,
+
+        0 AS budgetcode,
+
+        NVL(rdesc.discount_amount, 0) AS discountamount
+
+    FROM aoac_receiptmst_def rmst
+
+    LEFT JOIN (
+        SELECT
+            num_receiptdet_refno,
+            SUM(num_receiptdet_amount) total_amount
+        FROM aoac_receiptdet_def
+        GROUP BY num_receiptdet_refno
+    ) det
+      ON det.num_receiptdet_refno =
+         rmst.num_receiptmst_refno
+
+    INNER JOIN aoac_trnstype_def tt
+      ON tt.num_trnstype_trnstypeid =
+         rmst.num_receiptmst_trnstypeid
+
+    INNER JOIN view_zone vz
+      ON vz.zoneid =
+         rmst.num_receiptmst_zoneid
+
+    INNER JOIN aoac_receiptother_def rd
+      ON rd.num_receiptother_refno =
+         rmst.num_receiptmst_refno
+
+    LEFT JOIN aoac_grampanch_def gp
+      ON gp.num_grampanch_deptid =
+         rmst.num_receiptmst_zoneid
+     AND gp.num_grampanch_grampanchid =
+         rmst.num_receiptmst_grampanchid
+
+    LEFT JOIN (
+        SELECT
+            num_receiptdesc_refno,
+            SUM(num_receiptdesc_amount) discount_amount
+        FROM aoac_receiptdesc_def
+        GROUP BY num_receiptdesc_refno
+    ) rdesc
+      ON rdesc.num_receiptdesc_refno =
+         rmst.num_receiptmst_refno
+
+    WHERE rmst.var_receiptmst_authstatus IS NULL
+      AND rmst.num_receiptmst_ulbid = :ulbId
+      AND rmst.var_receiptmst_insby = :userId
+
+    ORDER BY rmst.num_receiptmst_refno
+  `;
+
+  const bindParams = {
+    ulbId: Number(ulbId),
+    userId,
+  };
+
+  return await executeQuery(query, bindParams);
+};
+
 module.exports = {
   getReceiptTypes,
   getReceiptAccounts,
@@ -135,5 +231,6 @@ module.exports = {
   getPayModes,
   getPayModeAccounts,
   getAccountDetailsByAccNo,
-  getBankBranchByIfsc
+  getBankBranchByIfsc,
+  getReceiptListKarjat
 };

@@ -35,13 +35,14 @@ const FrmBankBranchList = () => {
   const [bankList, setBankList] = useState([]);
   const [tableData, setTableData] = useState([]);
 
-  const headers = ["निवडा", "शाखेचं नाव", "आयएफएससी कोड", "एमआयसीआर कोड"];
+  const headers = ["निवडा", "शाखेचं नाव", "आयएफएससी कोड", "एमआयसीआर कोड", "शाखेचे पत्ता"];
 
   const keyMapping = {
     निवडा: "select",
     "शाखेचं नाव": "branchName",
     "आयएफएससी कोड": "ifsc",
     "एमआयसीआर कोड": "micr",
+    "शाखेचे पत्ता": "branchAddress",
   };
 
   const fetchBankList = async () => {
@@ -110,6 +111,7 @@ const FrmBankBranchList = () => {
         branchName: item.VAR_BRANCHMST_BRANCHNAME.trim(),
         ifsc: item.VAR_BRANCHMST_IFSC,
         micr: item.VAR_BRANCHMST_MICR || "-",
+        branchAddress: item.VAR_BRANCHMST_ADDRESS || "-",
       }));
 
       setTableData(formatted);

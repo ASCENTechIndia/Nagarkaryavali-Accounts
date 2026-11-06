@@ -58,6 +58,23 @@ const getBankBranchByIfscService = async (ifsc) => {
   };
 };
 
+const getReceiptListKarjatService = async (body) => {
+  const { ulbId, userId } = body;
+
+  if (!ulbId) {
+    throw new Error("ulbId is required");
+  }
+
+  if (!userId) {
+    throw new Error("userId is required");
+  }
+
+  return await repo.getReceiptListKarjat({
+    ulbId,
+    userId,
+  });
+};
+
 module.exports = {
   getReceiptTypesService,
   getReceiptAccountsService,
@@ -65,5 +82,6 @@ module.exports = {
   getPayModesService,
   getPayModeAccountsService,
   getAccountDetailsByAccNoService,
-  getBankBranchByIfscService
+  getBankBranchByIfscService,
+  getReceiptListKarjatService
 };
