@@ -1,0 +1,14 @@
+const express = require("express");
+const router = express.Router();
+const controller = require("./FrmReceiptKarjat.controller");
+const auth = require("../../../middlewares/auth.middleware");
+
+router.post("/receipt-types", auth(), controller.getReceiptTypes); 
+router.post("/receipt-accounts", auth(), controller.getReceiptAccounts);
+router.post("/bank-accounts", auth(), controller.getBankAccounts);
+router.get("/paymodes", auth(), controller.getPayModes);
+router.post("/paymode-accounts", auth(), controller.getPayModeAccounts);
+router.post("/account-details", auth(), controller.getAccountDetailsByAccNo);
+router.post("/bank-branch-by-ifsc", auth(), controller.getBankBranchByIfsc);
+
+module.exports = router;

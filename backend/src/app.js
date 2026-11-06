@@ -118,6 +118,7 @@ app.use("/api/frmSDRef", require("./modules/Transaction/FrmSDRefund/FrmSDRef.rou
 app.use("/api/ChequeDepo", require("./modules/Transaction/FrmChequeDeposit/ChequeDeposit.route"));
 app.use("/api/FrmUserTax", require("./modules/Transaction/FrmUserTax/FrmUserTax.routes"));
 app.use("/api/FrmVoucherAuth", require("./modules/Transaction/FrmVoucherAuth/FrmVoucherAuth.route"));
+app.use("/api/FrmReceiptKarjat", require("./modules/Transaction/FrmReceiptKarjat/FrmReceiptKarjat.routes"));
 
 //Reports
 app.use("/api/RptTransferRegister", require("./modules/Reports/RptTransferRegister/transferRegister.route"));
