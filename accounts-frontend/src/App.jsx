@@ -120,6 +120,7 @@ import FrmInterestRtMst from "./pages/Master/FrmInterestRtMst";
 import FrmInterestRtList from "./pages/Master/FrmInterestRtList";
 import FrmEmployeeUpdateList from "./pages/Master/FrmEmployeeUpdateList";
 import FrmBroadSheetCreditReport from "./pages/Reports/FrmBroadSheetCreditReport";
+import FrmReceiptKarjat from "./pages/Transaction/FrmReceiptKarjat";
 
 const Home = () => <Button>Click me</Button>;
 
@@ -557,6 +558,10 @@ export const router = createBrowserRouter([
       {
         path: "/Transactions/FrmReceiptJcmc",
         element: <FrmReceiptJcmc />,
+      },
+      {
+        path: "/Transactions/FrmReceiptKarjat",
+        element: <FrmReceiptKarjat />,
       },
       {
         path: "/Transactions/FrmReceiptNew",
