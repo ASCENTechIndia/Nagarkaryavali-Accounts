@@ -11,17 +11,17 @@ const getBudgetReportService = async ({ ulbId }) => {
   return data;
 };
 
-const getDcpsReportService = async ({ ulbId, dcpsNo,slipNo, yearId }) => {
+const getDcpsReportService = async ({ ulbId, dcpsNo,slipNo, yearId, employee_ID }) => {
   if (!ulbId) throw new AppError("ulbId required", 400);
   //if (!dcpsNo) throw new AppError("dcpsNo required", 400);
   if (!yearId) throw new AppError("yearId required", 400);
-  if (!dcpsNo && !slipNo) throw new AppError("Either dcpsNo or slipNo is required", 400);
+  if (!employee_ID && !slipNo) throw new AppError("Either employee_ID or slipNo is required", 400);
 
   const data = await repo.getDcpsReportData({
     ulbId,
     dcpsNo: dcpsNo || null,
     slipNo: slipNo || null,
-    //slipNo,
+    employee_ID: employee_ID || null,
     yearId,
   });
 

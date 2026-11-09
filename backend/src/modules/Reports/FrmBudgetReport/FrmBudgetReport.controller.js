@@ -61,13 +61,9 @@ exports.getDcpsReportData = asyncHandler(async (req, res) => {
   });
 });
 exports.getDcpsInterestPDF = asyncHandler(async (req, res) => {
-  const { ulbId, dcpsNo, slipNo,yearId } = req.body;
+  const { ulbId, dcpsNo, slipNo, yearId, employee_ID } = req.body;
 
-  // if (!ulbId || !dcpsNo || !yearId) {
-  //   throw new AppError("ulbId, dcpsNo and yearId are required", 400);
-  // }
-
-  if (!ulbId || !yearId || (!dcpsNo && !slipNo)) {
+  if (!ulbId || !yearId || (!employee_ID && !slipNo)) {
     throw new AppError(
       "ulbId, yearId and either dcpsNo or slipNo are required",
       400
@@ -79,6 +75,7 @@ exports.getDcpsInterestPDF = asyncHandler(async (req, res) => {
     dcpsNo,
     yearId,
     slipNo,
+    employee_ID,
   });
 
   const pdf = await generateDcpsInterestPDF({ data });

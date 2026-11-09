@@ -298,7 +298,7 @@ const FrmDCPSnoGenaretionMst = () => {
       <Card className="border shadow-sm">
         <CardHeader className="border-b">
           <CardTitle className="text-lg font-semibold">
-            DCPS No Generation - डीसीपीएस क्रमांक निर्मिती
+            DCPS No Search
           </CardTitle>
         </CardHeader>
 

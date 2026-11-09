@@ -52,7 +52,7 @@ const getBudgetReportData = async ({ ulbId }) => {
   return result.rows;
 };
 
-const getDcpsReportData = async ({ ulbId, dcpsNo,slipNo, yearId }) => {
+const getDcpsReportData = async ({ ulbId, dcpsNo,slipNo, yearId, employee_ID }) => {
   const query = `
    WITH DCPS_DATA AS
 (
@@ -98,7 +98,14 @@ const getDcpsReportData = async ({ ulbId, dcpsNo,slipNo, yearId }) => {
 
     WHERE N.NUM_DCPSNOGEN_ULBID = :ulbId
     AND ( :dcpsNo IS NULL OR N.VAR_DCPSNOGEN_DCPSNO = :dcpsNo )
-    AND ( :slipNo IS NULL OR D.NUM_DCPS_SLIPID      = :slipNo )
+    AND (
+          :slipNo IS NULL
+          OR D.NUM_DCPS_SLIPID = :slipNo
+          OR N.NUM_DCPSNOGEN_EMPID = :slipNo
+        )
+    AND ( :employee_ID IS NULL
+          OR N.NUM_DCPSNOGEN_EMPID = :employee_ID
+          OR D.NUM_DCPS_SLIPID = :employee_ID )
 ),
 
 DCPS_BALANCE AS
@@ -163,11 +170,10 @@ ORDER BY SALARY_DATE NULLS FIRST, DCPS_ID
 
   const result = await executeQuery(query, {
     ulbId,
-    // dcpsNo,
     yearId,
-    //slipNo,
     dcpsNo: dcpsNo || null,
     slipNo: slipNo || null,
+    employee_ID: employee_ID || null,
   });
 
   if (!result.success) {
