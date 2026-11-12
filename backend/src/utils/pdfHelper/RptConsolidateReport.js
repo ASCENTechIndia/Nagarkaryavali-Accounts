@@ -220,6 +220,18 @@ const DEPARTMENT_ACCOUNT_MAP = {
   "मिळकत व्यवस्थापन": {
     accountCodes: ["01015200001"],
   },
+  "माहितीचा अधिकार शुल्क जमा (All Dept.consolidated amount)": {
+    accountCodes: ["01015200001"],
+  },
+  "फॉर्म फी/निविदा फॉर्म फी (All Dept.consolidated amount)": {
+    accountCodes: ["11116100001"],
+  },
+  "इतर जमा (किरकोळ उत्पन्न) (All Dept.consolidated amount)": {
+    accountCodes: ["04319900001"],
+  },
+  "बोअर बदल फी/बोरिंग फी (All Dept.consolidated amount)": {
+    accountCodes: ["32019900001"],
+  },
 
   "मोठा निवासी (150 चौ.मी.)": {
     accountCodes: ["91037190002"],
@@ -508,13 +520,18 @@ const RptConsolidateReportPDFHelper = async ({
     const dept38 = getDepartmentTotal(transactions, "जाहिरात");
     const dept39 = getDepartmentTotal(transactions, "विवाह नोंदणी");
     const dept40 = getDepartmentTotal(transactions, "मिळकत व्यवस्थापन");
+    const dept41 = getDepartmentTotal(transactions, "माहितीचा अधिकार शुल्क जमा (All Dept.consolidated amount)");
+    const dept42 = getDepartmentTotal(transactions, "फॉर्म फी/निविदा फॉर्म फी (All Dept.consolidated amount)");
+    const dept43 = getDepartmentTotal(transactions, "इतर जमा (किरकोळ उत्पन्न) (All Dept.consolidated amount)");
+    const dept44 = getDepartmentTotal(transactions, "बोअर बदल फी/बोरिंग फी (All Dept.consolidated amount)");
 
-    const total29to40 =
+    const total29to44 =
       dept29.total + dept30.total + dept31.total + dept32.total +
       dept33.total + dept34.total + dept35.total + dept36.total +
-      dept37.total + dept38.total + dept39.total + dept40.total;
+      dept37.total + dept38.total + dept39.total + dept40.total + 
+      dept41.total + dept42.total + dept43.total + dept44.total ;
 
-    const totalGroup2 = total5to28 + total29to40;
+    const totalGroup2 = total5to28 + total29to44;
 
     // "एकूण २" and "एकूण ३" logic from reference:
     // एकूण २ = 183531.00 = total5to28 + total29to40 (totalGroup2)
@@ -604,7 +621,11 @@ const RptConsolidateReportPDFHelper = async ({
       amount38: formatNumber(dept38.total),
       amount39: formatNumber(dept39.total),
       amount40: formatNumber(dept40.total),
-      total29to40: formatNumber(total29to40),
+      amount41: formatNumber(dept41.total),
+      amount42: formatNumber(dept42.total),
+      amount43: formatNumber(dept43.total),
+      amount44: formatNumber(dept44.total),
+      total29to44: formatNumber(total29to44),
       totalGroup2: formatNumber(totalGroup2),
 
       amountExtra1: formatNumber(amountExtra1),

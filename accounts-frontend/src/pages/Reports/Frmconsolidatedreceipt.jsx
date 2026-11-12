@@ -504,7 +504,7 @@ const Frmconsolidatedreceipt = () => {
 
       Swal.fire({
         text:
-          error?.response?.data?.message ||
+          error?.response?.data?.error ||
           error?.message ||
           "Failed to generate report",
         confirmButtonColor: "#1e3a8a",
