@@ -130,68 +130,17 @@ const fetchReceiptList = async () => {
 navigate("/Transactions/FrmReceiptKarjat");
   };
 
-  // const handleSelect = async (receiptNo) => {
-  //   try {
-  //     Swal.fire({
-  //       title: "Loading...",
-  //       allowOutsideClick: false,
-  //       didOpen: () => {
-  //         Swal.showLoading();
-  //       },
-  //     });
-
-  //     const res = await axios.post(
-  //       `${BASE_URL}/api/Receipt/usermapdetails`,
-  //       {
-  //         userId: user?.userId,
-  //       },
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${user.token}`,
-  //         },
-  //       },
-  //     );
-
-  //     const count = res.data?.data?.count || 0;
-  //     if (count > 0 && userId === "JCMCSC01") {
-  //       navigate("/Transactions/FrmReceiptJcmcSC", {
-  //         state: {
-  //           mode: "EDIT",
-  //           receiptNo,
-  //           userMapData: res.data.data.data,
-  //         },
-  //       });
-  //     } else if (count > 0) {
-  //       navigate("/Transactions/FrmReceiptJcmc", {
-  //         state: {
-  //           mode: "EDIT",
-  //           receiptNo,
-  //           userMapData: res.data.data.data,
-  //         },
-  //       });
-  //     } else {
-  //       navigate("/Transactions/FrmReceiptKarjat", {
-  //         state: {
-  //           mode: "EDIT",
-  //           receiptNo,
-  //         },
-  //       });
-  //     }
-  //   } catch (err) {
-  //     console.error("User Map Details Error:", err);
-
-  //     Swal.fire({
-  //       icon: "error",
-  //       text: "Failed to fetch user mapping details",
-  //       confirmButtonColor: "#1e3a8a",
-  //     });
-  //   } finally {
-  //     Swal.close();
-  //   }
-  // };
+  const handleSelect = (receiptNo) => {
+    navigate("/Transactions/FrmReceiptKarjat", {
+      state: {
+        mode: "EDIT",
+        receiptNo: receiptNo,
+      },
+    });
+  };
 
   const headers = [
-    // "निवडा",
+    "निवडा",
     "रि. नं.",
     "तारीख",
     "चलन/पावती क्र.",
@@ -203,7 +152,7 @@ navigate("/Transactions/FrmReceiptKarjat");
   ];
 
   const keyMapping = {
-    // निवडा: "select",
+    निवडा: "select",
     "रि. नं.": "receiptNo",
     तारीख: "date",
     "चलन/पावती क्र.": "voucherNo",
@@ -247,16 +196,16 @@ navigate("/Transactions/FrmReceiptKarjat");
       {({ values, setFieldValue }) => {
         const tableRows = filteredData.map((row) => {
           return {
-            // select: (
-            //   <Button
-            //     variant="link"
-            //     size="sm"
-            //     className="text-blue-700 px-0"
-            //     onClick={() => handleSelect(row.receiptNo)}
-            //   >
-            //     निवडा
-            //   </Button>
-            // ),
+            select: (
+              <Button
+                variant="link"
+                size="sm"
+                className="text-blue-700 px-0"
+                onClick={() => handleSelect(row.receiptNo)}
+              >
+                निवडा
+              </Button>
+            ),
             ...row,
           };
         });
@@ -288,13 +237,13 @@ navigate("/Transactions/FrmReceiptKarjat");
                 {!loading && tableData.length > 0 && (
                     <>
                       {/* ---- NEW: Generic Search Field above table ---- */}
-                      <div className="flex justify-end">
+                      <div className="flex justify-start">
                         <Input
                           type="text"
                           placeholder="शोधा... (Search)"
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
-                          className="w-full sm:w-72 h-9"
+                          className="w-full sm:w-100 h-9"
                         />
                       </div>
 

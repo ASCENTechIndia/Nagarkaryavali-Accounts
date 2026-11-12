@@ -224,6 +224,35 @@ const getReceiptListKarjat = async ({
   return await executeQuery(query, bindParams);
 };
 
+const getReceiptHeaderByRefNo = async (refNo, ulbId) => {
+  try {
+    const query = `
+      SELECT 
+        SANDHARBHNO, RECTYPEID, RECDATE, SANDHARBHDATE, DWAREADA, MOBNO, EMAILID, 
+        PRASHASKIYAVIBHAGID, ANUDANNO, NARRATION_REMARK, RECMODEID, BANKID, BRANCHID, 
+        CHEQUENO, CHEQUEDATE, MICRCODE, IFSCCODE
+      FROM vw_receipt_krj 
+      WHERE ULBID = :ulbId AND REFNO = :refNo
+    `;
+    const result = await executeQuery(query, { ulbId, refNo });
+    return result;
+  } catch (err) {
+    throw err;
+  }
+};
+
+const getReceiptDetailsByRefNo = async (refNo) => {
+  try {
+    const query = `
+      select * from vw_receipt_det_krj where num_receiptdet_refno = :refNo
+    `;
+    const result = await executeQuery(query, { refNo });
+    return result;
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   getReceiptTypes,
   getReceiptAccounts,
@@ -232,5 +261,7 @@ module.exports = {
   getPayModeAccounts,
   getAccountDetailsByAccNo,
   getBankBranchByIfsc,
-  getReceiptListKarjat
+  getReceiptListKarjat,
+  getReceiptHeaderByRefNo,
+  getReceiptDetailsByRefNo
 };

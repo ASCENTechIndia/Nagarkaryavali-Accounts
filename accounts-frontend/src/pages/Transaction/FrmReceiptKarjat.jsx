@@ -143,8 +143,10 @@ const FrmReceiptKarjat = () => {
       );
 
       const formatted = (res.data?.data?.rows || []).map((item) => ({
-        value: item.NUM_RECACCCONFIG_ACCNO?.toString() || "",
+        // value: item.NUM_RECACCCONFIG_ACCNO?.toString() || "",
+        value: `${item.NUM_RECACCCONFIG_ACCNO}-${item.ACCOUNTSEARCHNAME}`, 
         label: item.ACCOUNTSEARCHNAME || "",
+        accno: item.NUM_RECACCCONFIG_ACCNO?.toString() || "",
       }));
 
       setLedgerOptions(formatted);
@@ -185,12 +187,45 @@ const FrmReceiptKarjat = () => {
     }
   };
 
+  // useEffect(() => {
+  //    if (ulbId) {
+  //     fetchZones();
+  //     fetchReceiptTypes();
+  //     fetchBanks();
+  //   }
+  // }, [ulbId]);
+
   useEffect(() => {
-     if (ulbId) {
-      fetchZones();
-      fetchReceiptTypes();
-      fetchBanks();
-    }
+    const fetchInitialData = async () => {
+      if (!ulbId) return;
+
+      Swal.fire({
+        title: "Loading...",
+        text: "Please wait while we load the data",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      try {
+        await Promise.all([
+          fetchZones(),
+          fetchReceiptTypes(),
+          fetchBanks(),
+        ]);
+      } catch (err) {
+        console.error("Error loading initial data:", err);
+        Swal.fire({
+          text: "डेटा लोड करताना त्रुटी आली",
+          confirmButtonColor: "#1e3a8a",
+        });
+      } finally {
+        Swal.close();
+      }
+    };
+
+    fetchInitialData();
   }, [ulbId]);
 
   const handleAddRow = (values, setFieldValue) => {
@@ -220,7 +255,8 @@ const FrmReceiptKarjat = () => {
     );
 
     const newSavedRow = {
-      subLedger: values.subLedger,
+      // subLedger: values.subLedger,
+      subLedger: selectedHead?.accno || "",
       headName: selectedHead?.label || "",
       amount: values.rowAmount,
     };
@@ -240,7 +276,7 @@ const FrmReceiptKarjat = () => {
   };
 
   const handleIfscChange = async (e, setFieldValue) => {
-    const ifsc = e.target.value.toUpperCase();
+    const ifsc = e.target.value.toUpperCase().trim();
     setFieldValue("ifscCode", ifsc);
 
     if (ifsc.length === 11) {
@@ -259,6 +295,8 @@ const FrmReceiptKarjat = () => {
         if (data && data.bank && data.branch) {
           setFieldValue("bankName", data.bank.BANKNAME || "");
           setFieldValue("branchName", data.branch.BRANCHNAME || "");
+          setFieldValue("bankId", data.bank.BANKID?.toString() || "");
+          setFieldValue("branchId", data.branch.BRANCHID?.toString() || "");
         } else {
           Swal.fire({
             text: "या IFSC कोडची माहिती सापडली नाही. कृपया पुन्हा तपासा.",
@@ -286,7 +324,8 @@ const FrmReceiptKarjat = () => {
     
     const finalTableData = hasDraftData 
       ? [...tableData.slice(0, -1), { 
-          subLedger: values.subLedger, 
+          // subLedger: values.subLedger, 
+          subLedger: selectedHead?.accno || "",
           headName: selectedHead?.label || "", 
           amount: values.rowAmount 
         }] 
@@ -459,7 +498,7 @@ const FrmReceiptKarjat = () => {
 
       const paramStr = [
         TransDate, 
-        values.pavtiPrakar, 
+        InMode == 2 ? RefNo :values.pavtiPrakar,
         recModeId, 
         values.prashasakiyaVibhag || "0", 
         0, 
@@ -468,7 +507,7 @@ const FrmReceiptKarjat = () => {
         InMode, 
         RefNo, 
         values.prashasakiyaVibhag || "", 
-        values.shera || "", 
+        InMode == 2 ? "" : (values.shera || ""), 
         1,  
         1,  
         totalAmount,
@@ -479,8 +518,14 @@ const FrmReceiptKarjat = () => {
         values.mobaliKramank || "",
         values.anudanKramank || "1",
         recModeId,
-        values.directBankName || "0",
-        values.directAccountNo || "0",
+        // values.directBankName || "0",
+        // values.directAccountNo || "0",
+        recModeId == 2 
+          ? (values.bankId || "0") 
+          : (values.directBankName || "0"),
+        recModeId == 2 
+          ? (values.branchId || "0") 
+          : (values.directAccountNo || "0"),
         String(values.chequeinstrumentNumber || values.instrumentNumber || "").substring(0, 10),
         values.chequeinstrumentDate ? formatDate(values.chequeinstrumentDate) : 
         values.instrumentDate ? formatDate(values.instrumentDate) : ""
@@ -572,6 +617,8 @@ const FrmReceiptKarjat = () => {
     ifscCode: "",
     bankName: "",
     branchName: "",
+    bankId: "",
+    branchId: "", 
     chequeinstrumentNumber: "",
     chequeinstrumentDate: "",
 
@@ -607,6 +654,86 @@ const FrmReceiptKarjat = () => {
             setBankAccounts([]);
           }
         }, [values.directBankName]);
+
+        useEffect(() => {
+          const fetchReceiptData = async () => {
+            if (!refNo || !ulbId) return;
+            if (receiptTypes.length === 0 || zones.length === 0) return;
+
+            Swal.fire({
+              title: "Loading Receipt Data...",
+              allowOutsideClick: false,
+              didOpen: () => Swal.showLoading(),
+            });
+
+            try {
+              const headerRes = await axios.post(
+                `${BASE_URL}/api/FrmReceiptKarjat/receipt-header`,
+                { refNo: Number(refNo), ulbId: Number(ulbId) },
+                { headers: { Authorization: `Bearer ${token}` } }
+              );
+
+              const header = headerRes.data?.data?.rows?.[0];
+              if (header) {
+                setFieldValue("sandarbhaKramank", header.SANDHARBHNO || "");
+                setFieldValue("pavtiPrakar", String(header.RECTYPEID || ""));
+                setFieldValue("pavtiDinank", header.RECDATE ? new Date(header.RECDATE) : null);
+                setFieldValue("sandarbhaDinank", header.SANDHARBHDATE ? new Date(header.SANDHARBHDATE) : null);
+                setFieldValue("dvareAda", header.DWAREADA || "");
+                setFieldValue("mobaliKramank", header.MOBNO?.toString() || "");
+                setFieldValue("emailAddress", header.EMAILID || "");
+                setFieldValue("prashasakiyaVibhag", String(header.PRASHASKIYAVIBHAGID || ""));
+                setFieldValue("anudanKramank", String(header.ANUDANNO || ""));
+                setFieldValue("shera", header.NARRATION_REMARK || "");
+
+                const recModeId = header.RECMODEID;
+                const modeMappingReverse = { 1: "rokh", 2: "dhanadesh", 3: "dd", 4: "directBank" };
+                const modeString = modeMappingReverse[recModeId] || "rokh";
+                setFieldValue("bharnyachePrakar", modeString);
+
+                if (header.IFSCCODE) {
+                  setFieldValue("ifscCode", header.IFSCCODE);
+                  handleIfscChange({ target: { value: header.IFSCCODE } }, setFieldValue);
+                }
+
+                if (modeString === "directBank") {
+                  setFieldValue("directBankName", header.BANKID && header.BANKID !== 0 ? String(header.BANKID) : "");
+                  setFieldValue("directAccountNo", header.BRANCHID && header.BRANCHID !== 0 ? String(header.BRANCHID) : "");
+                  setFieldValue("instrumentNumber", header.CHEQUENO || "");
+                  setFieldValue("instrumentDate", header.CHEQUEDATE ? new Date(header.CHEQUEDATE) : null);
+                } else {
+                  setFieldValue("chequeinstrumentNumber", header.CHEQUENO || "");
+                  setFieldValue("chequeinstrumentDate", header.CHEQUEDATE ? new Date(header.CHEQUEDATE) : null);
+                }
+              }
+
+              const detailsRes = await axios.post(
+                `${BASE_URL}/api/FrmReceiptKarjat/receipt-details`,
+                { refNo: Number(refNo) },
+                { headers: { Authorization: `Bearer ${token}` } }
+              );
+
+              const details = detailsRes.data?.data?.rows || [];
+              console.log("details: ", details)
+              if (details.length > 0) {
+                const formattedTable = details.map((item) => ({
+                  subLedger: item.NUM_RECACCCONFIG_ACCNO?.toString() || "",
+                  headName: item.ACCOUNTSEARCHNAME || "",
+                  amount: item.NUM_RECEIPTDET_AMOUNT || "",
+                }));
+                setTableData([...formattedTable, { subLedger: "", headName: "", amount: "" }]);
+              } else {
+                setTableData([{ subLedger: "", headName: "", amount: "" }]);
+              }
+            } catch (err) {
+              console.error("Error fetching receipt data:", err);
+            } finally {
+              Swal.close();
+            }
+          };
+
+          fetchReceiptData();
+        }, [refNo, ulbId, receiptTypes, zones]);
 
         return (
           <Form>
@@ -795,7 +922,7 @@ const FrmReceiptKarjat = () => {
                       पावती प्रवेशिका सारणी
                     </h3>
 
-                    <div className="rounded-md border border-gray-300 overflow-hidden">
+                    <div className="rounded-md border border-gray-300">
                       <Table className="w-full max-md:min-w-380 [&_thead_tr:hover]:bg-[#083c76]">
                         <TableHeader className="bg-[#083c76]">
                           <TableRow>
@@ -961,7 +1088,7 @@ const FrmReceiptKarjat = () => {
                             <Input
                               name="bankName"
                               value={values.bankName}
-                              readOnly
+                              disabled
                               className="w-full h-9"
                             />
                           </div>
@@ -973,7 +1100,7 @@ const FrmReceiptKarjat = () => {
                             <Input
                               name="branchName"
                               value={values.branchName}
-                              readOnly
+                              disabled
                               className="w-full h-9"
                             />
                           </div>
@@ -1161,7 +1288,7 @@ const FrmReceiptKarjat = () => {
                       type="button"
                       variant="outline"
                       className="border border-gray-400 text-black hover:bg-gray-100"
-                      onClick={() => navigate("/Transactions/FrmReceiptList")}
+                      onClick={() => navigate("/Transactions/FrmReceiptListKarjat")}
                     >
                       बंद करा
                     </Button>

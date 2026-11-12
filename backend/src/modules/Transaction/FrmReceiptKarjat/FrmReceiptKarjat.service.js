@@ -75,6 +75,16 @@ const getReceiptListKarjatService = async (body) => {
   });
 };
 
+const getReceiptHeaderByRefNoService = async (refNo, ulbId) => {
+  const data = await repo.getReceiptHeaderByRefNo(refNo, ulbId);
+  return { success: true, data: data };
+};
+
+const getReceiptDetailsByRefNoService = async (refNo) => {
+  const data = await repo.getReceiptDetailsByRefNo(refNo);
+  return { success: true, data: data };
+};
+
 module.exports = {
   getReceiptTypesService,
   getReceiptAccountsService,
@@ -83,5 +93,7 @@ module.exports = {
   getPayModeAccountsService,
   getAccountDetailsByAccNoService,
   getBankBranchByIfscService,
-  getReceiptListKarjatService
+  getReceiptListKarjatService,
+  getReceiptHeaderByRefNoService,
+  getReceiptDetailsByRefNoService
 };

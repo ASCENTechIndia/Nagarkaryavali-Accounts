@@ -76,6 +76,25 @@ const getReceiptListKarjat = asyncHandler(async (req, res) => {
   res.json(data);
 });
 
+const getReceiptHeaderByRefNo = asyncHandler(async (req, res) => {
+  const { refNo, ulbId } = req.body;
+  if (!refNo || !ulbId) {
+    return res.status(400).json({ success: false, message: "refNo and ulbId are required" });
+  }
+  const response = await service.getReceiptHeaderByRefNoService(refNo, ulbId);
+  res.json(response);
+});
+
+const getReceiptDetailsByRefNo = asyncHandler(async (req, res) => {
+  const { refNo } = req.body;
+  if (!refNo) {
+    return res.status(400).json({ success: false, message: "refNo is required" });
+  }
+  const response = await service.getReceiptDetailsByRefNoService(refNo);
+  res.json(response);
+});
+
+
 module.exports = {
   getReceiptTypes,
   getReceiptAccounts,
@@ -84,5 +103,7 @@ module.exports = {
   getPayModeAccounts,
   getAccountDetailsByAccNo,
   getBankBranchByIfsc,
-  getReceiptListKarjat
+  getReceiptListKarjat,
+  getReceiptHeaderByRefNo,
+  getReceiptDetailsByRefNo
 };
