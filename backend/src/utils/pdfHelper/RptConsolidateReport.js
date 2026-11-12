@@ -556,6 +556,27 @@ const RptConsolidateReportPDFHelper = async ({
     const dept43 = getDepartmentTotal(transactions, "इतर जमा (किरकोळ उत्पन्न) (All Dept.consolidated amount)");
     const dept44 = getDepartmentTotal(transactions, "बोअर बदल फी/बोरिंग फी (All Dept.consolidated amount)");
 
+    // Debug consolidated amounts 41-44
+console.log("========== CONSOLIDATED AMOUNTS ==========");
+
+[dept41, dept42, dept43, dept44].forEach((dept, index) => {
+  console.log(`Amount ${index + 41}:`, {
+    total: dept.total,
+    deptId: dept.deptId,
+    accountCodes: dept.accountCodes,
+  });
+
+  const matchedTransactions = transactions.filter((t) =>
+    dept.accountCodes.includes(
+      String(t.OBJECTCODE ?? t.objectcode ?? "").trim()
+    )
+  );
+
+  console.log(`Matched Transactions ${index + 41}:`, matchedTransactions);
+});
+
+console.log("==========================================");
+
     const total29to44 =
       dept29.total + dept30.total + dept31.total + dept32.total +
       dept33.total + dept34.total + dept35.total + dept36.total +
