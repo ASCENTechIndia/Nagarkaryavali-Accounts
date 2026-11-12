@@ -70,6 +70,12 @@ const getBankBranchByIfsc = asyncHandler(async (req, res) => {
   res.json(response);
 })
 
+
+const getReceiptListKarjat = asyncHandler(async (req, res) => {
+  const data = await service.getReceiptListKarjatService(req.body);
+  res.json(data);
+});
+
 module.exports = {
   getReceiptTypes,
   getReceiptAccounts,
@@ -77,5 +83,6 @@ module.exports = {
   getPayModes,
   getPayModeAccounts,
   getAccountDetailsByAccNo,
-  getBankBranchByIfsc
+  getBankBranchByIfsc,
+  getReceiptListKarjat
 };

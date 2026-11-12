@@ -10,5 +10,6 @@ router.get("/paymodes", auth(), controller.getPayModes);
 router.post("/paymode-accounts", auth(), controller.getPayModeAccounts);
 router.post("/account-details", auth(), controller.getAccountDetailsByAccNo);
 router.post("/bank-branch-by-ifsc", auth(), controller.getBankBranchByIfsc);
+router.post("/receipt-Karjat-list",  controller.getReceiptListKarjat);
 
 module.exports = router;
