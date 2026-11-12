@@ -70,125 +70,121 @@ const FrmBankBranchMst = () => {
     }
   };
 
- const fetchDistrictList = async (stateId) => {
-  try {
-    if (!stateId) {
+  const fetchDistrictList = async (stateId) => {
+    try {
+      if (!stateId) {
+        setDistrictList([]);
+        return [];
+      }
+
+      const res = await axios.get(
+        `${BASE_URL}/api/CityList/districtbystate?stateId=${stateId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      const list = res.data?.data?.list || [];
+      setDistrictList(list);
+
+      return list;
+    } catch (err) {
+      console.error("District List Error:", err);
       setDistrictList([]);
       return [];
     }
+  };
 
-    const res = await axios.get(
-      `${BASE_URL}/api/CityList/districtbystate?stateId=${stateId}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
+  const fetchCityList = async (districtId) => {
+    try {
+      if (!districtId) {
+        setCityList([]);
+        return [];
       }
-    );
 
-    const list = res.data?.data?.list || [];
-    setDistrictList(list);
+      const res = await axios.get(
+        `${BASE_URL}/api/CityList/citybydistrict?districtId=${districtId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
-    return list;
-  } catch (err) {
-    console.error("District List Error:", err);
-    setDistrictList([]);
-    return [];
-  }
-};
+      console.log("FULL CITY API RESPONSE:", res.data);
 
- const fetchCityList = async (districtId) => {
-  try {
-    if (!districtId) {
+      const list = res.data?.data?.list || [];
+
+      console.log("CITY LIST:", list);
+      console.log(
+        "CITY ID 42 FOUND:",
+        list.find((city) => String(city.CITYID).trim() === "42"),
+      );
+
+      setCityList(list);
+      return list;
+    } catch (err) {
+      console.error("City List Error:", err);
       setCityList([]);
       return [];
     }
-
-    const res = await axios.get(
-      `${BASE_URL}/api/CityList/citybydistrict?districtId=${districtId}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-
-    console.log("FULL CITY API RESPONSE:", res.data);
-
-    const list = res.data?.data?.list || [];
-
-    console.log("CITY LIST:", list);
-    console.log(
-      "CITY ID 42 FOUND:",
-      list.find((city) => String(city.CITYID).trim() === "42")
-    );
-
-    setCityList(list);
-    return list;
-  } catch (err) {
-    console.error("City List Error:", err);
-    setCityList([]);
-    return [];
-  }
-};
+  };
 
   const fetchBranchById = async (id, setValues) => {
-  try {
-    Swal.fire({
-      title: "Loading ...",
-      allowOutsideClick: false,
-      didOpen: () => Swal.showLoading(),
-    });
+    try {
+      Swal.fire({
+        title: "Loading ...",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      });
 
-    const res = await axios.get(
-      `${BASE_URL}/api/Bankbranch/branch/${id}`,
-      {
+      const res = await axios.get(`${BASE_URL}/api/Bankbranch/branch/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const apiData = res.data?.data?.data;
+
+      if (apiData) {
+        const stateId = String(apiData.STATE || "");
+        const districtId = String(apiData.DISTRICT || "");
+        const cityId = String(apiData.CITY || "");
+
+        // Fetch dependent dropdown data
+        await fetchDistrictList(stateId);
+
+        const cities = await fetchCityList(districtId);
+
+        // Verify city exists in returned list
+        const selectedCity = cities.find(
+          (city) => String(city.CITYID) === cityId,
+        );
+
+        console.log("Selected City:", selectedCity);
+
+        // Populate Formik
+        setValues({
+          bankName: String(apiData.BANKID || ""),
+          branchName: apiData.BRANCHNAME?.trim() || "",
+          micr: apiData.MICR || "",
+          ifsc: apiData.IFSC || "",
+          branchAddress: apiData.BRANCHADDRESS || "",
+          state: stateId,
+          district: districtId,
+          city: selectedCity ? String(selectedCity.CITYID) : "",
+          branchMobileNo: String(apiData.BRANCHMOBILE || ""),
+        });
       }
-    );
+    } catch (err) {
+      console.error("Autofill Error:", err);
 
-    const apiData = res.data?.data?.data;
-
-    if (apiData) {
-     const stateId = String(apiData.STATE || "");
-const districtId = String(apiData.DISTRICT || "");
-const cityId = String(apiData.CITY || "");
-
-// Fetch dependent dropdown data
-await fetchDistrictList(stateId);
-
-const cities = await fetchCityList(districtId);
-
-// Verify city exists in returned list
-const selectedCity = cities.find(
-  (city) => String(city.CITYID) === cityId
-);
-
-console.log("Selected City:", selectedCity);
-
-// Populate Formik
-setValues({
-  bankName: String(apiData.BANKID || ""),
-  branchName: apiData.BRANCHNAME?.trim() || "",
-  micr: apiData.MICR || "",
-  ifsc: apiData.IFSC || "",
-  branchAddress: apiData.BRANCHADDRESS || "",
-  state: stateId,
-  district: districtId,
-  city: selectedCity ? String(selectedCity.CITYID) : "",
-  branchMobileNo: String(apiData.BRANCHMOBILE || ""),
-});
+      Swal.fire({
+        text: err?.response?.data?.message || "Failed to fetch branch details",
+      });
+    } finally {
+      Swal.close();
     }
-  } catch (err) {
-    console.error("Autofill Error:", err);
-
-    Swal.fire({
-      text: err?.response?.data?.message || "Failed to fetch branch details",
-    });
-  } finally {
-    Swal.close();
-  }
-};
+  };
 
   const handleSubmit = async (values) => {
     try {
-
       const payload = {
         bankId: Number(values.bankName),
         branchId: Number(data?.id) || null,
@@ -251,16 +247,16 @@ setValues({
   }, []);
 
   useEffect(() => {
-  if (
-    mode === 2 &&
-    data?.id &&
-    bankList.length > 0 &&
-    stateList.length > 0 &&
-    formikRef.current
-  ) {
-    fetchBranchById(data.id, formikRef.current.setValues);
-  }
-}, [mode, data?.id, bankList.length, stateList.length]);
+    if (
+      mode === 2 &&
+      data?.id &&
+      bankList.length > 0 &&
+      stateList.length > 0 &&
+      formikRef.current
+    ) {
+      fetchBranchById(data.id, formikRef.current.setValues);
+    }
+  }, [mode, data?.id, bankList.length, stateList.length]);
 
   return (
     <Formik
@@ -270,7 +266,6 @@ setValues({
       onSubmit={handleSubmit}
     >
       {({ values, handleChange, setFieldValue, setValues }) => {
-
         return (
           <Form>
             <motion.div
@@ -319,6 +314,7 @@ setValues({
                         value={values.ifsc}
                         onChange={handleChange}
                         className="w-full sm:flex-1"
+                        maxLength={11}
                       />
                     </div>
                   </div>
@@ -329,8 +325,13 @@ setValues({
                       <Input
                         name="micr"
                         value={values.micr}
-                        onChange={handleChange}
+                        // onChange={handleChange}
                         className="w-full sm:flex-1"
+                        maxLength={9}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, "");
+                          setFieldValue("micr", val);
+                        }}
                       />
                     </div>
 
@@ -424,34 +425,39 @@ setValues({
                       <Label className="sm:w-40">शहर :</Label>
 
                       <Select
-  value={values.city || ""}
-  onValueChange={(v) => setFieldValue("city", v)}
-  disabled={!values.district}
->
-  <SelectTrigger className="w-full sm:flex-1">
-    <SelectValue placeholder="-- पर्याय निवडा --" />
-  </SelectTrigger>
+                        value={values.city || ""}
+                        onValueChange={(v) => setFieldValue("city", v)}
+                        disabled={!values.district}
+                      >
+                        <SelectTrigger className="w-full sm:flex-1">
+                          <SelectValue placeholder="-- पर्याय निवडा --" />
+                        </SelectTrigger>
 
-  <SelectContent>
-    {cityList.map((city) => (
-      <SelectItem
-        key={String(city.CITYID)}
-        value={String(city.CITYID)}
-      >
-        {city.CITYNAME}
-      </SelectItem>
-    ))}
-  </SelectContent>
-</Select>
+                        <SelectContent>
+                          {cityList.map((city) => (
+                            <SelectItem
+                              key={String(city.CITYID)}
+                              value={String(city.CITYID)}
+                            >
+                              {city.CITYNAME}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                       <Label className="sm:w-40">शाखा संपर्क क्र :</Label>
                       <Input
-                      type="tel"
+                        type="tel"
                         name="branchMobileNo"
                         value={values.branchMobileNo}
-                        onChange={handleChange}
+                        // onChange={handleChange}
                         className="w-full sm:flex-1"
+                        maxLength={10}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, "");
+                          setFieldValue("branchMobileNo", val);
+                        }}
                       />
                     </div>
                   </div>

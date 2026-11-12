@@ -23,6 +23,7 @@ import {
 import ShadCNTable from "@/components/ui/table";
 import { useAuth } from "@/context/AuthContext";
 import Swal from "sweetalert2";
+import { Input } from "@/components/ui/input";
 
 const FrmBankBranchList = () => {
   const navigate = useNavigate();
@@ -34,15 +35,32 @@ const FrmBankBranchList = () => {
   const [selectedBank, setSelectedBank] = useState("");
   const [bankList, setBankList] = useState([]);
   const [tableData, setTableData] = useState([]);
+  const [search, setSearch] = useState("");
 
-  const headers = ["निवडा", "शाखेचं नाव", "आयएफएससी कोड", "एमआयसीआर कोड", "शाखेचे पत्ता"];
+  const headers = [
+    "निवडा",
+    "बँकेचे नाव",
+    "शाखेचे नाव",
+    "आयएफएससी कोड",
+    "एमआयसीआर कोड",
+    "शाखेचे पत्ता",
+    "राज्य",
+    "जिल्हा",
+    "शहर",
+    "शाखा संपर्क क्र",
+  ];
 
   const keyMapping = {
     निवडा: "select",
-    "शाखेचं नाव": "branchName",
+    "बँकेचे नाव": "bankName",
+    "शाखेचे नाव": "branchName",
     "आयएफएससी कोड": "ifsc",
     "एमआयसीआर कोड": "micr",
     "शाखेचे पत्ता": "branchAddress",
+    राज्य: "state",
+    जिल्हा: "district",
+    शहर: "city",
+    "शाखा संपर्क क्र": "branchMobileNo",
   };
 
   const fetchBankList = async () => {
@@ -108,10 +126,15 @@ const FrmBankBranchList = () => {
             निवडा
           </Button>
         ),
-        branchName: item.VAR_BRANCHMST_BRANCHNAME.trim(),
-        ifsc: item.VAR_BRANCHMST_IFSC,
+        bankName: item.VAR_BANKMST_BANKNAME || "-",
+        branchName: item.VAR_BRANCHMST_BRANCHNAME?.trim() || "-",
+        ifsc: item.VAR_BRANCHMST_IFSC || "-",
         micr: item.VAR_BRANCHMST_MICR || "-",
         branchAddress: item.VAR_BRANCHMST_ADDRESS || "-",
+        state: item.VAR_BRANCHMST_RAJYA || "-",
+        district: item.VAR_BRANCHMST_JILA || "-",
+        city: item.VAR_BRANCHMST_SAHAR || "-",
+        branchMobileNo: item.NUM_BRANCHMST_PINCODE || "-",
       }));
 
       setTableData(formatted);
@@ -178,16 +201,56 @@ const FrmBankBranchList = () => {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                <span className="sm:w-40 text-left sm:text-right font-medium text-gray-700">
+                  शोधा :
+                </span>
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full sm:flex-1 h-9"
+                />
+              </div>
             </div>
           </div>
 
-          {selectedBank && (
+          {/* {selectedBank && (
             <div className="border rounded-md bg-white overflow-x-auto">
               <ShadCNTable
                 headers={headers}
                 data={tableData}
                 keyMapping={keyMapping}
               />
+            </div>
+          )} */}
+          {selectedBank && (
+            <div className="border rounded-md bg-white overflow-x-auto">
+              {(() => {
+                const lowerSearch = search.toLowerCase();
+                
+                const filteredData = tableData.filter((row) => {
+                  return Object.keys(row).some((key) => {
+                    if (key === "select") return false;
+                    return String(row[key]).toLowerCase().includes(lowerSearch);
+                  });
+                });
+
+                if (filteredData.length === 0) {
+                  return (
+                    <div className="text-center py-10 text-gray-500 font-medium">
+                      Data not found
+                    </div>
+                  );
+                }
+
+                return (
+                  <ShadCNTable
+                    headers={headers}
+                    data={filteredData}
+                    keyMapping={keyMapping}
+                  />
+                );
+              })()}
             </div>
           )}
         </CardContent>

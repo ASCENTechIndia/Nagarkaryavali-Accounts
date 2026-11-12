@@ -27,6 +27,23 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
+import { z } from "zod";
+
+const receiptSchema = z.object({
+  emailAddress: z
+    .string()
+    .trim()
+    .refine(
+      (val) => val === "" || /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(val),
+      { message: "कृपया वैध ईमेल आयडी प्रविष्ट करा (उदा. name@example.com)" }
+    ),
+});
+
+const getLocalDateString = (date) => {
+  if (!date) return "";
+  const d = new Date(date);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
 
 const FrmReceiptKarjat = () => {
   const { user, token } = useAuth();
@@ -219,9 +236,6 @@ const FrmReceiptKarjat = () => {
 
   const handleDeleteRow = (index) => {
     if (index === tableData.length - 1) return; 
-    // const confirmDelete = window.confirm("तुम्हाला ही नोंद काढायची आहे का?");
-    // if (!confirmDelete) return;
-    
     setTableData((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -317,6 +331,37 @@ const FrmReceiptKarjat = () => {
         Swal.fire({ text: 'इन्स्ट्रुमेंट दिनांक रिक्त असू शकत नाही', confirmButtonColor: '#1e3a8a' });
         return;
       }
+      const selectedChequeDate = getLocalDateString(values.chequeinstrumentDate);
+      const todayDate = getLocalDateString(new Date());
+      
+      if (selectedChequeDate > todayDate) {
+        Swal.fire({ 
+          text: 'भविष्यातील दिनांक निवडू शकत नाही. कृपया आजचा किंवा पूर्वीचा दिनांक निवडा.', 
+          confirmButtonColor: '#1e3a8a' 
+        });
+        return;
+      }
+    }
+
+    if (values.bharnyachePrakar === "dd") {
+      if (!values.chequeinstrumentNumber) {
+        Swal.fire({ text: 'इन्स्ट्रुमेंट क्रमांक रिक्त असू शकत नाही', confirmButtonColor: '#1e3a8a' });
+        return;
+      }
+      if (!values.chequeinstrumentDate) {
+        Swal.fire({ text: 'इन्स्ट्रुमेंट दिनांक रिक्त असू शकत नाही', confirmButtonColor: '#1e3a8a' });
+        return;
+      }
+      const selectedChequeDate = getLocalDateString(values.chequeinstrumentDate);
+      const todayDate = getLocalDateString(new Date());
+      
+      if (selectedChequeDate > todayDate) {
+        Swal.fire({ 
+          text: 'भविष्यातील दिनांक निवडू शकत नाही. कृपया आजचा किंवा पूर्वीचा दिनांक निवडा.', 
+          confirmButtonColor: '#1e3a8a' 
+        });
+        return;
+      }
     }
 
     if (values.bharnyachePrakar === "directBank") {
@@ -326,6 +371,16 @@ const FrmReceiptKarjat = () => {
       }
       if (!values.instrumentDate) {
         Swal.fire({ text: 'इन्स्ट्रुमेंट दिनांक रिक्त असू शकत नाही', confirmButtonColor: '#1e3a8a' });
+        return;
+      }
+      const selectedChequeDate = getLocalDateString(values.instrumentDate);
+      const todayDate = getLocalDateString(new Date());
+      
+      if (selectedChequeDate > todayDate) {
+        Swal.fire({ 
+          text: 'भविष्यातील दिनांक निवडू शकत नाही. कृपया आजचा किंवा पूर्वीचा दिनांक निवडा.', 
+          confirmButtonColor: '#1e3a8a' 
+        });
         return;
       }
       if (!values.directBankName) {
@@ -338,8 +393,26 @@ const FrmReceiptKarjat = () => {
       }
     }
 
+    const emailResult = receiptSchema.safeParse({ emailAddress: values.emailAddress });
+    if (!emailResult.success) {
+      Swal.fire({
+        text: emailResult.error.issues[0]?.message,
+        confirmButtonColor: "#1e3a8a",
+      });
+      return;
+    }
+
     if (isSubmitting) return;
     setIsSubmitting(true);
+
+    Swal.fire({
+      title: "Saving...",
+      text: "Please wait",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
 
     try {
       const formatDate = (date) => {
@@ -461,6 +534,8 @@ const FrmReceiptKarjat = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      Swal.close();
+
       Swal.fire({
         text: res.data?.data?.message || "पावती यशस्वीरित्या जतन केली गेली!",
         confirmButtonColor: "#1e3a8a",
@@ -558,6 +633,7 @@ const FrmReceiptKarjat = () => {
                         value={values.pavtiDinank}
                         onChange={(d) => setFieldValue("pavtiDinank", d)}
                         className="w-full h-9"
+                        disabled
                       />
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
@@ -591,11 +667,12 @@ const FrmReceiptKarjat = () => {
                         <span>:</span>
                       </div>
                       <Input
-                        type="number"
+                        // type="number"
                         name="sandarbhaKramank"
                         value={values.sandarbhaKramank}
                         onChange={handleChange}
                         className="w-full h-9"
+                        maxLength={20}
                       />
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
@@ -649,6 +726,7 @@ const FrmReceiptKarjat = () => {
                         value={values.emailAddress}
                         onChange={handleChange}
                         className="w-full h-9"
+                        maxLength={30}
                       />
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
@@ -931,7 +1009,39 @@ const FrmReceiptKarjat = () => {
                         </div>
                       )}
 
-                      {values.bharnyachePrakar === "dd" && <div></div>}
+                      {values.bharnyachePrakar === "dd" && (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fadeIn">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                            <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                              <Label text="इन्स्ट्रुमेंट क्रमांक" required />
+                              <span>:</span>
+                            </div>
+                            <Input
+                              name="chequeinstrumentNumber"
+                              value={values.chequeinstrumentNumber}
+                              onChange={(e) => {
+                                const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+                                setFieldValue("chequeinstrumentNumber", val);
+                              }}
+                              maxLength={6}
+                              className="w-full h-9"
+                            />
+                          </div>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                            <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                              <Label text="इन्स्ट्रुमेंट दिनांक" required />
+                              <span>:</span>
+                            </div>
+                            <DatePicker
+                              value={values.chequeinstrumentDate}
+                              onChange={(d) =>
+                                setFieldValue("chequeinstrumentDate", d)
+                              }
+                              className="w-full h-9"
+                            />
+                          </div>
+                        </div>
+                      )}
 
                       {values.bharnyachePrakar === "directBank" && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fadeIn">
