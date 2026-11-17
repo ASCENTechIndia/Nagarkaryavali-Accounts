@@ -658,10 +658,64 @@ const getPaymentRegisterReport = async (params) => {
   }
 
   query += `
+    UNION ALL
+    SELECT
+      NULL AS VchRefNo,
+      a.date_receiptmst_trnsdate AS trnsdate,
+      a.num_receiptmst_trnsno AS transno,
+      TO_CHAR(a.num_receiptmst_refno) AS docno,
+      d.num_receiptdesc_glcode AS glcode,
+      accv.glname,
+      d.num_receiptdesc_accno AS accno,
+
+      UTL_RAW.CAST_TO_VARCHAR2(
+          HEXTORAW(REPLACE(RAWTOHEX(accv.accname), '2808DE', ''))
+      ) AS accname,
+
+      vz.zoneename AS deptname,
+      var_grampanch_grampanch AS grampanch,
+      d.num_receiptdesc_amount AS amount,
+      d.var_receiptdesc_narration AS narration,
+      var_partymst_partyname AS partyname,
+      0 AS BudgetCode,
+      accv.functioncode AS functioncode,
+      accv.objectcode AS objectcode
+
+  FROM aoac_receiptmst_def a
+
+  INNER JOIN aoac_receiptdesc_def d
+      ON a.num_receiptmst_refno = d.num_receiptdesc_refno
+
+  INNER JOIN accountview_web accv
+      ON d.num_receiptdesc_glcode = accv.glcode
+      AND d.num_receiptdesc_accno = accv.accno
+      AND accv.ulbid = a.num_receiptmst_ulbid
+
+  LEFT JOIN aoac_partymst_def p
+      ON p.num_partymst_partyid = d.num_receiptdesc_partycode
+
+  LEFT JOIN view_zone vz
+      ON vz.zoneid = a.num_receiptmst_zoneid
+
+  LEFT JOIN aoac_grampanch_def gp
+      ON gp.num_grampanch_grampanchid = a.num_receiptmst_grampanchid
+
+  WHERE TRUNC(a.date_receiptmst_trnsdate)
+            BETWEEN TO_DATE(:fromDate,'DD-MM-YYYY')
+                AND TO_DATE(:toDate,'DD-MM-YYYY')
+    AND d.num_receiptdesc_amount > 0
+    AND a.num_receiptmst_ulbid = :ulbid
+    AND a.num_receiptmst_trnsno IS NOT NULL
+  `
+
+  query += `
     ORDER BY trnsdate, transno, docno
   `;
 
-  return await executeQuery(query, bindParams);
+  console.log("Query : ", query);
+  const result = await executeQuery(query, bindParams);
+  console.log("result: ", result);
+  return result;
 };
 
 module.exports = { getPaymentRegister, getPaymentRegisterReport };
