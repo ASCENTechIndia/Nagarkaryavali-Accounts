@@ -77,7 +77,6 @@ const MonthlySummaryPDFHelper = async ({
         ),
 
         TOTAL_END_OF_MONTH: formatNumber(
-          Math.abs(row.PREVAMT || 0) +
           Math.abs(row.PREVAMT || 0)
         ),
 

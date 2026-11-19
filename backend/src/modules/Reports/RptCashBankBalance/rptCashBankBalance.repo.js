@@ -495,9 +495,11 @@ async function getDailyTransactionDetailedReport(filters) {
   let deptJoinClause = "LEFT OUTER JOIN vw_accdeptconfig m ON m.deptid = a.accdept";
   let deptGrampanchCol = "m.deptname AS grampanch";
 
-  if (ulbId == 870) {
-    deptJoinClause  = "LEFT OUTER JOIN aoac_accdept_mst m ON m.num_accdept_id = a.accdept";
-    deptGrampanchCol = "m.num_accdept_name AS grampanch";
+  if (ulbId == 870 || ulbId == 1690) {
+    // deptJoinClause  = "LEFT OUTER JOIN aoac_accdept_mst m ON m.num_accdept_id = a.accdept";
+    // deptGrampanchCol = "m.num_accdept_name AS grampanch";
+    deptJoinClause = "LEFT OUTER JOIN vw_accdeptconfig m ON m.deptid = a.accdept AND m.ulbid  = a.ulbid";
+    deptGrampanchCol = "m.deptname AS grampanch";
   }
 
   const sql = `
