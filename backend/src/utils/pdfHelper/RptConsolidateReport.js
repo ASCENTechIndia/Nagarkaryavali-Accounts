@@ -94,10 +94,15 @@ const DEPARTMENT_ACCOUNT_MAP = {
   "अर्थ विभाग (इतर किरकोळ)": {
     deptId: 5,
     accountCodes: [
-      "45414210002", "11116100001", "1015200001", "3219200001",
+      "45414210002", "1015200001", "3219200001",
       "4319900001", "3515720001", "13015890001", "3247100001",
       "7613100001", "03116200001",
     ],
+    // accountCodes: [
+    //   "45414210002", "11116100001", "1015200001", "3219200001",
+    //   "4319900001", "3515720001", "13015890001", "3247100001",
+    //   "7613100001", "03116200001",
+    // ],
   },
   "नगर रचना": {
     deptId: 23,
@@ -110,8 +115,12 @@ const DEPARTMENT_ACCOUNT_MAP = {
     deptId: 1079,
     accountCodes: [
       "62015430001", "62919000001", "13015890001", "34119900001",
-      "1015200001", "4319900001", "11116100001",
+      "1015200001", "4319900001",
     ],
+    // accountCodes: [
+    //   "62015430001", "62919000001", "13015890001", "34119900001",
+    //   "1015200001", "4319900001", "11116100001",
+    // ],
   },
 
   "मटन मार्केट": {
@@ -120,11 +129,13 @@ const DEPARTMENT_ACCOUNT_MAP = {
 
   "अतिक्रमण विभाग": {
     deptId: 19,
-    accountCodes: ["01015200001", "13015890001"],
+    accountCodes: ["13015890001"],
+    // accountCodes: ["01015200001", "13015890001"],
   },
   "फायर": {
     deptId: 10,
-    accountCodes: ["81219000001", "01015200001"],
+    accountCodes: ["81219000001" ],
+    // accountCodes: ["81219000001", "01015200001"],
   },
   "नक्कल फी (जन्म-मृत्यु)": {
     deptId: 1,
@@ -136,10 +147,15 @@ const DEPARTMENT_ACCOUNT_MAP = {
   "साने गुरुजी ग्रंथालय": {
     deptId: 1096,
     accountCodes: [
-      "52115200001", "52113100001", "01015200001",
+      "52115200001", "52113100001",
       "52115220001", "52137120001", "52115890001",
       "52115850001", "52115830001",
     ],
+    // accountCodes: [
+    //   "52115200001", "52113100001", "01015200001",
+    //   "52115220001", "52137120001", "52115890001",
+    //   "52115850001", "52115830001",
+    // ],
   },
   "नाट्यगृह भाडे + सागरपार्क भाडे": {
     // deptId: 9,
@@ -149,16 +165,22 @@ const DEPARTMENT_ACCOUNT_MAP = {
     // deptId: 7,
     accountCodes: [
       "91015710001", "31615440001", "31615440002",
-      "31015450001", "32019900001", "91037190001",
+      "31015450001", "91037190001",
     ],
+    // accountCodes: [
+    //   "91015710001", "31615440001", "31615440002",
+    //   "31015450001", "32019900001", "91037190001",
+    // ],
   },
 
   "आस्थापना": {
-    accountCodes: ["01015200001"],
+    accountCodes: [],
+    // accountCodes: ["01015200001"],
   },
   "अभिलेखा": {
     deptId: 1212,
-    accountCodes: ["03515720001", "01815790001", "01015200001"],
+    accountCodes: ["03515720001", "01815790001" ],
+    // accountCodes: ["03515720001", "01815790001", "01015200001"],
   },
   "दैनंदिन बाजार शुल्क": {
     accountCodes: ["44015200001"],
@@ -175,16 +197,22 @@ const DEPARTMENT_ACCOUNT_MAP = {
     deptId: 1482,
     accountCodes: [
       "31615210001", "91015720001", "45015620001", "91015890003",
-      "91015200002", "21015890001", "32019900001", "4319900001",
+      "91015200002", "21015890001", "4319900001",
     ],
+    // accountCodes: [
+    //   "31615210001", "91015720001", "45015620001", "91015890003",
+    //   "91015200002", "21015890001", "32019900001", "4319900001",
+    // ],
   },
   "सार्व. बांधकाम": {
     deptId: 26,
-    accountCodes: ["01015200001", "04319900001", "11116100001"],
+    accountCodes: [],
+    // accountCodes: ["01015200001", "04319900001", "11116100001"],
   },
 
   "किरकोळ वसुली इतर": {
-    accountCodes: ["01015200001"],
+    accountCodes: [],
+    // accountCodes: ["01015200001"],
   },
   "वाहनतळ": {
     accountCodes: ["25015160001"],
@@ -192,11 +220,13 @@ const DEPARTMENT_ACCOUNT_MAP = {
 
   "पाणीपुवाठा विभाग इतर": {
     deptId: 24,
-    accountCodes: ["11116100001", "01015200001", "04319900001"],
+    accountCodes: [],
+    // accountCodes: ["11116100001", "01015200001", "04319900001"],
   },
 
   "नगर रचना इतर": {
-    accountCodes: ["01015200001"],
+    accountCodes: [],
+    // accountCodes: ["01015200001"],
   },
   "TDR (T.P.)": {
     accountCodes: ["11115690001"],
@@ -218,7 +248,20 @@ const DEPARTMENT_ACCOUNT_MAP = {
   },
 
   "मिळकत व्यवस्थापन": {
+    accountCodes: [],
+    // accountCodes: ["01015200001"],
+  },
+  "माहितीचा अधिकार शुल्क जमा (All Dept.consolidated amount)": {
     accountCodes: ["01015200001"],
+  },
+  "फॉर्म फी/निविदा फॉर्म फी (All Dept.consolidated amount)": {
+    accountCodes: ["11116100001"],
+  },
+  "इतर जमा (किरकोळ उत्पन्न) (All Dept.consolidated amount)": {
+    accountCodes: ["04319900001"],
+  },
+  "बोअर बदल फी/बोरिंग फी (All Dept.consolidated amount)": {
+    accountCodes: ["32019900001"],
   },
 
   "मोठा निवासी (150 चौ.मी.)": {
@@ -508,13 +551,39 @@ const RptConsolidateReportPDFHelper = async ({
     const dept38 = getDepartmentTotal(transactions, "जाहिरात");
     const dept39 = getDepartmentTotal(transactions, "विवाह नोंदणी");
     const dept40 = getDepartmentTotal(transactions, "मिळकत व्यवस्थापन");
+    const dept41 = getDepartmentTotal(transactions, "माहितीचा अधिकार शुल्क जमा (All Dept.consolidated amount)");
+    const dept42 = getDepartmentTotal(transactions, "फॉर्म फी/निविदा फॉर्म फी (All Dept.consolidated amount)");
+    const dept43 = getDepartmentTotal(transactions, "इतर जमा (किरकोळ उत्पन्न) (All Dept.consolidated amount)");
+    const dept44 = getDepartmentTotal(transactions, "बोअर बदल फी/बोरिंग फी (All Dept.consolidated amount)");
 
-    const total29to40 =
+    // Debug consolidated amounts 41-44
+console.log("========== CONSOLIDATED AMOUNTS ==========");
+
+[dept41, dept42, dept43, dept44].forEach((dept, index) => {
+  console.log(`Amount ${index + 41}:`, {
+    total: dept.total,
+    deptId: dept.deptId,
+    accountCodes: dept.accountCodes,
+  });
+
+  const matchedTransactions = transactions.filter((t) =>
+    dept.accountCodes.includes(
+      String(t.OBJECTCODE ?? t.objectcode ?? "").trim()
+    )
+  );
+
+  console.log(`Matched Transactions ${index + 41}:`, matchedTransactions);
+});
+
+console.log("==========================================");
+
+    const total29to44 =
       dept29.total + dept30.total + dept31.total + dept32.total +
       dept33.total + dept34.total + dept35.total + dept36.total +
-      dept37.total + dept38.total + dept39.total + dept40.total;
+      dept37.total + dept38.total + dept39.total + dept40.total + 
+      dept41.total + dept42.total + dept43.total + dept44.total ;
 
-    const totalGroup2 = total5to28 + total29to40;
+    const totalGroup2 = total5to28 + total29to44;
 
     // "एकूण २" and "एकूण ३" logic from reference:
     // एकूण २ = 183531.00 = total5to28 + total29to40 (totalGroup2)
@@ -604,7 +673,11 @@ const RptConsolidateReportPDFHelper = async ({
       amount38: formatNumber(dept38.total),
       amount39: formatNumber(dept39.total),
       amount40: formatNumber(dept40.total),
-      total29to40: formatNumber(total29to40),
+      amount41: formatNumber(dept41.total),
+      amount42: formatNumber(dept42.total),
+      amount43: formatNumber(dept43.total),
+      amount44: formatNumber(dept44.total),
+      total29to44: formatNumber(total29to44),
       totalGroup2: formatNumber(totalGroup2),
 
       amountExtra1: formatNumber(amountExtra1),
