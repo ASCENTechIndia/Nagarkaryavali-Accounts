@@ -49,6 +49,19 @@ const FrmGovtTaxPayment = () => {
   const [tableData, setTableData] = useState([]);
   const [showTable, setShowTable] = useState(false);
 
+  const fetchZones = async (corpId) => {
+    try {
+      const res = await api.post("/api/Receipt/zones", { 
+        corp_id: user?.ulbId, 
+      }
+      );
+
+      setZoneList(res.data.data || []);
+    } catch (err) {
+      console.error("Zone API Error:", err);
+    }
+  };
+
   /* 🔥 LOAD GL LIST */
   const fetchGLList = async () => {
     try {
@@ -75,6 +88,7 @@ const FrmGovtTaxPayment = () => {
 
   /* 🔥 LOAD INITIAL */
   useEffect(() => {
+    fetchZones();
     fetchGLList();
   }, []);
 
@@ -160,7 +174,7 @@ const FrmGovtTaxPayment = () => {
                             key={z.ZONEID}
                             value={z.ZONEID.toString()}
                           >
-                            {z.ZONEENAME}
+                            {z.ZONENAME || z.ZONEENAME}
                           </SelectItem>
                         ))}
                       </SelectContent>

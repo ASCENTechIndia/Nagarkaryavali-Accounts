@@ -33,11 +33,6 @@ async function bankBranchService(data) {
   if (!data.mode) throw new AppError("Mode required", 400);
   if (!data.userId) throw new AppError("UserId required", 400);
   if (!data.branchName) throw new AppError("Branch Name required", 400);
-  if (!data.branchAddress) throw new AppError("Branch Address required", 400);
-  if (!data.state) throw new AppError("State is required", 400);
-  if (!data.district) throw new AppError("District required", 400);
-  if (!data.city) throw new AppError("city is required", 400);
-  if (!data.branchMobileNo) throw new AppError("Branch mobile number is required", 400);
 
   if (data.mode !== 1 && !data.branchId) {
     throw new AppError("BranchId required for update/delete", 400);

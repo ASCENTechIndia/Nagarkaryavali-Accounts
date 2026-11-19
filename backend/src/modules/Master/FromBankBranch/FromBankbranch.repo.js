@@ -29,12 +29,7 @@ async function getBranchList(bankId) {
       br.var_branchmst_insby,
       br.var_branchmst_updby,
       br.var_branchmst_micr,
-      br.var_branchmst_ifsc,
-      br.var_branchmst_address,
-      br.var_branchmst_rajya,
-      br.var_branchmst_jila,
-      br.var_branchmst_sahar,
-      br.num_branchmst_pincode
+      br.var_branchmst_ifsc
     FROM aoac_branchmst_def br
     JOIN aoac_bankmst_def b 
       ON br.num_branchmst_bankid = b.num_bankmst_bankid
@@ -56,12 +51,7 @@ async function getBranchById(branchId) {
       num_branchmst_bankid AS BankId,
       var_branchmst_branchname AS Branchname,
       var_branchmst_micr AS micr,
-      var_branchmst_ifsc AS ifsc,
-      var_branchmst_address AS branchAddress,
-      var_branchmst_rajya AS state,
-      var_branchmst_jila AS district,
-      var_branchmst_sahar AS city,
-      num_branchmst_pincode AS branchMobile
+      var_branchmst_ifsc AS ifsc
     FROM aoac_branchmst_def
     WHERE num_branchmst_branchid = :branchId
   `;
@@ -78,7 +68,7 @@ async function bankBranchProc(data) {
     const result = await withTx(async (conn) => {
       const res = await conn.execute(
         `BEGIN 
-          aoac_bankbranch_ins_kjt(
+          aoac_bankbranch_ins(
             :in_bankid,
             :in_branchid,
             :in_branchname,
@@ -86,11 +76,6 @@ async function bankBranchProc(data) {
             :in_Mode,
             :in_micr,
             :in_ifsc,
-            :in_address,
-            :IN_rajya,
-            :IN_jila,
-            :IN_sahar,
-            :IN_pincode,
             :out_ErrorCode,
             :out_ErrorMsg
           );
@@ -103,11 +88,6 @@ async function bankBranchProc(data) {
           in_Mode: data.mode,
           in_micr: data.micr || null,
           in_ifsc: data.ifsc || null,
-          in_address:data.branchAddress,
-          IN_rajya: data.state,
-          IN_jila: data.district ,
-          IN_sahar: data.city ,
-          IN_pincode: data.branchMobileNo,
 
           out_ErrorCode: {
             dir: oracledb.BIND_OUT,
