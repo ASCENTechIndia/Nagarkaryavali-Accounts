@@ -8,4 +8,7 @@ router.post( "/bulk-receipt-list", auth(), controller.getFrmBulkReceipt );
 
 router.post( "/bulk-receipt-account-search", auth(), controller.searchBulkReceiptAccount );
 
+router.post("/bulk-receipt-save", auth(), controller.bulkreceiptInsertUpdate);
+
+
 module.exports = router;

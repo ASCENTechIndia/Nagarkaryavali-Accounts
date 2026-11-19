@@ -509,7 +509,8 @@ const FrmBulkReceipt = () => {
             console.log("Final Submit Payload =>", payload);
 
             const res = await axios.post(
-                `${BASE_URL}/api/Receipt/receiptInsertUpdate`,
+                `${BASE_URL}/api/FrmBulkReceipt/bulk-receipt-save`,
+                // `${BASE_URL}/api/Receipt/receiptInsertUpdate`,
                 payload,
                 {
                     headers: {
@@ -607,7 +608,7 @@ const FrmBulkReceipt = () => {
                                 </CardHeader>
 
                                 <CardContent className="p-4 sm:p-6 space-y-8">
-                                    <div className="grid grid-cols-1 md:grid-cols-2  2xl:grid-cols-4 gap-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2  2xl:grid-cols-3 gap-2">
                                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 lg:mr-5">
                                             <div className="w-full sm:w-40 shrink-0 flex justify-between items-center">
                                                 <Label text="Department" />
@@ -620,7 +621,7 @@ const FrmBulkReceipt = () => {
                                                     setFieldValue("deptId", v)
                                                 }
                                             >
-                                                <SelectTrigger className="w-full h-9">
+                                                <SelectTrigger className="max-w-96 h-9">
                                                     <SelectValue placeholder="-- विकल्प निवडा --" />
                                                 </SelectTrigger>
 
