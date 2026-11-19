@@ -135,7 +135,69 @@ async function searchBulkReceiptAccountRepo({
   return result.rows;
 }
 
+const bulkreceiptInsertUpdateRepo = async (data) => {
+  try {
+    const result = await withTx(async (conn) => {
+
+      const res = await conn.execute(
+        `BEGIN 
+            aoac_receipt_bulk_ins(
+              :In_UserId,
+              :In_ParamStr,
+              :In_ParamStr2,
+              :In_ParamStr3,
+              :In_ParamStr4,
+              :In_ParamStr5,
+              :In_ParamStr6,
+              :out_ReturnStr,
+              :out_ErrorCode,
+              :out_ErrorMsg
+            );
+         END;`,
+        {
+          In_UserId: data.In_UserId,
+          In_ParamStr: data.In_ParamStr,
+          In_ParamStr2: data.In_ParamStr2,
+          In_ParamStr3: data.In_ParamStr3 || null,
+          In_ParamStr4: data.In_ParamStr4 || null,
+          In_ParamStr5: data.In_ParamStr5 || null,
+          In_ParamStr6: data.In_ParamStr6 || null,
+
+          out_ReturnStr: {
+            dir: oracledb.BIND_OUT,
+            type: oracledb.STRING,
+            maxSize: 500
+          },
+          out_ErrorCode: {
+            dir: oracledb.BIND_OUT,
+            type: oracledb.NUMBER
+          },
+          out_ErrorMsg: {
+            dir: oracledb.BIND_OUT,
+            type: oracledb.STRING,
+            maxSize: 2000
+          }
+        }
+      );
+
+      return res.outBinds;
+    });
+
+    return {
+      success: true,
+      ...result
+    };
+
+  } catch (err) {
+    return {
+      success: false,
+      error: err.message
+    };
+  }
+};
+
 module.exports = {
   getFrmBulkReceiptRepo,
-  searchBulkReceiptAccountRepo
+  searchBulkReceiptAccountRepo,
+  bulkreceiptInsertUpdateRepo
 };

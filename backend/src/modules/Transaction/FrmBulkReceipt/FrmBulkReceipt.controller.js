@@ -55,3 +55,8 @@ exports.searchBulkReceiptAccount = asyncHandler(async (req, res) => {
     "Bulk receipt accounts fetched successfully"
   );
 });
+
+exports.bulkreceiptInsertUpdate = asyncHandler(async (req, res) => {
+  const data = await service.bulkreceiptInsertUpdateService(req.body);
+  return ok(res, data);
+});
