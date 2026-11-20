@@ -51,24 +51,26 @@ const FrmBulkReceipt = () => {
     const [loadingTable, setLoadingTable] = useState(false);
     const [selectedGL, setSelectedGL] = useState("");
 
+    const [disabledFields, setDisabledFields] = useState(false);
+
     const headers = [
-        "Select",
+        // "Select",
         "GL Code",
         "GL Name",
         "Account No",
         "Account Name",
-        "Credit",
-        "Discount",
+        "Amount",
+        // "Discount",
     ];
 
     const keyMapping = {
-        Select: "select",
+        // Select: "select",
         "GL Code": "GLCODE",
         "GL Name": "GLNAME",
         "Account No": "ACCNO",
         "Account Name": "ACCOUNTNAME",
-        Credit: "CREDIT",
-        Discount: "DISCOUNT",
+        "Amount": "CREDIT",
+        // Discount: "DISCOUNT",
     };
 
     useEffect(() => {
@@ -303,12 +305,20 @@ const FrmBulkReceipt = () => {
             if (res?.data?.data?.data?.length > 0) {
                 const rows = res.data.data.data.map((r) => ({
                     ...r,
-                    selected: false,
+                    // selected: false,
+                    selected: true,
                 }));
 
                 setTableData(rows);
 
-                setFieldValue("amount", "");
+                const total = rows.reduce(
+                    (sum, item) => sum + Number(item.CREDIT || 0),
+                    0
+                );
+
+                // setFieldValue("amount", "");
+                 setFieldValue("amount", total);
+                 setDisabledFields(true);
             } else {
                 setTableData([]);
 
@@ -411,16 +421,26 @@ const FrmBulkReceipt = () => {
                 },
             });
 
-            const selectedRows = tableData.filter(
-                (x) => x.selected
-            );
+            // const selectedRows = tableData.filter(
+            //     (x) => x.selected
+            // );
+
+            // if (selectedRows.length === 0) {
+            //     Swal.fire({
+            //         text: "Select At Least one Tax",
+            //         confirmButtonColor: "#1e3a8a",
+            //     });
+
+            //     return;
+            // }
+
+            const selectedRows = tableData;
 
             if (selectedRows.length === 0) {
                 Swal.fire({
-                    text: "Select At Least one Tax",
+                    text: "No transaction data available",
                     confirmButtonColor: "#1e3a8a",
                 });
-
                 return;
             }
 
@@ -575,24 +595,27 @@ const FrmBulkReceipt = () => {
                 handleChange,
                 resetForm,
             }) => {
-                const transformedTableData = tableData.map(
-                    (item) => ({
-                        ...item,
-                        select: (
-                            <input
-                                type="checkbox"
-                                checked={item.selected || false}
-                                onChange={(e) =>
-                                    handleCheckboxChange(
-                                        item,
-                                        e.target.checked,
-                                        setFieldValue
-                                    )
-                                }
-                            />
-                        ),
-                    })
-                );
+                // const transformedTableData = tableData.map(
+                //     (item) => ({
+                //         ...item,
+                //         select: (
+                //             <input
+                //                 type="checkbox"
+                //                 checked={item.selected || false}
+                //                 onChange={(e) =>
+                //                     handleCheckboxChange(
+                //                         item,
+                //                         e.target.checked,
+                //                         setFieldValue
+                //                     )
+                //                 }
+                //             />
+                //         ),
+                //     })
+                // );
+
+
+                const transformedTableData = tableData;
 
                 return (
                     <Form>
@@ -620,6 +643,7 @@ const FrmBulkReceipt = () => {
                                                 onValueChange={(v) =>
                                                     setFieldValue("deptId", v)
                                                 }
+                                                disabled={disabledFields}
                                             >
                                                 <SelectTrigger className="max-w-96 h-9">
                                                     <SelectValue placeholder="-- विकल्प निवडा --" />
@@ -649,6 +673,7 @@ const FrmBulkReceipt = () => {
                                                 value={values.challanNo}
                                                 onChange={handleChange}
                                                 className="w-full h-9"
+                                                disabled={disabledFields}
                                             />
                                         </div>
 
@@ -675,6 +700,7 @@ const FrmBulkReceipt = () => {
                                                     setTableData([]);
                                                     setGlOptions([]);
                                                     setAccountOptions([]);
+                                                    setDisabledFields(false);
                                                 }}
                                             >
                                                 रिसेट
@@ -871,8 +897,8 @@ const FrmBulkReceipt = () => {
                                             headers={headers}
                                             data={transformedTableData}
                                             keyMapping={keyMapping}
-                                            pagination={true}
-                                            rowsPerPage={5}
+                                            // pagination={true}
+                                            // rowsPerPage={5}
                                             className="max-md:min-w-380"
                                         />
                                     )}
@@ -888,6 +914,18 @@ const FrmBulkReceipt = () => {
                                                 value={values.narration}
                                                 onChange={handleChange}
                                                 className="w-full border rounded-md p-3 min-h-24"
+                                            />
+                                        </div>
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                            <div className="w-full sm:w-40 shrink-0 flex justify-between items-center">
+                                                <Label text="एकूण रक्कम" />
+                                                <span>:</span>
+                                            </div>
+                                            <Input
+                                                name="amount"
+                                                value={values.amount}
+                                                disabled
+                                                className="w-60 h-9 bg-gray-100"
                                             />
                                         </div>
                                     </div>
