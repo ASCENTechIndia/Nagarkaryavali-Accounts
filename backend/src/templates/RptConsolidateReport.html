@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="mr">
 
 <head>
@@ -115,6 +115,433 @@
 </head>
 
 <body>
+  <div class="page">
+    <div class="header">
+      <img src="{{corporationLogo}}" class="logo" />
+
+      <div class="title">{{corporationName}}</div>
+
+      <div class="subtitle">सरदार वल्लभ भाई पटेल टॉवर, प्रशासकीय इमारत</div>
+      <div class="subtitle">
+        फोन:०२५७-२२२२२६१, ६२, ६३, ६४, ६५ फॅक्स: २२२२२६०
+      </div>
+      <div class="subtitle">सर्व साधारण भरणा ALL चलन - अर्थ विभाग</div>
+
+      <div class="report-date">दिनांक : {{fromDate}}</div>
+    </div>
+
+    <table class="collection-table">
+      <thead>
+        <tr>
+          <th class="srno">अ. क्र.</th>
+          <th class="particular">विभागाचे नाव</th>
+          <th class="amount">रक्कम</th>
+        </tr>
+      </thead>
+      <tbody>
+    
+        <tr>
+          <td class="srno">१</td>
+          <td class="particular">खुला भूखंड कर विभाग</td>
+          <td class="amount">{{amount1}}</td>
+        </tr>
+        <tr>
+          <td class="srno">२</td>
+          <td class="particular">मालमत्ता कर विभाग</td>
+          <td class="amount">{{amount2}}</td>
+        </tr>
+        <tr>
+          <td class="srno">३</td>
+          <td class="particular">किरकोळ वसुली विभाग</td>
+          <td class="amount">{{amount3}}</td>
+        </tr>
+        <tr>
+          <td class="srno">४</td>
+          <td class="particular">मार्केट विभाग</td>
+          <td class="amount">{{amount4}}</td>
+        </tr>
+
+        <tr>
+          <td></td>
+          <td class="particular">(१ ते ४) एकूण १</td>
+          <td class="amount">{{total1to4}}</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td class="particular">एकूण २</td>
+          <td class="amount">{{total2}}</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td class="particular">एकूण ३</td>
+          <td class="amount">{{total3}}</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td class="particular">रिबेट (मालमत्ता कर)</td>
+          <td class="amount">{{rebate}}</td>
+        </tr>
+        <tr class="summary-row">
+          <td></td>
+          <td class="particular">कुल/एकूण ४</td>
+          <td class="amount">{{grandTotal4}}</td>
+        </tr>
+        <tr class="summary-row">
+          <td></td>
+          <td class="particular">अक्षरी रुपये</td>
+          <td class="amount-words">{{amountInWords1}}</td>
+        </tr>
+
+        <tr><td class="srno">५</td><td class="particular">छ. शाहुमहाराज रुग्णालय व सु. गृह</td><td class="amount">{{amount5}}</td></tr>
+        <tr><td class="srno">६</td><td class="particular">शाहीर अमर शेख दवाखाना</td><td class="amount">{{amount6}}</td></tr>
+        <tr><td class="srno">७</td><td class="particular">मो. युसुफ आयु.दवाखाना</td><td class="amount">{{amount7}}</td></tr>
+        <tr><td class="srno">८</td><td class="particular">चेतनदास मेहता रूग्णालय</td><td class="amount">{{amount8}}</td></tr>
+        <tr><td class="srno">९</td><td class="particular">पिंप्राळा प्राथमिक आरोग्य केंद्र</td><td class="amount">{{amount9}}</td></tr>
+        <tr><td class="srno">१०</td><td class="particular">कै.डि.बी.जैन रुग्ण. सुतीकागृह</td><td class="amount">{{amount10}}</td></tr>
+        <tr><td class="srno">११</td><td class="particular">कै.नानीबाई अग्रवाल दवाखाना</td><td class="amount">{{amount11}}</td></tr>
+        <tr><td class="srno">१२</td><td class="particular">मुलतानी दवाखाना</td><td class="amount">{{amount12}}</td></tr>
+        <tr><td class="srno">१३</td><td class="particular">पंडीत दिनदयाल दवाखाना</td><td class="amount">{{amount13}}</td></tr>
+        <tr><td class="srno">१४</td><td class="particular">शव वाहीका व रुग्णवाहिका</td><td class="amount">{{amount14}}</td></tr>
+        <tr><td class="srno">१५</td><td class="particular">अर्थ विभाग (इतर किरकोळ)</td><td class="amount">{{amount15}}</td></tr>
+        <tr><td class="srno">१६</td><td class="particular">नगर रचना</td><td class="amount">{{amount16}}</td></tr>
+        <tr><td class="srno">१७</td><td class="particular">आरोग्य विभाग/अन्न भेसळ प्रतीबंधक</td><td class="amount">{{amount17}}</td></tr>
+        <tr><td class="srno">१८</td><td class="particular">मटन मार्केट</td><td class="amount">{{amount18}}</td></tr>
+        <tr><td class="srno">१९</td><td class="particular">अतिक्रमण विभाग</td><td class="amount">{{amount19}}</td></tr>
+        <tr><td class="srno">२०</td><td class="particular">फायर</td><td class="amount">{{amount20}}</td></tr>
+        <tr><td class="srno">२१</td><td class="particular">नक्कल फी (जन्म-मृत्यु)</td><td class="amount">{{amount21}}</td></tr>
+        <tr><td class="srno">२२</td><td class="particular">साने गुरुजी ग्रंथालय</td><td class="amount">{{amount22}}</td></tr>
+        <tr><td class="srno">२३</td><td class="particular">नाट्यगृह भाडे + सागरपार्क भाडे</td><td class="amount">{{amount23}}</td></tr>
+        <tr><td class="srno">२४</td><td class="particular">नविन नळ कने. (मा. कर वि.) (सर्वसाधारण चलन)</td><td class="amount">{{amount24}}</td></tr>
+        <tr><td class="srno">२५</td><td class="particular">आस्थापना</td><td class="amount">{{amount25}}</td></tr>
+        <tr><td class="srno">२६</td><td class="particular">अभिलेखा</td><td class="amount">{{amount26}}</td></tr>
+        <tr><td class="srno">२७</td><td class="particular">दैनंदिन बाजार शुल्क</td><td class="amount">{{amount27}}</td></tr>
+        <tr><td class="srno">२८</td><td class="particular">घरकुल सेवा शुल्क</td><td class="amount">{{amount28}}</td></tr>
+        <tr>
+          <td></td>
+          <td class="particular">(५ ते २८) ची एकूण</td>
+          <td class="amount">{{total5to28}}</td>
+        </tr>
+
+  
+        <tr><td class="srno">२९</td><td class="particular">पर्यावरण विभाग</td><td class="amount">{{amount29}}</td></tr>
+        <tr><td class="srno">३०</td><td class="particular">मालमत्ता कर विभाग इतर (सर्वसाधारण चलन)</td><td class="amount">{{amount30}}</td></tr>
+        <tr><td class="srno">३१</td><td class="particular">सार्व. बांधकाम</td><td class="amount">{{amount31}}</td></tr>
+        <tr><td class="srno">३२</td><td class="particular">किरकोळ वसुली इतर</td><td class="amount">{{amount32}}</td></tr>
+        <tr><td class="srno">३३</td><td class="particular">वाहनतळ</td><td class="amount">{{amount33}}</td></tr>
+        <tr><td class="srno">३४</td><td class="particular">पाणीपुवाठा विभाग इतर</td><td class="amount">{{amount34}}</td></tr>
+        <tr><td class="srno">३५</td><td class="particular">नगर रचना इतर</td><td class="amount">{{amount35}}</td></tr>
+        <tr><td class="srno">३६</td><td class="particular">TDR (T.P.)</td><td class="amount">{{amount36}}</td></tr>
+        <tr><td class="srno">३७</td><td class="particular">प्रिमियम चार्जेस (T.P.)</td><td class="amount">{{amount37}}</td></tr>
+        <tr><td class="srno">३८</td><td class="particular">जाहिरात</td><td class="amount">{{amount38}}</td></tr>
+        <tr><td class="srno">३९</td><td class="particular">विवाह नोंदणी</td><td class="amount">{{amount39}}</td></tr>
+        <tr><td class="srno">४०</td><td class="particular">मिळकत व्यवस्थापन</td><td class="amount">{{amount40}}</td></tr>
+        <tr><td class="srno">४१</td><td class="particular">माहितीचा अधिकार शुल्क जमा (All Dept.consolidated amount)</td><td class="amount">{{amount41}}</td></tr>
+        <tr><td class="srno">४२</td><td class="particular">फॉर्म फी/निविदा फॉर्म फी (All Dept.consolidated amount)</td><td class="amount">{{amount42}}</td></tr>
+        <tr><td class="srno">४३</td><td class="particular">इतर जमा (किरकोळ उत्पन्न) (All Dept.consolidated amount)</td><td class="amount">{{amount43}}</td></tr>
+        <tr><td class="srno">४४</td><td class="particular">बोअर बदल फी/बोरिंग फी (All Dept.consolidated amount)</td><td class="amount">{{amount44}}</td></tr>
+        <tr>
+          <td></td>
+          <td class="particular">(२९ ते ४४) ची एकूण</td>
+          <td class="amount">{{total29to44}}</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td class="particular">(५ ते २८)+(२९ ते ४४) ची एकूण २</td>
+          <td class="amount">{{totalGroup2}}</td>
+        </tr>
+
+        <tr>
+          <td class="srno">१</td>
+          <td class="particular">मोठा निवासी (150 चौ.मी.)</td>
+          <td class="amount">{{amountExtra1}}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table class="collection-table">
+      <thead>
+        <tr>
+          <th class="srno">अ. क्र.</th>
+          <th class="particular">आग सुरक्षा निधी चलन (अग्निशमन विभाग)</th>
+          <th class="amount">रक्कम</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="srno">१</td><td class="particular">अग्निशमन वार्षिक फी</td><td class="amount">{{fireAmount1}}</td></tr>
+        <tr><td class="srno">२</td><td class="particular">अग्निशमन ना-हरकत दाखला शुल्क</td><td class="amount">{{fireAmount2}}</td></tr>
+        <tr><td class="srno">३</td><td class="particular">अग्निशमन ना-हरकत दाखला नुतनीकरण</td><td class="amount">{{fireAmount3}}</td></tr>
+        <tr><td class="srno">४</td><td class="particular">तात्पुरता दाखला शुल्क</td><td class="amount">{{fireAmount4}}</td></tr>
+        <tr><td class="srno">५</td><td class="particular">आग विझविण्याचा दाखला शुल्क/फी</td><td class="amount">{{fireAmount5}}</td></tr>
+        <tr><td class="srno">६</td><td class="particular">स्टँडबाय ड्युटी</td><td class="amount">{{fireAmount6}}</td></tr>
+        <tr><td class="srno">७</td><td class="particular">मनपा हद्दीबाहेर अग्निशमन दलाची मदत (फायर/रेस्क्यु वर्दी)</td><td class="amount">{{fireAmount7}}</td></tr>
+        <tr><td class="srno">८</td><td class="particular">अग्निशमन प्रशिक्षण शुल्क</td><td class="amount">{{fireAmount8}}</td></tr>
+        <tr><td></td><td class="particular">एकूण</td><td class="amount">{{fireTotal}}</td></tr>
+        <tr class="summary-row">
+          <td></td>
+          <td class="particular">अक्षरी रुपये</td>
+          <td class="amount-words">{{fireAmountInWords}}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <br />
+  </div>
+</body>
+
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="mr">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Consolidate Challan</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 12px;
+      color: #000;
+      padding: 10px 15px;
+    }
+
+    @page {
+      size: A3 portrait;
+      margin: 6mm;
+    }
+
+    .page {
+      width: 100%;
+    }
+
+    .page-break {
+      page-break-before: always;
+      break-before: page;
+    }
+
+    /* Page 1 Styles */
+    .header {
+      position: relative;
+      margin-bottom: 15px;
+      min-height: 80px;
+    }
+
+    .logo {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+    }
+
+    .title {
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 14px;
+      font-weight: bold;
+      margin-top: 4px;
+    }
+
+    .report-date {
+      text-align: center;
+      margin-top: 8px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .collection-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    .collection-table th,
+    .collection-table td {
+      border: 1px solid #000;
+      padding: 4px 6px;
+      vertical-align: middle;
+    }
+
+    .collection-table th {
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .srno {
+      width: 8%;
+      text-align: center;
+    }
+
+    .particular {
+      width: 49%;
+    }
+
+    .amount {
+      width: 25%;
+      text-align: right;
+    }
+
+    .summary-row {
+      font-weight: bold;
+    }
+
+    .amount-words {
+      font-weight: bold;
+    }
+
+    /* Page 2 Styles */
+    .p2-container {
+      width: 100%;
+      padding: 14px 18px;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .p2-line {
+      margin-bottom: 12px;
+      display: flex;
+      align-items: baseline;
+      flex-wrap: nowrap;
+      white-space: nowrap;
+    }
+
+    .p2-fill {
+      flex: 1;
+      border-bottom: 1px solid #000;
+      margin: 0 6px;
+      height: 16px;
+    }
+
+    .p2-fill-sm {
+      width: 120px;
+      border-bottom: 1px solid #000;
+      margin: 0 6px;
+      height: 16px;
+      display: inline-block;
+    }
+
+    .p2-fill-md {
+      width: 220px;
+      border-bottom: 1px solid #000;
+      margin: 0 6px;
+      height: 16px;
+      display: inline-block;
+    }
+
+    .p2-date-row {
+      margin-top: 10px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 70px;
+      font-weight: 500;
+    }
+
+    .p2-bank-heading {
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 15px;
+    }
+
+    .p2-grid {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 4px;
+    }
+
+    .p2-grid th {
+      font-weight: normal;
+      text-align: center;
+      padding-bottom: 10px;
+      font-size: 15px;
+    }
+
+    .p2-grid td {
+      padding: 7px 4px;
+      vertical-align: bottom;
+      font-size: 15px;
+    }
+
+    .p2-label-col {
+      width: 24%;
+      padding-right: 8px;
+    }
+
+    .p2-eq-col {
+      width: 3%;
+      text-align: center;
+    }
+
+    .p2-line-col {
+      width: 22%;
+    }
+
+    .p2-plus-col {
+      width: 3%;
+      text-align: center;
+    }
+
+    .p2-line-cell {
+      border-bottom: 1.2px solid #000;
+      height: 22px;
+      width: 100%;
+    }
+
+    .p2-bold {
+      font-weight: bold;
+    }
+
+    .p2-footer-box {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .p2-footer-box th,
+    .p2-footer-box td {
+      border: 1.2px solid #000;
+      padding: 8px 10px;
+      vertical-align: top;
+    }
+
+    .p2-footer-box th {
+      text-align: center;
+      font-weight: bold;
+      font-size: 15px;
+      height: 36px;
+      vertical-align: middle;
+    }
+
+    .p2-footer-body {
+      height: 150px;
+      position: relative;
+    }
+
+    .p2-sign {
+      margin-top: 95px;
+      text-align: center;
+      font-size: 14px;
+      line-height: 1.45;
+      font-weight: 500;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Page 1 -->
   <div class="page">
     <div class="header">
       <img src="{{corporationLogo}}" class="logo" />
@@ -287,8 +714,228 @@
         </tr>
       </tbody>
     </table>
+  </div>
 
-    <br />
+  <!-- Page 2 -->
+  <div class="page page-break">
+    <div class="p2-container">
+      <div class="p2-line">
+        <span>एकूण अक्षरी रुपये</span>
+        <span class="p2-fill"></span>
+        <span>पैसे</span>
+        <span class="p2-fill-sm"></span>
+        <span>मात्र</span>
+      </div>
+
+      <div class="p2-line">
+        <span>पैकी एकूण जमा रुपये</span>
+        <span class="p2-fill"></span>
+        <span>पैसे</span>
+        <span class="p2-fill-sm"></span>
+        <span>मात्र</span>
+        <span class="p2-fill-md"></span>
+        <span>बँकेत भरणा केला असेल</span>
+      </div>
+
+      <div class="p2-date-row">
+        <span>दिनांक</span>
+        <span>माहे</span>
+        <span>२०२</span>
+      </div>
+
+      <div class="p2-bank-heading">भरणा केलेल्या बँकेचे नाव :</div>
+
+      <table class="p2-grid">
+        <thead>
+          <tr>
+            <th></th>
+            <th></th>
+            <th>रोख</th>
+            <th></th>
+            <th>रोख</th>
+            <th></th>
+            <th>रोख</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="p2-label-col">ICICI ऑनलाईन</td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-plus-col">+</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+          </tr>
+          <tr>
+            <td class="p2-label-col">HDFC बँक नलाईन</td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-plus-col">+</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+          </tr>
+          <tr>
+            <td class="p2-label-col">HDFC बँक (३१११)</td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-plus-col">+</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+          </tr>
+          <tr>
+            <td class="p2-label-col">इंडियन बँक (९८७०)</td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-plus-col">+</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+          </tr>
+          <tr>
+            <td class="p2-label-col">Axis बँक स्वाईप मशीन</td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-plus-col">+</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+          </tr>
+          <tr>
+            <td class="p2-label-col ">विकास शुल्क</td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-plus-col">+</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+          </tr>
+          <tr>
+            <td class="p2-label-col">घनकचरा (३१११)</td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-plus-col">+</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+          </tr>
+          <tr>
+            <td class="p2-label-col">प्रिमीयम चार्जेस</td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-plus-col">+</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+          </tr>
+          <tr>
+            <td class="p2-label-col">महा.शिक्षण कर/रोजगार(३११५)</td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-plus-col">+</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+          </tr>
+          <tr>
+            <td class="p2-label-col">वृक्ष कर(३११४)</td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-plus-col">+</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+          </tr>
+          <tr>
+            <td class="p2-label-col">GST(३११७)</td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-plus-col">+</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+          </tr>
+          <tr>
+            <td class="p2-label-col">अवकृषक सारा</td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-plus-col">+</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+          </tr>
+          <tr>
+            <td class="p2-label-col">विवाह नोंदणी</td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-plus-col">+</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+          </tr>
+          <tr>
+            <td class="p2-label-col">एकूण</td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-plus-col">+</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+          </tr>
+          <tr>
+            <td class="p2-label-col">रिबेट</td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-plus-col">+</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+          </tr>
+          <tr>
+            <td class="p2-label-col">कुल एकूण</td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-plus-col">+</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+          </tr>
+          <tr>
+            <td class="p2-label-col">मनपा ट्रेझरी</td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-plus-col">+</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+            <td class="p2-eq-col">=</td>
+            <td class="p2-line-col"><div class="p2-line-cell"></div></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="p2-footer-box">
+        <thead>
+          <tr>
+            <th style="width: 34%;"></th>
+            <th style="width: 33%;">धनादेश विवरण</th>
+            <th style="width: 33%;"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="p2-footer-body"></td>
+            <td class="p2-footer-body"></td>
+            <td class="p2-footer-body">
+              <div class="p2-sign">
+                लेखापाल<br />
+                जळगांव महानगरपालिका, जळगांव
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </body>
 
